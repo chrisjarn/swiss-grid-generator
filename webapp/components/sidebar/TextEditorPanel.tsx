@@ -104,16 +104,29 @@ export function TextEditorPanel<StyleKey extends string>({
     TEXT_EDITOR_COLLAPSED_DEFAULTS,
     { resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT },
   )
-  const [recentSymbols, setRecentSymbols] = useState<string[]>(() => {
-    if (typeof window === "undefined") return []
+  const [recentSymbols, setRecentSymbols] = useState<string[]>([])
+  const [hasLoadedRecentSymbols, setHasLoadedRecentSymbols] = useState(false)
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      setHasLoadedRecentSymbols(true)
+      return
+    }
     try {
       const parsed = JSON.parse(window.localStorage.getItem(RECENT_SYMBOLS_STORAGE_KEY) ?? "[]") as unknown
-      if (!Array.isArray(parsed)) return []
-      return parsed.filter((value): value is string => typeof value === "string" && value.length > 0).slice(0, MAX_RECENT_SYMBOL_COUNT)
+      if (!Array.isArray(parsed)) {
+        setRecentSymbols([])
+        return
+      }
+      setRecentSymbols(parsed
+        .filter((value): value is string => typeof value === "string" && value.length > 0)
+        .slice(0, MAX_RECENT_SYMBOL_COUNT))
     } catch {
-      return []
+      setRecentSymbols([])
+    } finally {
+      setHasLoadedRecentSymbols(true)
     }
-  })
+  }, [])
   const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed, {
     resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
     restoreKey: controls.editorState.target,
@@ -206,13 +219,14 @@ export function TextEditorPanel<StyleKey extends string>({
   }, [controls.editorState.target, controls.selectedColorScheme])
 
   useEffect(() => {
+    if (!hasLoadedRecentSymbols) return
     if (typeof window === "undefined") return
     try {
       window.localStorage.setItem(RECENT_SYMBOLS_STORAGE_KEY, JSON.stringify(recentSymbols))
     } catch {
       // Recent symbols are a convenience; insertion must not depend on storage.
     }
-  }, [recentSymbols])
+  }, [hasLoadedRecentSymbols, recentSymbols])
 
   useEffect(() => {
     return () => {

@@ -5,6 +5,7 @@ import {
   measureTextPairAdvance,
   normalizeTrackingScale,
   splitTextForTracking,
+  type GlyphBoundsMeasure,
 } from "@/lib/text-rendering"
 import { resolveTextDrawCommandRange } from "@/lib/text-draw-command"
 import {
@@ -69,7 +70,7 @@ type SourceGrapheme = {
   sourceEnd: number
 }
 
-type ResolvedFormatTrackingGrapheme<
+export type ResolvedFormatTrackingGrapheme<
   StyleKey extends string = string,
   FontFamily extends string = string,
 > = BaseTextFormat<StyleKey, FontFamily> & {
@@ -98,6 +99,20 @@ export type PositionedTextFormatTrackingSegment<
   x: number
   y: number
 }
+
+type ResolvedGlyphBoundsMeasure<
+  StyleKey extends string,
+  FontFamily extends string,
+> = (grapheme: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>) => ReturnType<GlyphBoundsMeasure>
+
+type ResolvedGlyphPairAdvanceMeasure<
+  StyleKey extends string,
+  FontFamily extends string,
+> = (
+  previous: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  current: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  opticalKerning: boolean,
+) => number | null
 
 export type PositionedTextFormatTrackingGrapheme<
   StyleKey extends string = string,
@@ -552,7 +567,7 @@ export function rebaseTextFormatRunsForTextEdit<
   return normalizeTextFormatRuns(nextText, nextIntervals, normalizedBase)
 }
 
-function resolveFontTrackingGraphemes<
+export function resolveFontTrackingGraphemes<
   StyleKey extends string,
   FontFamily extends string,
 >({
@@ -633,7 +648,13 @@ function measureGraphemeWidth<
 >(
   context: CanvasMeasureContext,
   grapheme: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  measureGlyphBounds?: GlyphBoundsMeasure,
+  measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
 ): number {
+  const measured = measureResolvedGlyphBounds?.(grapheme) ?? measureGlyphBounds?.(grapheme.text)
+  if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
+    return measured.advanceWidth
+  }
   context.font = buildCanvasFont(
     grapheme.fontFamily,
     grapheme.fontWeight,
@@ -649,11 +670,21 @@ function measureGraphemeMetrics<
 >(
   context: CanvasMeasureContext,
   grapheme: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  measureGlyphBounds?: GlyphBoundsMeasure,
+  measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
 ): {
   width: number
   ascent: number
   descent: number
 } {
+  const measured = measureResolvedGlyphBounds?.(grapheme) ?? measureGlyphBounds?.(grapheme.text)
+  if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
+    return {
+      width: measured.advanceWidth,
+      ascent: grapheme.fontSize * 0.8,
+      descent: grapheme.fontSize * 0.2,
+    }
+  }
   context.font = buildCanvasFont(
     grapheme.fontFamily,
     grapheme.fontWeight,
@@ -676,6 +707,9 @@ function measureGraphemeAdvance<
   previous: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
   current: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
   opticalKerning: boolean,
+  measureGlyphBounds?: GlyphBoundsMeasure,
+  measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
+  measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>,
 ): number {
   const sameFontMetrics = previous.fontFamily === current.fontFamily
     && previous.fontWeight === current.fontWeight
@@ -683,7 +717,16 @@ function measureGraphemeAdvance<
     && previous.fontSize === current.fontSize
 
   if (!sameFontMetrics) {
-    return measureGraphemeWidth(context, previous)
+    return measureGraphemeWidth(context, previous, measureGlyphBounds, measureResolvedGlyphBounds)
+  }
+
+  const measuredPairAdvance = measureResolvedPairAdvance?.(previous, current, opticalKerning)
+  if (
+    typeof measuredPairAdvance === "number"
+    && Number.isFinite(measuredPairAdvance)
+    && measuredPairAdvance >= 0
+  ) {
+    return measuredPairAdvance
   }
 
   context.font = buildCanvasFont(
@@ -698,6 +741,9 @@ function measureGraphemeAdvance<
     current.text,
     previous.fontSize,
     opticalKerning,
+    measureResolvedGlyphBounds
+      ? (glyph) => measureResolvedGlyphBounds({ ...previous, text: glyph })
+      : measureGlyphBounds,
   )
 }
 
@@ -732,6 +778,9 @@ export function measureFormattedTextRangeWidth<
     trackingRuns,
     resolveFontSize,
     opticalKerning = true,
+    measureGlyphBounds,
+    measureResolvedGlyphBounds,
+    measureResolvedPairAdvance,
   }: {
     sourceText: string
     renderedText: string
@@ -742,6 +791,9 @@ export function measureFormattedTextRangeWidth<
     trackingRuns?: readonly TextTrackingRun[] | null | undefined
     resolveFontSize: (styleKey: StyleKey) => number
     opticalKerning?: boolean
+    measureGlyphBounds?: GlyphBoundsMeasure
+    measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
+    measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
   },
 ): number {
   const normalizedTrackingRuns = normalizeTextTrackingRuns(
@@ -762,18 +814,26 @@ export function measureFormattedTextRangeWidth<
 
   if (!graphemes.length) return 0
   if (graphemes.length === 1) {
-    return measureGraphemeWidth(context, graphemes[0]!)
+    return measureGraphemeWidth(context, graphemes[0]!, measureGlyphBounds, measureResolvedGlyphBounds)
   }
 
   let width = 0
   for (let index = 1; index < graphemes.length; index += 1) {
     const previous = graphemes[index - 1]!
     const current = graphemes[index]!
-    width += measureGraphemeAdvance(context, previous, current, opticalKerning)
+    width += measureGraphemeAdvance(
+      context,
+      previous,
+      current,
+      opticalKerning,
+      measureGlyphBounds,
+      measureResolvedGlyphBounds,
+      measureResolvedPairAdvance,
+    )
       + getTrackingLetterSpacing(previous.fontSize, previous.trackingScale)
   }
 
-  return width + measureGraphemeWidth(context, graphemes[graphemes.length - 1]!)
+  return width + measureGraphemeWidth(context, graphemes[graphemes.length - 1]!, measureGlyphBounds, measureResolvedGlyphBounds)
 }
 
 export function buildPositionedTextFormatTrackingGraphemes<
@@ -791,6 +851,9 @@ export function buildPositionedTextFormatTrackingGraphemes<
     trackingRuns,
     resolveFontSize,
     opticalKerning = true,
+    measureGlyphBounds,
+    measureResolvedGlyphBounds,
+    measureResolvedPairAdvance,
   }: {
     sourceText: string
     command: TextDrawCommand
@@ -801,6 +864,9 @@ export function buildPositionedTextFormatTrackingGraphemes<
     trackingRuns?: readonly TextTrackingRun[] | null | undefined
     resolveFontSize: (styleKey: StyleKey) => number
     opticalKerning?: boolean
+    measureGlyphBounds?: GlyphBoundsMeasure
+    measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
+    measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
   },
 ): PositionedTextFormatTrackingGrapheme<StyleKey, FontFamily>[] {
   const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
@@ -832,6 +898,9 @@ export function buildPositionedTextFormatTrackingGraphemes<
     trackingRuns: normalizedTrackingRuns,
     resolveFontSize,
     opticalKerning,
+    measureGlyphBounds,
+    measureResolvedGlyphBounds,
+    measureResolvedPairAdvance,
   })
   const lineStartX = textAlign === "center"
     ? command.x - lineWidth / 2
@@ -843,10 +912,18 @@ export function buildPositionedTextFormatTrackingGraphemes<
   return graphemes.map((grapheme, index) => {
     if (index > 0) {
       const previous = graphemes[index - 1]!
-      cursorX += measureGraphemeAdvance(context, previous, grapheme, opticalKerning)
+      cursorX += measureGraphemeAdvance(
+        context,
+        previous,
+        grapheme,
+        opticalKerning,
+        measureGlyphBounds,
+        measureResolvedGlyphBounds,
+        measureResolvedPairAdvance,
+      )
         + getTrackingLetterSpacing(previous.fontSize, previous.trackingScale)
     }
-    const metrics = measureGraphemeMetrics(context, grapheme)
+    const metrics = measureGraphemeMetrics(context, grapheme, measureGlyphBounds, measureResolvedGlyphBounds)
     return {
       text: grapheme.text,
       start: grapheme.start,
@@ -882,6 +959,9 @@ export function buildPositionedTextFormatTrackingSegments<
     trackingRuns,
     resolveFontSize,
     opticalKerning = true,
+    measureGlyphBounds,
+    measureResolvedGlyphBounds,
+    measureResolvedPairAdvance,
   }: {
     sourceText: string
     command: TextDrawCommand
@@ -892,6 +972,9 @@ export function buildPositionedTextFormatTrackingSegments<
     trackingRuns?: readonly TextTrackingRun[] | null | undefined
     resolveFontSize: (styleKey: StyleKey) => number
     opticalKerning?: boolean
+    measureGlyphBounds?: GlyphBoundsMeasure
+    measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
+    measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
   },
 ): PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] {
   const graphemes = buildPositionedTextFormatTrackingGraphemes(context, {
@@ -904,6 +987,9 @@ export function buildPositionedTextFormatTrackingSegments<
     trackingRuns,
     resolveFontSize,
     opticalKerning,
+    measureGlyphBounds,
+    measureResolvedGlyphBounds,
+    measureResolvedPairAdvance,
   })
   if (!graphemes.length) return []
   const positioned: PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] = []

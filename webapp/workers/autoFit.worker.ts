@@ -4,6 +4,11 @@ import {
   type AutoFitPlannerOutput,
 } from "@/lib/autofit-planner"
 import {
+  createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
+  createLoadedFontFilePairAdvanceMeasureForCanvasFont,
+  preloadFontFileMetricFaces,
+} from "@/lib/font-file-text-metrics-engine"
+import {
   applyCanvasTextConfig,
   buildCanvasFont,
   measureCanvasTextWidth,
@@ -35,7 +40,15 @@ function getCtx(): OffscreenCanvasRenderingContext2D | null {
   return next
 }
 
-self.onmessage = (event: MessageEvent<AutoFitRequest>) => {
+async function preloadAutoFitFontFaces(input: AutoFitPlannerInput): Promise<void> {
+  await preloadFontFileMetricFaces(input.items.map((item) => ({
+    fontFamily: item.style.fontFamily,
+    fontWeight: item.style.fontWeight,
+    italic: item.style.italic,
+  })))
+}
+
+self.onmessage = async (event: MessageEvent<AutoFitRequest>) => {
   const { id, input } = event.data
   const context = getCtx()
   if (!context) {
@@ -43,8 +56,11 @@ self.onmessage = (event: MessageEvent<AutoFitRequest>) => {
     self.postMessage(fallback)
     return
   }
+  await preloadAutoFitFontFaces(input)
   const output = computeAutoFitBatch(input, (style, text, range, sourceText) => {
     const font = buildCanvasFont(style.fontFamily, style.fontWeight, style.italic, style.size)
+    const measureGlyphBounds = createLoadedFontFileGlyphBoundsMeasureForCanvasFont(font) ?? undefined
+    const measurePairAdvance = createLoadedFontFilePairAdvanceMeasureForCanvasFont(font) ?? undefined
     const rangeKey = range ? `${range.start}:${range.end}` : "full"
     const sourceKey = sourceText ?? text
     const key = `${font}::${style.opticalKerning ? 1 : 0}::${style.trackingScale}::${JSON.stringify(style.trackingRuns)}::${rangeKey}::${sourceKey}::${text}`
@@ -63,8 +79,18 @@ self.onmessage = (event: MessageEvent<AutoFitRequest>) => {
         runs: normalizeTextTrackingRuns(sourceText, style.trackingRuns, style.trackingScale),
         fontSize: style.size,
         opticalKerning: style.opticalKerning,
+        measureGlyphBounds,
+        measurePairAdvance,
       })
-      : measureCanvasTextWidth(context, text, style.trackingScale, style.size, style.opticalKerning)
+      : measureCanvasTextWidth(
+        context,
+        text,
+        style.trackingScale,
+        style.size,
+        style.opticalKerning,
+        measureGlyphBounds,
+        measurePairAdvance,
+      )
     measureCache.set(key, width)
     if (measureCache.size > 8000) measureCache.clear()
     return width

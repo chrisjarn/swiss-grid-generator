@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { flushSync } from "react-dom"
 import jsPDF from "jspdf"
-import { isFontFamily, type FontFamily } from "@/lib/config/fonts"
+import { getFontVariants, isFontFamily, type FontFamily } from "@/lib/config/fonts"
 import { attachPdfOutputIntent, type PdfExportColorMode, type PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
 import { renderSwissGridVectorPdf } from "@/lib/pdf-vector-export"
 import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
 import { renderSwissGridIdmlProject } from "@/lib/idml-export"
+import {
+  preloadFontFileMetricFaces,
+  type FontFileMetricFace,
+} from "@/lib/font-file-text-metrics-engine"
+import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 import { ensurePdfFontsRegistered } from "@/lib/pdf-font-registry"
 import { type LoadedProject } from "@/lib/document-session"
 import { toProjectFilename } from "@/lib/project-file-naming"
@@ -106,6 +111,16 @@ function collectPdfFontFamilies(pages: ResolvedProjectPageExportSource[]): Set<F
     })
   })
   return fontsToRegister
+}
+
+function collectExportTextMetricFaces(pages: ResolvedProjectPageExportSource[]): FontFileMetricFace[] {
+  return [...collectPdfFontFamilies(pages)].flatMap((fontFamily) => (
+    getFontVariants(fontFamily).map((variant) => ({
+      fontFamily,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+    }))
+  ))
 }
 
 class ExportCancelledError extends Error {
@@ -319,6 +334,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       if (!trimmed) return
       const projectSnapshot = getCurrentProjectSnapshot()
       const payload = buildProjectTransferPayload({
+        ...projectSnapshot,
         activePageId: projectSnapshot.activePageId,
         pages: projectSnapshot.pages,
         metadata,
@@ -452,6 +468,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     pages: ResolvedProjectPageExportSource[],
     filename: string,
     printPresetConfig: PrintPresetConfig,
+    layoutEngine: LayoutEngineContract,
   ) => {
     if (pages.length === 0) return
 
@@ -504,6 +521,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     })
 
     await ensurePdfFontsRegistered(pdf, collectPdfFontFamilies(pages))
+    await preloadFontFileMetricFaces(collectExportTextMetricFaces(pages))
     await attachPdfOutputIntent(pdf, outputIntentProfileId)
     const publishProgress = createProgressPublisher()
 
@@ -547,6 +565,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         showMargins: page.uiSettings.showMargins,
         showImagePlaceholders: page.uiSettings.showImagePlaceholders,
         showTypography: page.uiSettings.showTypography,
+        layoutEngine,
       })
       throwIfExportCancelled()
       await publishProgress({
@@ -574,6 +593,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     pages: ResolvedProjectPageExportSource[],
     filename: string,
     startPageNumber: number,
+    layoutEngine: LayoutEngineContract,
   ) => {
     if (pages.length === 0) return
 
@@ -597,6 +617,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         phase: "rendering",
       }, true)
       throwIfExportCancelled()
+      await preloadFontFileMetricFaces(collectExportTextMetricFaces([page]))
       const svg = await renderSwissGridVectorSvg({
         width: page.result.pageSizePt.width,
         height: page.result.pageSizePt.height,
@@ -612,6 +633,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         showMargins: page.uiSettings.showMargins,
         showImagePlaceholders: page.uiSettings.showImagePlaceholders,
         showTypography: page.uiSettings.showTypography,
+        layoutEngine,
         title: trimmedTitle || filename,
         description: trimmedDescription || "Swiss Grid Vector Export",
         author: trimmedAuthor,
@@ -638,6 +660,7 @@ export function useExportActions(ctx: ExportActionsContext) {
 
     for (const [index, page] of pages.entries()) {
       throwIfExportCancelled()
+      await preloadFontFileMetricFaces(collectExportTextMetricFaces([page]))
       const pageNumber = startPageNumber + index
       const pageSlug = normalizeFilenameSegment(page.name || `page-${pageNumber}`)
       const pageFilename = `${normalizedArchiveBaseName}_page_${String(pageNumber).padStart(3, "0")}_${pageSlug}.svg`
@@ -656,6 +679,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         showMargins: page.uiSettings.showMargins,
         showImagePlaceholders: page.uiSettings.showImagePlaceholders,
         showTypography: page.uiSettings.showTypography,
+        layoutEngine,
         title: trimmedTitle ? `${trimmedTitle} - Page ${pageNumber}` : `${archiveBaseName} - Page ${pageNumber}`,
         description: trimmedDescription || `Swiss Grid Vector Export - Page ${pageNumber}`,
         author: trimmedAuthor,
@@ -703,7 +727,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     filename: string,
   ) => {
     const publishProgress = createProgressPublisher()
-    const bytes = await renderSwissGridIdmlProject(project, async (progress) => {
+    const bytes = await renderSwissGridIdmlProject(project, project.layoutEngine, async (progress) => {
       throwIfExportCancelled()
       const isPackagingStep = progress.pageName === "Packaging IDML"
       await publishProgress({
@@ -865,10 +889,10 @@ export function useExportActions(ctx: ExportActionsContext) {
           enabled: printPresetEnabledDraft,
           bleedMm,
           registrationMarks: exportRegistrationMarksDraft,
-        })
+        }, currentProjectSnapshot.layoutEngine)
       } else {
         const resolvedPages = buildResolvedProjectPageExportSources(currentProjectSnapshot, selectedRange)
-        await exportSVG(resolvedPages, filename, normalizedRange.fromPage)
+        await exportSVG(resolvedPages, filename, normalizedRange.fromPage, currentProjectSnapshot.layoutEngine)
       }
 
       setIsExportDialogOpen(false)

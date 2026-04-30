@@ -32,6 +32,12 @@ import {
   normalizeTrackingScale,
 } from "@/lib/text-rendering"
 import {
+  createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
+  createLoadedFontFilePairAdvanceMeasureForCanvasFont,
+  createResolvedFontFileGlyphBoundsMeasure,
+  createResolvedFontFilePairAdvanceMeasure,
+} from "@/lib/font-file-text-metrics-engine"
+import {
   measureFormattedTextRangeWidth,
   resolveTextFormatAtIndex,
   type PositionedTextFormatTrackingSegment,
@@ -572,15 +578,15 @@ export function InlineBlockTextarea<StyleKey extends string>({
       opticalKerning: editorState.draftOpticalKerning,
     })
   }
-  const fontMetrics = measureContextRef.current?.measureText("Hgyp")
-  const editorTextAscent = fontMetrics?.actualBoundingBoxAscent && fontMetrics.actualBoundingBoxAscent > 0
-    ? fontMetrics.actualBoundingBoxAscent
-    : layout.textAscent > 0
-      ? layout.textAscent
-      : scaledFontSize * 0.8
-  const editorTextDescent = fontMetrics?.actualBoundingBoxDescent && fontMetrics.actualBoundingBoxDescent > 0
-    ? fontMetrics.actualBoundingBoxDescent
-    : Math.max(1, scaledLeading - editorTextAscent)
+  const measureGlyphBounds = createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+  const measurePairAdvance = createLoadedFontFilePairAdvanceMeasureForCanvasFont(
+    canvasFont,
+    editorState.draftStyle,
+  ) ?? undefined
+  const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<StyleKey>()
+  const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<StyleKey>()
+  const editorTextAscent = layout.textAscent > 0 ? layout.textAscent : scaledFontSize * 0.8
+  const editorTextDescent = Math.max(1, scaledFontSize * 0.2)
   const caretHeight = Math.max(1, Math.min(scaledLeading, editorTextAscent + editorTextDescent))
   const measureText = (text: string, range?: { start: number; end: number }) => {
     if (typeof document === "undefined") return 0
@@ -614,9 +620,20 @@ export function InlineBlockTextarea<StyleKey extends string>({
             : getStyleSizeValue(styleKey as StyleKey) * scale
         ),
         opticalKerning: editorState.draftOpticalKerning,
+        measureGlyphBounds,
+        measureResolvedGlyphBounds,
+        measureResolvedPairAdvance,
       })
     }
-    return measureCanvasTextWidth(ctx, text, trackingScale, scaledFontSize, editorState.draftOpticalKerning)
+    return measureCanvasTextWidth(
+      ctx,
+      text,
+      trackingScale,
+      scaledFontSize,
+      editorState.draftOpticalKerning,
+      measureGlyphBounds,
+      measurePairAdvance,
+    )
   }
   const fxCaretOffsetY = isFxStyle(editorState.draftStyle)
     ? Math.max(0, (scaledLeading - editorTextAscent) / 2)

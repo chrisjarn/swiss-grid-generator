@@ -1,6 +1,6 @@
 import { resolveBlockHeight } from "@/lib/block-height"
-import { findNearestAxisIndex } from "@/lib/grid-rhythm"
 import type { FontFamily } from "@/lib/config/fonts"
+import { buildImagePlaceholderGeometryPlan } from "@/lib/image-placeholder-plan"
 import { getOpticalTerminalCaretAdvance } from "@/lib/optical-margin"
 import { resolveTextDrawCommandRange } from "@/lib/text-draw-command"
 import type {
@@ -15,10 +15,6 @@ import type {
 import {
   applyCanvasTextConfig,
   buildCanvasFont,
-  drawCanvasText,
-  getTrackingLetterSpacing,
-  measureCanvasTextWidth,
-  measureTextPairAdvance,
   splitTextForTracking,
 } from "@/lib/text-rendering"
 import {
@@ -38,8 +34,13 @@ import {
   getTypographyLineCapacityForHeight,
   getTypographyReflowLineCapacityForHeight,
 } from "@/lib/typography-layout-plan"
+import {
+  createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
+  createResolvedFontFileGlyphBoundsMeasure,
+  createResolvedFontFilePairAdvanceMeasure,
+} from "@/lib/font-file-text-metrics-engine"
 import { sumGridColumnSpan } from "@/lib/grid-column-layout"
-import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/lib/layer-placement"
+import { resolveLayerColumnBounds } from "@/lib/layer-placement"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
 import { resolveScaledCanvasFontSize } from "./canvas-render-math.ts"
 import type { WrappedTextLine } from "./text-layout.ts"
@@ -164,56 +165,22 @@ type BuildCanvasTypographyRenderPlansArgs<BlockId extends string, StyleKey exten
     opticalKerning: boolean,
     trackingScale: number,
   ) => number
+  getTextAscent: (
+    ctx: CanvasRenderingContext2D,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ) => number
+  getTextDescent: (
+    ctx: CanvasRenderingContext2D,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ) => number
 }
 
-export function getCanvasTextAscentPx(
-  ctx: CanvasRenderingContext2D,
-  fallbackFontSizePx: number,
-): number {
-  const metrics = ctx.measureText("Hg")
-  return metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : fallbackFontSizePx * 0.8
-}
-
-export function getCanvasTextDescentPx(
-  ctx: CanvasRenderingContext2D,
-  fallbackFontSizePx: number,
-): number {
-  const metrics = ctx.measureText("Hgyp<>%")
-  return metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : fallbackFontSizePx * 0.2
-}
-
-const INVISIBLE_TEXT_ARTIFACTS_RE = /[\u00AD\u200B\u200C\u200D\uFEFF]/g
-
-type NormalizedSourceGrapheme = {
-  renderedText: string
-  sourceStart: number
-  sourceEnd: number
-}
-
-function toNormalizedSourceGraphemes(
-  sourceText: string,
-  start: number,
-  end: number,
-): NormalizedSourceGrapheme[] {
-  const slice = sourceText.slice(start, end)
-  const graphemes = splitTextForTracking(slice)
-  const normalized: NormalizedSourceGrapheme[] = []
-  let cursor = start
-
-  for (const grapheme of graphemes) {
-    const graphemeStart = cursor
-    const graphemeEnd = graphemeStart + grapheme.length
-    cursor = graphemeEnd
-    const cleanText = grapheme.replace(INVISIBLE_TEXT_ARTIFACTS_RE, "")
-    if (!cleanText) continue
-    normalized.push({
-      renderedText: cleanText,
-      sourceStart: graphemeStart,
-      sourceEnd: graphemeEnd,
-    })
-  }
-
-  return normalized
+type RenderedTextMetricSegment = BlockRenderPlan<string>["segmentLines"][number][number] & {
+  width?: number
+  ascent?: number
+  descent?: number
 }
 
 function pushCaretStop(stops: RenderedCaretStop[], index: number, x: number) {
@@ -225,6 +192,10 @@ function pushCaretStop(stops: RenderedCaretStop[], index: number, x: number) {
   stops.push({ index, x })
 }
 
+function resolveFiniteMetric(value: number | undefined, fallback: number): number {
+  return value !== undefined && Number.isFinite(value) && value >= 0 ? value : fallback
+}
+
 function parseCanvasFontSize(font: string, fallback: number): number {
   const match = font.match(/(\d+(?:\.\d+)?)px/)
   if (!match) return fallback
@@ -233,30 +204,22 @@ function parseCanvasFontSize(font: string, fallback: number): number {
 }
 
 function buildRenderedTextLines(
-  ctx: CanvasRenderingContext2D,
   sourceText: string,
   commands: TextDrawCommand[],
   segmentLines: BlockRenderPlan<string>["segmentLines"],
   fallbackFont: string,
-  opticalKerning: boolean,
 ): RenderedTextLine[] {
   const fallbackFontSize = parseCanvasFontSize(fallbackFont, 16)
-  const fallbackMetricsContextFont = ctx.font
 
   const renderedLines: RenderedTextLine[] = commands.map((command, lineIndex) => {
-    const segments = segmentLines[lineIndex] ?? []
+    const segments = (segmentLines[lineIndex] ?? []) as RenderedTextMetricSegment[]
     const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
     const lineSourceStart = commandRange.sourceStart
     const lineSourceEnd = commandRange.sourceEnd
     const lineVisibleStart = commandRange.visibleRange.start
     if (segments.length === 0) {
-      applyCanvasTextConfig(ctx, {
-        font: fallbackFont,
-        opticalKerning,
-      })
-      const metrics = ctx.measureText("Hgyp")
-      const ascent = metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : fallbackFontSize * 0.8
-      const descent = metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : fallbackFontSize * 0.2
+      const ascent = fallbackFontSize * 0.8
+      const descent = fallbackFontSize * 0.2
       return {
         sourceStart: lineSourceStart,
         sourceEnd: lineSourceEnd,
@@ -285,63 +248,32 @@ function buildRenderedTextLines(
     for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
       const segment = segments[segmentIndex]!
       const nextSegment = segments[segmentIndex + 1]
-      const segmentFont = buildCanvasFont(segment.fontFamily, segment.fontWeight, segment.italic, segment.fontSize)
-      applyCanvasTextConfig(ctx, {
-        font: segmentFont,
-        opticalKerning,
-      })
-      const segmentBounds = ctx.measureText(segment.text)
-      const metrics = ctx.measureText("Hgyp")
-      const ascent = metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : segment.fontSize * 0.8
-      const descent = metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : segment.fontSize * 0.2
+      const ascent = resolveFiniteMetric(segment.ascent, segment.fontSize * 0.8)
+      const descent = resolveFiniteMetric(segment.descent, segment.fontSize * 0.2)
+      const segmentWidth = resolveFiniteMetric(
+        segment.width,
+        Math.max(0, (nextSegment?.x ?? segment.x) - segment.x),
+      )
       lineTop = Math.min(lineTop, segment.y - ascent)
       lineBottom = Math.max(lineBottom, segment.y + descent)
-      visualLineLeft = Math.min(
-        visualLineLeft,
-        segment.x - Math.max(0, segmentBounds.actualBoundingBoxLeft),
-      )
+      visualLineLeft = Math.min(visualLineLeft, segment.x)
 
       pushCaretStop(caretStops, Math.max(lineVisibleStart, segment.start), segment.x)
 
-      const normalizedSource = toNormalizedSourceGraphemes(sourceText, segment.start, segment.end)
-      const renderedGraphemes = splitTextForTracking(segment.text)
-      const graphemeCount = Math.min(normalizedSource.length, renderedGraphemes.length)
-      let cursorX = segment.x
-      let lastGraphemeStartX = segment.x
-
-      for (let graphemeIndex = 1; graphemeIndex < graphemeCount; graphemeIndex += 1) {
-        const previousGrapheme = renderedGraphemes[graphemeIndex - 1] ?? ""
-        const currentGrapheme = renderedGraphemes[graphemeIndex] ?? ""
-        cursorX += measureTextPairAdvance(
-          ctx,
-          previousGrapheme,
-          currentGrapheme,
-          segment.fontSize,
-          opticalKerning,
-        ) + getTrackingLetterSpacing(segment.fontSize, segment.trackingScale)
-        lastGraphemeStartX = cursorX
-        pushCaretStop(caretStops, normalizedSource[graphemeIndex]?.sourceStart ?? segment.end, cursorX)
-      }
-
       let segmentRight = nextSegment?.start === segment.end
         ? nextSegment.x
-        : segment.x + measureCanvasTextWidth(
-          ctx,
-          segment.text,
-          segment.trackingScale,
-          segment.fontSize,
-          opticalKerning,
-        )
-      if (!nextSegment && graphemeCount > 0 && segment.end === lineSourceEnd) {
+        : segment.x + segmentWidth
+      if (!nextSegment && segment.end === lineSourceEnd) {
+        const renderedGraphemes = splitTextForTracking(segment.text)
         const terminalAdvance = getOpticalTerminalCaretAdvance({
-          char: renderedGraphemes[graphemeCount - 1] ?? "",
-          font: segmentFont,
+          char: renderedGraphemes[renderedGraphemes.length - 1] ?? "",
+          font: buildCanvasFont(segment.fontFamily, segment.fontWeight, segment.italic, segment.fontSize),
           fontSize: segment.fontSize,
           styleKey: segment.styleKey,
         })
-        if (terminalAdvance !== null) {
-          segmentRight = lastGraphemeStartX + terminalAdvance
-        }
+        segmentRight = terminalAdvance !== null
+          ? segment.x + terminalAdvance
+          : segmentRight
       }
       pushCaretStop(caretStops, Math.min(lineSourceEnd, segment.end), segmentRight)
     }
@@ -365,7 +297,6 @@ function buildRenderedTextLines(
     }
   })
 
-  ctx.font = fallbackMetricsContextFont
   return renderedLines
 }
 
@@ -406,51 +337,43 @@ export function buildCanvasImagePlans<Key extends string>({
     : null
 
   const createImagePlan = (position: ModulePosition, key: Key): CanvasImageRenderPlan => {
-    const columns = getImageSpan(key)
-    const rows = getImageRows(key)
-    const heightBaselines = getImageHeightBaselines(key)
-    const snapToColumns = isImageSnapToColumnsEnabled(key)
-    const snapToBaseline = isImageSnapToBaselineEnabled(key)
-    const clamped = {
-      col: clampLayerColumn(snapToColumns ? Math.round(position.col) : position.col, {
-        span: columns,
-        gridCols,
-        snapToColumns,
-      }),
-      row: clampFreePlacementRow(
-        snapToBaseline ? Math.round(position.row) : position.row,
-        maxBaselineRow,
-      ),
-    }
-    const { minCol } = resolveLayerColumnBounds({ span: columns, gridCols, snapToColumns })
-    const snappedStartCol = Math.max(minCol, Math.min(Math.max(0, gridCols - 1), Math.round(clamped.col)))
-    const x = toColumnX(clamped.col)
-    const y = baselineOriginTop + clamped.row * baselineStep + baselineStep
-    const rowStartIndex = Math.max(
-      0,
-      Math.min(gridRows - 1, findNearestAxisIndex(rowStartsInBaselines, clamped.row)),
-    )
+    const geometry = buildImagePlaceholderGeometryPlan({
+      key,
+      position,
+      getImageSpan,
+      getImageRows,
+      getImageHeightBaselines,
+      getImageRotation,
+      isImageSnapToColumnsEnabled,
+      isImageSnapToBaselineEnabled,
+      toColumnX,
+      baselineOriginTop,
+      baselineStep,
+      baselineStepForHeight: baselineStep / Math.max(scale, 0.0001),
+      maxBaselineRow,
+      gridCols,
+      rowStartsInBaselines,
+      gridRows,
+      moduleWidths,
+      moduleHeights,
+      columnStarts,
+      gutterX: gridMarginHorizontal,
+      gutterY: gridMarginVertical,
+      fallbackModuleHeight: moduleHeights[0] ?? 0,
+      outputScale: scale,
+    })
     return {
       rect: {
-        x,
-        y,
-        width: sumGridColumnSpan(moduleWidths, columnStarts, snappedStartCol, columns, gridMarginHorizontal) * scale,
-        height: resolveBlockHeight({
-          rowStart: rowStartIndex,
-          rows,
-          baselines: heightBaselines,
-          gridRows,
-          moduleHeights,
-          fallbackModuleHeight: moduleHeights[rowStartIndex] ?? moduleHeights[0] ?? 0,
-          gutterY: gridMarginVertical,
-          baselineStep: baselineStep / Math.max(scale, 0.0001),
-        }) * scale,
+        x: geometry.x,
+        y: geometry.y,
+        width: geometry.width,
+        height: geometry.height,
       },
       color: getImageColor(key),
       opacity: getImageOpacity(key),
-      rotation: getImageRotation(key),
-      rotationOriginX: x,
-      rotationOriginY: y,
+      rotation: geometry.rotation,
+      rotationOriginX: geometry.rotationOriginX,
+      rotationOriginY: geometry.rotationOriginY,
     }
   }
 
@@ -527,6 +450,8 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
   getBlockTextColor,
   getWrappedText,
   getOpticalOffset,
+  getTextAscent,
+  getTextDescent,
 }: BuildCanvasTypographyRenderPlansArgs<BlockId, StyleKey>): {
   textPlans: Map<BlockId, BlockRenderPlan<BlockId>>
   blockRects: Record<BlockId, BlockRect>
@@ -585,17 +510,18 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       fontScale,
       getBlockFontSize(key, styleKey),
     )
+    const baseCanvasFont = buildCanvasFont(
+      baseFormat.fontFamily,
+      baseFormat.fontWeight,
+      baseFormat.italic,
+      scaledBlockFontSize,
+    )
     applyCanvasTextConfig(ctx, {
-      font: buildCanvasFont(
-        baseFormat.fontFamily,
-        baseFormat.fontWeight,
-        baseFormat.italic,
-        scaledBlockFontSize,
-      ),
+      font: baseCanvasFont,
       opticalKerning,
     })
-    const firstLineHeight = getCanvasTextAscentPx(ctx, scaledBlockFontSize)
-      + getCanvasTextDescentPx(ctx, scaledBlockFontSize)
+    const firstLineHeight = getTextAscent(ctx, baseCanvasFont, scaledBlockFontSize)
+      + getTextDescent(ctx, baseCanvasFont, scaledBlockFontSize)
     const reflowCapacityHeight = blockHeight + (reflowEnabled && rowSpan > 0 ? gutterY : 0)
     const maxLinesPerColumn = Math.max(1, reflowEnabled
       ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
@@ -745,8 +671,8 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
         ),
       )
     ),
-    textAscent: ({ context, fontSize }) => getCanvasTextAscentPx(context, fontSize),
-    textDescent: ({ context, fontSize }) => getCanvasTextDescentPx(context, fontSize),
+    textAscent: ({ context, fontSize }) => getTextAscent(context, context.font, fontSize),
+    textDescent: ({ context, fontSize }) => getTextDescent(context, context.font, fontSize),
     opticalOffset: ({ context, key, styleKey, line, align, fontSize }) => (
       getOpticalOffset(
         context,
@@ -772,8 +698,14 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
     const sourceText = resolvedTextContent[plan.key] ?? ""
     const textColor = getBlockTextColor(plan.key)
     const formatRuns = resolvedFormatRunsByBlock.get(plan.key) ?? []
+    const canvasFont = buildCanvasFont(blockFont, blockFontWeight, blockItalic, plan.fontSize)
+    const measureGlyphBounds = formatRuns.length === 0
+      ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+      : undefined
+    const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<StyleKey>()
+    const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<StyleKey>()
     applyCanvasTextConfig(ctx, {
-      font: buildCanvasFont(blockFont, blockFontWeight, blockItalic, plan.fontSize),
+      font: canvasFont,
       opticalKerning,
     })
     const planFont = ctx.font
@@ -797,14 +729,15 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
         plan.fontSize,
       ),
       opticalKerning,
+      measureGlyphBounds,
+      measureResolvedGlyphBounds,
+      measureResolvedPairAdvance,
     }))
     const renderedLines = buildRenderedTextLines(
-      ctx,
       sourceText,
       plan.commands,
       segmentLines,
       planFont,
-      opticalKerning,
     )
     textPlans.set(plan.key, {
       key: plan.key,
@@ -928,27 +861,27 @@ export function drawCanvasTextPlan<Key extends string>(
 ): void {
   ctx.fillStyle = textPlan.textColor
   ctx.textAlign = "left"
+  const angle = (textPlan.blockRotation * Math.PI) / 180
+  const rotated = Math.abs(angle) > 0.0001
+  if (rotated) {
+    ctx.save()
+    ctx.translate(textPlan.rotationOriginX, textPlan.rotationOriginY)
+    ctx.rotate(angle)
+  }
   for (const lineSegments of textPlan.segmentLines) {
     for (const segment of lineSegments) {
       ctx.fillStyle = segment.color
+      const canvasFont = buildCanvasFont(segment.fontFamily, segment.fontWeight, segment.italic, segment.fontSize)
       applyCanvasTextConfig(ctx, {
-        font: buildCanvasFont(segment.fontFamily, segment.fontWeight, segment.italic, segment.fontSize),
+        font: canvasFont,
         opticalKerning: textPlan.opticalKerning,
       })
-      drawCanvasText(ctx, {
-        text: segment.text,
-        x: segment.x,
-        y: segment.y,
-        textAlign: "left",
-        trackingScale: segment.trackingScale,
-        opticalKerning: textPlan.opticalKerning,
-        fontSize: segment.fontSize,
-        blockRotation: textPlan.blockRotation,
-        rotationOrigin: {
-          x: textPlan.rotationOriginX,
-          y: textPlan.rotationOriginY,
-        },
-      })
+      ctx.fillText(
+        segment.text,
+        rotated ? segment.x - textPlan.rotationOriginX : segment.x,
+        rotated ? segment.y - textPlan.rotationOriginY : segment.y,
+      )
     }
   }
+  if (rotated) ctx.restore()
 }

@@ -234,5 +234,14 @@
       },
       "layoutMode": "single"
     }
-  ]
+  ],
+  "layoutEngine": {
+    "id": "swiss-grid-layout-v2",
+    "version": 2,
+    "textMetricsEngine": "font-file-deterministic-optical-margin-v1",
+    "opticalMarginModel": "font-file-contour-optical-margin-v1",
+    "verticalTextBoxModel": "cap-top-legacy-descent-0.2em",
+    "wrapModel": "font-file-width-tracking-optical-v1",
+    "layerOrderModel": "explicit-layer-order-v1"
+  }
 }

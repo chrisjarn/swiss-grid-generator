@@ -307,12 +307,12 @@
           "image-af134876-ca45-46f6-a73c-85b77cdfaa37": {
             "column": 2.5198125851583413,
             "row": 1,
-            "baselineOffset": 0.09147999971998111
+            "baselineOffset": 3.091479999719981
           },
           "image-18413935-44ba-4dd2-8f2b-670d3297bf94": {
             "column": 2.3687189003648115,
             "row": 2,
-            "baselineOffset": -1.5795051120771753
+            "baselineOffset": 1.4204948879228247
           }
         },
         "imageColumnSpans": {
@@ -350,5 +350,14 @@
       },
       "layoutMode": "single"
     }
-  ]
+  ],
+  "layoutEngine": {
+    "id": "swiss-grid-layout-v2",
+    "version": 2,
+    "textMetricsEngine": "font-file-deterministic-optical-margin-v1",
+    "opticalMarginModel": "font-file-contour-optical-margin-v1",
+    "verticalTextBoxModel": "cap-top-legacy-descent-0.2em",
+    "wrapModel": "font-file-width-tracking-optical-v1",
+    "layerOrderModel": "explicit-layer-order-v1"
+  }
 }

@@ -53,6 +53,10 @@ import { PREVIEW_STYLE_OPTIONS, formatPtSize, getDummyTextForStyle } from "@/lib
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import { getDefaultColumnSpan } from "@/lib/text-layout"
 import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
+import {
   BASE_BLOCK_IDS,
   DEFAULT_STYLE_ASSIGNMENTS,
   DEFAULT_TEXT_CONTENT,
@@ -183,6 +187,7 @@ interface GridPreviewProps {
   onRequestNotice?: (notice: NoticeRequest) => void
   showEditorHelpIcon?: boolean
   showPreviewHelpIndicator?: boolean
+  layoutEngine?: LayoutEngineContract
   baseFont?: FontFamily
   imageColorScheme?: ImageColorSchemeId
   documentVariableContext?: DocumentVariableContext | null
@@ -242,6 +247,7 @@ export const GridPreview = memo(function GridPreview({
   onRequestNotice,
   showEditorHelpIcon = false,
   showPreviewHelpIndicator = false,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   baseFont = DEFAULT_BASE_FONT,
   imageColorScheme = DEFAULT_IMAGE_COLOR_SCHEME_ID,
   documentVariableContext = null,
@@ -517,8 +523,11 @@ export const GridPreview = memo(function GridPreview({
 
   const {
     fontRenderEpoch,
+    metricFacesReady,
     getWrappedText,
     getOpticalOffset,
+    getTextAscent,
+    getTextDescent,
   } = usePreviewTypographyMetrics<BlockId, TypographyStyleKey>({
     showTypography,
     blockOrder,
@@ -530,6 +539,7 @@ export const GridPreview = memo(function GridPreview({
     getBlockFontSize,
     getBlockTextColor,
     getBlockTextFormatRuns,
+    layoutEngine,
     scale,
   })
 
@@ -553,6 +563,7 @@ export const GridPreview = memo(function GridPreview({
     canvasRef,
     result,
     scale,
+    typographyMetricsReady: metricFacesReady,
     getGridMetrics,
     getWrappedText,
     getBlockFontSize,
@@ -1364,6 +1375,7 @@ export const GridPreview = memo(function GridPreview({
     result,
     scale,
     fontRenderEpoch,
+    typographyMetricsReady: metricFacesReady,
     rotation,
     showTypography,
     showImagePlaceholders,
@@ -1407,6 +1419,8 @@ export const GridPreview = memo(function GridPreview({
     isSnapToBaselineEnabled,
     getWrappedText,
     getOpticalOffset,
+    getTextAscent,
+    getTextDescent,
     onOverflowLinesChange: handleOverflowLinesChange,
     onCanvasReady,
     onPlansCommit: handleTypographyPlanCommit,

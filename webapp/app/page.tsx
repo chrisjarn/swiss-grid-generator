@@ -89,6 +89,17 @@ type NoticeState = {
   message: string
 } | null
 
+type TextMetricsParityRunner = (options?: {
+  sampleLimit?: number
+  maxTextLength?: number
+}) => Promise<unknown>
+
+declare global {
+  interface Window {
+    __sggTextMetricsParity?: TextMetricsParityRunner
+  }
+}
+
 type GridReductionWarningToastState = {
   id: number
   message: string
@@ -180,6 +191,20 @@ export default function Home() {
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
   const [gridUi, dispatchGrid] = useReducer(gridUiReducer, INITIAL_GRID_UI_STATE)
   const [exportUi, dispatchExport] = useReducer(exportUiReducer, INITIAL_EXPORT_UI_STATE)
+
+  useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return undefined
+    let mounted = true
+    void import("@/lib/text-metrics-dev-report").then(({ runPresetTextMetricsParityReport }) => {
+      if (!mounted) return
+      window.__sggTextMetricsParity = runPresetTextMetricsParityReport
+    })
+    return () => {
+      mounted = false
+      delete window.__sggTextMetricsParity
+    }
+  }, [])
+
   const dispatch = useCallback((action: UiAction) => {
     if (action.type === "BATCH") {
       dispatchGrid(action)
@@ -1262,6 +1287,7 @@ export default function Home() {
         project: {
           activePageId: currentProject.activePageId,
           pages: currentProject.pages,
+          layoutEngine: currentProject.layoutEngine,
           title: normalizedMetadata.title,
           description: normalizedMetadata.description,
           author: normalizedMetadata.author,
@@ -1344,6 +1370,7 @@ export default function Home() {
           project: {
             activePageId: currentProject.activePageId,
             pages: currentProject.pages,
+            layoutEngine: currentProject.layoutEngine,
             title: normalizedMetadata.title,
             description: normalizedMetadata.description,
             author: normalizedMetadata.author,
@@ -1538,6 +1565,7 @@ export default function Home() {
       projectPages={projectPages}
       activePageId={activePageId}
       loadedPreviewLayout={loadedPreviewLayout}
+      layoutEngine={project.layoutEngine}
       requestedLayerOrderState={requestedLayerOrderState}
       requestedLayerDeleteState={requestedLayerDeleteState}
       requestedLayerEditorState={requestedLayerEditorState}

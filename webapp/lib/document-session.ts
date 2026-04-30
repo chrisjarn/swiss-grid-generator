@@ -2,6 +2,11 @@ import {
   parseProjectTour,
   type ProjectTour,
 } from "@/lib/project-tour"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  parseLayoutEngineContract,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 
 export type ProjectMetadata = {
   title: string
@@ -25,6 +30,7 @@ export type LoadedProject<Layout> = {
   activePageId: string
   pages: ProjectPage<Layout>[]
   metadata: ProjectMetadata
+  layoutEngine: LayoutEngineContract
   tour?: ProjectTour | null
 }
 
@@ -107,12 +113,14 @@ export function createDefaultProject<Layout>({
   uiSettings,
   previewLayout,
   metadata = EMPTY_PROJECT_METADATA,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   defaultPageName = DEFAULT_PAGE_NAME,
   tour = null,
 }: {
   uiSettings: Record<string, unknown>
   previewLayout: Layout | null
   metadata?: ProjectMetadata
+  layoutEngine?: LayoutEngineContract
   defaultPageName?: string
   tour?: ProjectTour | null
 }): LoadedProject<Layout> {
@@ -126,6 +134,7 @@ export function createDefaultProject<Layout>({
     activePageId: page.id,
     pages: [page],
     metadata,
+    layoutEngine,
     tour,
   }
 }
@@ -166,6 +175,7 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
 
   const payload = source as Record<string, unknown>
   const metadata = extractProjectMetadata(payload)
+  const layoutEngine = parseLayoutEngineContract(payload.layoutEngine)
   const tour = parseProjectTour(payload.tour)
   const parsedPages = parseProjectPages<Layout>(payload.pages)
 
@@ -179,6 +189,7 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
       activePageId,
       pages: parsedPages,
       metadata,
+      layoutEngine,
       tour,
     }
   }
@@ -192,6 +203,7 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
     uiSettings: payload.uiSettings as Record<string, unknown>,
     previewLayout: toLoadedPreviewLayout<Layout>(payload.previewLayout),
     metadata,
+    layoutEngine,
     tour,
   })
 }

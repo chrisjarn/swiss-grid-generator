@@ -11,9 +11,11 @@ function readText(relPath) {
 
 test("idml export rebuilds each project page through the shared resolver and page export plan", () => {
   const source = readText("lib/idml-export.ts")
-  assert.match(source, /project\.pages\.map\(\(page,\s*index\)\s*=>/)
-  assert.match(source, /buildResolvedProjectPageExportSource\(page,\s*sourcePath\)/)
+  assert.match(source, /for\s*\(const\s+\[index,\s*page\]\s+of\s+project\.pages\.entries\(\)\)/)
+  assert.match(source, /buildResolvedProjectPageExportSource\(page,\s*sourcePath,\s*\{/)
   assert.match(source, /buildPageExportPlan\(\{/)
+  assert.match(source, /layoutEngine:\s*LayoutEngineContract/)
+  assert.match(source, /layoutEngine,/)
   assert.match(source, /showBaselines:\s*resolved\.uiSettings\.showBaselines/)
   assert.match(source, /showModules:\s*resolved\.uiSettings\.showModules/)
   assert.match(source, /showMargins:\s*resolved\.uiSettings\.showMargins/)

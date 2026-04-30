@@ -33,12 +33,17 @@ export function usePersistedSectionState<SectionKey extends string>(
   defaults: Record<SectionKey, boolean>,
   options: PersistedSectionStateOptions = {},
 ) {
-  const [collapsed, setCollapsed] = useState<Record<SectionKey, boolean>>(() => (
-    readPersistedSectionState(storageKey, defaults)
-  ))
+  const [collapsed, setCollapsed] = useState<Record<SectionKey, boolean>>(defaults)
+  const [hasLoadedPersistedState, setHasLoadedPersistedState] = useState(false)
   const { resetEventName } = options
 
   useEffect(() => {
+    setCollapsed(readPersistedSectionState(storageKey, defaults))
+    setHasLoadedPersistedState(true)
+  }, [defaults, storageKey])
+
+  useEffect(() => {
+    if (!hasLoadedPersistedState) return
     if (typeof window === "undefined") return
 
     try {
@@ -46,7 +51,7 @@ export function usePersistedSectionState<SectionKey extends string>(
     } catch {
       // Ignore persistence failures and keep the in-memory UI state.
     }
-  }, [collapsed, storageKey])
+  }, [collapsed, hasLoadedPersistedState, storageKey])
 
   useEffect(() => {
     if (!resetEventName || typeof window === "undefined") return

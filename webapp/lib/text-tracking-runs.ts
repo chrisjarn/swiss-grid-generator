@@ -4,6 +4,7 @@ import {
   measureTextPairAdvance,
   normalizeTrackingScale,
   splitTextForTracking,
+  type GlyphPairAdvanceMeasure,
 } from "./text-rendering.ts"
 import { resolveTextDrawCommandRange } from "./text-draw-command.ts"
 import type { OpticalGlyphBounds } from "./optical-margin.ts"
@@ -42,6 +43,18 @@ type CanvasMeasureContext = {
 }
 
 type GlyphBoundsMeasure = (glyph: string) => OpticalGlyphBounds | null
+
+function measureTrackedGlyphWidth(
+  context: CanvasMeasureContext,
+  glyph: string,
+  measureGlyphBounds?: GlyphBoundsMeasure,
+): number {
+  const measured = measureGlyphBounds?.(glyph)
+  if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
+    return measured.advanceWidth
+  }
+  return context.measureText(glyph).width
+}
 
 function clampIndex(text: string, value: number): number {
   return Math.max(0, Math.min(text.length, Math.round(value)))
@@ -337,6 +350,7 @@ export function measureTrackedTextRangeWidth(
     fontSize,
     opticalKerning = true,
     measureGlyphBounds,
+    measurePairAdvance,
   }: {
     sourceText: string
     renderedText: string
@@ -346,6 +360,7 @@ export function measureTrackedTextRangeWidth(
     fontSize: number
     opticalKerning?: boolean
     measureGlyphBounds?: GlyphBoundsMeasure
+    measurePairAdvance?: GlyphPairAdvanceMeasure
   },
 ): number {
   const graphemes = buildTrackingSegmentsForRenderedRange({
@@ -363,9 +378,11 @@ export function measureTrackedTextRangeWidth(
   })
 
   if (!graphemes.length) return 0
-  if (graphemes.length === 1) return context.measureText(graphemes[0]?.text ?? "").width
+  if (graphemes.length === 1) {
+    return measureTrackedGlyphWidth(context, graphemes[0]?.text ?? "", measureGlyphBounds)
+  }
 
-  let width = context.measureText(graphemes[0]?.text ?? "").width
+  let width = measureTrackedGlyphWidth(context, graphemes[0]?.text ?? "", measureGlyphBounds)
   for (let index = 1; index < graphemes.length; index += 1) {
     const previous = graphemes[index - 1]
     const current = graphemes[index]
@@ -376,6 +393,7 @@ export function measureTrackedTextRangeWidth(
       fontSize,
       opticalKerning,
       measureGlyphBounds,
+      measurePairAdvance,
     )
     width += pairAdvance + getTrackingLetterSpacing(fontSize, previous?.trackingScale ?? DEFAULT_TRACKING_SCALE)
   }
@@ -393,6 +411,7 @@ export function buildPositionedTrackingSegments(
     fontSize,
     opticalKerning = true,
     measureGlyphBounds,
+    measurePairAdvance,
   }: {
     sourceText: string
     command: TextDrawCommand
@@ -402,6 +421,7 @@ export function buildPositionedTrackingSegments(
     fontSize: number
     opticalKerning?: boolean
     measureGlyphBounds?: GlyphBoundsMeasure
+    measurePairAdvance?: GlyphPairAdvanceMeasure
   },
 ): PositionedTrackingSegment[] {
   const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
@@ -437,6 +457,7 @@ export function buildPositionedTrackingSegments(
     fontSize,
     opticalKerning,
     measureGlyphBounds,
+    measurePairAdvance,
   })
   const lineStartX = textAlign === "center"
     ? command.x - lineWidth / 2
@@ -465,6 +486,7 @@ export function buildPositionedTrackingSegments(
       fontSize,
       opticalKerning,
       measureGlyphBounds,
+      measurePairAdvance,
     )
     cursorX += pairAdvance + getTrackingLetterSpacing(fontSize, previous?.trackingScale ?? baseTrackingScale)
 

@@ -14,6 +14,7 @@ type Args<Key extends string, StyleKey extends string> = {
   canvasRef: RefObject<HTMLCanvasElement | null>
   result: GridResult
   scale: number
+  typographyMetricsReady: boolean
   getGridMetrics: () => {
     moduleWidths: number[]
     moduleHeights: number[]
@@ -41,6 +42,7 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
   canvasRef,
   result,
   scale,
+  typographyMetricsReady,
   getGridMetrics,
   getWrappedText,
   getBlockFontSize,
@@ -85,6 +87,7 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
       position?: ModulePosition | null
   }): { span: number; position: ModulePosition | null } | null => {
     if (!reflow) return null
+    if (!typographyMetricsReady) return null
     const trimmed = text.trim()
     if (!trimmed) return null
     const canvas = canvasRef.current
@@ -182,5 +185,6 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
     result.settings.gridRows,
     result.typography.styles,
     scale,
+    typographyMetricsReady,
   ])
 }

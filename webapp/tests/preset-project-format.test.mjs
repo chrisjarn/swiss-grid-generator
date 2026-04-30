@@ -46,6 +46,12 @@ test("canonical preset json files use the project schema", () => {
     assert.equal(getCanonicalPresetIssue(payload), null, `${fileName} should use the canonical project schema`)
     assert.equal(payload.uiSettings, undefined, `${fileName} should not use legacy top-level uiSettings`)
     assert.equal(payload.previewLayout, undefined, `${fileName} should not use legacy top-level previewLayout`)
+    assert.equal(payload.layoutEngine?.id, "swiss-grid-layout-v2", `${fileName} should carry the promoted v2 layout engine`)
+    assert.equal(
+      payload.layoutEngine?.textMetricsEngine,
+      "font-file-deterministic-optical-margin-v1",
+      `${fileName} should use deterministic optical-margin text metrics`,
+    )
 
     for (const [index, page] of payload.pages.entries()) {
       assert.equal(typeof page?.uiSettings, "object", `${fileName} page ${index + 1} should include uiSettings`)

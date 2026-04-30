@@ -234,6 +234,7 @@ function toUserPreset(record: UserProjectRecord): LayoutPreset {
     browserPage: buildPresetBrowserPage(
       browserPage,
       `${USER_LAYOUT_SOURCE_PATH_PREFIX}/${record.id}.swissgridgenerator`,
+      parsed.layoutEngine,
     ),
   }
 }

@@ -322,7 +322,8 @@ export function PresetLayoutsPanel({
 }: Props) {
   const [userPresets, setUserPresets] = useState<LayoutPreset[]>([])
   const [openMenuPresetId, setOpenMenuPresetId] = useState<string | null>(null)
-  const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<PresetGroupCategory, boolean>>>(readCollapsedPresetGroups)
+  const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<PresetGroupCategory, boolean>>>({})
+  const [hasLoadedCollapsedGroups, setHasLoadedCollapsedGroups] = useState(false)
 
   useEffect(() => {
     const subscription = userLayoutPresetQuery.subscribe({
@@ -339,14 +340,20 @@ export function PresetLayoutsPanel({
   }, [])
 
   useEffect(() => {
+    setCollapsedGroups(readCollapsedPresetGroups())
+    setHasLoadedCollapsedGroups(true)
+  }, [])
+
+  useEffect(() => {
     if (!openMenuPresetId) return
     if (userPresets.some((preset) => preset.id === openMenuPresetId)) return
     setOpenMenuPresetId(null)
   }, [openMenuPresetId, userPresets])
 
   useEffect(() => {
+    if (!hasLoadedCollapsedGroups) return
     window.localStorage.setItem(PRESET_GROUP_COLLAPSED_STORAGE_KEY, JSON.stringify(collapsedGroups))
-  }, [collapsedGroups])
+  }, [collapsedGroups, hasLoadedCollapsedGroups])
 
   const visibleGroups = useMemo(() => (
     [...LAYOUT_PRESET_GROUPS]

@@ -132,9 +132,9 @@ test("canvas preview loads inline format-run fonts before measuring text", () =>
   const metricsSource = readText("hooks/usePreviewTypographyMetrics.ts")
   assert.match(previewSource, /usePreviewTypographyMetrics<BlockId,\s*TypographyStyleKey>\(\{[\s\S]*?getBlockTextColor,[\s\S]*?getBlockTextFormatRuns,/)
   assert.match(metricsSource, /getBlockTextFormatRuns:\s*\(key:\s*Key,\s*color:\s*string\)\s*=>\s*TextFormatRun<StyleKey,\s*FontFamily>\[\]/)
-  assert.match(metricsSource, /getBlockTextFormatRuns\(key,\s*textColor\)\.forEach/)
-  assert.match(metricsSource, /isFontFamily\(run\.fontFamily\)/)
-  assert.match(metricsSource, /run\.styleKey\s*\?\?\s*styleKey/)
+  assert.match(metricsSource, /textFormatRuns:\s*getBlockTextFormatRuns\(key,\s*textColor\)/)
+  assert.match(metricsSource, /collectBrowserFontLoadSpecs\(fontBlocks\)/)
+  assert.match(metricsSource, /collectFontFileMetricFacesFromBlocks\(fontBlocks\)/)
 })
 
 test("pdf font registry falls back to bundled local assets when remote discovery fails", () => {

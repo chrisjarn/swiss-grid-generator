@@ -9,33 +9,32 @@ function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
 }
 
-test("project transfer utility supports plain json and gzip archives", () => {
-  const source = readText("lib/project-transfer.ts")
-  assert.match(source, /gzipSync/)
-  assert.match(source, /gunzipSync/)
-  assert.match(source, /PROJECT_JSON_EXTENSION = "\.json"/)
-  assert.match(source, /PROJECT_ARCHIVE_EXTENSION = "\.swissgridgenerator"/)
-  assert.match(source, /isCompressedProjectBytes/)
-  assert.match(source, /parseProjectTransferPayloadBytes/)
-  assert.match(source, /buildProjectTransferPayload/)
-  assert.match(source, /encodeProjectTransferPayload/)
-})
+test("project transfers carry an explicit deterministic layout engine contract", () => {
+  const transferSource = readText("lib/project-transfer.ts")
+  const sessionSource = readText("lib/document-session.ts")
+  const contractSource = readText("lib/layout-engine-contract.ts")
+  const manifestSource = readText("lib/presets/generated-manifest.ts")
 
-test("user library stores compressed project archives", () => {
-  const source = readText("lib/user-layout-library.ts")
-  assert.match(source, /projectCompression\?: "gzip"/)
-  assert.match(source, /projectArchive\?: ArrayBuffer/)
-  assert.match(source, /record\.projectArchive = toArrayBuffer\(encoded\.bytes\)/)
-  assert.match(source, /projectCompression: "gzip"/)
-  assert.match(source, /projectArchive: toArrayBuffer\(encoded\.bytes\)/)
-  assert.match(source, /parseProjectTransferPayloadBytes\(record\.projectArchive\)/)
-  assert.match(source, /\.swissgridgenerator/)
-})
-
-test("file import detects compressed and uncompressed project files", () => {
-  const controllerSource = readText("hooks/useProjectController.ts")
-  const pageSource = readText("app/page.tsx")
-  assert.match(controllerSource, /parseProjectTransferPayloadBytes/)
-  assert.match(controllerSource, /reader\.readAsArrayBuffer\(file\)/)
-  assert.match(pageSource, /accept="application\/json,application\/gzip,.json,.swissgridgenerator"/)
+  assert.match(contractSource, /CURRENT_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(contractSource, /LEGACY_BROWSER_COMPAT_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(contractSource, /CURRENT_LAYOUT_ENGINE_CONTRACT:\s*LayoutEngineContract\s*=\s*[\s\S]*?DETERMINISTIC_OPTICAL_MARGIN_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(contractSource, /textMetricsEngine:\s*"font-file-deterministic-optical-margin-v1"/)
+  assert.match(contractSource, /parseLayoutEngineContract\(source:[\s\S]*?return CURRENT_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(contractSource, /verticalTextBoxModel:\s*"cap-top-legacy-descent-0\.2em"/)
+  assert.match(contractSource, /wrapModel:\s*"font-file-width-tracking-optical-v1"/)
+  assert.match(contractSource, /layerOrderModel:\s*"explicit-layer-order-v1"/)
+  assert.match(transferSource, /layoutEngine:\s*project\.layoutEngine\s*\?\?\s*CURRENT_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(sessionSource, /layoutEngine:\s*LayoutEngineContract/)
+  assert.match(sessionSource, /layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT/)
+  assert.match(sessionSource, /parseLayoutEngineContract\(payload\.layoutEngine\)/)
+  assert.match(
+    sessionSource,
+    /createDefaultProject\(\{[\s\S]*?layoutEngine,[\s\S]*?tour,/,
+    "legacy single-page imports should use the parsed layout contract policy",
+  )
+  assert.match(
+    manifestSource,
+    /\\"layoutEngine\\":\{\\"id\\":\\"swiss-grid-layout-v2\\",\\"version\\":2,\\"textMetricsEngine\\":\\"font-file-deterministic-optical-margin-v1\\"/,
+    "bundled presets should explicitly carry the promoted v2 layout contract",
+  )
 })

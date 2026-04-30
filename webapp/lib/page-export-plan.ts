@@ -32,7 +32,12 @@ import {
 } from "@/lib/grid-column-layout"
 import { resolvePreviewColumnX } from "@/lib/preview-column-snap"
 import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/lib/layer-placement"
-import { getDefaultColumnSpan, wrapTextDetailed } from "@/lib/text-layout"
+import { buildImagePlaceholderGeometryPlan } from "@/lib/image-placeholder-plan"
+import {
+  getDefaultColumnSpan,
+  wrapTextDetailed,
+  type TextWrapDecisionTrace,
+} from "@/lib/text-layout"
 import { mapTextBlockPositionsToAbsolute } from "@/lib/text-block-position"
 import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacity"
 import {
@@ -63,11 +68,18 @@ import {
 } from "@/lib/text-tracking-runs"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
+import { createTextMetricsService } from "@/lib/text-metrics-service"
 import {
-  createTextMetricsService,
-  measureCanvasTextAscent,
-  measureCanvasTextDescent,
-} from "@/lib/text-metrics-service"
+  createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
+  createResolvedFontFileGlyphBoundsMeasure,
+  createResolvedFontFilePairAdvanceMeasure,
+} from "@/lib/font-file-text-metrics-engine"
+import type { TextMetricsEngineFactory } from "@/lib/text-metrics-engine"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  resolveLayoutTextMetricsEngineFactory,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 import {
   resolveDocumentVariableContent,
   type DocumentVariableContext,
@@ -154,6 +166,16 @@ type BuildPageExportPlanArgs = {
   showMargins: boolean
   showImagePlaceholders: boolean
   showTypography: boolean
+  layoutEngine?: LayoutEngineContract
+  textMetricsEngineFactory?: TextMetricsEngineFactory<TypographyStyleKey, FontFamily>
+  textWrapTraceCollector?: (trace: PageExportTextWrapTrace) => void
+}
+
+export type PageExportTextWrapTrace = TextWrapDecisionTrace & {
+  key: BlockId
+  styleKey: TypographyStyleKey
+  canvasFont: string
+  maxWidth: number
 }
 
 type ExportTextContext = {
@@ -223,6 +245,9 @@ export function buildPageExportPlan({
   showMargins,
   showImagePlaceholders,
   showTypography,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  textMetricsEngineFactory,
+  textWrapTraceCollector,
 }: BuildPageExportPlanArgs): PageExportPlan {
   const sourceWidth = result.pageSizePt.width
   const sourceHeight = result.pageSizePt.height
@@ -361,58 +386,46 @@ export function buildPageExportPlan({
       const manual = imageModulePositions[key]
       if (!manual || typeof manual.col !== "number" || typeof manual.row !== "number") continue
 
-      const spanRaw = imageColumnSpans[key] ?? 1
-      const span = Math.max(1, Math.min(gridCols, spanRaw))
       const height = normalizeHeightMetrics({
         rows: imageRowSpans[key],
         baselines: imageHeightBaselines[key],
         gridRows,
       })
-      const snapToColumns = imageSnapToColumns[key] !== false
-      const snapToBaseline = imageSnapToBaseline[key] !== false
-      const rows = height.rows
-      const heightBaselines = height.baselines
-      const col = clampLayerColumn(snapToColumns ? Math.round(manual.col) : manual.col, {
-        span,
-        gridCols,
-        snapToColumns,
-      })
-      const row = clampFreePlacementRow(
-        snapToBaseline ? Math.round(manual.row) : manual.row,
+      const geometry = buildImagePlaceholderGeometryPlan({
+        key,
+        position: manual,
+        getImageSpan: (imageKey) => imageColumnSpans[imageKey] ?? 1,
+        getImageRows: () => height.rows,
+        getImageHeightBaselines: () => height.baselines,
+        getImageRotation: (imageKey) => imageRotations[imageKey] ?? 0,
+        isImageSnapToColumnsEnabled: (imageKey) => imageSnapToColumns[imageKey] !== false,
+        isImageSnapToBaselineEnabled: (imageKey) => imageSnapToBaseline[imageKey] !== false,
+        toColumnX: (col) => contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep),
+        baselineOriginTop,
+        baselineStep,
+        baselineStepForHeight: gridUnit,
         maxBaselineRow,
-      )
-      const rowStartIndex = Math.max(
-        0,
-        Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(rowStartsInBaselines, row)),
-      )
-      const { minCol } = resolveLayerColumnBounds({ span, gridCols, snapToColumns })
-      const snappedStartCol = Math.max(minCol, Math.min(Math.max(0, gridCols - 1), Math.round(col)))
-      const rawRotation = imageRotations[key]
-      const rotation = typeof rawRotation === "number" && Number.isFinite(rawRotation)
-        ? clampRotation(rawRotation)
-        : 0
-      const x = contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep)
-      const y = baselineOriginTop + row * baselineStep + baselineStep
+        gridCols,
+        rowStartsInBaselines,
+        gridRows,
+        moduleWidths,
+        moduleHeights,
+        columnStarts: colStarts,
+        gutterX: gridMarginHorizontal,
+        gutterY: gridMarginVertical,
+        fallbackModuleHeight: modH,
+      })
       imagePlans.push({
         key,
-        x,
-        y,
-        width: sumGridColumnSpan(moduleWidths, colStarts, snappedStartCol, span, gridMarginHorizontal),
-        height: resolveBlockHeight({
-          rowStart: rowStartIndex,
-          rows,
-          baselines: heightBaselines,
-          gridRows,
-          moduleHeights,
-          fallbackModuleHeight: modH,
-          gutterY: gridMarginVertical,
-          baselineStep: gridUnit,
-        }),
+        x: geometry.x,
+        y: geometry.y,
+        width: geometry.width,
+        height: geometry.height,
         fillColor: parseHexColor(resolveImageSchemeColor(imageColors[key], imageColorScheme)) ?? fallbackImageColor,
         opacity: normalizeImagePlaceholderOpacity(imageOpacities[key]),
-        rotation,
-        rotationOriginX: x,
-        rotationOriginY: y,
+        rotation: geometry.rotation,
+        rotationOriginX: geometry.rotationOriginX,
+        rotationOriginY: geometry.rotationOriginY,
       })
     }
   }
@@ -454,7 +467,9 @@ export function buildPageExportPlan({
   )
 
   const textMeasureContext = createTextMeasureContext()
-  const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>()
+  const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
+    metricsEngineFactory: textMetricsEngineFactory ?? resolveLayoutTextMetricsEngineFactory(layoutEngine),
+  })
   textMetrics.clearCaches()
 
   const getBlockSpan = (key: BlockId) => {
@@ -636,15 +651,11 @@ export function buildPageExportPlan({
       baseFormat.italic,
       resolveFontSize(styleKey),
     )
-    const firstLineHeight = measureCanvasTextAscent(
-      textMeasureContext,
-      baseCanvasFont,
-      resolveFontSize(styleKey),
-    ) + measureCanvasTextDescent(
-      textMeasureContext,
-      baseCanvasFont,
-      resolveFontSize(styleKey),
-    )
+    const baseFontSize = resolveFontSize(styleKey)
+    const firstLineHeight = textMeasureContext
+      ? textMetrics.getTextAscent(textMeasureContext, baseCanvasFont, baseFontSize)
+        + textMetrics.getTextDescent(textMeasureContext, baseCanvasFont, baseFontSize)
+      : baseFontSize
     const reflowCapacityHeight = blockHeight + (reflowEnabled && rowSpan > 0 ? gridMarginVertical : 0)
     const maxLinesPerColumn = Math.max(1, reflowEnabled
       ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
@@ -875,7 +886,7 @@ export function buildPageExportPlan({
           measureWidth,
         }
       },
-      wrapText: ({ context, text, maxWidth, hyphenate }) => {
+      wrapText: ({ context, key, styleKey, text, maxWidth, hyphenate }) => {
         if (!textMeasureContext) {
           return wrapTextDetailed(text, maxWidth, hyphenate, context.measureWidth)
         }
@@ -894,12 +905,21 @@ export function buildPageExportPlan({
           context.baseFormat,
           context.formatRuns,
           context.resolveFontSize,
+          textWrapTraceCollector
+            ? (trace) => textWrapTraceCollector({
+                ...trace,
+                key,
+                styleKey,
+                canvasFont: context.canvasFont,
+                maxWidth,
+              })
+            : undefined,
         )
       },
       textAscent: ({ context, fontSize }) =>
-        measureCanvasTextAscent(textMeasureContext, context.canvasFont, fontSize),
+        textMeasureContext ? textMetrics.getTextAscent(textMeasureContext, context.canvasFont, fontSize) : fontSize * 0.8,
       textDescent: ({ context, fontSize }) =>
-        measureCanvasTextDescent(textMeasureContext, context.canvasFont, fontSize),
+        textMeasureContext ? textMetrics.getTextDescent(textMeasureContext, context.canvasFont, fontSize) : fontSize * 0.2,
       opticalOffset: ({ context, styleKey, line, align, fontSize }) =>
         textMeasureContext
           ? textMetrics.getOpticalOffset(
@@ -935,8 +955,15 @@ export function buildPageExportPlan({
 
   for (const textPlan of textPlans) {
     if (!textMeasureContext) continue
+    const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
+    const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []
+    const measureGlyphBounds = formatRuns.length === 0
+      ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+      : undefined
+    const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
+    const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
     applyCanvasTextConfig(textMeasureContext, {
-      font: buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize),
+      font: canvasFont,
       opticalKerning: textPlan.opticalKerning,
     })
     textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
@@ -950,11 +977,14 @@ export function buildPageExportPlan({
         styleKey: textPlan.styleKey,
         color: getResolvedBlockTextColor(textPlan.key),
       },
-      formatRuns: resolvedFormatRunsByBlock.get(textPlan.key) ?? [],
+      formatRuns,
       baseTrackingScale: textPlan.trackingScale,
       trackingRuns: textPlan.trackingRuns,
       resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
       opticalKerning: textPlan.opticalKerning,
+      measureGlyphBounds,
+      measureResolvedGlyphBounds,
+      measureResolvedPairAdvance,
     }))
     textPlan.segmentLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingSegments(textMeasureContext, {
       sourceText: textPlan.sourceText,
@@ -967,11 +997,14 @@ export function buildPageExportPlan({
         styleKey: textPlan.styleKey,
         color: getResolvedBlockTextColor(textPlan.key),
       },
-      formatRuns: resolvedFormatRunsByBlock.get(textPlan.key) ?? [],
+      formatRuns,
       baseTrackingScale: textPlan.trackingScale,
       trackingRuns: textPlan.trackingRuns,
       resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
       opticalKerning: textPlan.opticalKerning,
+      measureGlyphBounds,
+      measureResolvedGlyphBounds,
+      measureResolvedPairAdvance,
     }))
   }
 

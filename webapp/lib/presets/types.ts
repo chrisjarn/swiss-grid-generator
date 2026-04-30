@@ -1,6 +1,7 @@
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import type { FontFamily } from "@/lib/config/fonts"
 import type { GridResult, CanvasRatioKey } from "@/lib/grid-calculator"
+import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 
 export type LayoutPresetUiSettings = Record<string, unknown> & {
   canvasRatio: CanvasRatioKey
@@ -50,6 +51,7 @@ export type LayoutPresetBrowserPage = {
   baseFont: FontFamily
   imageColorScheme: ImageColorSchemeId
   resolvedCanvasBackground: string | null
+  layoutEngine: LayoutEngineContract
 }
 
 export type LayoutPreset = {

@@ -85,7 +85,7 @@ test("export actions support pdf, svg, idml, and json formats with format-specif
   assert.match(source, /if\s*\(exportFormatDraft\s*===\s*"json"\)\s*\{[\s\S]*?saveJSON\(filename,\s*normalizedMetadata,\s*jsonCompressionEnabledDraft\)/)
   assert.match(source, /if\s*\(exportFormatDraft\s*===\s*"idml"\)\s*\{[\s\S]*?await\s+exportIDML\(selectedProject,\s*filename\)/)
   assert.match(source, /await\s+exportPDF\(resolvedPages,\s*filename,/)
-  assert.match(source, /await\s+exportSVG\(resolvedPages,\s*filename,\s*normalizedRange\.fromPage\)/)
+  assert.match(source, /await\s+exportSVG\(resolvedPages,\s*filename,\s*normalizedRange\.fromPage,\s*currentProjectSnapshot\.layoutEngine\)/)
   assert.match(source, /const\s+defaultRange\s*=\s*\{\s*fromPage:\s*1,\s*toPage:\s*projectPageCount\s*\}/)
   assert.match(source, /author:\s*trimmedAuthor,/)
   assert.match(source, /createdAt:\s*normalizedCreatedAt,/)

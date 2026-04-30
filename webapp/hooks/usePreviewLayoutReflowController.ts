@@ -10,6 +10,10 @@ import type { GridResult } from "@/lib/grid-calculator"
 import { buildAxisStarts, resolveAxisSizes } from "@/lib/grid-rhythm"
 import { resolveGridColumnStarts } from "@/lib/grid-column-layout"
 import {
+  createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
+  createLoadedFontFilePairAdvanceMeasureForCanvasFont,
+} from "@/lib/font-file-text-metrics-engine"
+import {
   applyCanvasTextConfig,
   buildCanvasFont,
   measureCanvasTextWidth,
@@ -143,8 +147,11 @@ export function usePreviewLayoutReflowController<Key extends string>({
       if (!canvas) return 0
       const ctx = canvas.getContext("2d")
       if (!ctx) return 0
+      const canvasFont = buildCanvasFont(style.fontFamily, style.fontWeight, style.italic, style.size)
+      const measureGlyphBounds = createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+      const measurePairAdvance = createLoadedFontFilePairAdvanceMeasureForCanvasFont(canvasFont) ?? undefined
       applyCanvasTextConfig(ctx, {
-        font: buildCanvasFont(style.fontFamily, style.fontWeight, style.italic, style.size),
+        font: canvasFont,
         opticalKerning: style.opticalKerning,
       })
       if (range && sourceText && style.trackingRuns.length > 0) {
@@ -156,9 +163,19 @@ export function usePreviewLayoutReflowController<Key extends string>({
           runs: normalizeTextTrackingRuns(sourceText, style.trackingRuns, style.trackingScale),
           fontSize: style.size,
           opticalKerning: style.opticalKerning,
+          measureGlyphBounds,
+          measurePairAdvance,
         })
       }
-      return measureCanvasTextWidth(ctx, text, style.trackingScale, style.size, style.opticalKerning)
+      return measureCanvasTextWidth(
+        ctx,
+        text,
+        style.trackingScale,
+        style.size,
+        style.opticalKerning,
+        measureGlyphBounds,
+        measurePairAdvance,
+      )
     })
   ), [canvasRef])
 

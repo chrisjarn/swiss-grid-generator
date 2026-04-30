@@ -46,6 +46,12 @@ import { getDefaultColumnSpan } from "@/lib/text-layout"
 import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
 import type { PreviewLayoutState, TextAlignMode, TextVerticalAlignMode } from "@/lib/types/preview-layout"
 import { createTextMetricsService } from "@/lib/text-metrics-service"
+import {
+  collectFontFileMetricFacesFromBlocks,
+  type FontFileMetricFace,
+  type FontFileMetricFaceBlock,
+} from "@/lib/font-file-text-metrics-engine"
+import { resolveLayoutTextMetricsEngineFactory } from "@/lib/layout-engine-contract"
 
 type BlockId = string
 type TypographyStyleKey = string
@@ -236,6 +242,33 @@ export function collectPresetThumbnailFontLoadSpecs(page: LayoutPresetBrowserPag
   }
 
   return [...specs]
+}
+
+export function collectPresetThumbnailFontMetricFaces(page: LayoutPresetBrowserPage): FontFileMetricFace[] {
+  const layout = getThumbnailLayout(page)
+  const blockOrder = getResolvedBlockOrder(layout)
+  if (!blockOrder.length) return []
+
+  const styleDefinitions = getStyleDefinitions(page)
+  const styleAssignments = layout?.styleAssignments ?? {}
+  const blockTextFormatRuns = layout?.blockTextFormatRuns ?? {}
+  const blocks: FontFileMetricFaceBlock<TypographyStyleKey>[] = []
+
+  for (const key of blockOrder) {
+    const styleKey = getStyleKeyForBlock(key, styleAssignments, styleDefinitions)
+    const style = styleDefinitions[styleKey]
+    if (!style) continue
+    const { font, variant } = getResolvedFontVariantForBlock(key, styleKey, styleDefinitions, page.baseFont, layout)
+    blocks.push({
+      styleKey,
+      fontFamily: font,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+      textFormatRuns: blockTextFormatRuns[key],
+    })
+  }
+
+  return collectFontFileMetricFacesFromBlocks(blocks)
 }
 
 export function drawPresetThumbnailToCanvas(
@@ -507,7 +540,9 @@ export function drawPresetThumbnailToCanvas(
   })
 
   if (blockOrder.length > 0) {
-    const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>()
+    const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
+      metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(page.layoutEngine),
+    })
     textMetrics.clearCaches()
 
     const typographyRenderState = buildCanvasTypographyRenderPlans<BlockId, TypographyStyleKey>({
@@ -621,6 +656,12 @@ export function drawPresetThumbnailToCanvas(
           fontSize,
           opticalKerning,
         )
+      ),
+      getTextAscent: (canvasContext, canvasFont, fallbackFontSize) => (
+        textMetrics.getTextAscent(canvasContext, canvasFont, fallbackFontSize)
+      ),
+      getTextDescent: (canvasContext, canvasFont, fallbackFontSize) => (
+        textMetrics.getTextDescent(canvasContext, canvasFont, fallbackFontSize)
       ),
     })
     const orderedKeys = buildOrderedCanvasLayerKeys(

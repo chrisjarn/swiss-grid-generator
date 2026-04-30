@@ -445,13 +445,36 @@ Known font values are defined centrally in `webapp/lib/config/fonts.ts`.
 
 Note: this affects only the rendered typography on the preview/export canvas; UI chrome fonts are unchanged.
 
-### Font Load + Metric Stability
+### Deterministic Text Metrics
 
-Preview text measurement waits for active font faces to load before finalizing wrap metrics:
-- `document.fonts.load(...)` is requested for active block font/style/size combinations.
-- On completion, text-measure caches are cleared and typography is redrawn.
+Text layout planning uses the deterministic font-file metrics engine, not browser canvas text metrics. The same engine is used for:
+- live preview typography planning
+- preset thumbnails
+- PDF, SVG, and IDML export plans
 
-This prevents fallback-font measurements from producing stale wraps when changing to fonts like `Bodoni Moda`.
+Canvas remains an output surface. Browser `measureText(...)` values are diagnostic evidence only and must not be the production source of wrapping, inline range width, export command planning, or thumbnail layout.
+
+The production engine resolves widths from loaded font files with the authored canvas font string carried through every request:
+
+```
+textMetricsEngine = font-file-deterministic-v1
+```
+
+`createTextMetricsService(...)` requires an explicit metrics engine factory so new callers cannot silently fall back to browser canvas metrics.
+
+Preview still preloads active font faces and clears caches after font availability changes. This keeps drawn glyphs and available outline metrics synchronized, but the layout decisions come from the font-file engine.
+
+Saved project transfers include a `layoutEngine` contract. The current contract is:
+
+```
+id = swiss-grid-layout-v1
+textMetricsEngine = font-file-deterministic-v1
+verticalTextBoxModel = cap-top-legacy-descent-0.2em
+wrapModel = font-file-width-tracking-optical-v1
+layerOrderModel = explicit-layer-order-v1
+```
+
+This contract is part of the layout semantics. Future layout math changes must branch or migrate through this field instead of silently changing how existing saved files are interpreted.
 
 ### PDF Font Embedding Parity
 
@@ -459,13 +482,13 @@ PDF export embeds selected Google font assets before layout/draw:
 - `regular`, `bold`, `italic`, `bolditalic` are registered per family.
 - If local files are missing, registry can fall back to Google Fonts repository sources.
 
-This keeps preview/PDF wrap and anchor calculations aligned across font choices.
+The export plan is computed before drawing with the same deterministic metrics pipeline as live preview. PDF then renders vector text from that plan; SVG and IDML freeze typography to outline geometry for downstream fidelity.
 
 Export rendering note:
 - All export targets remain vector-based.
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry.
 - `SVG` and `IDML` resolve typography to frozen outline geometry for downstream fidelity.
-- `PDF` keeps vector text drawing aligned with preview metrics rather than forcing all text into outlines.
+- `PDF` keeps vector text drawing aligned with the deterministic export plan rather than forcing all text into outlines.
 
 ---
 

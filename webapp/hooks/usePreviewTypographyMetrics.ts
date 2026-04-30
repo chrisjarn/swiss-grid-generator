@@ -1,6 +1,20 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { isFontFamily, type FontFamily } from "@/lib/config/fonts"
+import { type FontFamily } from "@/lib/config/fonts"
+import {
+  collectBrowserFontLoadSpecs,
+  preloadBrowserFontSpecs,
+} from "@/lib/browser-font-loading"
+import {
+  areFontFileMetricFacesLoaded,
+  collectFontFileMetricFacesFromBlocks,
+  preloadFontFileMetricFaces,
+} from "@/lib/font-file-text-metrics-engine"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  resolveLayoutTextMetricsEngineFactory,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 import type { TextFormatRun } from "@/lib/text-format-runs"
 import { createTextMetricsService } from "@/lib/text-metrics-service"
 
@@ -15,6 +29,7 @@ type Args<Key extends string, StyleKey extends string> = {
   getBlockFontSize: (key: Key, styleKey: StyleKey) => number
   getBlockTextColor: (key: Key) => string
   getBlockTextFormatRuns: (key: Key, color: string) => TextFormatRun<StyleKey, FontFamily>[]
+  layoutEngine?: LayoutEngineContract
   scale: number
 }
 
@@ -29,17 +44,59 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   getBlockFontSize,
   getBlockTextColor,
   getBlockTextFormatRuns,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   scale,
 }: Args<Key, StyleKey>) {
-  const textMetricsRef = useRef(createTextMetricsService<StyleKey, FontFamily>())
+  const textMetricsRef = useRef(createTextMetricsService<StyleKey, FontFamily>({
+    metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
+  }))
   const [fontRenderEpoch, setFontRenderEpoch] = useState(0)
 
   const clearCaches = useCallback(() => {
     textMetricsRef.current.clearCaches()
   }, [])
 
+  const fontBlocks = useMemo(() => {
+    if (!showTypography) return []
+    return blockOrder.flatMap((key) => {
+      const styleKey = getStyleKeyForBlock(key)
+      const style = typographyStyles[styleKey]
+      if (!style) return []
+      const textColor = getBlockTextColor(key)
+      return [{
+        key,
+        styleKey,
+        fontFamily: getBlockFont(key),
+        fontWeight: getBlockFontWeight(key),
+        italic: isBlockItalic(key),
+        fontSize: getBlockFontSize(key, styleKey) * scale,
+        textFormatRuns: getBlockTextFormatRuns(key, textColor),
+        resolveRunFontSize: (runStyleKey: StyleKey) => getBlockFontSize(key, runStyleKey) * scale,
+      }]
+    })
+  }, [
+    blockOrder,
+    getBlockFont,
+    getBlockFontWeight,
+    getBlockFontSize,
+    getBlockTextColor,
+    getBlockTextFormatRuns,
+    getStyleKeyForBlock,
+    isBlockItalic,
+    scale,
+    showTypography,
+    typographyStyles,
+  ])
+
+  const specs = useMemo(() => collectBrowserFontLoadSpecs(fontBlocks), [fontBlocks])
+  const metricFaces = useMemo(() => collectFontFileMetricFacesFromBlocks(fontBlocks), [fontBlocks])
+  const metricFacesReady = !showTypography || areFontFileMetricFacesLoaded(metricFaces)
+
   useEffect(() => {
     if (!showTypography) return
+    textMetricsRef.current = createTextMetricsService<StyleKey, FontFamily>({
+      metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
+    })
     clearCaches()
   }, [
     blockOrder,
@@ -51,41 +108,24 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
     getBlockTextFormatRuns,
     getStyleKeyForBlock,
     isBlockItalic,
+    layoutEngine,
     scale,
     showTypography,
     typographyStyles,
   ])
 
   useEffect(() => {
-    if (!showTypography || typeof document === "undefined" || !("fonts" in document)) return
+    if (!showTypography) return
 
     let cancelled = false
-    const fontFaceSet = document.fonts
-    const specs = new Set<string>()
-    for (const key of blockOrder) {
-      const styleKey = getStyleKeyForBlock(key)
-      const style = typographyStyles[styleKey]
-      if (!style) continue
-      const fontFamily = getBlockFont(key)
-      const fontWeight = String(getBlockFontWeight(key))
-      const fontStyle = isBlockItalic(key) ? "italic" : "normal"
-      const fontSize = getBlockFontSize(key, styleKey) * scale
-      specs.add(`${fontStyle} ${fontWeight} ${fontSize}px "${fontFamily}"`)
-      const textColor = getBlockTextColor(key)
-      getBlockTextFormatRuns(key, textColor).forEach((run) => {
-        if (!isFontFamily(run.fontFamily)) return
-        const runStyleKey = run.styleKey ?? styleKey
-        const runFontStyle = (run.italic ?? isBlockItalic(key)) ? "italic" : "normal"
-        const runFontWeight = String(run.fontWeight ?? getBlockFontWeight(key))
-        const runFontSize = getBlockFontSize(key, runStyleKey) * scale
-        specs.add(`${runFontStyle} ${runFontWeight} ${runFontSize}px "${run.fontFamily}"`)
-      })
-    }
 
-    if (!specs.size) return
+    if (!specs.length && !metricFaces.length) return
 
     void Promise
-      .allSettled([...specs].map((spec) => fontFaceSet.load(spec)))
+      .all([
+        preloadBrowserFontSpecs(specs),
+        preloadFontFileMetricFaces(metricFaces),
+      ])
       .then(() => {
         if (cancelled) return
         clearCaches()
@@ -96,23 +136,18 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
       cancelled = true
     }
   }, [
-    blockOrder,
     clearCaches,
-    getBlockFont,
-    getBlockFontWeight,
-    getBlockFontSize,
-    getBlockTextColor,
-    getBlockTextFormatRuns,
-    getStyleKeyForBlock,
-    isBlockItalic,
-    scale,
+    metricFaces,
+    specs,
     showTypography,
-    typographyStyles,
   ])
 
   return {
     fontRenderEpoch,
+    metricFacesReady,
     getWrappedText: textMetricsRef.current.getWrappedText,
     getOpticalOffset: textMetricsRef.current.getOpticalOffset,
+    getTextAscent: textMetricsRef.current.getTextAscent,
+    getTextDescent: textMetricsRef.current.getTextDescent,
   }
 }

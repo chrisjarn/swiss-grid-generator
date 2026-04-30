@@ -136,7 +136,7 @@ function parseLayoutPreset(
     author,
     createdAt: project.metadata.createdAt,
     projectSourceJson: sourceJson,
-    browserPage: buildPresetBrowserPage(browserPage, sourcePath),
+    browserPage: buildPresetBrowserPage(browserPage, sourcePath, project.layoutEngine),
   }
 }
 

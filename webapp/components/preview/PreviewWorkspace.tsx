@@ -24,6 +24,7 @@ import type { HeaderAction, HeaderItem } from "@/hooks/useHeaderActions"
 import type { GridResult } from "@/lib/grid-calculator"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import type { LayoutPreset } from "@/lib/presets"
+import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
 import { ProjectTourOverlay } from "@/components/preview/ProjectTourOverlay"
 import { LayoutOpenTooltipOverlay } from "@/components/preview/LayoutOpenTooltipOverlay"
@@ -87,6 +88,7 @@ type Props = {
   projectPages: PreviewProjectPage[]
   activePageId: string
   loadedPreviewLayout: { token: number; layout: PreviewLayoutState } | null
+  layoutEngine: LayoutEngineContract
   requestedLayerOrderState: { token: number; order: string[] } | null
   requestedLayerDeleteState: { token: number; target: string } | null
   requestedLayerEditorState: { token: number; target: string } | null
@@ -233,6 +235,7 @@ export function PreviewWorkspace({
   projectPages,
   activePageId,
   loadedPreviewLayout,
+  layoutEngine,
   requestedLayerOrderState,
   requestedLayerDeleteState,
   requestedLayerEditorState,
@@ -501,6 +504,7 @@ export function PreviewWorkspace({
               showTypography={showTypography}
               showRolloverInfo={false}
               smartTextEditZoomEnabled={smartTextZoomEnabled}
+              layoutEngine={layoutEngine}
               baseFont={baseFont}
               imageColorScheme={imageColorScheme}
               documentVariableContext={documentVariableContext}

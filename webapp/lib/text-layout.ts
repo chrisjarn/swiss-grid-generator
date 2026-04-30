@@ -5,6 +5,23 @@ export { getDefaultColumnSpan } from "./default-column-span.ts"
 
 export type MeasureWidth = (text: string, range?: TextRange) => number
 
+export type TextWrapDecisionTrace = {
+  input: string
+  sourceOffset: number
+  lineIndex: number
+  tokenText: string
+  candidateText: string
+  measuredText: string
+  range: TextRange
+  width: number
+  maxWidth: number
+  accepted: boolean
+  currentTokenCount: number
+  reason: "fit-test"
+}
+
+export type TextWrapTraceCollector = (trace: TextWrapDecisionTrace) => void
+
 export type WrappedTextLine = {
   text: string
   sourceStart: number
@@ -92,6 +109,58 @@ function measureTokens(tokens: readonly LineToken[], measureWidth: MeasureWidth)
   return measureWidth(renderedText, {
     start: rangeStart,
     end: rangeEnd,
+  })
+}
+
+function getMeasuredTokenRange(tokens: readonly LineToken[]): TextRange {
+  const trimStart = getLeadingBoundaryWhitespace(tokens)
+  const trimEnd = getTrailingBoundaryWhitespace(tokens)
+  const rangeStart = (tokens[0]?.start ?? 0) + trimStart
+  return {
+    start: rangeStart,
+    end: Math.max(rangeStart, (tokens[tokens.length - 1]?.end ?? tokens[0]?.start ?? 0) - trimEnd),
+  }
+}
+
+function traceFitDecision({
+  trace,
+  input,
+  sourceOffset,
+  lineIndex,
+  token,
+  testTokens,
+  width,
+  maxWidth,
+  accepted,
+}: {
+  trace?: TextWrapTraceCollector
+  input: string
+  sourceOffset: number
+  lineIndex: number
+  token: LineToken
+  testTokens: readonly LineToken[]
+  width: number
+  maxWidth: number
+  accepted: boolean
+}) {
+  if (!trace || !testTokens.length) return
+  const fullText = joinTokens(testTokens)
+  const trimStart = getLeadingBoundaryWhitespace(testTokens)
+  const trimEnd = getTrailingBoundaryWhitespace(testTokens)
+  const measuredText = fullText.slice(trimStart, Math.max(trimStart, fullText.length - trimEnd))
+  trace({
+    input,
+    sourceOffset,
+    lineIndex,
+    tokenText: token.text,
+    candidateText: fullText,
+    measuredText,
+    range: getMeasuredTokenRange(testTokens),
+    width,
+    maxWidth,
+    accepted,
+    currentTokenCount: Math.max(0, testTokens.length - 1),
+    reason: "fit-test",
   })
 }
 
@@ -348,6 +417,7 @@ function wrapSingleLineDetailed(
   maxWidth: number,
   hyphenate: boolean,
   measureWidth: MeasureWidth,
+  trace?: TextWrapTraceCollector,
 ): WrappedTextLine[] {
   const tokens = toLineTokens(input, sourceOffset)
   if (!tokens.length) {
@@ -364,7 +434,20 @@ function wrapSingleLineDetailed(
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index]!
     const testTokens = currentTokens.concat(token)
-    if (measureTokens(testTokens, measureWidth) <= maxWidth || currentTokens.length === 0) {
+    const testWidth = measureTokens(testTokens, measureWidth)
+    const accepted = testWidth <= maxWidth || currentTokens.length === 0
+    traceFitDecision({
+      trace,
+      input,
+      sourceOffset,
+      lineIndex: lines.length,
+      token,
+      testTokens,
+      width: testWidth,
+      maxWidth,
+      accepted,
+    })
+    if (accepted) {
       if (
         currentTokens.length === 0
         && token.isWhitespace
@@ -494,13 +577,14 @@ export function wrapTextDetailed(
   maxWidth: number,
   hyphenate: boolean,
   measureWidth: MeasureWidth,
+  trace?: TextWrapTraceCollector,
 ): WrappedTextLine[] {
   const hardBreakLines = text.replace(/\r\n/g, "\n").split("\n")
   const wrapped: WrappedTextLine[] = []
   let lineOffset = 0
 
   for (const line of hardBreakLines) {
-    wrapped.push(...wrapSingleLineDetailed(line, lineOffset, maxWidth, hyphenate, measureWidth))
+    wrapped.push(...wrapSingleLineDetailed(line, lineOffset, maxWidth, hyphenate, measureWidth, trace))
     lineOffset += line.length + 1
   }
 

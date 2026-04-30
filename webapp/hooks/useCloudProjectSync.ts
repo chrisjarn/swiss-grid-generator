@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { SupabaseClient, User } from "@supabase/supabase-js"
 
-import type { LoadedProject } from "@/lib/document-session"
+import { parseLoadedProject, type LoadedProject } from "@/lib/document-session"
 import {
   createCloudProject,
   deleteCloudProject,
@@ -58,20 +58,18 @@ function hasLocalChangesAfterLastSync(record: UserProjectRecord): boolean {
 }
 
 function toLoadedProject(record: UserProjectRecord): LoadedProject<Record<string, unknown>> {
+  const parsedProject = parseLoadedProject<Record<string, unknown>>(record.project)
   return {
-    activePageId: typeof record.project.activePageId === "string"
-      ? record.project.activePageId
-      : "",
-    pages: Array.isArray(record.project.pages)
-      ? record.project.pages as LoadedProject<Record<string, unknown>>["pages"]
-      : [],
+    activePageId: parsedProject.activePageId,
+    pages: parsedProject.pages,
     metadata: {
       title: record.title,
       description: record.description,
       author: record.author,
       createdAt: record.createdAt,
     },
-    tour: (record.project.tour as LoadedProject<Record<string, unknown>>["tour"]) ?? null,
+    layoutEngine: parsedProject.layoutEngine,
+    tour: parsedProject.tour ?? null,
   }
 }
 

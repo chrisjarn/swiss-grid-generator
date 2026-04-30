@@ -10,6 +10,10 @@ import { buildPageExportPlan } from "@/lib/page-export-plan"
 import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -29,6 +33,7 @@ type ExportVectorSvgOptions = {
   showMargins: boolean
   showImagePlaceholders: boolean
   showTypography: boolean
+  layoutEngine?: LayoutEngineContract
   title?: string
   description?: string
   author?: string
@@ -150,6 +155,7 @@ export async function renderSwissGridVectorSvg({
   showMargins,
   showImagePlaceholders,
   showTypography,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   title = "Swiss Grid Vector Export",
   description = "Swiss Grid Generator SVG export",
   author = "",
@@ -169,6 +175,7 @@ export async function renderSwissGridVectorSvg({
     showMargins,
     showImagePlaceholders,
     showTypography,
+    layoutEngine,
   })
 
   const imagePlans = new Map(exportPlan.imagePlans.map((plan) => [plan.key, plan] as const))

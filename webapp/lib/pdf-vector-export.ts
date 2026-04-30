@@ -17,6 +17,10 @@ import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
 import type { PdfExportColorMode } from "@/lib/pdf-output-intent"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type BlockId = string
@@ -75,6 +79,7 @@ type ExportVectorPdfOptions = {
   showMargins: boolean
   showImagePlaceholders: boolean
   showTypography: boolean
+  layoutEngine?: LayoutEngineContract
 }
 
 function getPdfFontFamily(fontFamily: FontFamily, fontWeight: number): string {
@@ -184,6 +189,7 @@ export function renderSwissGridVectorPdf({
   showMargins,
   showImagePlaceholders,
   showTypography,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
 }: ExportVectorPdfOptions): void {
   const exportPlan = buildPageExportPlan({
     result,
@@ -198,6 +204,7 @@ export function renderSwissGridVectorPdf({
     showMargins,
     showImagePlaceholders,
     showTypography,
+    layoutEngine,
   })
   const sourceWidth = exportPlan.pageWidth
   const sourceHeight = exportPlan.pageHeight

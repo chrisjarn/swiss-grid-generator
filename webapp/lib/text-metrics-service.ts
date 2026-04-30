@@ -1,25 +1,26 @@
 import {
   clearOpticalMarginMeasurementCache,
-  getOpticalMarginAnchorOffset,
 } from "@/lib/optical-margin"
-import { wrapTextDetailed, type WrappedTextLine } from "@/lib/text-layout"
 import {
-  measureFormattedTextRangeWidth,
+  type TextWrapTraceCollector,
+  type WrappedTextLine,
+} from "@/lib/text-layout"
+import {
   type BaseTextFormat,
   type TextFormatRun,
 } from "@/lib/text-format-runs"
 import {
-  measureCanvasTextWidth,
-  DEFAULT_TRACKING_SCALE,
   normalizeTrackingScale,
-  setCanvasFontKerning,
 } from "@/lib/text-rendering"
 import {
-  measureTrackedTextRangeWidth,
   normalizeTextTrackingRuns,
   type TextTrackingRun,
 } from "@/lib/text-tracking-runs"
 import type { FontFamily } from "@/lib/config/fonts"
+import type {
+  TextMeasureContext,
+  TextMetricsEngineFactory,
+} from "@/lib/text-metrics-engine"
 import type { TextAlignMode } from "@/lib/types/layout-primitives"
 
 const DEFAULT_TEXT_CACHE_LIMIT = 5000
@@ -61,37 +62,21 @@ function makeCacheKeyForResolvedFontSizes<StyleKey extends string, Family extend
     .join("|")
 }
 
-export function measureCanvasTextAscent(
-  context: CanvasRenderingContext2D | null,
-  canvasFont: string,
-  fallbackFontSize: number,
-): number {
-  if (!context) return fallbackFontSize * 0.8
-  context.font = canvasFont
-  const metrics = context.measureText("Hg")
-  return metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : fallbackFontSize * 0.8
-}
-
-export function measureCanvasTextDescent(
-  context: CanvasRenderingContext2D | null,
-  canvasFont: string,
-  fallbackFontSize: number,
-): number {
-  if (!context) return fallbackFontSize * 0.2
-  context.font = canvasFont
-  const metrics = context.measureText("Hgyp<>%")
-  return metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : fallbackFontSize * 0.2
+export type TextMetricsServiceOptions<StyleKey extends string, Family extends string = FontFamily> = {
+  cacheLimit?: number
+  metricsEngineFactory: TextMetricsEngineFactory<StyleKey, Family>
 }
 
 export function createTextMetricsService<StyleKey extends string, Family extends string = FontFamily>(
-  options: {
-    cacheLimit?: number
-  } = {},
+  options: TextMetricsServiceOptions<StyleKey, Family>,
 ) {
   const cacheLimit = options.cacheLimit ?? DEFAULT_TEXT_CACHE_LIMIT
+  const metricsEngineFactory = options.metricsEngineFactory
   const measureWidthCache = new Map<string, number>()
   const wrapTextCache = new Map<string, WrappedTextLine[]>()
   const opticalOffsetCache = new Map<string, number>()
+  const textAscentCache = new Map<string, number>()
+  const textDescentCache = new Map<string, number>()
 
   const makeCachedValue = <T,>(cache: Map<string, T>, key: string, compute: () => T): T => {
     const existing = cache.get(key)
@@ -106,11 +91,13 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     measureWidthCache.clear()
     wrapTextCache.clear()
     opticalOffsetCache.clear()
+    textAscentCache.clear()
+    textDescentCache.clear()
     clearOpticalMarginMeasurementCache()
   }
 
   const getMeasuredTextWidth = (
-    context: CanvasRenderingContext2D,
+    context: TextMeasureContext,
     text: string,
     trackingScale: number,
     opticalKerning: boolean,
@@ -128,42 +115,25 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     const formatBaseKey = makeCacheKeyForBaseFormat(baseFormat)
     const formatRunsKey = makeCacheKeyForFormatRuns(formatRuns)
     const resolvedFontSizesKey = makeCacheKeyForResolvedFontSizes(baseFormat, formatRuns, resolveFontSize)
-    const key = `${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${rangeKey}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${text}`
+    const engine = metricsEngineFactory(context)
+    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${rangeKey}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${text}`
 
-    return makeCachedValue(measureWidthCache, key, () => {
-      setCanvasFontKerning(context, opticalKerning)
-      if (range && baseFormat && resolveFontSize && (normalizedRuns.length > 0 || (formatRuns?.length ?? 0) > 0)) {
-        return measureFormattedTextRangeWidth(context, {
-          sourceText,
-          renderedText: text,
-          range,
-          baseFormat,
-          formatRuns,
-          baseTrackingScale: normalizedTrackingScale,
-          trackingRuns: normalizedRuns,
-          resolveFontSize,
-          opticalKerning,
-        })
-      }
-      if (range && normalizedRuns.length > 0) {
-        const sizeMatch = context.font.match(/(\d+(?:\.\d+)?)px/)
-        const fontSize = sizeMatch ? Number(sizeMatch[1]) : 0
-        return measureTrackedTextRangeWidth(context, {
-          sourceText,
-          renderedText: text,
-          range,
-          baseTrackingScale: normalizedTrackingScale,
-          runs: normalizedRuns,
-          fontSize,
-          opticalKerning,
-        })
-      }
-      return measureCanvasTextWidth(context, text, normalizedTrackingScale, undefined, opticalKerning)
-    })
+    return makeCachedValue(measureWidthCache, key, () => engine.measureWidth({
+      text,
+      canvasFont: context.font,
+      trackingScale: normalizedTrackingScale,
+      opticalKerning,
+      sourceText,
+      trackingRuns: normalizedRuns,
+      range,
+      baseFormat,
+      formatRuns,
+      resolveFontSize,
+    }))
   }
 
   const getWrappedText = (
-    context: CanvasRenderingContext2D,
+    context: TextMeasureContext,
     text: string,
     maxWidth: number,
     hyphenate: boolean,
@@ -173,6 +143,7 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     baseFormat?: BaseTextFormat<StyleKey, Family>,
     formatRuns?: readonly TextFormatRun<StyleKey, Family>[],
     resolveFontSize?: (styleKey: StyleKey) => number,
+    trace?: TextWrapTraceCollector,
   ): WrappedTextLine[] => {
     const normalizedTrackingScale = normalizeTrackingScale(trackingScale)
     const normalizedRuns = normalizeTextTrackingRuns(text, trackingRuns, normalizedTrackingScale)
@@ -180,49 +151,63 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     const formatRunsKey = makeCacheKeyForFormatRuns(formatRuns)
     const formatBaseKey = makeCacheKeyForBaseFormat(baseFormat)
     const resolvedFontSizesKey = makeCacheKeyForResolvedFontSizes(baseFormat, formatRuns, resolveFontSize)
-    const key = `${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${maxWidth.toFixed(4)}::${hyphenate ? 1 : 0}::${text}`
-    const wrapped = makeCachedValue(wrapTextCache, key, () =>
-      wrapTextDetailed(text, maxWidth, hyphenate, (sample, range) => getMeasuredTextWidth(
-        context,
-        sample,
-        normalizedTrackingScale,
-        opticalKerning,
-        text,
-        normalizedRuns,
-        range,
-        baseFormat,
-        formatRuns,
-        resolveFontSize,
-      )),
-    )
+    const engine = metricsEngineFactory(context)
+    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${maxWidth.toFixed(4)}::${hyphenate ? 1 : 0}::${text}`
+    const computeWrapped = () => engine.wrapText({
+      text,
+      canvasFont: context.font,
+      maxWidth,
+      hyphenate,
+      trackingScale: normalizedTrackingScale,
+      opticalKerning,
+      trackingRuns: normalizedRuns,
+      baseFormat,
+      formatRuns,
+      resolveFontSize,
+      trace,
+    })
+    const wrapped = trace ? computeWrapped() : makeCachedValue(wrapTextCache, key, computeWrapped)
 
     return wrapped.map((line) => ({ ...line }))
   }
 
   const getOpticalOffset = (
-    context: CanvasRenderingContext2D,
+    context: TextMeasureContext,
     styleKey: StyleKey,
     line: string,
     align: TextAlignMode,
     fontSize: number,
     opticalKerning: boolean,
   ): number => {
-    const key = `${context.font}::${opticalKerning ? 1 : 0}::${styleKey}::${line}::${align}::${fontSize.toFixed(4)}`
-    return makeCachedValue(opticalOffsetCache, key, () =>
-      getOpticalMarginAnchorOffset({
-        line,
-        align,
-        fontSize,
-        styleKey,
-        font: context.font,
-        measureWidth: (sample) => getMeasuredTextWidth(
-          context,
-          sample,
-          DEFAULT_TRACKING_SCALE,
-          opticalKerning,
-        ),
-      }),
-    )
+    const engine = metricsEngineFactory(context)
+    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${styleKey}::${line}::${align}::${fontSize.toFixed(4)}`
+    return makeCachedValue(opticalOffsetCache, key, () => engine.opticalOffset({
+      styleKey,
+      line,
+      align,
+      fontSize,
+      opticalKerning,
+    }))
+  }
+
+  const getTextAscent = (
+    context: TextMeasureContext,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ): number => {
+    const engine = metricsEngineFactory(context)
+    const key = `${engine.id}::${canvasFont}::${fallbackFontSize.toFixed(4)}`
+    return makeCachedValue(textAscentCache, key, () => engine.textAscent(canvasFont, fallbackFontSize))
+  }
+
+  const getTextDescent = (
+    context: TextMeasureContext,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ): number => {
+    const engine = metricsEngineFactory(context)
+    const key = `${engine.id}::${canvasFont}::${fallbackFontSize.toFixed(4)}`
+    return makeCachedValue(textDescentCache, key, () => engine.textDescent(canvasFont, fallbackFontSize))
   }
 
   return {
@@ -230,5 +215,7 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     getMeasuredTextWidth,
     getWrappedText,
     getOpticalOffset,
+    getTextAscent,
+    getTextDescent,
   }
 }

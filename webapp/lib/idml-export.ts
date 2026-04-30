@@ -1,5 +1,10 @@
 import type { LoadedProject } from "@/lib/document-session"
 import { buildPageExportPlan } from "@/lib/page-export-plan"
+import { getFontVariants, isFontFamily, type FontFamily } from "@/lib/config/fonts"
+import {
+  preloadFontFileMetricFaces,
+  type FontFileMetricFace,
+} from "@/lib/font-file-text-metrics-engine"
 import { buildSwissGridIdmlPackage } from "@/lib/idml/builder"
 import type { SwissGridIdmlDocument } from "@/lib/idml/types"
 import { buildResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
@@ -7,6 +12,10 @@ import {
   getProjectPagePhysicalPageNumberAtIndex,
   getProjectPhysicalPageCount,
 } from "@/lib/document-page-numbering"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 
 type IdmlExportProgress = {
   completedSteps: number
@@ -15,14 +24,40 @@ type IdmlExportProgress = {
   pageName: string
 }
 
+function collectIdmlTextMetricFaces(project: LoadedProject<Record<string, unknown>>): FontFileMetricFace[] {
+  const families = new Set<FontFamily>()
+  for (const page of project.pages) {
+    if (isFontFamily(page.uiSettings.baseFont)) families.add(page.uiSettings.baseFont)
+    Object.values(page.previewLayout?.blockFontFamilies ?? {}).forEach((family) => {
+      if (isFontFamily(family)) families.add(family)
+    })
+    Object.values(page.previewLayout?.blockTextFormatRuns ?? {}).forEach((runs) => {
+      if (!Array.isArray(runs)) return
+      runs.forEach((run) => {
+        if (isFontFamily(run.fontFamily)) families.add(run.fontFamily)
+      })
+    })
+  }
+
+  return [...families].flatMap((fontFamily) => (
+    getFontVariants(fontFamily).map((variant) => ({
+      fontFamily,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+    }))
+  ))
+}
+
 export async function renderSwissGridIdmlProject(
   project: LoadedProject<Record<string, unknown>>,
+  layoutEngine: LayoutEngineContract = project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
   onProgress?: (progress: IdmlExportProgress) => void | Promise<void>,
   assertNotCancelled?: () => void,
 ): Promise<Uint8Array> {
   const now = new Date()
   const pageCount = getProjectPhysicalPageCount(project.pages)
   const pages: SwissGridIdmlDocument["pages"] = []
+  await preloadFontFileMetricFaces(collectIdmlTextMetricFaces(project))
 
   for (const [index, page] of project.pages.entries()) {
     assertNotCancelled?.()
@@ -50,6 +85,7 @@ export async function renderSwissGridIdmlProject(
         showMargins: resolved.uiSettings.showMargins,
         showImagePlaceholders: resolved.uiSettings.showImagePlaceholders,
         showTypography: resolved.uiSettings.showTypography,
+        layoutEngine,
       }),
     }
     pages.push(plannedPage)

@@ -143,7 +143,24 @@ export function applyCanvasTextConfig(
   if ("letterSpacing" in context) context.letterSpacing = "0px"
 }
 
-type GlyphBoundsMeasure = (glyph: string) => OpticalGlyphBounds | null
+export type GlyphBoundsMeasure = (glyph: string) => OpticalGlyphBounds | null
+export type GlyphPairAdvanceMeasure = (
+  previous: string,
+  current: string,
+  opticalKerning: boolean,
+) => number | null
+
+function measureGlyphAdvance(
+  context: CanvasMeasureContext,
+  glyph: string,
+  measureGlyphBounds?: GlyphBoundsMeasure,
+): number {
+  const measured = measureGlyphBounds?.(glyph)
+  if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
+    return measured.advanceWidth
+  }
+  return context.measureText(glyph).width
+}
 
 export function measureTextPairAdvance(
   context: CanvasMeasureContext,
@@ -152,16 +169,25 @@ export function measureTextPairAdvance(
   fontSize: number,
   opticalKerning: boolean,
   measureGlyphBounds?: GlyphBoundsMeasure,
+  measurePairAdvance?: GlyphPairAdvanceMeasure,
 ): number {
   if (!previous) return 0
-  if (!current) return context.measureText(previous).width
+  if (!current) return measureGlyphAdvance(context, previous, measureGlyphBounds)
+  const measuredPairAdvance = measurePairAdvance?.(previous, current, opticalKerning)
+  if (
+    typeof measuredPairAdvance === "number"
+    && Number.isFinite(measuredPairAdvance)
+    && measuredPairAdvance >= 0
+  ) {
+    return measuredPairAdvance
+  }
   if (!opticalKerning) {
     const pairWidth = context.measureText(`${previous}${current}`).width
     const currentWidth = context.measureText(current).width
     return Math.max(0, pairWidth - currentWidth)
   }
 
-  const unkernedAdvance = context.measureText(previous).width
+  const unkernedAdvance = measureGlyphAdvance(context, previous, measureGlyphBounds)
   const adjustment = getOpticalKerningPairAdjustment({
     left: previous,
     right: current,
@@ -180,15 +206,16 @@ export function measureCanvasTextWidth(
   fontSize?: number,
   opticalKerning = true,
   measureGlyphBounds?: GlyphBoundsMeasure,
+  measurePairAdvance?: GlyphPairAdvanceMeasure,
 ): number {
   const trackingValue = normalizeTrackingScale(trackingScale)
   const glyphs = splitTextForTracking(text)
   const glyphCount = glyphs.length
   if (glyphCount <= 1) {
-    return context.measureText(text).width
+    return measureGlyphAdvance(context, text, measureGlyphBounds)
   }
   const resolvedFontSize = fontSize ?? resolveCanvasFontSize(context.font)
-  if (!opticalKerning && trackingValue === 0) {
+  if (!opticalKerning && trackingValue === 0 && !measurePairAdvance) {
     return context.measureText(text).width
   }
 
@@ -203,10 +230,11 @@ export function measureCanvasTextWidth(
       resolvedFontSize,
       opticalKerning,
       measureGlyphBounds,
+      measurePairAdvance,
     ) + getTrackingLetterSpacing(resolvedFontSize, trackingValue)
   }
 
-  return width + context.measureText(glyphs[glyphCount - 1] ?? "").width
+  return width + measureGlyphAdvance(context, glyphs[glyphCount - 1] ?? "", measureGlyphBounds)
 }
 
 export function drawCanvasText(

@@ -43,6 +43,7 @@ type Args<BlockId extends string> = {
   scale: number
   pixelRatio: number
   fontRenderEpoch: number
+  typographyMetricsReady: boolean
   rotation: number
   showTypography: boolean
   showImagePlaceholders: boolean
@@ -104,6 +105,16 @@ type Args<BlockId extends string> = {
     fontSize: number,
     opticalKerning: boolean,
   ) => number
+  getTextAscent: (
+    ctx: CanvasRenderingContext2D,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ) => number
+  getTextDescent: (
+    ctx: CanvasRenderingContext2D,
+    canvasFont: string,
+    fallbackFontSize: number,
+  ) => number
   onOverflowLinesChange?: (overflowByBlock: Partial<Record<BlockId, number>>) => void
   onCanvasReady?: (canvas: HTMLCanvasElement | null) => void
   onPlansCommit?: () => void
@@ -121,6 +132,7 @@ export function useTypographyRenderer<BlockId extends string>({
   scale,
   pixelRatio,
   fontRenderEpoch,
+  typographyMetricsReady,
   rotation,
   showTypography,
   showImagePlaceholders,
@@ -164,6 +176,8 @@ export function useTypographyRenderer<BlockId extends string>({
   isSnapToBaselineEnabled,
   getWrappedText,
   getOpticalOffset,
+  getTextAscent,
+  getTextDescent,
   onOverflowLinesChange,
   onCanvasReady,
   onPlansCommit,
@@ -173,6 +187,7 @@ export function useTypographyRenderer<BlockId extends string>({
     const canvas = canvasRef.current
     if (!canvas) return
     onCanvasReady?.(canvas)
+    if (!typographyMetricsReady) return
 
     const frame = window.requestAnimationFrame(() => {
       const drawStartedAt = performance.now()
@@ -391,6 +406,8 @@ export function useTypographyRenderer<BlockId extends string>({
           getOpticalOffset: (context, key, styleKey, line, align, fontSize, opticalKerning) => (
             getOpticalOffset(context, styleKey, line, align, fontSize, opticalKerning)
           ),
+          getTextAscent,
+          getTextDescent,
         })
         const typographyRenderState = buildTextRenderState(blockOrder)
         draftPlans = typographyRenderState.textPlans
@@ -518,6 +535,7 @@ export function useTypographyRenderer<BlockId extends string>({
     recordPerfMetric,
     result,
     fontRenderEpoch,
+    typographyMetricsReady,
     rotation,
     scale,
     pixelRatio,

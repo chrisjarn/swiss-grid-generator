@@ -1,6 +1,10 @@
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate"
 
 import type { LoadedProject } from "@/lib/document-session"
+import {
+  CURRENT_LAYOUT_ENGINE_CONTRACT,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 
 export const PROJECT_JSON_EXTENSION = ".json"
 export const PROJECT_ARCHIVE_EXTENSION = ".swissgridgenerator"
@@ -17,6 +21,7 @@ export type ProjectTransferPayload = Record<string, unknown> & {
   description: string
   author: string
   createdAt?: string
+  layoutEngine: LayoutEngineContract
   activePageId: string
   pages: Array<Record<string, unknown>>
   tour?: Record<string, unknown>
@@ -62,6 +67,7 @@ export function buildProjectTransferPayload<Layout>(
     description: project.metadata.description,
     author: project.metadata.author,
     createdAt: project.metadata.createdAt,
+    layoutEngine: project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
     activePageId: project.activePageId,
     pages: project.pages as Array<Record<string, unknown>>,
     tour: project.tour ? project.tour as Record<string, unknown> : undefined,
