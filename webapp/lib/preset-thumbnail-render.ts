@@ -543,7 +543,6 @@ export function drawPresetThumbnailToCanvas(
     const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
       metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(page.layoutEngine),
     })
-    textMetrics.clearCaches()
 
     const typographyRenderState = buildCanvasTypographyRenderPlans<BlockId, TypographyStyleKey>({
       ctx,

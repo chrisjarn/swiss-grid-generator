@@ -108,6 +108,26 @@ export type FontFileMetricFaceBlock<StyleKey extends string> = {
 }
 
 const loadedFontFileMetrics = new Map<string, RuntimeOpenTypeFont | null>()
+const FONT_FILE_DESCRIPTOR_CACHE_LIMIT = 2048
+const FONT_FILE_GLYPH_RUN_CACHE_LIMIT = 10000
+const FONT_FILE_MEASURE_CACHE_LIMIT = 2048
+const fontFileCanvasDescriptorCache = new Map<string, FontFileCanvasFontDescriptor | null>()
+const fontFileGlyphRunCache = new WeakMap<RuntimeOpenTypeFont, Map<string, RuntimeGlyph[]>>()
+const loadedGlyphBoundsMeasureCache = new Map<string, (glyph: string) => OpticalGlyphBounds | null>()
+const loadedOpticalGlyphBoundsMeasureCache = new Map<string, (glyph: string) => OpticalGlyphBounds | null>()
+const loadedPairAdvanceMeasureCache = new Map<string, (previous: string, current: string, opticalKerning: boolean) => number | null>()
+const loadedCapAscentCache = new Map<string, number>()
+const loadedGlyphWidthCache = new Map<string, number | null>()
+const loadedPairAdvanceValueCache = new Map<string, number | null>()
+
+function setBoundedCacheValue<Key, Value>(cache: Map<Key, Value>, key: Key, value: Value, limit: number): void {
+  cache.set(key, value)
+  if (cache.size > limit) {
+    cache.clear()
+    cache.set(key, value)
+  }
+}
+
 function getOutlineOpticalKerningStrengthScale(descriptor: FontFileCanvasFontDescriptor): number {
   if (descriptor.fontFamily === "Playfair Display" && descriptor.fontSize >= 96) return 2
   if (descriptor.fontFamily === "Inter" && descriptor.fontWeight >= 700) return 1
@@ -119,6 +139,14 @@ function getOutlineOpticalKerningStrengthScale(descriptor: FontFileCanvasFontDes
 
 function getFontFileMetricCacheKey(face: FontFileMetricFace): string {
   return getResolvedOutlineFontFace(face.fontFamily, face.fontWeight, face.italic).cacheKey
+}
+
+function getFontFileDescriptorCacheKey(descriptor: FontFileCanvasFontDescriptor): string {
+  return `${getFontFileMetricCacheKey(descriptor)}::${descriptor.fontSize.toFixed(6)}`
+}
+
+function getFontFileTupleCacheKey(parts: readonly unknown[]): string {
+  return JSON.stringify(parts)
 }
 
 function resolveKnownFamily(fontFamilyStack: string): FontFamily | null {
@@ -152,14 +180,27 @@ function resolveKnownFamily(fontFamilyStack: string): FontFamily | null {
 }
 
 export function parseFontFileCanvasFontDescriptor(font: string): FontFileCanvasFontDescriptor | null {
+  if (fontFileCanvasDescriptorCache.has(font)) {
+    return fontFileCanvasDescriptorCache.get(font) ?? null
+  }
+
   const sizeMatch = font.match(/(^|\s)(\d+(?:\.\d+)?)px\s+(.+)$/)
-  if (!sizeMatch) return null
+  if (!sizeMatch) {
+    setBoundedCacheValue(fontFileCanvasDescriptorCache, font, null, FONT_FILE_DESCRIPTOR_CACHE_LIMIT)
+    return null
+  }
   const prefix = font.slice(0, sizeMatch.index).trim()
   const fontSize = Number(sizeMatch[2])
-  if (!Number.isFinite(fontSize) || fontSize <= 0) return null
+  if (!Number.isFinite(fontSize) || fontSize <= 0) {
+    setBoundedCacheValue(fontFileCanvasDescriptorCache, font, null, FONT_FILE_DESCRIPTOR_CACHE_LIMIT)
+    return null
+  }
 
   const family = resolveKnownFamily(sizeMatch[3] ?? "")
-  if (!family) return null
+  if (!family) {
+    setBoundedCacheValue(fontFileCanvasDescriptorCache, font, null, FONT_FILE_DESCRIPTOR_CACHE_LIMIT)
+    return null
+  }
 
   const weightMatch = prefix.match(/(^|\s)([1-9]00|1000)(?=\s|$)/)
   const fontWeight = weightMatch
@@ -167,12 +208,14 @@ export function parseFontFileCanvasFontDescriptor(font: string): FontFileCanvasF
     : /(^|\s)bold(?=\s|$)/i.test(prefix)
       ? 700
       : 400
-  return {
+  const descriptor = {
     fontFamily: family,
     fontWeight: Number.isFinite(fontWeight) ? fontWeight : 400,
     italic: /(^|\s)italic(?=\s|$)/i.test(prefix),
     fontSize,
   }
+  setBoundedCacheValue(fontFileCanvasDescriptorCache, font, descriptor, FONT_FILE_DESCRIPTOR_CACHE_LIMIT)
+  return descriptor
 }
 
 export function collectFontFileMetricFacesFromCanvasFonts(fonts: Iterable<string>): FontFileMetricFace[] {
@@ -252,6 +295,9 @@ function measureDeterministicLayoutDescent(fallbackFontSize: number): number {
 }
 
 function measureLoadedFontFileCapAscent(descriptor: FontFileCanvasFontDescriptor): number | null {
+  const cacheKey = getFontFileDescriptorCacheKey(descriptor)
+  const cached = loadedCapAscentCache.get(cacheKey)
+  if (cached !== undefined) return cached
   const font = getLoadedFontFileMetric(descriptor)
   if (!font) return null
   const unitsPerEm = getFontUnitsPerEm(font)
@@ -259,7 +305,9 @@ function measureLoadedFontFileCapAscent(descriptor: FontFileCanvasFontDescriptor
   const rawBounds = glyph?.getBoundingBox?.()
   const yMax = rawBounds?.y2 ?? rawBounds?.yMax ?? glyph?.yMax
   if (typeof yMax !== "number" || !Number.isFinite(yMax) || yMax <= 0) return null
-  return yMax * descriptor.fontSize / unitsPerEm
+  const ascent = yMax * descriptor.fontSize / unitsPerEm
+  setBoundedCacheValue(loadedCapAscentCache, cacheKey, ascent, FONT_FILE_MEASURE_CACHE_LIMIT)
+  return ascent
 }
 
 function measureDeterministicTextTopAscent(canvasFont: string, fallbackFontSize: number): number {
@@ -270,7 +318,16 @@ function measureDeterministicTextTopAscent(canvasFont: string, fallbackFontSize:
 }
 
 function getGlyphs(font: RuntimeOpenTypeFont, text: string): RuntimeGlyph[] {
-  return font.stringToGlyphs?.(text) ?? splitTextForTracking(text).map((glyph) => font.charToGlyph?.(glyph) ?? {})
+  let cache = fontFileGlyphRunCache.get(font)
+  if (!cache) {
+    cache = new Map<string, RuntimeGlyph[]>()
+    fontFileGlyphRunCache.set(font, cache)
+  }
+  const cached = cache.get(text)
+  if (cached) return cached
+  const glyphs = font.stringToGlyphs?.(text) ?? splitTextForTracking(text).map((glyph) => font.charToGlyph?.(glyph) ?? {})
+  setBoundedCacheValue(cache, text, glyphs, FONT_FILE_GLYPH_RUN_CACHE_LIMIT)
+  return glyphs
 }
 
 function getGlyphAdvance(glyph: RuntimeGlyph, fontSize: number, unitsPerEm: number): number | null {
@@ -628,11 +685,16 @@ function measureFontFileGlyphWidth(
   glyphText: string,
   descriptor: FontFileCanvasFontDescriptor,
 ): number | null {
+  const cacheKey = getFontFileTupleCacheKey([getFontFileDescriptorCacheKey(descriptor), glyphText])
+  const cached = loadedGlyphWidthCache.get(cacheKey)
+  if (cached !== undefined || loadedGlyphWidthCache.has(cacheKey)) return cached ?? null
   const font = getLoadedFontFileMetric(descriptor)
   if (!font) return null
   const unitsPerEm = typeof font.unitsPerEm === "number" && font.unitsPerEm > 0 ? font.unitsPerEm : 1000
   const glyph = getGlyphs(font, glyphText)[0]
-  return glyph ? getGlyphAdvance(glyph, descriptor.fontSize, unitsPerEm) : null
+  const width = glyph ? getGlyphAdvance(glyph, descriptor.fontSize, unitsPerEm) : null
+  setBoundedCacheValue(loadedGlyphWidthCache, cacheKey, width, FONT_FILE_MEASURE_CACHE_LIMIT)
+  return width
 }
 
 function measureFontFilePairAdvance({
@@ -648,6 +710,15 @@ function measureFontFilePairAdvance({
   kerningMode: FontFileKerningMode
   styleKey?: string
 }): number | null {
+  const cacheKey = getFontFileTupleCacheKey([
+    getFontFileDescriptorCacheKey(descriptor),
+    kerningMode,
+    styleKey ?? null,
+    previous,
+    current,
+  ])
+  const cached = loadedPairAdvanceValueCache.get(cacheKey)
+  if (cached !== undefined || loadedPairAdvanceValueCache.has(cacheKey)) return cached ?? null
   if (!previous) return 0
   if (!current) return measureFontFileGlyphWidth(previous, descriptor)
 
@@ -680,7 +751,9 @@ function measureFontFilePairAdvance({
     pairAdvance += (font.getKerningValue?.(previousGlyph, currentGlyph) ?? 0) * descriptor.fontSize / unitsPerEm
   }
 
-  return Math.max(0, pairAdvance)
+  const advance = Math.max(0, pairAdvance)
+  setBoundedCacheValue(loadedPairAdvanceValueCache, cacheKey, advance, FONT_FILE_MEASURE_CACHE_LIMIT)
+  return advance
 }
 
 type FontFilePairClass =
@@ -952,18 +1025,26 @@ export function createLoadedFontFileGlyphBoundsMeasure(
 export function createLoadedFontFileGlyphBoundsMeasureForCanvasFont(
   canvasFont: string,
 ): ((glyph: string) => OpticalGlyphBounds | null) | null {
+  const cached = loadedGlyphBoundsMeasureCache.get(canvasFont)
+  if (cached) return cached
   const descriptor = parseFontFileCanvasFontDescriptor(canvasFont)
-  return descriptor ? createLoadedFontFileGlyphBoundsMeasure(descriptor) : null
+  const measure = descriptor ? createLoadedFontFileGlyphBoundsMeasure(descriptor) : null
+  if (measure) {
+    setBoundedCacheValue(loadedGlyphBoundsMeasureCache, canvasFont, measure, FONT_FILE_MEASURE_CACHE_LIMIT)
+  }
+  return measure
 }
 
 export function createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(
   canvasFont: string,
 ): ((glyph: string) => OpticalGlyphBounds | null) | null {
+  const cached = loadedOpticalGlyphBoundsMeasureCache.get(canvasFont)
+  if (cached) return cached
   const descriptor = parseFontFileCanvasFontDescriptor(canvasFont)
   const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
   if (!descriptor || !font) return null
   const unitsPerEm = getFontUnitsPerEm(font)
-  return (glyphText) => {
+  const measure = (glyphText: string) => {
     const glyph = getGlyphs(font, glyphText)[0]
     if (!glyph) return null
     const fallbackBounds = getGlyphBounds(glyph, descriptor.fontSize, unitsPerEm)
@@ -971,15 +1052,20 @@ export function createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont
       ? getGlyphContourOpticalBounds(glyphText, glyph, font, descriptor.fontSize, fallbackBounds)
       : null
   }
+  setBoundedCacheValue(loadedOpticalGlyphBoundsMeasureCache, canvasFont, measure, FONT_FILE_MEASURE_CACHE_LIMIT)
+  return measure
 }
 
 export function createLoadedFontFilePairAdvanceMeasureForCanvasFont(
   canvasFont: string,
   styleKey?: string,
 ): ((previous: string, current: string, opticalKerning: boolean) => number | null) | null {
+  const cacheKey = getFontFileTupleCacheKey([styleKey ?? null, canvasFont])
+  const cached = loadedPairAdvanceMeasureCache.get(cacheKey)
+  if (cached) return cached
   const descriptor = parseFontFileCanvasFontDescriptor(canvasFont)
   if (!descriptor) return null
-  return (previous, current, opticalKerning) => (
+  const measure = (previous: string, current: string, opticalKerning: boolean) => (
     measureLoadedFontFilePairAdvance({
       previous,
       current,
@@ -988,6 +1074,8 @@ export function createLoadedFontFilePairAdvanceMeasureForCanvasFont(
       styleKey,
     })
   )
+  setBoundedCacheValue(loadedPairAdvanceMeasureCache, cacheKey, measure, FONT_FILE_MEASURE_CACHE_LIMIT)
+  return measure
 }
 
 export function createResolvedFontFileGlyphBoundsMeasure<StyleKey extends string>() {

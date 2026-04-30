@@ -688,6 +688,8 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
   })
 
   const textPlans = new Map<BlockId, BlockRenderPlan<BlockId>>()
+  const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<StyleKey>()
+  const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<StyleKey>()
   for (const plan of layoutOutput.plans) {
     const blockFont = getBlockFont(plan.key, plan.styleKey)
     const blockFontWeight = getBlockFontWeight(plan.key, plan.styleKey)
@@ -702,8 +704,6 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
     const measureGlyphBounds = formatRuns.length === 0
       ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
       : undefined
-    const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<StyleKey>()
-    const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<StyleKey>()
     applyCanvasTextConfig(ctx, {
       font: canvasFont,
       opticalKerning,

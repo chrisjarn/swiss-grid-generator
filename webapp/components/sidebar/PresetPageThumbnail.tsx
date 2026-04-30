@@ -25,11 +25,13 @@ export function PresetPageThumbnail({ page }: Props) {
 
     let frameId = 0
     let cancelled = false
+    let visible = typeof IntersectionObserver === "undefined"
     let readyToDraw = false
+    let preloadStarted = false
 
     const draw = () => {
       frameId = 0
-      if (cancelled || !readyToDraw) return
+      if (cancelled || !readyToDraw || !visible) return
       const rect = host.getBoundingClientRect()
       try {
         drawPresetThumbnailToCanvas(
@@ -45,8 +47,34 @@ export function PresetPageThumbnail({ page }: Props) {
     }
 
     const scheduleDraw = () => {
+      if (!visible) return
       if (frameId !== 0) window.cancelAnimationFrame(frameId)
       frameId = window.requestAnimationFrame(draw)
+    }
+
+    const startPreload = () => {
+      if (preloadStarted) return
+      preloadStarted = true
+      const fontSpecs = collectPresetThumbnailFontLoadSpecs(page)
+      const metricFaces = collectPresetThumbnailFontMetricFaces(page)
+      void Promise
+        .all([
+          fontSpecs.length > 0 && typeof document !== "undefined" && "fonts" in document
+            ? Promise.allSettled(fontSpecs.map((spec) => document.fonts.load(spec)))
+            : Promise.resolve(),
+          preloadFontFileMetricFaces(metricFaces),
+        ])
+        .then(() => {
+          if (cancelled) return
+          readyToDraw = true
+          scheduleDraw()
+        })
+        .catch((error) => {
+          console.error(error)
+          if (cancelled) return
+          readyToDraw = true
+          scheduleDraw()
+        })
     }
 
     const resizeObserver = typeof ResizeObserver !== "undefined"
@@ -57,31 +85,22 @@ export function PresetPageThumbnail({ page }: Props) {
     const handleWindowResize = () => scheduleDraw()
     window.addEventListener("resize", handleWindowResize)
 
-    const fontSpecs = collectPresetThumbnailFontLoadSpecs(page)
-    const metricFaces = collectPresetThumbnailFontMetricFaces(page)
-    void Promise
-      .all([
-        fontSpecs.length > 0 && typeof document !== "undefined" && "fonts" in document
-          ? Promise.allSettled(fontSpecs.map((spec) => document.fonts.load(spec)))
-          : Promise.resolve(),
-        preloadFontFileMetricFaces(metricFaces),
-      ])
-      .then(() => {
-        if (cancelled) return
-        readyToDraw = true
-        scheduleDraw()
-      })
-      .catch((error) => {
-        console.error(error)
-        if (cancelled) return
-        readyToDraw = true
-        scheduleDraw()
-      })
+    const visibilityObserver = typeof IntersectionObserver !== "undefined"
+      ? new IntersectionObserver((entries) => {
+          visible = entries.some((entry) => entry.isIntersecting)
+          if (!visible) return
+          startPreload()
+          scheduleDraw()
+        }, { root: null, rootMargin: "160px" })
+      : null
+    visibilityObserver?.observe(host)
+    if (visible) startPreload()
 
     return () => {
       cancelled = true
       if (frameId !== 0) window.cancelAnimationFrame(frameId)
       resizeObserver?.disconnect()
+      visibilityObserver?.disconnect()
       window.removeEventListener("resize", handleWindowResize)
     }
   }, [page])

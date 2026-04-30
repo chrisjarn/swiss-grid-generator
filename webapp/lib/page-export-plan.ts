@@ -470,7 +470,6 @@ export function buildPageExportPlan({
   const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
     metricsEngineFactory: textMetricsEngineFactory ?? resolveLayoutTextMetricsEngineFactory(layoutEngine),
   })
-  textMetrics.clearCaches()
 
   const getBlockSpan = (key: BlockId) => {
     const raw = blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
@@ -953,6 +952,8 @@ export function buildPageExportPlan({
     graphemeLines: [],
   }))
 
+  const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
+  const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
   for (const textPlan of textPlans) {
     if (!textMeasureContext) continue
     const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
@@ -960,8 +961,6 @@ export function buildPageExportPlan({
     const measureGlyphBounds = formatRuns.length === 0
       ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
       : undefined
-    const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
-    const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
     applyCanvasTextConfig(textMeasureContext, {
       font: canvasFont,
       opticalKerning: textPlan.opticalKerning,

@@ -47,13 +47,34 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   scale,
 }: Args<Key, StyleKey>) {
-  const textMetricsRef = useRef(createTextMetricsService<StyleKey, FontFamily>({
-    metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
-  }))
+  const layoutEngineKey = [
+    layoutEngine.id,
+    layoutEngine.version,
+    layoutEngine.textMetricsEngine,
+    layoutEngine.opticalMarginModel,
+    layoutEngine.verticalTextBoxModel,
+    layoutEngine.wrapModel,
+    layoutEngine.layerOrderModel,
+  ].join("|")
+  const textMetricsRef = useRef({
+    layoutEngineKey,
+    service: createTextMetricsService<StyleKey, FontFamily>({
+      metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
+    }),
+  })
+  if (textMetricsRef.current.layoutEngineKey !== layoutEngineKey) {
+    textMetricsRef.current = {
+      layoutEngineKey,
+      service: createTextMetricsService<StyleKey, FontFamily>({
+        metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
+      }),
+    }
+  }
+  const textMetrics = textMetricsRef.current.service
   const [fontRenderEpoch, setFontRenderEpoch] = useState(0)
 
   const clearCaches = useCallback(() => {
-    textMetricsRef.current.clearCaches()
+    textMetricsRef.current.service.clearCaches()
   }, [])
 
   const fontBlocks = useMemo(() => {
@@ -94,28 +115,6 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
 
   useEffect(() => {
     if (!showTypography) return
-    textMetricsRef.current = createTextMetricsService<StyleKey, FontFamily>({
-      metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
-    })
-    clearCaches()
-  }, [
-    blockOrder,
-    clearCaches,
-    getBlockFont,
-    getBlockFontWeight,
-    getBlockFontSize,
-    getBlockTextColor,
-    getBlockTextFormatRuns,
-    getStyleKeyForBlock,
-    isBlockItalic,
-    layoutEngine,
-    scale,
-    showTypography,
-    typographyStyles,
-  ])
-
-  useEffect(() => {
-    if (!showTypography) return
 
     let cancelled = false
 
@@ -145,9 +144,9 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   return {
     fontRenderEpoch,
     metricFacesReady,
-    getWrappedText: textMetricsRef.current.getWrappedText,
-    getOpticalOffset: textMetricsRef.current.getOpticalOffset,
-    getTextAscent: textMetricsRef.current.getTextAscent,
-    getTextDescent: textMetricsRef.current.getTextDescent,
+    getWrappedText: textMetrics.getWrappedText,
+    getOpticalOffset: textMetrics.getOpticalOffset,
+    getTextAscent: textMetrics.getTextAscent,
+    getTextDescent: textMetrics.getTextDescent,
   }
 }
