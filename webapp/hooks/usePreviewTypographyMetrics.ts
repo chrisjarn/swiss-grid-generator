@@ -8,6 +8,7 @@ import {
 import {
   areFontFileMetricFacesLoaded,
   collectFontFileMetricFacesFromBlocks,
+  type FontFileMetricFace,
   preloadFontFileMetricFaces,
 } from "@/lib/font-file-text-metrics-engine"
 import {
@@ -31,6 +32,10 @@ type Args<Key extends string, StyleKey extends string> = {
   getBlockTextFormatRuns: (key: Key, color: string) => TextFormatRun<StyleKey, FontFamily>[]
   layoutEngine?: LayoutEngineContract
   scale: number
+}
+
+function makeFontMetricFaceSignature(face: FontFileMetricFace): string {
+  return `${face.fontFamily}:${face.fontWeight}:${face.italic ? 1 : 0}`
 }
 
 export function usePreviewTypographyMetrics<Key extends string, StyleKey extends string>({
@@ -112,22 +117,36 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   const specs = useMemo(() => collectBrowserFontLoadSpecs(fontBlocks), [fontBlocks])
   const metricFaces = useMemo(() => collectFontFileMetricFacesFromBlocks(fontBlocks), [fontBlocks])
   const metricFacesReady = !showTypography || areFontFileMetricFacesLoaded(metricFaces)
+  const resetCachesAfterFontPreload = layoutEngine.opticalMarginModel === "browser-canvas-compat-v1"
+  const fontLoadSignature = useMemo(() => {
+    if (!specs.length && !metricFaces.length) return ""
+    return [
+      specs.slice().sort().join("\n"),
+      metricFaces.map(makeFontMetricFaceSignature).sort().join("\n"),
+    ].join("\n--\n")
+  }, [metricFaces, specs])
+  const latestFontLoadInputsRef = useRef({ specs, metricFaces })
+  latestFontLoadInputsRef.current = { specs, metricFaces }
+  const completedFontLoadSignatureRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!showTypography) return
+    if (!fontLoadSignature) return
+    if (completedFontLoadSignatureRef.current === fontLoadSignature) return
 
     let cancelled = false
 
-    if (!specs.length && !metricFaces.length) return
+    const { specs: pendingSpecs, metricFaces: pendingMetricFaces } = latestFontLoadInputsRef.current
 
     void Promise
       .all([
-        preloadBrowserFontSpecs(specs),
-        preloadFontFileMetricFaces(metricFaces),
+        preloadBrowserFontSpecs(pendingSpecs),
+        preloadFontFileMetricFaces(pendingMetricFaces),
       ])
       .then(() => {
         if (cancelled) return
-        clearCaches()
+        completedFontLoadSignatureRef.current = fontLoadSignature
+        if (resetCachesAfterFontPreload) clearCaches()
         setFontRenderEpoch((value) => value + 1)
       })
 
@@ -136,8 +155,8 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
     }
   }, [
     clearCaches,
-    metricFaces,
-    specs,
+    fontLoadSignature,
+    resetCachesAfterFontPreload,
     showTypography,
   ])
 
