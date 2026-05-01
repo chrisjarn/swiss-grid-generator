@@ -1,7 +1,10 @@
 import { buildBrowserFontLoadSpec, preloadBrowserFontSpecs } from "@/lib/browser-font-loading"
 import { clampFxLeading, clampFxSize, clampRotation } from "@/lib/block-constraints"
 import { normalizeHeightMetrics } from "@/lib/block-height"
-import { buildCanvasTypographyRenderPlans } from "@/lib/canvas-page-renderer"
+import {
+  buildCanvasTextRenderPlanFromPageExportPlan,
+  buildCanvasTypographyRenderPlans,
+} from "@/lib/canvas-page-renderer"
 import { getDefaultTextSchemeColor } from "@/lib/config/color-schemes"
 import {
   getStyleDefaultFontWeight,
@@ -182,6 +185,7 @@ export type TextMetricsPresetParityReport = {
   rangeCalibrationClassCorrection: TextMetricsExportPlanParityReport
   deterministicOpticalMargin: TextMetricsExportPlanParityReport
   previewPlan: TextMetricsPreviewPlanParityReport
+  previewCanvasAdapter: TextMetricsPreviewPlanParityReport
   productionExportPlanSignatures: TextMetricsProductionExportPlanSignature[]
   deterministicOpticalMarginExportPlanSignatures: TextMetricsProductionExportPlanSignature[]
   browserDiagnostics: BrowserTextMetricsDiagnostics
@@ -2213,6 +2217,130 @@ function buildPreviewPlanParityDelta({
       const candidateGrapheme = candidateLine[graphemeIndex]
       const xDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.x - activeGrapheme.x : 0
       const yDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.y - activeGrapheme.y : 0
+      const candidateWidth = typeof candidateGrapheme?.width === "number" ? candidateGrapheme.width : null
+      const candidateAscent = typeof candidateGrapheme?.ascent === "number" ? candidateGrapheme.ascent : null
+      const candidateDescent = typeof candidateGrapheme?.descent === "number" ? candidateGrapheme.descent : null
+      const missingCandidateMetrics = Boolean(candidateGrapheme) && (
+        candidateWidth === null
+        || candidateAscent === null
+        || candidateDescent === null
+      )
+      const widthDelta = activeGrapheme && candidateWidth !== null ? candidateWidth - activeGrapheme.width : 0
+      const ascentDelta = activeGrapheme && candidateAscent !== null ? candidateAscent - activeGrapheme.ascent : 0
+      const descentDelta = activeGrapheme && candidateDescent !== null ? candidateDescent - activeGrapheme.descent : 0
+      if (activeGrapheme && candidateGrapheme) {
+        graphemeXDeltas.push(xDelta)
+        graphemeYDeltas.push(yDelta)
+        graphemeWidthDeltas.push(widthDelta)
+        graphemeAscentDeltas.push(ascentDelta)
+        graphemeDescentDeltas.push(descentDelta)
+      }
+      const textChanged = (activeGrapheme?.text ?? "") !== (candidateGrapheme?.text ?? "")
+      const geometryChanged = Math.max(
+        Math.abs(xDelta),
+        Math.abs(yDelta),
+        Math.abs(widthDelta),
+        Math.abs(ascentDelta),
+        Math.abs(descentDelta),
+      ) > 0.01 || missingCandidateMetrics
+      if (!activeGrapheme || !candidateGrapheme || textChanged || geometryChanged) {
+        changedGraphemes.push({
+          lineIndex,
+          graphemeIndex,
+          activeText: activeGrapheme?.text ?? "",
+          candidateText: candidateGrapheme?.text ?? "",
+          activeX: activeGrapheme?.x ?? null,
+          candidateX: candidateGrapheme?.x ?? null,
+          xDelta,
+          activeY: activeGrapheme?.y ?? null,
+          candidateY: candidateGrapheme?.y ?? null,
+          yDelta,
+          activeWidth: activeGrapheme?.width ?? null,
+          candidateWidth,
+          widthDelta,
+          activeAscent: activeGrapheme?.ascent ?? null,
+          candidateAscent,
+          ascentDelta,
+          activeDescent: activeGrapheme?.descent ?? null,
+          candidateDescent,
+          descentDelta,
+        })
+      }
+    }
+  }
+
+  return {
+    label,
+    key: active.key,
+    activeCommandCount: active.commands.length,
+    candidateCommandCount: candidate.commands.length,
+    commandCountDelta: candidate.commands.length - active.commands.length,
+    changedCommandTextCount,
+    activeGraphemeCount,
+    candidateGraphemeCount,
+    graphemeCountDelta: candidateGraphemeCount - activeGraphemeCount,
+    changedGraphemeCount: changedGraphemes.length,
+    maxAbsCommandXDelta: maxAbs(commandXDeltas),
+    maxAbsCommandYDelta: maxAbs(commandYDeltas),
+    maxAbsRectXDelta: Math.abs(candidate.rect.x - active.rect.x),
+    maxAbsRectYDelta: Math.abs(candidate.rect.y - active.rect.y),
+    maxAbsRectWidthDelta: Math.abs(candidate.rect.width - active.rect.width),
+    maxAbsRectHeightDelta: Math.abs(candidate.rect.height - active.rect.height),
+    maxAbsGraphemeXDelta: maxAbs(graphemeXDeltas),
+    maxAbsGraphemeYDelta: maxAbs(graphemeYDeltas),
+    maxAbsGraphemeWidthDelta: maxAbs(graphemeWidthDeltas),
+    maxAbsGraphemeAscentDelta: maxAbs(graphemeAscentDeltas),
+    maxAbsGraphemeDescentDelta: maxAbs(graphemeDescentDeltas),
+    activeTexts: active.commands.map((command) => command.text),
+    candidateTexts: candidate.commands.map((command) => command.text),
+    changedGraphemes: changedGraphemes.slice(0, 12),
+  }
+}
+
+function buildPreviewCanvasAdapterParityDelta({
+  label,
+  active,
+  candidate,
+}: {
+  label: string
+  active: BlockRenderPlan<string>
+  candidate: BlockRenderPlan<string>
+}): TextMetricsPreviewPlanParityDelta {
+  const commandCount = Math.max(active.commands.length, candidate.commands.length)
+  const commandXDeltas: number[] = []
+  const commandYDeltas: number[] = []
+  let changedCommandTextCount = 0
+  for (let index = 0; index < commandCount; index += 1) {
+    const activeCommand = active.commands[index]
+    const candidateCommand = candidate.commands[index]
+    if ((activeCommand?.text ?? "") !== (candidateCommand?.text ?? "")) changedCommandTextCount += 1
+    if (activeCommand && candidateCommand) {
+      commandXDeltas.push(candidateCommand.x - activeCommand.x)
+      commandYDeltas.push(candidateCommand.y - activeCommand.y)
+    }
+  }
+
+  const activeGraphemeLines = active.segmentLines as PositionedTextFormatTrackingGrapheme<TypographyStyleKey, FontFamily>[][]
+  const candidateGraphemeLines = candidate.segmentLines as PositionedTextFormatTrackingGrapheme<TypographyStyleKey, FontFamily>[][]
+  const activeGraphemeCount = activeGraphemeLines.reduce((sum, line) => sum + line.length, 0)
+  const candidateGraphemeCount = candidateGraphemeLines.reduce((sum, line) => sum + line.length, 0)
+  const graphemeXDeltas: number[] = []
+  const graphemeYDeltas: number[] = []
+  const graphemeWidthDeltas: number[] = []
+  const graphemeAscentDeltas: number[] = []
+  const graphemeDescentDeltas: number[] = []
+  const changedGraphemes: TextMetricsPreviewPlanGraphemeDelta[] = []
+
+  const lineCount = Math.max(activeGraphemeLines.length, candidateGraphemeLines.length)
+  for (let lineIndex = 0; lineIndex < lineCount; lineIndex += 1) {
+    const activeLine = activeGraphemeLines[lineIndex] ?? []
+    const candidateLine = candidateGraphemeLines[lineIndex] ?? []
+    const graphemeCount = Math.max(activeLine.length, candidateLine.length)
+    for (let graphemeIndex = 0; graphemeIndex < graphemeCount; graphemeIndex += 1) {
+      const activeGrapheme = activeLine[graphemeIndex]
+      const candidateGrapheme = candidateLine[graphemeIndex]
+      const xDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.x - activeGrapheme.x : 0
+      const yDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.y - activeGrapheme.y : 0
       const widthDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.width - activeGrapheme.width : 0
       const ascentDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.ascent - activeGrapheme.ascent : 0
       const descentDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.descent - activeGrapheme.descent : 0
@@ -2322,6 +2450,121 @@ function buildPreviewPlanParityReport({
         const candidateTextPlan = candidateByKey.get(activePlan.key)
         const delta = candidateTextPlan
           ? buildPreviewPlanParityDelta({
+              label: `${samplePage.label} / ${activePlan.key}`,
+              active: activePlan,
+              candidate: candidateTextPlan,
+            })
+          : buildMissingPreviewCandidateDelta(`${samplePage.label} / ${activePlan.key}`, activePlan)
+        if (
+          delta.commandCountDelta !== 0
+          || delta.changedCommandTextCount > 0
+          || delta.changedGraphemeCount > 0
+          || delta.maxAbsCommandXDelta > 0.01
+          || delta.maxAbsCommandYDelta > 0.01
+          || delta.maxAbsRectXDelta > 0.01
+          || delta.maxAbsRectYDelta > 0.01
+          || delta.maxAbsRectWidthDelta > 0.01
+          || delta.maxAbsRectHeightDelta > 0.01
+          || delta.maxAbsGraphemeXDelta > 0.01
+          || delta.maxAbsGraphemeYDelta > 0.01
+          || delta.maxAbsGraphemeWidthDelta > 0.01
+          || delta.maxAbsGraphemeAscentDelta > 0.01
+          || delta.maxAbsGraphemeDescentDelta > 0.01
+        ) {
+          deltas.push(delta)
+        }
+      }
+    }
+    if (pageCount >= exportPageLimit) break
+  }
+
+  return {
+    pageCount,
+    textPlanCount,
+    changedPlanCount: deltas.length,
+    changedCommandCount: deltas.reduce((sum, delta) => sum + Math.abs(delta.commandCountDelta), 0),
+    changedCommandTextCount: deltas.reduce((sum, delta) => sum + delta.changedCommandTextCount, 0),
+    changedGraphemeCount: deltas.reduce((sum, delta) => sum + delta.changedGraphemeCount, 0),
+    maxAbsCommandXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsCommandXDelta)),
+    maxAbsCommandYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsCommandYDelta)),
+    maxAbsRectXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectXDelta)),
+    maxAbsRectYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectYDelta)),
+    maxAbsRectWidthDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectWidthDelta)),
+    maxAbsRectHeightDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectHeightDelta)),
+    maxAbsGraphemeXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeXDelta)),
+    maxAbsGraphemeYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeYDelta)),
+    maxAbsGraphemeWidthDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeWidthDelta)),
+    maxAbsGraphemeAscentDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeAscentDelta)),
+    maxAbsGraphemeDescentDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeDescentDelta)),
+    largestDeltas: [...deltas]
+      .sort((a, b) => (
+        Math.max(
+          b.maxAbsCommandXDelta,
+          b.maxAbsCommandYDelta,
+          b.maxAbsRectXDelta,
+          b.maxAbsRectYDelta,
+          b.maxAbsGraphemeXDelta,
+          b.maxAbsGraphemeWidthDelta,
+          Math.abs(b.commandCountDelta),
+          b.changedCommandTextCount,
+          b.changedGraphemeCount,
+        )
+        - Math.max(
+          a.maxAbsCommandXDelta,
+          a.maxAbsCommandYDelta,
+          a.maxAbsRectXDelta,
+          a.maxAbsRectYDelta,
+          a.maxAbsGraphemeXDelta,
+          a.maxAbsGraphemeWidthDelta,
+          Math.abs(a.commandCountDelta),
+          a.changedCommandTextCount,
+          a.changedGraphemeCount,
+        )
+      ))
+      .slice(0, 20),
+  }
+}
+
+function buildPreviewCanvasAdapterParityReport({
+  exportPageLimit,
+  measurementContext,
+}: {
+  exportPageLimit: number
+  measurementContext: CanvasRenderingContext2D
+}): TextMetricsPreviewPlanParityReport {
+  const deltas: TextMetricsPreviewPlanParityDelta[] = []
+  let pageCount = 0
+  let textPlanCount = 0
+
+  for (const preset of LAYOUT_PRESETS) {
+    for (const samplePage of collectTextMetricsPresetPages(preset, true)) {
+      if (pageCount >= exportPageLimit) break
+      pageCount += 1
+      const page = samplePage.page
+      const activePlans = buildCurrentPreviewTextPlans({ page, context: measurementContext })
+      const candidatePlan = buildPageExportPlan({
+        result: page.result,
+        layout: page.previewLayout as ExportPreviewLayoutState | null,
+        baseFont: page.baseFont,
+        imageColorScheme: page.imageColorScheme,
+        canvasBackground: page.resolvedCanvasBackground,
+        rotation: typeof page.uiSettings.rotation === "number" ? page.uiSettings.rotation : 0,
+        showBaselines: false,
+        showModules: false,
+        showMargins: false,
+        showImagePlaceholders: false,
+        showTypography: true,
+        layoutEngine: page.layoutEngine,
+      })
+      const candidateByKey = new Map(candidatePlan.textPlans.map((textPlan) => [
+        textPlan.key,
+        buildCanvasTextRenderPlanFromPageExportPlan(textPlan),
+      ]))
+      for (const activePlan of activePlans.values()) {
+        textPlanCount += 1
+        const candidateTextPlan = candidateByKey.get(activePlan.key)
+        const delta = candidateTextPlan
+          ? buildPreviewCanvasAdapterParityDelta({
               label: `${samplePage.label} / ${activePlan.key}`,
               active: activePlan,
               candidate: candidateTextPlan,
@@ -2609,6 +2852,10 @@ export async function runPresetTextMetricsParityReport({
     exportPageLimit,
     measurementContext: context,
   })
+  const previewCanvasAdapter = buildPreviewCanvasAdapterParityReport({
+    exportPageLimit,
+    measurementContext: context,
+  })
   const productionExportPlanSignatures = buildProductionExportPlanSignatures(exportPageLimit)
   const deterministicOpticalMarginExportPlanSignatures = buildProductionExportPlanSignatures(
     exportPageLimit,
@@ -2648,6 +2895,7 @@ export async function runPresetTextMetricsParityReport({
     rangeCalibrationClassCorrection,
     deterministicOpticalMargin,
     previewPlan,
+    previewCanvasAdapter,
     productionExportPlanSignatures,
     deterministicOpticalMarginExportPlanSignatures,
     browserDiagnostics,

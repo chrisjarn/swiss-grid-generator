@@ -81,6 +81,7 @@ export type TextMetricsParityReportLike = {
   wrappedLineCountChangedCount: number
   exportPlan: TextMetricsExportPlanParityLike
   previewPlan?: TextMetricsPreviewPlanParityLike
+  previewCanvasAdapter?: TextMetricsPreviewPlanParityLike
 }
 
 export type TextMetricsProductionParityReportLike = {
@@ -89,6 +90,7 @@ export type TextMetricsProductionParityReportLike = {
   rangeCalibrationClassCorrection?: TextMetricsExportPlanParityLike
   deterministicOpticalMargin?: TextMetricsExportPlanParityLike
   previewPlan?: TextMetricsPreviewPlanParityLike
+  previewCanvasAdapter?: TextMetricsPreviewPlanParityLike
   productionExportPlanSignatures?: readonly TextMetricsProductionExportPlanSignatureLike[]
   deterministicOpticalMarginExportPlanSignatures?: readonly TextMetricsProductionExportPlanSignatureLike[]
 }
@@ -497,28 +499,29 @@ export function evaluateDeterministicOpticalMarginThresholds(
 export function evaluatePreviewPlanThresholds(
   report: TextMetricsPreviewPlanParityLike,
   thresholds: TextMetricsParityThresholds = DEFAULT_TEXT_METRICS_PARITY_THRESHOLDS,
+  label = "previewPlan",
 ): TextMetricsParityThresholdReport {
   const checks: [string, number, "<=" | ">=", number][] = [
-    ["previewPlan.changedPlanCount", report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
-    ["previewPlan.changedCommandCount", report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
+    [`${label}.changedPlanCount`, report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
+    [`${label}.changedCommandCount`, report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
     [
-      "previewPlan.changedCommandTextCount",
+      `${label}.changedCommandTextCount`,
       report.changedCommandTextCount,
       "<=",
       thresholds.previewPlanChangedCommandTextCount,
     ],
-    ["previewPlan.changedGraphemeCount", report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
-    ["previewPlan.maxAbsCommandXDelta", report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
-    ["previewPlan.maxAbsCommandYDelta", report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
-    ["previewPlan.maxAbsRectXDelta", report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectYDelta", report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectWidthDelta", report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectHeightDelta", report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsGraphemeXDelta", report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeYDelta", report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeWidthDelta", report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeAscentDelta", report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeDescentDelta", report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.changedGraphemeCount`, report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
+    [`${label}.maxAbsCommandXDelta`, report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    [`${label}.maxAbsCommandYDelta`, report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    [`${label}.maxAbsRectXDelta`, report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectYDelta`, report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectWidthDelta`, report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectHeightDelta`, report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsGraphemeXDelta`, report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeYDelta`, report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeWidthDelta`, report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeAscentDelta`, report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeDescentDelta`, report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
   ]
 
   const failures = checks.flatMap(([label, actual, operator, expected]) => {
@@ -566,6 +569,13 @@ export function evaluateTextMetricsProductionParityThresholds(
   }
   if (report.previewPlan) {
     failures.push(...evaluatePreviewPlanThresholds(report.previewPlan, thresholds).failures)
+  }
+  if (report.previewCanvasAdapter) {
+    failures.push(...evaluatePreviewPlanThresholds(
+      report.previewCanvasAdapter,
+      thresholds,
+      "previewCanvasAdapter",
+    ).failures)
   }
   failures.push(...evaluateProductionExportPlanSignatures(report.productionExportPlanSignatures))
 

@@ -24,6 +24,7 @@ type CaptureState =
       productionThresholdReport: null
       deterministicOpticalMarginThresholdReport: null
       previewPlanThresholdReport: null
+      previewCanvasAdapterThresholdReport: null
       error: null
     }
   | {
@@ -35,6 +36,7 @@ type CaptureState =
       productionThresholdReport: TextMetricsParityThresholdReport
       deterministicOpticalMarginThresholdReport: TextMetricsParityThresholdReport
       previewPlanThresholdReport: TextMetricsParityThresholdReport
+      previewCanvasAdapterThresholdReport: TextMetricsParityThresholdReport
       error: null
     }
   | {
@@ -46,6 +48,7 @@ type CaptureState =
       productionThresholdReport: null
       deterministicOpticalMarginThresholdReport: null
       previewPlanThresholdReport: null
+      previewCanvasAdapterThresholdReport: null
       error: string
     }
 
@@ -152,6 +155,14 @@ function summarizeReport(report: TextMetricsPresetParityReport) {
         largestVetoes: report.deterministicOpticalMargin.boundaryVetoSummary.largestVetoes.slice(0, 8),
       },
     },
+    previewPlan: {
+      ...report.previewPlan,
+      largestDeltas: report.previewPlan.largestDeltas.slice(0, 8),
+    },
+    previewCanvasAdapter: {
+      ...report.previewCanvasAdapter,
+      largestDeltas: report.previewCanvasAdapter.largestDeltas.slice(0, 8),
+    },
     productionExportPlanSignatures: report.productionExportPlanSignatures,
     deterministicOpticalMarginExportPlanSignatures: report.deterministicOpticalMarginExportPlanSignatures,
     browserDiagnostics: report.browserDiagnostics,
@@ -172,6 +183,7 @@ export default function TextMetricsDevPage() {
     productionThresholdReport: null,
     deterministicOpticalMarginThresholdReport: null,
     previewPlanThresholdReport: null,
+    previewCanvasAdapterThresholdReport: null,
     error: null,
   })
   const [options, setOptions] = useState<Required<TextMetricsPresetParityReportOptions>>(DEFAULT_OPTIONS)
@@ -192,6 +204,7 @@ export default function TextMetricsDevPage() {
         productionThresholdReport: null,
         deterministicOpticalMarginThresholdReport: null,
         previewPlanThresholdReport: null,
+        previewCanvasAdapterThresholdReport: null,
         error: "Text metrics capture is only available in development builds.",
       })
       return
@@ -212,6 +225,7 @@ export default function TextMetricsDevPage() {
       productionThresholdReport: null,
       deterministicOpticalMarginThresholdReport: null,
       previewPlanThresholdReport: null,
+      previewCanvasAdapterThresholdReport: null,
       error: null,
     })
 
@@ -224,6 +238,11 @@ export default function TextMetricsDevPage() {
         report.deterministicOpticalMargin,
       )
       const previewPlanThresholdReport = evaluatePreviewPlanThresholds(report.previewPlan)
+      const previewCanvasAdapterThresholdReport = evaluatePreviewPlanThresholds(
+        report.previewCanvasAdapter,
+        undefined,
+        "previewCanvasAdapter",
+      )
       const browser = getBrowserMetadata()
       const payload = JSON.stringify({
         kind: "swiss-grid-generator.text-metrics-parity-capture",
@@ -234,6 +253,7 @@ export default function TextMetricsDevPage() {
         productionThresholdReport,
         deterministicOpticalMarginThresholdReport,
         previewPlanThresholdReport,
+        previewCanvasAdapterThresholdReport,
         report: summarizeReport(report),
       })
       const blob = new Blob([payload], { type: "application/json" })
@@ -251,6 +271,7 @@ export default function TextMetricsDevPage() {
         productionThresholdReport,
         deterministicOpticalMarginThresholdReport,
         previewPlanThresholdReport,
+        previewCanvasAdapterThresholdReport,
         error: null,
       })
     } catch (error) {
@@ -264,6 +285,7 @@ export default function TextMetricsDevPage() {
         productionThresholdReport: null,
         deterministicOpticalMarginThresholdReport: null,
         previewPlanThresholdReport: null,
+        previewCanvasAdapterThresholdReport: null,
         error: error instanceof Error ? error.stack ?? error.message : String(error),
       })
     }
@@ -368,6 +390,9 @@ export default function TextMetricsDevPage() {
                 : ""}
               {captureState.previewPlanThresholdReport
                 ? ` / Preview plan: ${captureState.previewPlanThresholdReport.status}`
+                : ""}
+              {captureState.previewCanvasAdapterThresholdReport
+                ? ` / Preview canvas adapter: ${captureState.previewCanvasAdapterThresholdReport.status}`
                 : ""}
               {captureState.thresholdReport.status !== captureState.productionThresholdReport.status
                 ? ` / Browser canvas diagnostic: ${captureState.thresholdReport.status}`

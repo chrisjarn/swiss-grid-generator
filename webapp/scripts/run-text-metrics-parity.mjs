@@ -550,6 +550,10 @@ async function evaluateParityReport(cdp, url) {
           ...report.previewPlan,
           largestDeltas: report.previewPlan.largestDeltas.slice(0, 8),
         },
+        previewCanvasAdapter: {
+          ...report.previewCanvasAdapter,
+          largestDeltas: report.previewCanvasAdapter.largestDeltas.slice(0, 8),
+        },
         productionExportPlanSignatures: report.productionExportPlanSignatures,
         deterministicOpticalMarginExportPlanSignatures: report.deterministicOpticalMarginExportPlanSignatures,
         browserDiagnostics: report.browserDiagnostics,
@@ -700,30 +704,30 @@ function assertDeterministicOpticalMarginThresholds(report) {
   ])
 }
 
-function assertPreviewPlanThresholds(report) {
-  if (!report) return ["previewPlan: expected report, got missing"]
+function assertPreviewPlanThresholds(report, label = "previewPlan") {
+  if (!report) return [`${label}: expected report, got missing`]
 
   return collectCheckFailures([
-    ["previewPlan.changedPlanCount", report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
-    ["previewPlan.changedCommandCount", report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
+    [`${label}.changedPlanCount`, report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
+    [`${label}.changedCommandCount`, report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
     [
-      "previewPlan.changedCommandTextCount",
+      `${label}.changedCommandTextCount`,
       report.changedCommandTextCount,
       "<=",
       thresholds.previewPlanChangedCommandTextCount,
     ],
-    ["previewPlan.changedGraphemeCount", report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
-    ["previewPlan.maxAbsCommandXDelta", report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
-    ["previewPlan.maxAbsCommandYDelta", report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
-    ["previewPlan.maxAbsRectXDelta", report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectYDelta", report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectWidthDelta", report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsRectHeightDelta", report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
-    ["previewPlan.maxAbsGraphemeXDelta", report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeYDelta", report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeWidthDelta", report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeAscentDelta", report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
-    ["previewPlan.maxAbsGraphemeDescentDelta", report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.changedGraphemeCount`, report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
+    [`${label}.maxAbsCommandXDelta`, report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    [`${label}.maxAbsCommandYDelta`, report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    [`${label}.maxAbsRectXDelta`, report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectYDelta`, report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectWidthDelta`, report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsRectHeightDelta`, report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    [`${label}.maxAbsGraphemeXDelta`, report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeYDelta`, report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeWidthDelta`, report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeAscentDelta`, report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    [`${label}.maxAbsGraphemeDescentDelta`, report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
   ])
 }
 
@@ -918,6 +922,7 @@ function summarizeParityReport(report) {
     rangeCalibrationClassCorrection: summarizeExportPlan(report.rangeCalibrationClassCorrection),
     deterministicOpticalMargin: summarizeDiagnosticExportPlan(report.deterministicOpticalMargin),
     previewPlan: summarizePreviewPlan(report.previewPlan),
+    previewCanvasAdapter: summarizePreviewPlan(report.previewCanvasAdapter),
     productionExportPlanSignatures: report.productionExportPlanSignatures,
     deterministicOpticalMarginExportPlanSignatures: report.deterministicOpticalMarginExportPlanSignatures,
     diagnosis: report.diagnosis,
@@ -948,11 +953,24 @@ async function main() {
       report.deterministicOpticalMarginExportPlanSignatures,
     ))
     const previewPlanFailures = assertPreviewPlanThresholds(report.previewPlan)
+    const previewCanvasAdapterFailures = assertPreviewPlanThresholds(
+      report.previewCanvasAdapter,
+      "previewCanvasAdapter",
+    )
     const productionFailures = assertProductionThresholds(report)
     const failOnBrowserDiagnostic = process.env.SGG_PARITY_FAIL_ON_BROWSER_DIAGNOSTIC === "1"
     const failures = failOnBrowserDiagnostic
-      ? productionFailures.concat(browserDiagnosticFailures, deterministicOpticalMarginFailures, previewPlanFailures)
-      : productionFailures.concat(deterministicOpticalMarginFailures, previewPlanFailures)
+      ? productionFailures.concat(
+          browserDiagnosticFailures,
+          deterministicOpticalMarginFailures,
+          previewPlanFailures,
+          previewCanvasAdapterFailures,
+        )
+      : productionFailures.concat(
+          deterministicOpticalMarginFailures,
+          previewPlanFailures,
+          previewCanvasAdapterFailures,
+        )
     console.log(JSON.stringify({
       options,
       thresholds,
@@ -963,6 +981,8 @@ async function main() {
       deterministicOpticalMarginFailures,
       previewPlanStatus: previewPlanFailures.length === 0 ? "passed" : "failed",
       previewPlanFailures,
+      previewCanvasAdapterStatus: previewCanvasAdapterFailures.length === 0 ? "passed" : "failed",
+      previewCanvasAdapterFailures,
       browserDiagnosticStatus: browserDiagnosticFailures.length === 0 ? "passed" : "failed",
       browserDiagnosticFailures,
       status: failures.length === 0 ? "passed" : "failed",

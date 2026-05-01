@@ -579,8 +579,18 @@ test("package exposes the browser text-metrics parity gate", () => {
   )
   assert.match(
     scriptSource,
+    /previewCanvasAdapter:\s*\{[\s\S]*?\.\.\.report\.previewCanvasAdapter[\s\S]*?largestDeltas:\s*report\.previewCanvasAdapter\.largestDeltas\.slice\(0,\s*8\)/,
+    "browser parity command should preserve preview canvas-adapter diagnostics from the in-browser report",
+  )
+  assert.match(
+    scriptSource,
     /previewPlan:\s*summarizePreviewPlan\(report\.previewPlan\)/,
     "browser parity summary output should include preview-plan parity before live preview is switched",
+  )
+  assert.match(
+    scriptSource,
+    /previewCanvasAdapter:\s*summarizePreviewPlan\(report\.previewCanvasAdapter\)/,
+    "browser parity summary output should include preview canvas-adapter parity before live preview is switched",
   )
   assert.match(
     scriptSource,
@@ -763,6 +773,11 @@ test("Safari capture page runs the same browser report with threshold metadata",
   )
   assert.match(
     pageSource,
+    /previewCanvasAdapterThresholdReport/,
+    "Safari capture JSON should include preview canvas-adapter threshold status",
+  )
+  assert.match(
+    pageSource,
     /deterministicOpticalMarginExportPlanSignatures/,
     "Safari capture JSON should include deterministic optical-margin candidate signatures",
   )
@@ -778,8 +793,13 @@ test("Safari capture page runs the same browser report with threshold metadata",
   )
   assert.match(
     scriptSource,
-    /assertPreviewPlanThresholds[\s\S]*?previewPlan\.changedCommandCount[\s\S]*?previewPlan\.maxAbsGraphemeWidthDelta[\s\S]*?previewPlanFailures/,
+    /function assertPreviewPlanThresholds\(report,\s*label = "previewPlan"\)[\s\S]*?label}\.changedCommandCount[\s\S]*?label}\.maxAbsGraphemeWidthDelta[\s\S]*?previewPlanFailures[\s\S]*?previewCanvasAdapterFailures/,
     "browser parity command should fail on live-preview/export plan drift",
+  )
+  assert.match(
+    scriptSource,
+    /assertPreviewPlanThresholds\(\s*report\.previewCanvasAdapter,\s*"previewCanvasAdapter",?\s*\)/,
+    "browser parity command should hard-gate the canonical canvas adapter before switching live preview",
   )
   assert.match(
     pageSource,
@@ -825,6 +845,11 @@ test("Safari capture page runs the same browser report with threshold metadata",
     devReportSource,
     /productionExportPlanSignatures/,
     "browser captures should include compact deterministic export-plan signatures",
+  )
+  assert.match(
+    devReportSource,
+    /buildCanvasTextRenderPlanFromPageExportPlan[\s\S]*?previewCanvasAdapter/,
+    "browser captures should compare canonical export plans after the canvas adapter used by thumbnails",
   )
   assert.match(
     pageSource,
