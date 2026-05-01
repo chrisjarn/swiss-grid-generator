@@ -1,6 +1,6 @@
 {
   "name": "webapp",
-  "version": "0.141.1",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "config": {
@@ -41,6 +41,7 @@
     "test:text": "node --test tests/text-layout.test.mjs",
     "test:text-metrics": "node --test tests/text-metrics-diagnostics.test.mjs",
     "test:text-metrics:browser": "node scripts/run-text-metrics-parity.mjs",
+    "test:preview-interactions": "node scripts/run-preview-interaction-smoke.mjs",
     "test:optical": "node --test tests/optical-margin.test.mjs",
     "test:pdf": "node --test tests/pdf-export-rotation-contract.test.mjs",
     "test:svg": "node --test tests/svg-export-contract.test.mjs",

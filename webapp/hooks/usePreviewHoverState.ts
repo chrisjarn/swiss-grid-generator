@@ -154,15 +154,15 @@ export function usePreviewHoverState<Key extends string>({
     dragState
       ? (dragState.copyOnDrop ? "cursor-default" : "cursor-grabbing")
       : hasHoverTarget
-        ? ((persistentTextCopyIntent && hasTextHoverTarget) ? "cursor-default" : "cursor-grab")
+        ? (persistentTextCopyIntent ? "cursor-default" : "cursor-grab")
         : "cursor-default"
-  ), [dragState, hasHoverTarget, hasTextHoverTarget, persistentTextCopyIntent])
+  ), [dragState, hasHoverTarget, persistentTextCopyIntent])
 
   const canvasCursorStyle = useMemo<CSSProperties | undefined>(() => (
-    (dragState?.copyOnDrop || (persistentTextCopyIntent && hasTextHoverTarget))
+    (dragState?.copyOnDrop || persistentTextCopyIntent)
       ? { cursor: COPY_CURSOR_STYLE_VALUE }
       : undefined
-  ), [dragState?.copyOnDrop, hasTextHoverTarget, persistentTextCopyIntent])
+  ), [dragState?.copyOnDrop, persistentTextCopyIntent])
 
   return {
     clearHover,
