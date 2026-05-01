@@ -151,6 +151,7 @@ export type PageExportPlan = {
   orderedLayerKeys: BlockId[]
   imagePlans: PageExportImagePlan[]
   textPlans: PageExportTextPlan[]
+  overflowByBlock: Partial<Record<BlockId, number>>
 }
 
 type BuildPageExportPlanArgs = {
@@ -1041,5 +1042,6 @@ export function buildPageExportPlan({
     orderedLayerKeys: resolvedOrderedLayerKeys,
     imagePlans,
     textPlans,
+    overflowByBlock: layoutOutput.overflowByBlock,
   }
 }
