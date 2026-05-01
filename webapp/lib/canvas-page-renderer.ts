@@ -930,7 +930,9 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
 ): BlockRenderPlan<string> {
   const textColor = formatSvgColor(textPlan.textColor)
   const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
-  const segmentLines = textPlan.segmentLines
+  const segmentLines = textPlan.graphemeLines.length > 0
+    ? textPlan.graphemeLines
+    : textPlan.segmentLines
   return {
     key: textPlan.key,
     rect: textPlan.rect,

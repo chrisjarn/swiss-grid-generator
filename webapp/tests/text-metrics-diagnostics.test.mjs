@@ -263,6 +263,11 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     "canvas glyph positioning should receive deterministic outline glyph bounds when available",
   )
   assert.match(
+    canvasRendererSource,
+    /textPlan\.graphemeLines\.length > 0[\s\S]*?textPlan\.graphemeLines[\s\S]*?textPlan\.segmentLines/,
+    "canonical canvas output should draw from deterministic grapheme positions before falling back to browser-shaped segments",
+  )
+  assert.match(
     textFormatRunsSource,
     /const measured = measureResolvedGlyphBounds\?\.\(grapheme\) \?\? measureGlyphBounds\?\.\(grapheme\.text\)[\s\S]*?measured\.advanceWidth/,
     "glyph positioning should prefer deterministic font-file advance widths before canvas measurement",
