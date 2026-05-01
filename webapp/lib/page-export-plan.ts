@@ -167,6 +167,7 @@ type BuildPageExportPlanArgs = {
   showImagePlaceholders: boolean
   showTypography: boolean
   layoutEngine?: LayoutEngineContract
+  rawDocumentVariableBlockKey?: BlockId | null
   textMetricsEngineFactory?: TextMetricsEngineFactory<TypographyStyleKey, FontFamily>
   textWrapTraceCollector?: (trace: PageExportTextWrapTrace) => void
 }
@@ -246,6 +247,7 @@ export function buildPageExportPlan({
   showImagePlaceholders,
   showTypography,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  rawDocumentVariableBlockKey = null,
   textMetricsEngineFactory,
   textWrapTraceCollector,
 }: BuildPageExportPlanArgs): PageExportPlan {
@@ -666,7 +668,8 @@ export function buildPageExportPlan({
       gridCols,
       (result.grid.contentRects?.length ?? 0) > 1,
     )
-    const resolved = blockDocumentVariableContext
+    const shouldResolveDocumentVariables = blockDocumentVariableContext && key !== rawDocumentVariableBlockKey
+    const resolved = shouldResolveDocumentVariables
       ? resolveDocumentVariableContent({
           text: rawText,
           context: blockDocumentVariableContext,

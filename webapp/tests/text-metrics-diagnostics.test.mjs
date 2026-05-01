@@ -243,6 +243,11 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     "page export planning should default through the saved layout metrics contract",
   )
   assert.match(
+    pageExportSource,
+    /rawDocumentVariableBlockKey[\s\S]*?key !== rawDocumentVariableBlockKey/,
+    "canonical page planning should be able to preserve raw text for the active editor block",
+  )
+  assert.match(
     presetThumbnailSource,
     /buildPageExportPlan\(\{[\s\S]*?layoutEngine:\s*page\.layoutEngine[\s\S]*?buildCanvasRenderPlansFromPageExportPlan/,
     "preset thumbnail planning should consume the canonical page export plan under the saved layout metrics contract",
