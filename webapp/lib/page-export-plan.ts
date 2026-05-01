@@ -716,6 +716,8 @@ export function buildPageExportPlan({
                   baseFormat,
                   candidateResolved.formatRuns,
                   resolveFontSize,
+                  undefined,
+                  baseCanvasFont,
                 ).length
               },
             })
@@ -869,6 +871,7 @@ export function buildPageExportPlan({
               baseFormat,
               formatRuns,
               resolveFontSize,
+              canvasFont,
             )
           }
           return text.length * fontSize * 0.56
@@ -913,6 +916,7 @@ export function buildPageExportPlan({
                 maxWidth,
               })
             : undefined,
+          context.canvasFont,
         )
       },
       textAscent: ({ context, fontSize }) =>
@@ -928,6 +932,7 @@ export function buildPageExportPlan({
               align,
               fontSize,
               context.opticalKerning,
+              context.canvasFont,
             )
           : 0,
     })

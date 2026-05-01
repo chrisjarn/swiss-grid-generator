@@ -35,6 +35,7 @@ export type TextWrapRequest<StyleKey extends string, Family extends string> = {
 }
 
 export type OpticalOffsetRequest<StyleKey extends string> = {
+  canvasFont?: string
   styleKey: StyleKey
   line: string
   align: TextAlignMode

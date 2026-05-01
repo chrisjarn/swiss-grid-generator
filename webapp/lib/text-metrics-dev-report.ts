@@ -1,4 +1,13 @@
 import { buildBrowserFontLoadSpec, preloadBrowserFontSpecs } from "@/lib/browser-font-loading"
+import { clampFxLeading, clampFxSize, clampRotation } from "@/lib/block-constraints"
+import { normalizeHeightMetrics } from "@/lib/block-height"
+import { buildCanvasTypographyRenderPlans } from "@/lib/canvas-page-renderer"
+import { getDefaultTextSchemeColor } from "@/lib/config/color-schemes"
+import {
+  getStyleDefaultFontWeight,
+  isFontFamily,
+  resolveFontVariant,
+} from "@/lib/config/fonts"
 import {
   collectFontFileMetricFacesFromCanvasFonts,
   createDeterministicFontFileOpticalMarginTextMetricsEngine,
@@ -19,7 +28,17 @@ import {
   collectTextMetricsPresetSamples,
 } from "@/lib/text-metrics-preset-samples"
 import type { FontFamily } from "@/lib/config/fonts"
+import { DEFAULT_STYLE_ASSIGNMENTS, DEFAULT_TEXT_CONTENT, isBaseBlockId } from "@/lib/document-defaults"
+import { buildAxisStarts, findNearestAxisIndex, resolveAxisSizes } from "@/lib/grid-rhythm"
+import {
+  resolveGridColumnStarts,
+  resolveGridFirstColumnStep,
+} from "@/lib/grid-column-layout"
+import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/lib/layer-placement"
 import { LAYOUT_PRESETS } from "@/lib/presets"
+import type { LayoutPresetBrowserPage } from "@/lib/presets/types"
+import { resolvePreviewColumnX } from "@/lib/preview-column-snap"
+import type { BlockRenderPlan, TextAlignMode, TextVerticalAlignMode } from "@/lib/preview-types"
 import {
   buildPageExportPlan,
   type PageExportPlan,
@@ -29,19 +48,45 @@ import {
 import {
   applyCanvasTextConfig,
   buildCanvasFont,
+  DEFAULT_OPTICAL_KERNING,
+  DEFAULT_TRACKING_SCALE,
   getTrackingLetterSpacing,
   measureCanvasTextWidth,
   measureTextPairAdvance,
+  normalizeOpticalKerning,
+  normalizeTrackingScale,
 } from "@/lib/text-rendering"
+import { mapTextBlockPositionsToAbsolute } from "@/lib/text-block-position"
+import {
+  normalizeTextFormatRuns,
+  type PositionedTextFormatTrackingGrapheme,
+  type TextFormatRun,
+} from "@/lib/text-format-runs"
+import { getDefaultColumnSpan } from "@/lib/text-layout"
 import {
   runBrowserTextMetricsDiagnostics,
   type BrowserTextMetricsDiagnostics,
 } from "@/lib/text-metrics-browser-diagnostics"
+import { createTextMetricsService } from "@/lib/text-metrics-service"
+import {
+  normalizeTextTrackingRuns,
+  type TextTrackingRun,
+} from "@/lib/text-tracking-runs"
+import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
+import { resolveLayoutTextMetricsEngineFactory } from "@/lib/layout-engine-contract"
 import type { PreviewLayoutState } from "@/lib/types/preview-layout"
 import type { TextMetricsEngineFactory } from "@/lib/text-metrics-engine"
 
 type TypographyStyleKey = string
 type ExportPreviewLayoutState = PreviewLayoutState<TypographyStyleKey, FontFamily, string>
+type PreviewPlanLayoutState = PreviewLayoutState<TypographyStyleKey, FontFamily, string>
+type PreviewTypographyStyleDefinition = {
+  size: number
+  leading?: number
+  weight?: string
+  blockItalic?: boolean
+  baselineMultiplier: number
+}
 
 export type TextMetricsPresetParityReportOptions = {
   sampleLimit?: number
@@ -136,10 +181,81 @@ export type TextMetricsPresetParityReport = {
   rangeCalibration: TextMetricsExportPlanParityReport
   rangeCalibrationClassCorrection: TextMetricsExportPlanParityReport
   deterministicOpticalMargin: TextMetricsExportPlanParityReport
+  previewPlan: TextMetricsPreviewPlanParityReport
   productionExportPlanSignatures: TextMetricsProductionExportPlanSignature[]
   deterministicOpticalMarginExportPlanSignatures: TextMetricsProductionExportPlanSignature[]
   browserDiagnostics: BrowserTextMetricsDiagnostics
   diagnosis: TextMetricsPresetParityDiagnosis
+}
+
+export type TextMetricsPreviewPlanParityReport = {
+  pageCount: number
+  textPlanCount: number
+  changedPlanCount: number
+  changedCommandCount: number
+  changedCommandTextCount: number
+  changedGraphemeCount: number
+  maxAbsCommandXDelta: number
+  maxAbsCommandYDelta: number
+  maxAbsRectXDelta: number
+  maxAbsRectYDelta: number
+  maxAbsRectWidthDelta: number
+  maxAbsRectHeightDelta: number
+  maxAbsGraphemeXDelta: number
+  maxAbsGraphemeYDelta: number
+  maxAbsGraphemeWidthDelta: number
+  maxAbsGraphemeAscentDelta: number
+  maxAbsGraphemeDescentDelta: number
+  largestDeltas: TextMetricsPreviewPlanParityDelta[]
+}
+
+export type TextMetricsPreviewPlanParityDelta = {
+  label: string
+  key: string
+  activeCommandCount: number
+  candidateCommandCount: number
+  commandCountDelta: number
+  changedCommandTextCount: number
+  activeGraphemeCount: number
+  candidateGraphemeCount: number
+  graphemeCountDelta: number
+  changedGraphemeCount: number
+  maxAbsCommandXDelta: number
+  maxAbsCommandYDelta: number
+  maxAbsRectXDelta: number
+  maxAbsRectYDelta: number
+  maxAbsRectWidthDelta: number
+  maxAbsRectHeightDelta: number
+  maxAbsGraphemeXDelta: number
+  maxAbsGraphemeYDelta: number
+  maxAbsGraphemeWidthDelta: number
+  maxAbsGraphemeAscentDelta: number
+  maxAbsGraphemeDescentDelta: number
+  activeTexts: string[]
+  candidateTexts: string[]
+  changedGraphemes: TextMetricsPreviewPlanGraphemeDelta[]
+}
+
+export type TextMetricsPreviewPlanGraphemeDelta = {
+  lineIndex: number
+  graphemeIndex: number
+  activeText: string
+  candidateText: string
+  activeX: number | null
+  candidateX: number | null
+  xDelta: number
+  activeY: number | null
+  candidateY: number | null
+  yDelta: number
+  activeWidth: number | null
+  candidateWidth: number | null
+  widthDelta: number
+  activeAscent: number | null
+  candidateAscent: number | null
+  ascentDelta: number
+  activeDescent: number | null
+  candidateDescent: number | null
+  descentDelta: number
 }
 
 export type TextMetricsProductionExportPlanSignature = {
@@ -610,6 +726,306 @@ function getExportPlanByKey(plans: readonly PageExportTextPlan[]): Map<string, P
 
 function maxAbs(values: readonly number[]): number {
   return Math.max(0, ...values.map((value) => Math.abs(value)))
+}
+
+function normalizeKeys(value: unknown): string[] {
+  if (!Array.isArray(value)) return []
+  return value
+    .filter((entry): entry is string => typeof entry === "string" && entry.trim().length > 0)
+    .filter((key, index, source) => source.indexOf(key) === index)
+}
+
+function toTextAlign(value: unknown): TextAlignMode {
+  return value === "right" || value === "center" ? value : "left"
+}
+
+function toTextVerticalAlign(value: unknown): TextVerticalAlignMode {
+  return value === "bottom" || value === "center" ? value : "top"
+}
+
+function getPreviewStyleKey(
+  key: string,
+  styleAssignments: Partial<Record<string, TypographyStyleKey>>,
+  styleDefinitions: Record<TypographyStyleKey, PreviewTypographyStyleDefinition>,
+): TypographyStyleKey {
+  const assigned = styleAssignments[key]
+  if (assigned && Object.hasOwn(styleDefinitions, assigned)) return assigned
+  if (isBaseBlockId(key)) return DEFAULT_STYLE_ASSIGNMENTS[key]
+  return "body"
+}
+
+function getPreviewFontVariant(
+  key: string,
+  styleKey: TypographyStyleKey,
+  styleDefinitions: Record<TypographyStyleKey, PreviewTypographyStyleDefinition>,
+  baseFont: FontFamily,
+  layout: PreviewPlanLayoutState | null,
+) {
+  const requestedFont = layout?.blockFontFamilies?.[key]
+  const blockFont = isFontFamily(requestedFont) ? requestedFont : baseFont
+  const weightOverride = layout?.blockFontWeights?.[key]
+  const legacyBoldOverride = layout?.blockBold?.[key]
+  const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
+    ? weightOverride
+    : legacyBoldOverride === true
+      ? 700
+      : legacyBoldOverride === false
+        ? 400
+        : getStyleDefaultFontWeight(styleDefinitions[styleKey]?.weight)
+  const italicOverride = layout?.blockItalic?.[key]
+  const requestedItalic = italicOverride === true || italicOverride === false
+    ? italicOverride
+    : styleDefinitions[styleKey]?.blockItalic === true
+
+  return {
+    font: blockFont,
+    variant: resolveFontVariant(blockFont, requestedWeight, requestedItalic),
+  }
+}
+
+function buildCurrentPreviewTextPlans({
+  page,
+  context,
+}: {
+  page: LayoutPresetBrowserPage
+  context: CanvasRenderingContext2D
+}): Map<string, BlockRenderPlan<string>> {
+  const result = page.result
+  const layout = (page.previewLayout ?? null) as PreviewPlanLayoutState | null
+  const styleDefinitions = result.typography.styles as Record<TypographyStyleKey, PreviewTypographyStyleDefinition>
+  const blockOrder = normalizeKeys(layout?.blockOrder)
+  if (!blockOrder.length) return new Map()
+
+  const { height } = result.pageSizePt
+  const { margins, gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
+  const { width: moduleWidthBase, height: moduleHeightBase } = result.module
+  const { gridCols, gridRows } = result.settings
+  const moduleWidths = resolveAxisSizes(result.module.widths, gridCols, moduleWidthBase)
+  const moduleHeights = resolveAxisSizes(result.module.heights, gridRows, moduleHeightBase)
+  const colStarts = resolveGridColumnStarts(result, moduleWidths)
+  const rowStarts = buildAxisStarts(moduleHeights, gridMarginVertical)
+  const rowStartsInBaselines = rowStarts.map((value) => value / Math.max(0.0001, gridUnit))
+  const blockModulePositions = mapTextBlockPositionsToAbsolute(layout?.blockModulePositions ?? {}, rowStartsInBaselines)
+  const contentTop = margins.top
+  const contentLeft = margins.left
+  const baselineStep = gridUnit
+  const baselineOriginTop = contentTop - baselineStep
+  const firstColumnStep = resolveGridFirstColumnStep(moduleWidths, colStarts, gridMarginHorizontal, moduleWidthBase)
+  const maxBaselineRow = Math.max(0, Math.floor((height - margins.top - margins.bottom) / baselineStep))
+  const styleAssignments = layout?.styleAssignments ?? {}
+  const textContent = blockOrder.reduce((acc, key) => {
+    const value = layout?.textContent?.[key]
+    acc[key] = typeof value === "string" ? value : (isBaseBlockId(key) ? DEFAULT_TEXT_CONTENT[key] : "")
+    return acc
+  }, {} as Record<string, string>)
+  const blockColumnSpans = layout?.blockColumnSpans ?? {}
+  const blockRowSpans = layout?.blockRowSpans ?? {}
+  const blockHeightBaselines = layout?.blockHeightBaselines ?? {}
+  const blockTextAlignments = layout?.blockTextAlignments ?? {}
+  const blockVerticalAlignments = layout?.blockVerticalAlignments ?? {}
+  const blockTextReflow = layout?.blockTextReflow ?? {}
+  const blockSyllableDivision = layout?.blockSyllableDivision ?? {}
+  const blockSnapToColumns = layout?.blockSnapToColumns ?? {}
+  const blockOpticalKerning = layout?.blockOpticalKerning ?? {}
+  const blockTrackingScales = layout?.blockTrackingScales ?? {}
+  const blockTrackingRuns = layout?.blockTrackingRuns ?? {}
+  const blockTextFormatRuns = layout?.blockTextFormatRuns ?? {}
+  const blockRotations = layout?.blockRotations ?? {}
+  const blockCustomSizes = layout?.blockCustomSizes ?? {}
+  const blockCustomLeadings = layout?.blockCustomLeadings ?? {}
+  const blockTextColors = layout?.blockTextColors ?? {}
+  const defaultTextColor = getDefaultTextSchemeColor(page.imageColorScheme)
+  const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
+    metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(page.layoutEngine),
+  })
+  const toColumnX = (col: number) => (
+    contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep)
+  )
+  const getBlockSpan = (key: string): number => {
+    const raw = blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
+    return Math.max(1, Math.min(gridCols, Math.round(raw)))
+  }
+  const getBlockRows = (key: string): number => normalizeHeightMetrics({
+    rows: blockRowSpans[key],
+    baselines: blockHeightBaselines[key],
+    gridRows,
+  }).rows
+  const getBlockHeightBaselines = (key: string): number => normalizeHeightMetrics({
+    rows: blockRowSpans[key],
+    baselines: blockHeightBaselines[key],
+    gridRows,
+  }).baselines
+  const getBlockFontSize = (key: string, styleKey: TypographyStyleKey, defaultSize: number): number => {
+    if (styleKey !== "fx") return defaultSize
+    const raw = blockCustomSizes[key]
+    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultSize
+    return clampFxSize(raw)
+  }
+  const getBlockBaselineMultiplier = (
+    key: string,
+    styleKey: TypographyStyleKey,
+    defaultMultiplier: number,
+  ): number => {
+    if (styleKey !== "fx") return defaultMultiplier
+    const raw = blockCustomLeadings[key]
+    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultMultiplier
+    return Math.max(0.01, clampFxLeading(raw) / gridUnit)
+  }
+  const getBlockRotation = (key: string): number => {
+    const raw = blockRotations[key]
+    return typeof raw === "number" && Number.isFinite(raw) ? clampRotation(raw) : 0
+  }
+  const getBlockTrackingScale = (key: string): number => (
+    normalizeTrackingScale(blockTrackingScales[key] ?? DEFAULT_TRACKING_SCALE)
+  )
+  const getBlockTrackingRuns = (key: string): TextTrackingRun[] => (
+    normalizeTextTrackingRuns(textContent[key] ?? "", blockTrackingRuns[key], getBlockTrackingScale(key))
+  )
+  const isBlockOpticalKerningEnabled = (key: string): boolean => (
+    normalizeOpticalKerning(blockOpticalKerning[key] ?? DEFAULT_OPTICAL_KERNING)
+  )
+  const getBlockTextColor = (key: string): string => {
+    const raw = blockTextColors[key]
+    return typeof raw === "string" && raw.trim().length > 0 ? raw : defaultTextColor
+  }
+  const getBlockTextFormatRuns = (
+    key: string,
+    styleKey: TypographyStyleKey,
+    color: string,
+  ): TextFormatRun<TypographyStyleKey, FontFamily>[] => {
+    const { font, variant } = getPreviewFontVariant(key, styleKey, styleDefinitions, page.baseFont, layout)
+    return normalizeTextFormatRuns(textContent[key] ?? "", blockTextFormatRuns[key], {
+      fontFamily: font,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+      styleKey,
+      color,
+    })
+  }
+
+  return buildCanvasTypographyRenderPlans<string, TypographyStyleKey>({
+    ctx: context,
+    blockOrder,
+    textContent,
+    isFacingSpread: (result.grid.contentRects?.length ?? 0) > 1,
+    styleAssignments,
+    styles: styleDefinitions,
+    blockTextAlignments: Object.fromEntries(blockOrder.map((key) => [key, toTextAlign(blockTextAlignments[key])])),
+    blockVerticalAlignments: Object.fromEntries(blockOrder.map((key) => [key, toTextVerticalAlign(blockVerticalAlignments[key])])),
+    contentTop,
+    contentLeft,
+    pageHeight: height,
+    marginsBottom: margins.bottom,
+    baselineStep,
+    moduleWidth: moduleWidthBase,
+    moduleHeight: moduleHeightBase,
+    moduleWidths,
+    moduleHeights,
+    columnStarts: colStarts,
+    gutterX: gridMarginHorizontal,
+    gutterY: gridMarginVertical,
+    gridRows,
+    gridCols,
+    fontScale: 1,
+    bodyKey: "body",
+    displayKey: "display",
+    captionKey: "caption",
+    defaultBodyStyleKey: "body",
+    defaultCaptionStyleKey: "caption",
+    getBlockSpan,
+    getBlockRows,
+    getBlockHeightBaselines,
+    getBlockFontSize: (key, styleKey) => getBlockFontSize(key, styleKey, styleDefinitions[styleKey]?.size ?? 0),
+    getBlockBaselineMultiplier: (key, styleKey) => getBlockBaselineMultiplier(
+      key,
+      styleKey,
+      styleDefinitions[styleKey]?.baselineMultiplier ?? 1,
+    ),
+    getBlockRotation,
+    isTextReflowEnabled: (key) => resolveTextReflowEnabled(
+      key,
+      getPreviewStyleKey(key, styleAssignments, styleDefinitions),
+      getBlockSpan(key),
+      blockTextReflow,
+    ),
+    isSyllableDivisionEnabled: (key) => resolveSyllableDivisionEnabled(
+      key,
+      getPreviewStyleKey(key, styleAssignments, styleDefinitions),
+      blockSyllableDivision,
+    ),
+    isBlockPositionManual: (key) => blockModulePositions[key] !== undefined,
+    getBlockColumnStart: (key, span) => {
+      const manual = blockModulePositions[key]
+      if (!manual) return 0
+      const { minCol } = resolveLayerColumnBounds({
+        span,
+        gridCols,
+        snapToColumns: blockSnapToColumns[key] !== false,
+      })
+      const rawCol = blockSnapToColumns[key] !== false ? manual.col : Math.round(manual.col)
+      return Math.max(minCol, Math.min(Math.max(0, gridCols - 1), rawCol))
+    },
+    getBlockRowStart: (key) => {
+      const manual = blockModulePositions[key]
+      if (!manual) return 0
+      return Math.max(0, Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(rowStartsInBaselines, manual.row)))
+    },
+    getOriginForBlock: (key, fallbackX, fallbackY) => {
+      const manual = blockModulePositions[key]
+      if (!manual) return { x: fallbackX, y: fallbackY }
+      const span = getBlockSpan(key)
+      const col = clampLayerColumn(manual.col, {
+        span,
+        gridCols,
+        snapToColumns: blockSnapToColumns[key] !== false,
+      })
+      const row = clampFreePlacementRow(manual.row, maxBaselineRow)
+      return {
+        x: toColumnX(col),
+        y: baselineOriginTop + row * baselineStep,
+      }
+    },
+    getBlockFont: (key) => {
+      const styleKey = getPreviewStyleKey(key, styleAssignments, styleDefinitions)
+      return getPreviewFontVariant(key, styleKey, styleDefinitions, page.baseFont, layout).font
+    },
+    getBlockFontWeight: (key) => {
+      const styleKey = getPreviewStyleKey(key, styleAssignments, styleDefinitions)
+      return getPreviewFontVariant(key, styleKey, styleDefinitions, page.baseFont, layout).variant.weight
+    },
+    isBlockItalic: (key) => {
+      const styleKey = getPreviewStyleKey(key, styleAssignments, styleDefinitions)
+      return getPreviewFontVariant(key, styleKey, styleDefinitions, page.baseFont, layout).variant.italic
+    },
+    isBlockOpticalKerningEnabled,
+    getBlockTrackingScale,
+    getBlockTrackingRuns,
+    getBlockTextFormatRuns: (key, color) => {
+      const styleKey = getPreviewStyleKey(key, styleAssignments, styleDefinitions)
+      return getBlockTextFormatRuns(key, styleKey, color)
+    },
+    getBlockTextColor,
+    getWrappedText: textMetrics.getWrappedText,
+    getOpticalOffset: (canvasContext, key, styleKey, line, align, fontSize, opticalKerning, _trackingScale, canvasFont) => {
+      const fallbackVariant = getPreviewFontVariant(key, styleKey, styleDefinitions, page.baseFont, layout)
+      return textMetrics.getOpticalOffset(
+        canvasContext,
+        styleKey,
+        line,
+        align,
+        fontSize,
+        opticalKerning,
+        canvasFont ?? buildCanvasFont(
+          fallbackVariant.font,
+          fallbackVariant.variant.weight,
+          fallbackVariant.variant.italic,
+          fontSize,
+        ),
+      )
+    },
+    getTextAscent: textMetrics.getTextAscent,
+    getTextDescent: textMetrics.getTextDescent,
+  }).textPlans
 }
 
 function nearlyEqual(left: number | undefined, right: number | undefined, epsilon = 0.01): boolean {
@@ -1720,6 +2136,267 @@ function buildExportPlanParityReport({
   }
 }
 
+function buildMissingPreviewCandidateDelta(
+  label: string,
+  active: BlockRenderPlan<string>,
+): TextMetricsPreviewPlanParityDelta {
+  const activeGraphemeCount = active.segmentLines.reduce((sum, line) => sum + line.length, 0)
+  return {
+    label,
+    key: active.key,
+    activeCommandCount: active.commands.length,
+    candidateCommandCount: 0,
+    commandCountDelta: -active.commands.length,
+    changedCommandTextCount: active.commands.length,
+    activeGraphemeCount,
+    candidateGraphemeCount: 0,
+    graphemeCountDelta: -activeGraphemeCount,
+    changedGraphemeCount: activeGraphemeCount,
+    maxAbsCommandXDelta: 0,
+    maxAbsCommandYDelta: 0,
+    maxAbsRectXDelta: 0,
+    maxAbsRectYDelta: 0,
+    maxAbsRectWidthDelta: 0,
+    maxAbsRectHeightDelta: 0,
+    maxAbsGraphemeXDelta: 0,
+    maxAbsGraphemeYDelta: 0,
+    maxAbsGraphemeWidthDelta: 0,
+    maxAbsGraphemeAscentDelta: 0,
+    maxAbsGraphemeDescentDelta: 0,
+    activeTexts: active.commands.map((command) => command.text),
+    candidateTexts: [],
+    changedGraphemes: [],
+  }
+}
+
+function buildPreviewPlanParityDelta({
+  label,
+  active,
+  candidate,
+}: {
+  label: string
+  active: BlockRenderPlan<string>
+  candidate: PageExportTextPlan
+}): TextMetricsPreviewPlanParityDelta {
+  const commandCount = Math.max(active.commands.length, candidate.commands.length)
+  const commandXDeltas: number[] = []
+  const commandYDeltas: number[] = []
+  let changedCommandTextCount = 0
+  for (let index = 0; index < commandCount; index += 1) {
+    const activeCommand = active.commands[index]
+    const candidateCommand = candidate.commands[index]
+    if ((activeCommand?.text ?? "") !== (candidateCommand?.text ?? "")) changedCommandTextCount += 1
+    if (activeCommand && candidateCommand) {
+      commandXDeltas.push(candidateCommand.x - activeCommand.x)
+      commandYDeltas.push(candidateCommand.y - activeCommand.y)
+    }
+  }
+
+  const activeGraphemeLines = active.segmentLines as PositionedTextFormatTrackingGrapheme<TypographyStyleKey, FontFamily>[][]
+  const candidateGraphemeLines = candidate.graphemeLines
+  const activeGraphemeCount = activeGraphemeLines.reduce((sum, line) => sum + line.length, 0)
+  const candidateGraphemeCount = candidateGraphemeLines.reduce((sum, line) => sum + line.length, 0)
+  const graphemeXDeltas: number[] = []
+  const graphemeYDeltas: number[] = []
+  const graphemeWidthDeltas: number[] = []
+  const graphemeAscentDeltas: number[] = []
+  const graphemeDescentDeltas: number[] = []
+  const changedGraphemes: TextMetricsPreviewPlanGraphemeDelta[] = []
+
+  const lineCount = Math.max(activeGraphemeLines.length, candidateGraphemeLines.length)
+  for (let lineIndex = 0; lineIndex < lineCount; lineIndex += 1) {
+    const activeLine = activeGraphemeLines[lineIndex] ?? []
+    const candidateLine = candidateGraphemeLines[lineIndex] ?? []
+    const graphemeCount = Math.max(activeLine.length, candidateLine.length)
+    for (let graphemeIndex = 0; graphemeIndex < graphemeCount; graphemeIndex += 1) {
+      const activeGrapheme = activeLine[graphemeIndex]
+      const candidateGrapheme = candidateLine[graphemeIndex]
+      const xDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.x - activeGrapheme.x : 0
+      const yDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.y - activeGrapheme.y : 0
+      const widthDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.width - activeGrapheme.width : 0
+      const ascentDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.ascent - activeGrapheme.ascent : 0
+      const descentDelta = activeGrapheme && candidateGrapheme ? candidateGrapheme.descent - activeGrapheme.descent : 0
+      if (activeGrapheme && candidateGrapheme) {
+        graphemeXDeltas.push(xDelta)
+        graphemeYDeltas.push(yDelta)
+        graphemeWidthDeltas.push(widthDelta)
+        graphemeAscentDeltas.push(ascentDelta)
+        graphemeDescentDeltas.push(descentDelta)
+      }
+      const textChanged = (activeGrapheme?.text ?? "") !== (candidateGrapheme?.text ?? "")
+      const geometryChanged = Math.max(
+        Math.abs(xDelta),
+        Math.abs(yDelta),
+        Math.abs(widthDelta),
+        Math.abs(ascentDelta),
+        Math.abs(descentDelta),
+      ) > 0.01
+      if (!activeGrapheme || !candidateGrapheme || textChanged || geometryChanged) {
+        changedGraphemes.push({
+          lineIndex,
+          graphemeIndex,
+          activeText: activeGrapheme?.text ?? "",
+          candidateText: candidateGrapheme?.text ?? "",
+          activeX: activeGrapheme?.x ?? null,
+          candidateX: candidateGrapheme?.x ?? null,
+          xDelta,
+          activeY: activeGrapheme?.y ?? null,
+          candidateY: candidateGrapheme?.y ?? null,
+          yDelta,
+          activeWidth: activeGrapheme?.width ?? null,
+          candidateWidth: candidateGrapheme?.width ?? null,
+          widthDelta,
+          activeAscent: activeGrapheme?.ascent ?? null,
+          candidateAscent: candidateGrapheme?.ascent ?? null,
+          ascentDelta,
+          activeDescent: activeGrapheme?.descent ?? null,
+          candidateDescent: candidateGrapheme?.descent ?? null,
+          descentDelta,
+        })
+      }
+    }
+  }
+
+  return {
+    label,
+    key: active.key,
+    activeCommandCount: active.commands.length,
+    candidateCommandCount: candidate.commands.length,
+    commandCountDelta: candidate.commands.length - active.commands.length,
+    changedCommandTextCount,
+    activeGraphemeCount,
+    candidateGraphemeCount,
+    graphemeCountDelta: candidateGraphemeCount - activeGraphemeCount,
+    changedGraphemeCount: changedGraphemes.length,
+    maxAbsCommandXDelta: maxAbs(commandXDeltas),
+    maxAbsCommandYDelta: maxAbs(commandYDeltas),
+    maxAbsRectXDelta: Math.abs(candidate.rect.x - active.rect.x),
+    maxAbsRectYDelta: Math.abs(candidate.rect.y - active.rect.y),
+    maxAbsRectWidthDelta: Math.abs(candidate.rect.width - active.rect.width),
+    maxAbsRectHeightDelta: Math.abs(candidate.rect.height - active.rect.height),
+    maxAbsGraphemeXDelta: maxAbs(graphemeXDeltas),
+    maxAbsGraphemeYDelta: maxAbs(graphemeYDeltas),
+    maxAbsGraphemeWidthDelta: maxAbs(graphemeWidthDeltas),
+    maxAbsGraphemeAscentDelta: maxAbs(graphemeAscentDeltas),
+    maxAbsGraphemeDescentDelta: maxAbs(graphemeDescentDeltas),
+    activeTexts: active.commands.map((command) => command.text),
+    candidateTexts: candidate.commands.map((command) => command.text),
+    changedGraphemes: changedGraphemes.slice(0, 12),
+  }
+}
+
+function buildPreviewPlanParityReport({
+  exportPageLimit,
+  measurementContext,
+}: {
+  exportPageLimit: number
+  measurementContext: CanvasRenderingContext2D
+}): TextMetricsPreviewPlanParityReport {
+  const deltas: TextMetricsPreviewPlanParityDelta[] = []
+  let pageCount = 0
+  let textPlanCount = 0
+
+  for (const preset of LAYOUT_PRESETS) {
+    for (const samplePage of collectTextMetricsPresetPages(preset, true)) {
+      if (pageCount >= exportPageLimit) break
+      pageCount += 1
+      const page = samplePage.page
+      const activePlans = buildCurrentPreviewTextPlans({ page, context: measurementContext })
+      const candidatePlan = buildPageExportPlan({
+        result: page.result,
+        layout: page.previewLayout as ExportPreviewLayoutState | null,
+        baseFont: page.baseFont,
+        imageColorScheme: page.imageColorScheme,
+        canvasBackground: page.resolvedCanvasBackground,
+        rotation: typeof page.uiSettings.rotation === "number" ? page.uiSettings.rotation : 0,
+        showBaselines: false,
+        showModules: false,
+        showMargins: false,
+        showImagePlaceholders: false,
+        showTypography: true,
+        layoutEngine: page.layoutEngine,
+      })
+      const candidateByKey = getExportPlanByKey(candidatePlan.textPlans)
+      for (const activePlan of activePlans.values()) {
+        textPlanCount += 1
+        const candidateTextPlan = candidateByKey.get(activePlan.key)
+        const delta = candidateTextPlan
+          ? buildPreviewPlanParityDelta({
+              label: `${samplePage.label} / ${activePlan.key}`,
+              active: activePlan,
+              candidate: candidateTextPlan,
+            })
+          : buildMissingPreviewCandidateDelta(`${samplePage.label} / ${activePlan.key}`, activePlan)
+        if (
+          delta.commandCountDelta !== 0
+          || delta.changedCommandTextCount > 0
+          || delta.changedGraphemeCount > 0
+          || delta.maxAbsCommandXDelta > 0.01
+          || delta.maxAbsCommandYDelta > 0.01
+          || delta.maxAbsRectXDelta > 0.01
+          || delta.maxAbsRectYDelta > 0.01
+          || delta.maxAbsRectWidthDelta > 0.01
+          || delta.maxAbsRectHeightDelta > 0.01
+          || delta.maxAbsGraphemeXDelta > 0.01
+          || delta.maxAbsGraphemeYDelta > 0.01
+          || delta.maxAbsGraphemeWidthDelta > 0.01
+          || delta.maxAbsGraphemeAscentDelta > 0.01
+          || delta.maxAbsGraphemeDescentDelta > 0.01
+        ) {
+          deltas.push(delta)
+        }
+      }
+    }
+    if (pageCount >= exportPageLimit) break
+  }
+
+  return {
+    pageCount,
+    textPlanCount,
+    changedPlanCount: deltas.length,
+    changedCommandCount: deltas.reduce((sum, delta) => sum + Math.abs(delta.commandCountDelta), 0),
+    changedCommandTextCount: deltas.reduce((sum, delta) => sum + delta.changedCommandTextCount, 0),
+    changedGraphemeCount: deltas.reduce((sum, delta) => sum + delta.changedGraphemeCount, 0),
+    maxAbsCommandXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsCommandXDelta)),
+    maxAbsCommandYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsCommandYDelta)),
+    maxAbsRectXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectXDelta)),
+    maxAbsRectYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectYDelta)),
+    maxAbsRectWidthDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectWidthDelta)),
+    maxAbsRectHeightDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsRectHeightDelta)),
+    maxAbsGraphemeXDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeXDelta)),
+    maxAbsGraphemeYDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeYDelta)),
+    maxAbsGraphemeWidthDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeWidthDelta)),
+    maxAbsGraphemeAscentDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeAscentDelta)),
+    maxAbsGraphemeDescentDelta: Math.max(0, ...deltas.map((delta) => delta.maxAbsGraphemeDescentDelta)),
+    largestDeltas: [...deltas]
+      .sort((a, b) => (
+        Math.max(
+          b.maxAbsCommandXDelta,
+          b.maxAbsCommandYDelta,
+          b.maxAbsRectXDelta,
+          b.maxAbsRectYDelta,
+          b.maxAbsGraphemeXDelta,
+          b.maxAbsGraphemeWidthDelta,
+          Math.abs(b.commandCountDelta),
+          b.changedCommandTextCount,
+          b.changedGraphemeCount,
+        )
+        - Math.max(
+          a.maxAbsCommandXDelta,
+          a.maxAbsCommandYDelta,
+          a.maxAbsRectXDelta,
+          a.maxAbsRectYDelta,
+          a.maxAbsGraphemeXDelta,
+          a.maxAbsGraphemeWidthDelta,
+          Math.abs(a.commandCountDelta),
+          a.changedCommandTextCount,
+          a.changedGraphemeCount,
+        )
+      ))
+      .slice(0, 20),
+  }
+}
+
 function roundSignatureNumber(value: number): number {
   return Number(value.toFixed(3))
 }
@@ -1928,6 +2605,10 @@ export async function runPresetTextMetricsParityReport({
     measurementContext: context,
     candidateFactory: createDeterministicFontFileOpticalMarginTextMetricsEngine,
   })
+  const previewPlan = buildPreviewPlanParityReport({
+    exportPageLimit,
+    measurementContext: context,
+  })
   const productionExportPlanSignatures = buildProductionExportPlanSignatures(exportPageLimit)
   const deterministicOpticalMarginExportPlanSignatures = buildProductionExportPlanSignatures(
     exportPageLimit,
@@ -1966,6 +2647,7 @@ export async function runPresetTextMetricsParityReport({
     rangeCalibration,
     rangeCalibrationClassCorrection,
     deterministicOpticalMargin,
+    previewPlan,
     productionExportPlanSignatures,
     deterministicOpticalMarginExportPlanSignatures,
     browserDiagnostics,

@@ -117,6 +117,7 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     baseFormat?: BaseTextFormat<StyleKey, Family>,
     formatRuns?: readonly TextFormatRun<StyleKey, Family>[],
     resolveFontSize?: (styleKey: StyleKey) => number,
+    canvasFont = context.font,
   ): number => {
     const normalizedTrackingScale = normalizeTrackingScale(trackingScale)
     const normalizedRuns = normalizeTextTrackingRuns(sourceText, trackingRuns, normalizedTrackingScale)
@@ -126,11 +127,11 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     const formatRunsKey = makeCacheKeyForFormatRuns(formatRuns)
     const resolvedFontSizesKey = makeCacheKeyForResolvedFontSizes(baseFormat, formatRuns, resolveFontSize)
     const engine = getEngine(context)
-    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${rangeKey}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${text}`
+    const key = `${engine.id}::${canvasFont}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${rangeKey}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${text}`
 
     return makeCachedValue(measureWidthCache, key, () => engine.measureWidth({
       text,
-      canvasFont: context.font,
+      canvasFont,
       trackingScale: normalizedTrackingScale,
       opticalKerning,
       sourceText,
@@ -154,6 +155,7 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     formatRuns?: readonly TextFormatRun<StyleKey, Family>[],
     resolveFontSize?: (styleKey: StyleKey) => number,
     trace?: TextWrapTraceCollector,
+    canvasFont = context.font,
   ): WrappedTextLine[] => {
     const normalizedTrackingScale = normalizeTrackingScale(trackingScale)
     const normalizedRuns = normalizeTextTrackingRuns(text, trackingRuns, normalizedTrackingScale)
@@ -162,10 +164,10 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     const formatBaseKey = makeCacheKeyForBaseFormat(baseFormat)
     const resolvedFontSizesKey = makeCacheKeyForResolvedFontSizes(baseFormat, formatRuns, resolveFontSize)
     const engine = getEngine(context)
-    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${maxWidth.toFixed(4)}::${hyphenate ? 1 : 0}::${text}`
+    const key = `${engine.id}::${canvasFont}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${maxWidth.toFixed(4)}::${hyphenate ? 1 : 0}::${text}`
     const computeWrapped = () => engine.wrapText({
       text,
-      canvasFont: context.font,
+      canvasFont,
       maxWidth,
       hyphenate,
       trackingScale: normalizedTrackingScale,
@@ -188,10 +190,12 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     align: TextAlignMode,
     fontSize: number,
     opticalKerning: boolean,
+    canvasFont = context.font,
   ): number => {
     const engine = getEngine(context)
-    const key = `${engine.id}::${context.font}::${opticalKerning ? 1 : 0}::${styleKey}::${line}::${align}::${fontSize.toFixed(4)}`
+    const key = `${engine.id}::${canvasFont}::${opticalKerning ? 1 : 0}::${styleKey}::${line}::${align}::${fontSize.toFixed(4)}`
     return makeCachedValue(opticalOffsetCache, key, () => engine.opticalOffset({
+      canvasFont,
       styleKey,
       line,
       align,

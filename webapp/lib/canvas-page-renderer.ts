@@ -43,7 +43,7 @@ import { sumGridColumnSpan } from "@/lib/grid-column-layout"
 import { resolveLayerColumnBounds } from "@/lib/layer-placement"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
 import { resolveScaledCanvasFontSize } from "./canvas-render-math.ts"
-import type { WrappedTextLine } from "./text-layout.ts"
+import type { TextWrapTraceCollector, WrappedTextLine } from "./text-layout.ts"
 
 export type CanvasImageRenderPlan = {
   rect: BlockRect
@@ -154,6 +154,8 @@ type BuildCanvasTypographyRenderPlansArgs<BlockId extends string, StyleKey exten
     baseFormat?: BaseTextFormat<StyleKey, FontFamily>,
     formatRuns?: readonly TextFormatRun<StyleKey, FontFamily>[],
     resolveFontSize?: (styleKey: StyleKey) => number,
+    trace?: TextWrapTraceCollector,
+    canvasFont?: string,
   ) => WrappedTextLine[]
   getOpticalOffset: (
     ctx: CanvasRenderingContext2D,
@@ -164,6 +166,7 @@ type BuildCanvasTypographyRenderPlansArgs<BlockId extends string, StyleKey exten
     fontSize: number,
     opticalKerning: boolean,
     trackingScale: number,
+    canvasFont?: string,
   ) => number
   getTextAscent: (
     ctx: CanvasRenderingContext2D,
@@ -557,6 +560,12 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
                   baseTrackingScale,
                   trackingRuns: rawTrackingRuns,
                 })
+                const candidateCanvasFont = buildCanvasFont(
+                  baseFormat.fontFamily,
+                  baseFormat.fontWeight,
+                  baseFormat.italic,
+                  resolveFontSize(styleKey),
+                )
                 return getWrappedText(
                   ctx,
                   candidateResolved.text,
@@ -568,6 +577,8 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
                   baseFormat,
                   candidateResolved.formatRuns,
                   resolveFontSize,
+                  undefined,
+                  candidateCanvasFont,
                 ).length
               },
             })
@@ -647,8 +658,18 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       })
       return ctx
     },
-    wrapText: ({ context, key, styleKey, text, maxWidth, hyphenate }) => (
-      getWrappedText(
+    wrapText: ({ context, key, styleKey, text, maxWidth, hyphenate }) => {
+      const canvasFont = buildCanvasFont(
+        getBlockFont(key, styleKey),
+        getBlockFontWeight(key, styleKey),
+        isBlockItalic(key, styleKey),
+        resolveScaledCanvasFontSize(
+          getBlockFontSize(key, styleKey),
+          fontScale,
+          getBlockFontSize(key, styleKey),
+        ),
+      )
+      return getWrappedText(
         context,
         text,
         maxWidth,
@@ -669,12 +690,28 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
           fontScale,
           getBlockFontSize(key, styleKey),
         ),
+        undefined,
+        canvasFont,
       )
+    },
+    textAscent: ({ context, key, styleKey, fontSize }) => getTextAscent(
+      context,
+      buildCanvasFont(getBlockFont(key, styleKey), getBlockFontWeight(key, styleKey), isBlockItalic(key, styleKey), fontSize),
+      fontSize,
     ),
-    textAscent: ({ context, fontSize }) => getTextAscent(context, context.font, fontSize),
-    textDescent: ({ context, fontSize }) => getTextDescent(context, context.font, fontSize),
-    opticalOffset: ({ context, key, styleKey, line, align, fontSize }) => (
-      getOpticalOffset(
+    textDescent: ({ context, key, styleKey, fontSize }) => getTextDescent(
+      context,
+      buildCanvasFont(getBlockFont(key, styleKey), getBlockFontWeight(key, styleKey), isBlockItalic(key, styleKey), fontSize),
+      fontSize,
+    ),
+    opticalOffset: ({ context, key, styleKey, line, align, fontSize }) => {
+      const canvasFont = buildCanvasFont(
+        getBlockFont(key, styleKey),
+        getBlockFontWeight(key, styleKey),
+        isBlockItalic(key, styleKey),
+        fontSize,
+      )
+      return getOpticalOffset(
         context,
         key,
         styleKey,
@@ -683,8 +720,9 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
         fontSize,
         isBlockOpticalKerningEnabled(key),
         getBlockTrackingScale(key),
+        canvasFont,
       )
-    ),
+    },
   })
 
   const textPlans = new Map<BlockId, BlockRenderPlan<BlockId>>()

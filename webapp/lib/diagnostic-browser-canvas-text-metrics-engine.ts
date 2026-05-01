@@ -132,6 +132,7 @@ export function createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey extends 
       fallbackFontSize,
     ),
     opticalOffset: ({
+      canvasFont,
       styleKey,
       line,
       align,
@@ -142,9 +143,10 @@ export function createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey extends 
       align,
       fontSize,
       styleKey,
-      font: context.font,
+      font: canvasFont ?? context.font,
       measureWidth: (sample) => engine.measureWidth({
         text: sample,
+        canvasFont: canvasFont ?? context.font,
         trackingScale: DEFAULT_TRACKING_SCALE,
         opticalKerning,
         sourceText: sample,

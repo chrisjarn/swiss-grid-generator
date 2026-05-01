@@ -24,7 +24,7 @@ import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import type { BlockRect, BlockRenderPlan, TextAlignMode, TextVerticalAlignMode } from "@/lib/preview-types"
 import type { TextTrackingRun } from "@/lib/text-tracking-runs"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
-import type { WrappedTextLine } from "@/lib/text-layout"
+import type { TextWrapTraceCollector, WrappedTextLine } from "@/lib/text-layout"
 
 type DragState<BlockId extends string> = {
   key: BlockId
@@ -96,6 +96,8 @@ type Args<BlockId extends string> = {
     baseFormat?: BaseTextFormat<keyof GridResult["typography"]["styles"], FontFamily>,
     formatRuns?: readonly TextFormatRun<keyof GridResult["typography"]["styles"], FontFamily>[],
     resolveFontSize?: (styleKey: keyof GridResult["typography"]["styles"]) => number,
+    trace?: TextWrapTraceCollector,
+    canvasFont?: string,
   ) => WrappedTextLine[]
   getOpticalOffset: (
     ctx: CanvasRenderingContext2D,
@@ -104,6 +106,7 @@ type Args<BlockId extends string> = {
     align: TextAlignMode,
     fontSize: number,
     opticalKerning: boolean,
+    canvasFont?: string,
   ) => number
   getTextAscent: (
     ctx: CanvasRenderingContext2D,
@@ -403,8 +406,8 @@ export function useTypographyRenderer<BlockId extends string>({
           getBlockTextFormatRuns,
           getBlockTextColor,
           getWrappedText,
-          getOpticalOffset: (context, key, styleKey, line, align, fontSize, opticalKerning) => (
-            getOpticalOffset(context, styleKey, line, align, fontSize, opticalKerning)
+          getOpticalOffset: (context, key, styleKey, line, align, fontSize, opticalKerning, _trackingScale, canvasFont) => (
+            getOpticalOffset(context, styleKey, line, align, fontSize, opticalKerning, canvasFont)
           ),
           getTextAscent,
           getTextDescent,

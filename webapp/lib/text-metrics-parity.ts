@@ -123,12 +123,14 @@ export function compareTextMetricsEngines<StyleKey extends string, Family extend
       descentDelta: candidateEngine.textDescent(sample.canvasFont, sample.fontSize)
         - activeEngine.textDescent(sample.canvasFont, sample.fontSize),
       opticalOffsetDelta: candidateEngine.opticalOffset({
+        canvasFont: sample.canvasFont,
         styleKey: sample.styleKey,
         line: sample.text,
         align: sample.align,
         fontSize: sample.fontSize,
         opticalKerning: sample.opticalKerning,
       }) - activeEngine.opticalOffset({
+        canvasFont: sample.canvasFont,
         styleKey: sample.styleKey,
         line: sample.text,
         align: sample.align,

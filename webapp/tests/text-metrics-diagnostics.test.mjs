@@ -64,13 +64,18 @@ test("text metrics service passes the authored canvas font into engine requests"
   )
   assert.match(
     source,
-    /engine\.measureWidth\(\{[\s\S]*?canvasFont:\s*context\.font,[\s\S]*?\}\)/,
+    /canvasFont\s*=\s*context\.font[\s\S]*?engine\.measureWidth\(\{[\s\S]*?canvasFont,[\s\S]*?\}\)/,
     "measureWidth requests must carry the authored canvas font string",
   )
   assert.match(
     source,
-    /engine\.wrapText\(\{[\s\S]*?canvasFont:\s*context\.font,[\s\S]*?\}\)/,
+    /canvasFont\s*=\s*context\.font[\s\S]*?engine\.wrapText\(\{[\s\S]*?canvasFont,[\s\S]*?\}\)/,
     "wrapText requests must carry the authored canvas font string",
+  )
+  assert.match(
+    source,
+    /engine\.opticalOffset\(\{[\s\S]*?canvasFont,[\s\S]*?\}\)/,
+    "optical margin requests must carry the authored canvas font string",
   )
 })
 
@@ -434,7 +439,7 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     fontFileEngineSource,
-    /createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont\(canvasFont\)[\s\S]*?getOpticalMarginAnchorOffset/,
+    /authoredCanvasFont\s*=\s*canvasFont\s*\?\?\s*context\.font[\s\S]*?createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont\(authoredCanvasFont\)[\s\S]*?getOpticalMarginAnchorOffset/,
     "deterministic optical-margin candidate should feed outline contour glyph bounds into optical margin planning",
   )
   assert.match(
@@ -476,6 +481,16 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     readText(DEV_REPORT_PATH),
     /const signaturePageLimit = Math\.max\(0,\s*exportPageLimit\)/,
     "signature snapshots should cover the full requested export-plan surface, not an arbitrary small cap",
+  )
+  assert.match(
+    readText(DEV_REPORT_PATH),
+    /function buildPreviewPlanParityReport[\s\S]*?buildCurrentPreviewTextPlans[\s\S]*?buildPageExportPlan/,
+    "preview-plan parity should compare current canvas preview planning against the canonical export plan without changing rendering",
+  )
+  assert.match(
+    readText(DEV_REPORT_PATH),
+    /changedGraphemeCount[\s\S]*?maxAbsGraphemeXDelta[\s\S]*?maxAbsGraphemeWidthDelta/,
+    "preview-plan parity should expose grapheme-level geometry drift before live preview is switched",
   )
   assert.match(
     fontFileEngineSource,
@@ -531,6 +546,16 @@ test("package exposes the browser text-metrics parity gate", () => {
     scriptSource,
     /deterministicOpticalMargin:\s*summarizeDiagnosticExportPlan/,
     "deterministic optical-margin candidate should stay diagnostic and compact in CLI summaries",
+  )
+  assert.match(
+    scriptSource,
+    /previewPlan:\s*\{[\s\S]*?\.\.\.report\.previewPlan[\s\S]*?largestDeltas:\s*report\.previewPlan\.largestDeltas\.slice\(0,\s*8\)/,
+    "browser parity command should preserve preview-plan diagnostics from the in-browser report",
+  )
+  assert.match(
+    scriptSource,
+    /previewPlan:\s*summarizePreviewPlan\(report\.previewPlan\)/,
+    "browser parity summary output should include preview-plan parity before live preview is switched",
   )
   assert.match(
     scriptSource,

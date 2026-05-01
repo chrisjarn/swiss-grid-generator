@@ -35,6 +35,7 @@ import {
   type TextTrackingRun,
 } from "@/lib/text-tracking-runs"
 import {
+  buildCanvasFont,
   DEFAULT_OPTICAL_KERNING,
   DEFAULT_TRACKING_SCALE,
   normalizeOpticalKerning,
@@ -646,7 +647,7 @@ export function drawPresetThumbnailToCanvas(
       },
       getBlockTextColor,
       getWrappedText: textMetrics.getWrappedText,
-      getOpticalOffset: (canvasContext, _key, styleKey, line, align, fontSize, opticalKerning) => (
+      getOpticalOffset: (canvasContext, key, styleKey, line, align, fontSize, opticalKerning, _trackingScale, canvasFont) => (
         textMetrics.getOpticalOffset(
           canvasContext,
           styleKey,
@@ -654,6 +655,12 @@ export function drawPresetThumbnailToCanvas(
           align,
           fontSize,
           opticalKerning,
+          canvasFont ?? buildCanvasFont(
+            getBlockFont(key, styleKey),
+            getBlockFontWeight(key, styleKey),
+            isBlockItalic(key, styleKey),
+            fontSize,
+          ),
         )
       ),
       getTextAscent: (canvasContext, canvasFont, fallbackFontSize) => (

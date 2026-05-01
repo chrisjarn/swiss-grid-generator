@@ -1330,11 +1330,12 @@ export function createDeterministicFontFileOpticalMarginTextMetricsEngine<StyleK
       styleKey,
       line,
       align,
-      fontSize,
-      opticalKerning,
-    }) => {
-      const canvasFont = context.font
-      const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+    fontSize,
+    opticalKerning,
+    canvasFont,
+  }) => {
+      const authoredCanvasFont = canvasFont ?? context.font
+      const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(authoredCanvasFont) ?? undefined
       return getOpticalMarginAnchorOffset({
         line,
         align,
@@ -1343,7 +1344,7 @@ export function createDeterministicFontFileOpticalMarginTextMetricsEngine<StyleK
         measureGlyphBounds,
         measureWidth: (sample) => engine.measureWidth({
           text: sample,
-          canvasFont,
+          canvasFont: authoredCanvasFont,
           trackingScale: 0,
           opticalKerning,
           sourceText: sample,

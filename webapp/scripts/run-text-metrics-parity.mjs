@@ -511,6 +511,10 @@ async function evaluateParityReport(cdp, url) {
           ...report.deterministicOpticalMargin,
           largestDeltas: report.deterministicOpticalMargin.largestDeltas.slice(0, 8),
         },
+        previewPlan: {
+          ...report.previewPlan,
+          largestDeltas: report.previewPlan.largestDeltas.slice(0, 8),
+        },
         productionExportPlanSignatures: report.productionExportPlanSignatures,
         deterministicOpticalMarginExportPlanSignatures: report.deterministicOpticalMarginExportPlanSignatures,
         browserDiagnostics: report.browserDiagnostics,
@@ -790,6 +794,50 @@ function summarizeDiagnosticExportPlan(report) {
   }
 }
 
+function summarizePreviewPlan(report) {
+  return {
+    pageCount: report.pageCount,
+    textPlanCount: report.textPlanCount,
+    changedPlanCount: report.changedPlanCount,
+    changedCommandCount: report.changedCommandCount,
+    changedCommandTextCount: report.changedCommandTextCount,
+    changedGraphemeCount: report.changedGraphemeCount,
+    maxAbsCommandXDelta: report.maxAbsCommandXDelta,
+    maxAbsCommandYDelta: report.maxAbsCommandYDelta,
+    maxAbsRectXDelta: report.maxAbsRectXDelta,
+    maxAbsRectYDelta: report.maxAbsRectYDelta,
+    maxAbsRectWidthDelta: report.maxAbsRectWidthDelta,
+    maxAbsRectHeightDelta: report.maxAbsRectHeightDelta,
+    maxAbsGraphemeXDelta: report.maxAbsGraphemeXDelta,
+    maxAbsGraphemeYDelta: report.maxAbsGraphemeYDelta,
+    maxAbsGraphemeWidthDelta: report.maxAbsGraphemeWidthDelta,
+    maxAbsGraphemeAscentDelta: report.maxAbsGraphemeAscentDelta,
+    maxAbsGraphemeDescentDelta: report.maxAbsGraphemeDescentDelta,
+    largestDeltas: report.largestDeltas.slice(0, 8).map((delta) => ({
+      label: delta.label,
+      key: delta.key,
+      activeCommandCount: delta.activeCommandCount,
+      candidateCommandCount: delta.candidateCommandCount,
+      commandCountDelta: delta.commandCountDelta,
+      changedCommandTextCount: delta.changedCommandTextCount,
+      activeGraphemeCount: delta.activeGraphemeCount,
+      candidateGraphemeCount: delta.candidateGraphemeCount,
+      graphemeCountDelta: delta.graphemeCountDelta,
+      changedGraphemeCount: delta.changedGraphemeCount,
+      maxAbsCommandXDelta: delta.maxAbsCommandXDelta,
+      maxAbsCommandYDelta: delta.maxAbsCommandYDelta,
+      maxAbsRectXDelta: delta.maxAbsRectXDelta,
+      maxAbsRectYDelta: delta.maxAbsRectYDelta,
+      maxAbsGraphemeXDelta: delta.maxAbsGraphemeXDelta,
+      maxAbsGraphemeYDelta: delta.maxAbsGraphemeYDelta,
+      maxAbsGraphemeWidthDelta: delta.maxAbsGraphemeWidthDelta,
+      changedGraphemes: delta.changedGraphemes.slice(0, 4),
+      activeTexts: delta.activeTexts.slice(0, 4),
+      candidateTexts: delta.candidateTexts.slice(0, 4),
+    })),
+  }
+}
+
 function summarizeParityReport(report) {
   return {
     activeEngineId: report.activeEngineId,
@@ -807,6 +855,7 @@ function summarizeParityReport(report) {
     rangeCalibration: summarizeExportPlan(report.rangeCalibration),
     rangeCalibrationClassCorrection: summarizeExportPlan(report.rangeCalibrationClassCorrection),
     deterministicOpticalMargin: summarizeDiagnosticExportPlan(report.deterministicOpticalMargin),
+    previewPlan: summarizePreviewPlan(report.previewPlan),
     productionExportPlanSignatures: report.productionExportPlanSignatures,
     deterministicOpticalMarginExportPlanSignatures: report.deterministicOpticalMarginExportPlanSignatures,
     diagnosis: report.diagnosis,
