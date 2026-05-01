@@ -1394,7 +1394,6 @@ export const GridPreview = memo(function GridPreview({
     blockModulePositions,
     imageModulePositions,
     dragState,
-    activeEditorTarget: editorState?.target ?? imageEditorState?.target ?? null,
     buildLayoutSnapshot: buildSnapshot,
     getBlockFont,
     getBlockFontWeight,

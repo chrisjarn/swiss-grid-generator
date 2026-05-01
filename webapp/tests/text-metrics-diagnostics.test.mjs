@@ -263,6 +263,16 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     "idle live preview should draw canonical point-space plans under the same scale transform used by thumbnails",
   )
   assert.match(
+    typographyRendererHookSource,
+    /const canonicalLivePreviewEnabled = dragState === null/,
+    "text edit mode should stay on the canonical preview path; only drag previews use the transient canvas planner",
+  )
+  assert.doesNotMatch(
+    typographyRendererHookSource,
+    /activeEditorTarget/,
+    "opening an editor should not switch live preview back to a separate layout path",
+  )
+  assert.match(
     pageExportSource,
     /createLoadedFontFileGlyphBoundsMeasureForCanvasFont/,
     "export glyph positioning should prefer loaded outline bounds",

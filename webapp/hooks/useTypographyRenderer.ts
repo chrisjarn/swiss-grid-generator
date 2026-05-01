@@ -121,7 +121,6 @@ type Args<BlockId extends string> = {
   blockModulePositions: Partial<Record<BlockId, ModulePosition>>
   imageModulePositions: Partial<Record<BlockId, ModulePosition>>
   dragState: DragState<BlockId> | null
-  activeEditorTarget?: BlockId | null
   buildLayoutSnapshot: () => PreviewLayoutState<keyof GridResult["typography"]["styles"], FontFamily, BlockId>
   getBlockFont: (key: BlockId) => FontFamily
   getBlockFontWeight: (key: BlockId) => number
@@ -218,7 +217,6 @@ export function useTypographyRenderer<BlockId extends string>({
   blockModulePositions,
   imageModulePositions,
   dragState,
-  activeEditorTarget = null,
   buildLayoutSnapshot,
   getBlockFont,
   getBlockFontWeight,
@@ -321,7 +319,7 @@ export function useTypographyRenderer<BlockId extends string>({
       )
       const minBaselineRow = -maxBaselineRow
       const gutterX = gridMarginHorizontal * scale
-      const canonicalLivePreviewEnabled = dragState === null && activeEditorTarget === null
+      const canonicalLivePreviewEnabled = dragState === null
       let draftPlans = new Map<BlockId, BlockRenderPlan<BlockId>>()
       let imagePlans = new Map<BlockId, CanvasImageRenderPlan>()
       let dragPreviewImagePlan: CanvasImageRenderPlan | null = null
@@ -613,7 +611,6 @@ export function useTypographyRenderer<BlockId extends string>({
     blockRectsRef,
     blockTextAlignments,
     blockVerticalAlignments,
-    activeEditorTarget,
     baseFont,
     buildLayoutSnapshot,
     canvasRef,
