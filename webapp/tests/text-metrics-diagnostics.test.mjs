@@ -230,11 +230,6 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     /typographyMetricsReady/,
     "live preview renderer should wait for deterministic font-file metrics instead of rendering with unloaded font faces",
   )
-  assert.match(
-    typographyRendererHookSource,
-    /buildPageExportPlan\(\{[\s\S]*?rawDocumentVariableBlockKey[\s\S]*?buildCanvasRenderPlansFromPageExportPlan\(exportPlan,\s*\{\s*scale\s*\}\)/,
-    "live preview should render at-rest typography from the canonical scaled page export plan",
-  )
   for (const source of [pdfSource, svgSource, idmlSource]) {
     assert.match(
       source,

@@ -3,7 +3,6 @@ import type { MutableRefObject, RefObject } from "react"
 
 import type { GridResult } from "@/lib/grid-calculator"
 import type { FontFamily } from "@/lib/config/fonts"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { buildAxisStarts, findNearestAxisIndex, resolveAxisSizes } from "@/lib/grid-rhythm"
 import {
   resolveGridColumnStarts,
@@ -14,7 +13,6 @@ import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } fro
 import type { TextFormatRun, BaseTextFormat } from "@/lib/text-format-runs"
 import {
   buildCanvasImagePlans,
-  buildCanvasRenderPlansFromPageExportPlan,
   buildCanvasTypographyRenderPlans,
   buildOrderedCanvasLayerKeys,
   drawCanvasImagePlan,
@@ -22,13 +20,10 @@ import {
   drawCanvasLayerStack,
   type CanvasImageRenderPlan,
 } from "@/lib/canvas-page-renderer"
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
-import { buildPageExportPlan } from "@/lib/page-export-plan"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import type { BlockRect, BlockRenderPlan, TextAlignMode, TextVerticalAlignMode } from "@/lib/preview-types"
 import type { TextTrackingRun } from "@/lib/text-tracking-runs"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
 import type { TextWrapTraceCollector, WrappedTextLine } from "@/lib/text-layout"
 
 type DragState<BlockId extends string> = {
@@ -50,9 +45,6 @@ type Args<BlockId extends string> = {
   fontRenderEpoch: number
   typographyMetricsReady: boolean
   rotation: number
-  layoutEngine: LayoutEngineContract
-  baseFont: FontFamily
-  imageColorScheme: ImageColorSchemeId
   showTypography: boolean
   showImagePlaceholders: boolean
   blockOrder: BlockId[]
@@ -67,7 +59,6 @@ type Args<BlockId extends string> = {
   blockModulePositions: Partial<Record<BlockId, ModulePosition>>
   imageModulePositions: Partial<Record<BlockId, ModulePosition>>
   dragState: DragState<BlockId> | null
-  buildLayoutSnapshot: () => PreviewLayoutState<keyof GridResult["typography"]["styles"], FontFamily, BlockId>
   getBlockFont: (key: BlockId) => FontFamily
   getBlockFontWeight: (key: BlockId) => number
   getBlockTrackingScale: (key: BlockId) => number
@@ -146,9 +137,6 @@ export function useTypographyRenderer<BlockId extends string>({
   fontRenderEpoch,
   typographyMetricsReady,
   rotation,
-  layoutEngine,
-  baseFont,
-  imageColorScheme,
   showTypography,
   showImagePlaceholders,
   blockOrder,
@@ -163,7 +151,6 @@ export function useTypographyRenderer<BlockId extends string>({
   blockModulePositions,
   imageModulePositions,
   dragState,
-  buildLayoutSnapshot,
   getBlockFont,
   getBlockFontWeight,
   getBlockTrackingScale,
@@ -265,12 +252,10 @@ export function useTypographyRenderer<BlockId extends string>({
       )
       const minBaselineRow = -maxBaselineRow
       const gutterX = gridMarginHorizontal * scale
-      const canonicalLivePreviewEnabled = dragState === null
       let draftPlans = new Map<BlockId, BlockRenderPlan<BlockId>>()
       let imagePlans = new Map<BlockId, CanvasImageRenderPlan>()
       let dragPreviewImagePlan: CanvasImageRenderPlan | null = null
       let dragPreviewTextPlan: BlockRenderPlan<BlockId> | null = null
-      let orderedKeysOverride: BlockId[] | null = null
       const textDuplicatePreviewKey = dragState?.copyOnDrop && blockOrder.includes(dragState.key)
         ? dragState.key
         : null
@@ -299,41 +284,7 @@ export function useTypographyRenderer<BlockId extends string>({
         }
       }
 
-      if (canonicalLivePreviewEnabled) {
-        const exportPlan = buildPageExportPlan({
-          result,
-          layout: buildLayoutSnapshot(),
-          documentVariableContext,
-          baseFont,
-          imageColorScheme,
-          canvasBackground: null,
-          rotation,
-          showBaselines: false,
-          showModules: false,
-          showMargins: false,
-          showImagePlaceholders,
-          showTypography,
-          layoutEngine,
-          rawDocumentVariableBlockKey,
-        })
-        const canvasRenderPlans = buildCanvasRenderPlansFromPageExportPlan(exportPlan, { scale })
-        imagePlans = new Map(Array.from(canvasRenderPlans.imagePlans.entries()).map(([key, plan]) => [
-          key as BlockId,
-          plan,
-        ]))
-        draftPlans = new Map(Array.from(canvasRenderPlans.textPlans.entries()).map(([key, plan]) => [
-          key as BlockId,
-          plan as BlockRenderPlan<BlockId>,
-        ]))
-        imageRectsRef.current = Object.fromEntries(
-          Array.from(imagePlans.entries()).map(([key, plan]) => [key, plan.rect]),
-        ) as Record<BlockId, BlockRect>
-        blockRectsRef.current = Object.fromEntries(
-          Array.from(draftPlans.entries()).map(([key, plan]) => [key, plan.rect]),
-        ) as Record<BlockId, BlockRect>
-        Object.assign(overflowByBlock, exportPlan.overflowByBlock)
-        orderedKeysOverride = canvasRenderPlans.orderedKeys as BlockId[]
-      } else if (showImagePlaceholders) {
+      if (showImagePlaceholders) {
         const imageRenderState = buildCanvasImagePlans({
           imageOrder,
           imageModulePositions,
@@ -365,7 +316,7 @@ export function useTypographyRenderer<BlockId extends string>({
         dragPreviewImagePlan = imageRenderState.dragPreviewImagePlan
       }
 
-      if (!canonicalLivePreviewEnabled && showTypography) {
+      if (showTypography) {
         const buildTextRenderState = (
           keys: BlockId[],
           dragPreviewOverride?: ModulePosition,
@@ -469,7 +420,7 @@ export function useTypographyRenderer<BlockId extends string>({
           const duplicatePreviewState = buildTextRenderState([textDuplicatePreviewKey], dragState.preview)
           dragPreviewTextPlan = duplicatePreviewState.textPlans.get(textDuplicatePreviewKey) ?? null
         }
-      } else if (!canonicalLivePreviewEnabled) {
+      } else {
         previousPlansRef.current.clear()
       }
 
@@ -507,13 +458,13 @@ export function useTypographyRenderer<BlockId extends string>({
       const bufferCssWidth = typographyBuffer.width / pixelRatio
       const bufferCssHeight = typographyBuffer.height / pixelRatio
 
-      const orderedKeys = orderedKeysOverride ?? buildOrderedCanvasLayerKeys(
-          layerOrder,
-          imageOrder,
-          blockOrder,
-          imagePlans,
-          draftPlans,
-        )
+      const orderedKeys = buildOrderedCanvasLayerKeys(
+        layerOrder,
+        imageOrder,
+        blockOrder,
+        imagePlans,
+        draftPlans,
+      )
 
       bufferCtx.setTransform(1, 0, 0, 1, 0, 0)
       bufferCtx.clearRect(0, 0, typographyBuffer.width, typographyBuffer.height)
@@ -547,8 +498,6 @@ export function useTypographyRenderer<BlockId extends string>({
     blockRectsRef,
     blockTextAlignments,
     blockVerticalAlignments,
-    baseFont,
-    buildLayoutSnapshot,
     canvasRef,
     dragState,
     documentVariableContext,
@@ -574,7 +523,6 @@ export function useTypographyRenderer<BlockId extends string>({
     getWrappedText,
     imageModulePositions,
     imageOrder,
-    imageColorScheme,
     imageRectsRef,
     isBlockItalic,
     isBlockOpticalKerningEnabled,
@@ -583,7 +531,6 @@ export function useTypographyRenderer<BlockId extends string>({
     isSyllableDivisionEnabled,
     isTextReflowEnabled,
     layerOrder,
-    layoutEngine,
     onCanvasReady,
     onPlansCommit,
     onOverflowLinesChange,
