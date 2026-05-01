@@ -1,7 +1,9 @@
 import { resolveBlockHeight } from "@/lib/block-height"
 import type { FontFamily } from "@/lib/config/fonts"
+import { formatSvgColor } from "@/lib/export-colors"
 import { buildImagePlaceholderGeometryPlan } from "@/lib/image-placeholder-plan"
 import { getOpticalTerminalCaretAdvance } from "@/lib/optical-margin"
+import type { PageExportImagePlan, PageExportPlan, PageExportTextPlan } from "@/lib/page-export-plan"
 import { resolveTextDrawCommandRange } from "@/lib/text-draw-command"
 import type {
   BlockRenderPlan,
@@ -63,6 +65,86 @@ type ImageDragState<Key extends string> = {
 type TypographyStyleDefinition = {
   size: number
   baselineMultiplier: number
+}
+
+type CanvasTextPlanSignatureInput = {
+  styleKey: string
+  fontFamily: string
+  textColor: string
+  fontWeight: number
+  italic: boolean
+  opticalKerning: boolean
+  trackingScale: number
+  textAlign: TextAlignMode
+  textVerticalAlign: TextVerticalAlignMode
+  blockRotation: number
+  span: number
+  rowSpan: number
+  columnReflow: boolean
+  heightBaselines: number
+  rotationOriginX: number
+  rotationOriginY: number
+  rect: BlockRect
+  guideRects: BlockRect[]
+  commands: TextDrawCommand[]
+  segmentLines: BlockRenderPlan<string>["segmentLines"]
+}
+
+function buildCanvasTextPlanSignature({
+  styleKey,
+  fontFamily,
+  textColor,
+  fontWeight,
+  italic,
+  opticalKerning,
+  trackingScale,
+  textAlign,
+  textVerticalAlign,
+  blockRotation,
+  span,
+  rowSpan,
+  columnReflow,
+  heightBaselines,
+  rotationOriginX,
+  rotationOriginY,
+  rect,
+  guideRects,
+  commands,
+  segmentLines,
+}: CanvasTextPlanSignatureInput): string {
+  return [
+    styleKey,
+    fontFamily,
+    textColor,
+    fontWeight,
+    italic ? "italic" : "normal",
+    opticalKerning ? "kerning-on" : "kerning-off",
+    trackingScale,
+    textAlign,
+    textVerticalAlign,
+    blockRotation.toFixed(2),
+    span,
+    rowSpan,
+    columnReflow ? 1 : 0,
+    heightBaselines,
+    rotationOriginX.toFixed(3),
+    rotationOriginY.toFixed(3),
+    rect.width.toFixed(3),
+    rect.height.toFixed(3),
+    guideRects
+      .map((guideRect) => (
+        `${guideRect.x.toFixed(3)},${guideRect.y.toFixed(3)},${guideRect.width.toFixed(3)},${guideRect.height.toFixed(3)}`
+      ))
+      .join("||"),
+    commands
+      .map((command) => `${command.text}@${command.x.toFixed(3)},${command.y.toFixed(3)}`)
+      .join("||"),
+    segmentLines
+      .map((segments) => segments.map((segment) => (
+        `${segment.text}:${segment.fontFamily}:${segment.fontWeight}:${segment.italic ? 1 : 0}:${segment.styleKey}:${segment.color}:${segment.fontSize}:${segment.trackingScale}`
+      )).join("||"))
+      .join("###"),
+  ].join("|")
 }
 
 type BuildCanvasImagePlansArgs<Key extends string> = {
@@ -781,39 +863,28 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       key: plan.key,
       rect: plan.rect,
       guideRects: plan.guideRects,
-      signature: [
-        plan.styleKey,
-        blockFont,
+      signature: buildCanvasTextPlanSignature({
+        styleKey: plan.styleKey,
+        fontFamily: blockFont,
         textColor,
-        blockFontWeight,
-        blockItalic ? "italic" : "normal",
-        opticalKerning ? "kerning-on" : "kerning-off",
+        fontWeight: blockFontWeight,
+        italic: blockItalic,
+        opticalKerning,
         trackingScale,
-        plan.textAlign,
-        plan.textVerticalAlign,
-        plan.blockRotation.toFixed(2),
-        plan.span,
-        plan.rowSpan,
-        plan.columnReflow ? 1 : 0,
-        plan.heightBaselines,
-        plan.rotationOriginX.toFixed(3),
-        plan.rotationOriginY.toFixed(3),
-        plan.rect.width.toFixed(3),
-        plan.rect.height.toFixed(3),
-        plan.guideRects
-          .map((guideRect) => (
-            `${guideRect.x.toFixed(3)},${guideRect.y.toFixed(3)},${guideRect.width.toFixed(3)},${guideRect.height.toFixed(3)}`
-          ))
-          .join("||"),
-        plan.commands
-          .map((command) => `${command.text}@${command.x.toFixed(3)},${command.y.toFixed(3)}`)
-          .join("||"),
-        segmentLines
-          .map((segments) => segments.map((segment) => (
-            `${segment.text}:${segment.fontFamily}:${segment.fontWeight}:${segment.italic ? 1 : 0}:${segment.styleKey}:${segment.color}:${segment.fontSize}:${segment.trackingScale}`
-          )).join("||"))
-          .join("###"),
-      ].join("|"),
+        textAlign: plan.textAlign,
+        textVerticalAlign: plan.textVerticalAlign,
+        blockRotation: plan.blockRotation,
+        span: plan.span,
+        rowSpan: plan.rowSpan,
+        columnReflow: plan.columnReflow,
+        heightBaselines: plan.heightBaselines,
+        rotationOriginX: plan.rotationOriginX,
+        rotationOriginY: plan.rotationOriginY,
+        rect: plan.rect,
+        guideRects: plan.guideRects,
+        commands: plan.commands,
+        segmentLines,
+      }),
       font: planFont,
       textColor,
       textAlign: plan.textAlign,
@@ -852,6 +923,97 @@ export function buildOrderedCanvasLayerKeys<Key extends string>(
     if ((imagePlans.has(key) || textPlans.has(key)) && !orderedKeys.includes(key)) orderedKeys.push(key)
   }
   return orderedKeys
+}
+
+export function buildCanvasTextRenderPlanFromPageExportPlan(
+  textPlan: PageExportTextPlan,
+): BlockRenderPlan<string> {
+  const textColor = formatSvgColor(textPlan.textColor)
+  const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
+  const segmentLines = textPlan.segmentLines
+  return {
+    key: textPlan.key,
+    rect: textPlan.rect,
+    guideRects: textPlan.guideRects,
+    signature: buildCanvasTextPlanSignature({
+      styleKey: textPlan.styleKey,
+      fontFamily: textPlan.fontFamily,
+      textColor,
+      fontWeight: textPlan.fontWeight,
+      italic: textPlan.italic,
+      opticalKerning: textPlan.opticalKerning,
+      trackingScale: textPlan.trackingScale,
+      textAlign: textPlan.textAlign,
+      textVerticalAlign: textPlan.textVerticalAlign,
+      blockRotation: textPlan.blockRotation,
+      span: textPlan.span,
+      rowSpan: textPlan.rowSpan,
+      columnReflow: textPlan.columnReflow,
+      heightBaselines: textPlan.heightBaselines,
+      rotationOriginX: textPlan.rotationOriginX,
+      rotationOriginY: textPlan.rotationOriginY,
+      rect: textPlan.rect,
+      guideRects: textPlan.guideRects,
+      commands: textPlan.commands,
+      segmentLines,
+    }),
+    font,
+    textColor,
+    textAlign: textPlan.textAlign,
+    textVerticalAlign: textPlan.textVerticalAlign,
+    blockRotation: textPlan.blockRotation,
+    rotationOriginX: textPlan.rotationOriginX,
+    rotationOriginY: textPlan.rotationOriginY,
+    opticalKerning: textPlan.opticalKerning,
+    trackingScale: textPlan.trackingScale,
+    trackingRuns: textPlan.trackingRuns,
+    segmentLines,
+    renderedLines: buildRenderedTextLines(
+      textPlan.sourceText,
+      textPlan.commands,
+      segmentLines,
+      font,
+    ),
+    commands: textPlan.commands,
+  }
+}
+
+export function buildCanvasImageRenderPlanFromPageExportPlan(
+  imagePlan: PageExportImagePlan,
+): CanvasImageRenderPlan {
+  return {
+    rect: {
+      x: imagePlan.x,
+      y: imagePlan.y,
+      width: imagePlan.width,
+      height: imagePlan.height,
+    },
+    color: formatSvgColor(imagePlan.fillColor),
+    opacity: imagePlan.opacity,
+    rotation: imagePlan.rotation,
+    rotationOriginX: imagePlan.rotationOriginX,
+    rotationOriginY: imagePlan.rotationOriginY,
+  }
+}
+
+export function buildCanvasRenderPlansFromPageExportPlan(
+  exportPlan: PageExportPlan,
+): {
+  orderedKeys: string[]
+  imagePlans: Map<string, CanvasImageRenderPlan>
+  textPlans: Map<string, BlockRenderPlan<string>>
+} {
+  return {
+    orderedKeys: exportPlan.orderedLayerKeys,
+    imagePlans: new Map(exportPlan.imagePlans.map((imagePlan) => [
+      imagePlan.key,
+      buildCanvasImageRenderPlanFromPageExportPlan(imagePlan),
+    ])),
+    textPlans: new Map(exportPlan.textPlans.map((textPlan) => [
+      textPlan.key,
+      buildCanvasTextRenderPlanFromPageExportPlan(textPlan),
+    ])),
+  }
 }
 
 export function drawCanvasLayerStack<Key extends string>(

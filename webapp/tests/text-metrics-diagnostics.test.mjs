@@ -498,6 +498,16 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     "preview-plan parity should expose grapheme-level geometry drift before live preview is switched",
   )
   assert.match(
+    readText(CANVAS_PAGE_RENDERER_PATH),
+    /function buildCanvasTextPlanSignature[\s\S]*?export function buildCanvasTextRenderPlanFromPageExportPlan[\s\S]*?buildRenderedTextLines/,
+    "canvas preview should have a canonical PageExportPlan-to-render-plan adapter before runtime switching",
+  )
+  assert.match(
+    readText(CANVAS_PAGE_RENDERER_PATH),
+    /export function buildCanvasRenderPlansFromPageExportPlan[\s\S]*?orderedLayerKeys[\s\S]*?imagePlans[\s\S]*?textPlans/,
+    "canonical export plans should be convertible to the same preview layer stack shape",
+  )
+  assert.match(
     fontFileEngineSource,
     /isTerminalPunctuationBoundaryCandidate/,
     "boundary class correction should stay scoped to measured terminal punctuation fit-tests",
