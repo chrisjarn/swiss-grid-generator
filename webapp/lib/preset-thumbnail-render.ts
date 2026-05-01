@@ -1,58 +1,25 @@
-import { clampFxLeading, clampFxSize, clampRotation } from "@/lib/block-constraints"
-import { normalizeHeightMetrics } from "@/lib/block-height"
+import { clampFxSize, clampRotation } from "@/lib/block-constraints"
 import {
-  buildCanvasImagePlans,
-  buildCanvasTypographyRenderPlans,
-  buildOrderedCanvasLayerKeys,
+  buildCanvasRenderPlansFromPageExportPlan,
   drawCanvasLayerStack,
 } from "@/lib/canvas-page-renderer"
-import {
-  getDefaultTextSchemeColor,
-  resolveImageSchemeColor,
-} from "@/lib/config/color-schemes"
 import {
   getStyleDefaultFontWeight,
   isFontFamily,
   resolveFontVariant,
   type FontFamily,
 } from "@/lib/config/fonts"
-import { DEFAULT_STYLE_ASSIGNMENTS, DEFAULT_TEXT_CONTENT, isBaseBlockId } from "@/lib/document-defaults"
-import { buildAxisStarts, findNearestAxisIndex, resolveAxisSizes } from "@/lib/grid-rhythm"
-import {
-  resolveGridColumnStarts,
-  resolveGridFirstColumnStep,
-} from "@/lib/grid-column-layout"
-import { resolvePreviewColumnX } from "@/lib/preview-column-snap"
-import { reconcileLayerOrder } from "@/lib/preview-layer-order"
-import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/lib/layer-placement"
+import { DEFAULT_STYLE_ASSIGNMENTS, isBaseBlockId } from "@/lib/document-defaults"
+import { buildAxisStarts, resolveAxisSizes } from "@/lib/grid-rhythm"
+import { resolveGridColumnStarts } from "@/lib/grid-column-layout"
 import type { LayoutPresetBrowserPage } from "@/lib/presets/types"
-import {
-  normalizeTextFormatRuns,
-  type TextFormatRun,
-} from "@/lib/text-format-runs"
-import {
-  normalizeTextTrackingRuns,
-  type TextTrackingRun,
-} from "@/lib/text-tracking-runs"
-import {
-  buildCanvasFont,
-  DEFAULT_OPTICAL_KERNING,
-  DEFAULT_TRACKING_SCALE,
-  normalizeOpticalKerning,
-  normalizeTrackingScale,
-} from "@/lib/text-rendering"
-import { mapTextBlockPositionsToAbsolute } from "@/lib/text-block-position"
-import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacity"
-import { getDefaultColumnSpan } from "@/lib/text-layout"
-import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
-import type { PreviewLayoutState, TextAlignMode, TextVerticalAlignMode } from "@/lib/types/preview-layout"
-import { createTextMetricsService } from "@/lib/text-metrics-service"
+import type { PreviewLayoutState } from "@/lib/types/preview-layout"
 import {
   collectFontFileMetricFacesFromBlocks,
   type FontFileMetricFace,
   type FontFileMetricFaceBlock,
 } from "@/lib/font-file-text-metrics-engine"
-import { resolveLayoutTextMetricsEngineFactory } from "@/lib/layout-engine-contract"
+import { buildPageExportPlan } from "@/lib/page-export-plan"
 
 type BlockId = string
 type TypographyStyleKey = string
@@ -150,32 +117,12 @@ function getThumbnailLayout(page: LayoutPresetBrowserPage): ThumbnailLayout | nu
   return raw as ThumbnailLayout
 }
 
-function toTextAlign(value: unknown): TextAlignMode {
-  return value === "right" || value === "center" ? value : "left"
-}
-
-function toTextVerticalAlign(value: unknown): TextVerticalAlignMode {
-  return value === "bottom" || value === "center" ? value : "top"
-}
-
 function getStyleDefinitions(page: LayoutPresetBrowserPage): Record<TypographyStyleKey, TypographyStyleDefinition> {
   return page.result.typography.styles as Record<TypographyStyleKey, TypographyStyleDefinition>
 }
 
 function getResolvedBlockOrder(layout: ThumbnailLayout | null): BlockId[] {
   return normalizeKeys(layout?.blockOrder)
-}
-
-function getResolvedImageOrder(layout: ThumbnailLayout | null): BlockId[] {
-  return normalizeKeys(layout?.imageOrder)
-}
-
-function getResolvedLayerOrder(
-  layout: ThumbnailLayout | null,
-  blockOrder: BlockId[],
-  imageOrder: BlockId[],
-): BlockId[] {
-  return reconcileLayerOrder(normalizeKeys(layout?.layerOrder), blockOrder, imageOrder)
 }
 
 function getStyleKeyForBlock(
@@ -293,223 +240,23 @@ export function drawPresetThumbnailToCanvas(
 
   const result = page.result
   const layout = getThumbnailLayout(page)
-  const styleDefinitions = getStyleDefinitions(page)
-  const blockOrder = getResolvedBlockOrder(layout)
-  const imageOrder = getResolvedImageOrder(layout)
-  const layerOrder = getResolvedLayerOrder(layout, blockOrder, imageOrder)
-  const styleAssignments = layout?.styleAssignments ?? {}
-  const textContent = layout?.textContent ?? {}
-  const blockColumnSpans = layout?.blockColumnSpans ?? {}
-  const blockRowSpans = layout?.blockRowSpans ?? {}
-  const blockHeightBaselines = layout?.blockHeightBaselines ?? {}
-  const blockTextAlignments = layout?.blockTextAlignments ?? {}
-  const blockVerticalAlignments = layout?.blockVerticalAlignments ?? {}
-  const blockTextReflow = layout?.blockTextReflow ?? {}
-  const blockSyllableDivision = layout?.blockSyllableDivision ?? {}
-  const blockSnapToColumns = layout?.blockSnapToColumns ?? {}
-  const blockOpticalKerning = layout?.blockOpticalKerning ?? {}
-  const blockTrackingScales = layout?.blockTrackingScales ?? {}
-  const blockTrackingRuns = layout?.blockTrackingRuns ?? {}
-  const blockTextFormatRuns = layout?.blockTextFormatRuns ?? {}
-  const blockRotations = layout?.blockRotations ?? {}
-  const blockCustomSizes = layout?.blockCustomSizes ?? {}
-  const blockCustomLeadings = layout?.blockCustomLeadings ?? {}
-  const blockTextColors = layout?.blockTextColors ?? {}
-  const storedImageModulePositions = layout?.imageModulePositions ?? {}
-  const imageColumnSpans = layout?.imageColumnSpans ?? {}
-  const imageRowSpans = layout?.imageRowSpans ?? {}
-  const imageHeightBaselines = layout?.imageHeightBaselines ?? {}
-  const imageSnapToColumns = layout?.imageSnapToColumns ?? {}
-  const imageSnapToBaseline = layout?.imageSnapToBaseline ?? {}
-  const imageRotations = layout?.imageRotations ?? {}
-  const imageColors = layout?.imageColors ?? {}
-  const imageOpacities = layout?.imageOpacities ?? {}
 
   const { width, height } = result.pageSizePt
-  const { margins, gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
+  const { margins, gridUnit, gridMarginVertical } = result.grid
   const { width: moduleWidthBase, height: moduleHeightBase } = result.module
   const { gridCols, gridRows } = result.settings
   const moduleWidths = resolveAxisSizes(result.module.widths, gridCols, moduleWidthBase)
   const moduleHeights = resolveAxisSizes(result.module.heights, gridRows, moduleHeightBase)
   const colStarts = resolveGridColumnStarts(result, moduleWidths)
   const rowStarts = buildAxisStarts(moduleHeights, gridMarginVertical)
-  const rowStartsInBaselines = rowStarts.map((value) => value / Math.max(0.0001, gridUnit))
-  const blockModulePositions = mapTextBlockPositionsToAbsolute(layout?.blockModulePositions ?? {}, rowStartsInBaselines)
-  const imageModulePositions = mapTextBlockPositionsToAbsolute(storedImageModulePositions, rowStartsInBaselines)
   const scale = Math.min(safeWidth / width, safeHeight / height)
   const pageWidth = width * scale
   const pageHeight = height * scale
   const offsetX = (safeWidth - pageWidth) / 2
   const offsetY = (safeHeight - pageHeight) / 2
-  const contentTop = margins.top * scale
-  const contentLeft = margins.left * scale
-  const baselineStep = gridUnit * scale
-  const baselineOriginTop = contentTop - baselineStep
-  const firstColumnStep = resolveGridFirstColumnStep(moduleWidths, colStarts, gridMarginHorizontal, moduleWidthBase)
-  const maxBaselineRow = Math.max(
-    0,
-    Math.floor((pageHeight - (margins.top + margins.bottom) * scale) / Math.max(0.0001, baselineStep)),
-  )
-  const defaultTextColor = getDefaultTextSchemeColor(page.imageColorScheme)
   const pageRotation = typeof page.uiSettings.rotation === "number" && Number.isFinite(page.uiSettings.rotation)
     ? clampRotation(page.uiSettings.rotation)
     : 0
-
-  const getBlockSpan = (key: BlockId) => {
-    const raw = blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
-    return Math.max(1, Math.min(gridCols, Math.round(raw)))
-  }
-
-  const getBlockRows = (key: BlockId) => {
-    return normalizeHeightMetrics({
-      rows: blockRowSpans[key],
-      baselines: blockHeightBaselines[key],
-      gridRows,
-    }).rows
-  }
-
-  const getBlockHeightBaselines = (key: BlockId) => {
-    return normalizeHeightMetrics({
-      rows: blockRowSpans[key],
-      baselines: blockHeightBaselines[key],
-      gridRows,
-    }).baselines
-  }
-
-  const getBlockFont = (key: BlockId, styleKey: TypographyStyleKey): FontFamily => {
-    return getResolvedFontVariantForBlock(key, styleKey, styleDefinitions, page.baseFont, layout).font
-  }
-
-  const getBlockFontWeight = (key: BlockId, styleKey: TypographyStyleKey): number => {
-    return getResolvedFontVariantForBlock(key, styleKey, styleDefinitions, page.baseFont, layout).variant.weight
-  }
-
-  const isBlockItalic = (key: BlockId, styleKey: TypographyStyleKey): boolean => {
-    return getResolvedFontVariantForBlock(key, styleKey, styleDefinitions, page.baseFont, layout).variant.italic
-  }
-
-  const isBlockOpticalKerningEnabled = (key: BlockId): boolean => {
-    return normalizeOpticalKerning(blockOpticalKerning[key] ?? DEFAULT_OPTICAL_KERNING)
-  }
-
-  const getBlockTrackingScale = (key: BlockId): number => {
-    return normalizeTrackingScale(blockTrackingScales[key] ?? DEFAULT_TRACKING_SCALE)
-  }
-
-  const getBlockTrackingRuns = (key: BlockId): TextTrackingRun[] => {
-    return normalizeTextTrackingRuns(
-      textContent[key] ?? "",
-      blockTrackingRuns[key],
-      getBlockTrackingScale(key),
-    )
-  }
-
-  const getBlockTextFormatRuns = (
-    key: BlockId,
-    styleKey: TypographyStyleKey,
-    color: string,
-  ): TextFormatRun<TypographyStyleKey, FontFamily>[] => (
-    normalizeTextFormatRuns(
-      textContent[key] ?? "",
-      blockTextFormatRuns[key],
-      {
-        fontFamily: getBlockFont(key, styleKey),
-        fontWeight: getBlockFontWeight(key, styleKey),
-        italic: isBlockItalic(key, styleKey),
-        styleKey,
-        color,
-      },
-    )
-  )
-
-  const getBlockRotation = (key: BlockId): number => {
-    const raw = blockRotations[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw)) return 0
-    return clampRotation(raw)
-  }
-
-  const getBlockFontSize = (key: BlockId, styleKey: TypographyStyleKey, defaultSize: number): number => {
-    if (styleKey !== "fx") return defaultSize
-    const raw = blockCustomSizes[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultSize
-    return clampFxSize(raw)
-  }
-
-  const getBlockBaselineMultiplier = (
-    key: BlockId,
-    styleKey: TypographyStyleKey,
-    defaultMultiplier: number,
-  ): number => {
-    if (styleKey !== "fx") return defaultMultiplier
-    const raw = blockCustomLeadings[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultMultiplier
-    return Math.max(0.01, clampFxLeading(raw) / gridUnit)
-  }
-
-  const getBlockTextColor = (key: BlockId): string => {
-    const raw = blockTextColors[key]
-    return typeof raw === "string" && raw.trim().length > 0 ? raw : defaultTextColor
-  }
-
-  const getImageSpan = (key: BlockId): number => {
-    const raw = imageColumnSpans[key] ?? 1
-    return Math.max(1, Math.min(gridCols, Math.round(raw)))
-  }
-
-  const getImageRows = (key: BlockId): number => {
-    return normalizeHeightMetrics({
-      rows: imageRowSpans[key],
-      baselines: imageHeightBaselines[key],
-      gridRows,
-    }).rows
-  }
-
-  const getImageHeightBaselines = (key: BlockId): number => {
-    return normalizeHeightMetrics({
-      rows: imageRowSpans[key],
-      baselines: imageHeightBaselines[key],
-      gridRows,
-    }).baselines
-  }
-
-  const isImageSnapToColumnsEnabled = (key: BlockId): boolean => imageSnapToColumns[key] !== false
-  const isImageSnapToBaselineEnabled = (key: BlockId): boolean => imageSnapToBaseline[key] !== false
-  const getImageRotation = (key: BlockId): number => {
-    const raw = imageRotations[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw)) return 0
-    return clampRotation(raw)
-  }
-
-  const toColumnX = (col: number) => {
-    return contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep) * scale
-  }
-
-  const imageRenderState = buildCanvasImagePlans({
-    imageOrder,
-    imageModulePositions,
-    getImageSpan,
-    getImageRows,
-    getImageHeightBaselines,
-    getImageColor: (key) => resolveImageSchemeColor(imageColors[key], page.imageColorScheme),
-    getImageOpacity: (key) => normalizeImagePlaceholderOpacity(imageOpacities[key]),
-    getImageRotation,
-    isImageSnapToColumnsEnabled,
-    isImageSnapToBaselineEnabled,
-    toColumnX,
-    baselineOriginTop,
-    baselineStep,
-    maxBaselineRow,
-    gridCols,
-    rowStartsInBaselines,
-    gridRows,
-    moduleWidths,
-    moduleHeights,
-    columnStarts: colStarts,
-    gridMarginHorizontal,
-    gridMarginVertical,
-    scale,
-  })
-  const imagePlans = imageRenderState.imagePlans
 
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
   ctx.clearRect(0, 0, safeWidth, safeHeight)
@@ -540,154 +287,30 @@ export function drawPresetThumbnailToCanvas(
     scale,
   })
 
-  if (blockOrder.length > 0) {
-    const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
-      metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(page.layoutEngine),
-    })
-
-    const typographyRenderState = buildCanvasTypographyRenderPlans<BlockId, TypographyStyleKey>({
-      ctx,
-      blockOrder,
-      textContent: blockOrder.reduce((acc, key) => {
-        const value = textContent[key]
-        acc[key] = typeof value === "string" ? value : (isBaseBlockId(key) ? DEFAULT_TEXT_CONTENT[key] : "")
-        return acc
-      }, {} as Record<BlockId, string>),
-      isFacingSpread: (page.result.grid.contentRects?.length ?? 0) > 1,
-      styleAssignments,
-      styles: styleDefinitions,
-      blockTextAlignments: Object.fromEntries(
-        blockOrder.map((key) => [key, toTextAlign(blockTextAlignments[key])]),
-      ) as Partial<Record<BlockId, TextAlignMode>>,
-      blockVerticalAlignments: Object.fromEntries(
-        blockOrder.map((key) => [key, toTextVerticalAlign(blockVerticalAlignments[key])]),
-      ) as Partial<Record<BlockId, TextVerticalAlignMode>>,
-      contentTop,
-      contentLeft,
-      pageHeight,
-      marginsBottom: margins.bottom * scale,
-      baselineStep,
-      moduleWidth: moduleWidthBase * scale,
-      moduleHeight: moduleHeightBase * scale,
-      moduleWidths: moduleWidths.map((value) => value * scale),
-      columnStarts: colStarts.map((value) => value * scale),
-      moduleHeights: moduleHeights.map((value) => value * scale),
-      gutterX: gridMarginHorizontal * scale,
-      gutterY: gridMarginVertical * scale,
-      gridRows,
-      gridCols,
-      fontScale: scale,
-      bodyKey: "body",
-      displayKey: "display",
-      captionKey: "caption",
-      defaultBodyStyleKey: "body",
-      defaultCaptionStyleKey: "caption",
-      getBlockSpan,
-      getBlockRows,
-      getBlockHeightBaselines,
-      getBlockFontSize: (key, styleKey) => getBlockFontSize(key, styleKey, styleDefinitions[styleKey]?.size ?? 0),
-      getBlockBaselineMultiplier: (key, styleKey) => (
-        getBlockBaselineMultiplier(
-          key,
-          styleKey,
-          styleDefinitions[styleKey]?.baselineMultiplier ?? 1,
-        )
-      ),
-      getBlockRotation,
-      isTextReflowEnabled: (key) => (
-        resolveTextReflowEnabled(key, getStyleKeyForBlock(key, styleAssignments, styleDefinitions), getBlockSpan(key), blockTextReflow)
-      ),
-      isSyllableDivisionEnabled: (key) => (
-        resolveSyllableDivisionEnabled(key, getStyleKeyForBlock(key, styleAssignments, styleDefinitions), blockSyllableDivision)
-      ),
-      isBlockPositionManual: (key) => blockModulePositions[key] !== undefined,
-      getBlockColumnStart: (key, span) => {
-        const manual = blockModulePositions[key]
-        if (!manual) return 0
-        const { minCol } = resolveLayerColumnBounds({
-          span,
-          gridCols,
-          snapToColumns: blockSnapToColumns[key] !== false,
-        })
-        const rawCol = blockSnapToColumns[key] !== false ? manual.col : Math.round(manual.col)
-        return Math.max(minCol, Math.min(Math.max(0, gridCols - 1), rawCol))
-      },
-      getBlockRowStart: (key) => {
-        const manual = blockModulePositions[key]
-        if (!manual) return 0
-        return Math.max(
-          0,
-          Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(rowStartsInBaselines, manual.row)),
-        )
-      },
-      getOriginForBlock: (key, fallbackX, fallbackY) => {
-        const manual = blockModulePositions[key]
-        if (!manual) return { x: fallbackX, y: fallbackY }
-        const span = getBlockSpan(key)
-        const col = clampLayerColumn(manual.col, {
-          span,
-          gridCols,
-          snapToColumns: blockSnapToColumns[key] !== false,
-        })
-        const row = clampFreePlacementRow(manual.row, maxBaselineRow)
-        return {
-          x: toColumnX(col),
-          y: baselineOriginTop + row * baselineStep,
-        }
-      },
-      getBlockFont,
-      getBlockFontWeight,
-      isBlockItalic,
-      isBlockOpticalKerningEnabled,
-      getBlockTrackingScale,
-      getBlockTrackingRuns,
-      getBlockTextFormatRuns: (key, color) => {
-        const styleKey = getStyleKeyForBlock(key, styleAssignments, styleDefinitions)
-        return getBlockTextFormatRuns(key, styleKey, color)
-      },
-      getBlockTextColor,
-      getWrappedText: textMetrics.getWrappedText,
-      getOpticalOffset: (canvasContext, key, styleKey, line, align, fontSize, opticalKerning, _trackingScale, canvasFont) => (
-        textMetrics.getOpticalOffset(
-          canvasContext,
-          styleKey,
-          line,
-          align,
-          fontSize,
-          opticalKerning,
-          canvasFont ?? buildCanvasFont(
-            getBlockFont(key, styleKey),
-            getBlockFontWeight(key, styleKey),
-            isBlockItalic(key, styleKey),
-            fontSize,
-          ),
-        )
-      ),
-      getTextAscent: (canvasContext, canvasFont, fallbackFontSize) => (
-        textMetrics.getTextAscent(canvasContext, canvasFont, fallbackFontSize)
-      ),
-      getTextDescent: (canvasContext, canvasFont, fallbackFontSize) => (
-        textMetrics.getTextDescent(canvasContext, canvasFont, fallbackFontSize)
-      ),
-    })
-    const orderedKeys = buildOrderedCanvasLayerKeys(
-      layerOrder,
-      imageOrder,
-      blockOrder,
-      imagePlans,
-      typographyRenderState.textPlans,
-    )
-    drawCanvasLayerStack(ctx, orderedKeys, imagePlans, typographyRenderState.textPlans)
-  } else {
-    const orderedKeys = buildOrderedCanvasLayerKeys(
-      layerOrder,
-      imageOrder,
-      blockOrder,
-      imagePlans,
-      new Map(),
-    )
-    drawCanvasLayerStack(ctx, orderedKeys, imagePlans, new Map())
-  }
+  const exportPlan = buildPageExportPlan({
+    result,
+    layout,
+    baseFont: page.baseFont,
+    imageColorScheme: page.imageColorScheme,
+    canvasBackground: null,
+    rotation: pageRotation,
+    showBaselines: false,
+    showModules: false,
+    showMargins: false,
+    showImagePlaceholders: true,
+    showTypography: true,
+    layoutEngine: page.layoutEngine,
+  })
+  const canvasRenderPlans = buildCanvasRenderPlansFromPageExportPlan(exportPlan)
+  ctx.save()
+  ctx.scale(scale, scale)
+  drawCanvasLayerStack(
+    ctx,
+    canvasRenderPlans.orderedKeys,
+    canvasRenderPlans.imagePlans,
+    canvasRenderPlans.textPlans,
+  )
+  ctx.restore()
 
   ctx.restore()
 }

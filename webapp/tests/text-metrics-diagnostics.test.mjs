@@ -244,8 +244,8 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     presetThumbnailSource,
-    /metricsEngineFactory:\s*resolveLayoutTextMetricsEngineFactory\(page\.layoutEngine\)/,
-    "preset thumbnail planning should use the same saved layout metrics contract",
+    /buildPageExportPlan\(\{[\s\S]*?layoutEngine:\s*page\.layoutEngine[\s\S]*?buildCanvasRenderPlansFromPageExportPlan/,
+    "preset thumbnail planning should consume the canonical page export plan under the saved layout metrics contract",
   )
   assert.match(
     pageExportSource,
@@ -694,8 +694,13 @@ test("preset thumbnails preload deterministic metric faces before first draw", (
   )
   assert.match(
     renderSource,
-    /resolveLayoutTextMetricsEngineFactory\(page\.layoutEngine\)/,
-    "preset thumbnails should select text metrics through the saved layout contract",
+    /buildPageExportPlan\(\{[\s\S]*?layoutEngine:\s*page\.layoutEngine/,
+    "preset thumbnails should select text metrics through the canonical saved layout contract",
+  )
+  assert.match(
+    renderSource,
+    /buildCanvasRenderPlansFromPageExportPlan\(exportPlan\)/,
+    "preset thumbnails should draw from the canonical page export plan adapter",
   )
   assert.match(
     componentSource,
