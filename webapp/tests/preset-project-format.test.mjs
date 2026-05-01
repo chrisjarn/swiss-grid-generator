@@ -59,6 +59,8 @@ test("canonical preset json files use the project schema", () => {
       assert.equal(page.uiSettings.exportPrintPro, false, `${fileName} page ${index + 1} should default to Digital Print`)
       assert.equal(page.uiSettings.exportBleedMm, 0, `${fileName} page ${index + 1} should default to zero bleed`)
       assert.equal(page.uiSettings.exportRegistrationMarks, false, `${fileName} page ${index + 1} should default to no registration marks`)
+      assert.equal(page.uiSettings.rhythmRowsEnabled, true, `${fileName} page ${index + 1} should default row rhythm on`)
+      assert.equal(page.uiSettings.rhythmColsEnabled, true, `${fileName} page ${index + 1} should default column rhythm on`)
     }
   }
 })

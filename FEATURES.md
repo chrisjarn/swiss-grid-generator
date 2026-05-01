@@ -163,7 +163,7 @@ Current capability inventory for Swiss Grid Generator.
 - Preset browser in the preview area.
 - Rendered page-1 thumbnails for bundled presets.
 - Preset rollover tooltip with title, description, author, and creation date metadata when rollover info is enabled.
-- User-library layouts are listed first when any local or synced user layouts are available.
+- User-library layouts are listed after bundled `Presets` and `Examples` when any local or synced user layouts are available.
 - The Users section header includes an info rollover describing local browser storage, data-clearing risk, and signed-in cloud sync.
 - User-library thumbnails show a green status dot only while signed in and synced; signed-out, pending, or local-only states stay orange.
 - Deleting a user-library thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary.

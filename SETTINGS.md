@@ -164,7 +164,7 @@ Default: `swiss`
 ### File Actions (icon buttons)
 
 - `Presets` (layout-template icon): opens/closes the presets browser in the preview area
-- When user layouts exist locally or through cloud sync, the `Users` section appears before bundled preset sections
+- When user layouts exist locally or through cloud sync, the `Users` section appears after bundled `Presets` and `Examples`
 - The `Users` section header includes an info rollover describing local browser storage, browser-data clearing risk, and signed-in cloud sync
 - User thumbnails in `Users` show a green status dot only while signed in and synced; signed-out, pending, and local-only states stay orange
 - Deleting a user thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary

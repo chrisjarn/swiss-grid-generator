@@ -437,7 +437,7 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "Opens the presets browser.",
               "Bundled files are grouped into `Presets` and `Examples`. `Users` is reserved for user files.",
-              "When user layouts exist locally or through cloud sync, the `Users` section is listed first.",
+              "When user layouts exist locally or through cloud sync, the `Users` section is listed after bundled `Presets` and `Examples`.",
               "The `Users` header info marker explains that local layouts are browser/device-local and can be lost when browser data is cleared; signed-in cloud sync stores saved layouts in Supabase.",
               "Hovering a preset thumbnail shows title, description, author, date, format, grid, baseline, margin, and rhythm metadata.",
               "User thumbnails in `Users` also show cloud status in the rollover; the thumbnail status dot is green only while signed in and synced, orange when signed out or pending, and red on signed-in sync error.",

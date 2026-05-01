@@ -80,6 +80,22 @@ test("generateSwissGrid returns coherent content and module geometry", () => {
   assert.equal(result.grid.gutter, result.grid.gridMarginHorizontal)
 })
 
+test("generateSwissGrid defaults rhythm axes to enabled", () => {
+  const result = generateSwissGrid({
+    format: "A4",
+    orientation: "portrait",
+    marginMethod: 1,
+    gridCols: 3,
+    gridRows: 6,
+    baseline: 12,
+    baselineMultiple: 1,
+    gutterMultiple: 1,
+  })
+
+  assert.equal(result.settings.rhythmRowsEnabled, true)
+  assert.equal(result.settings.rhythmColsEnabled, true)
+})
+
 test("orientation swaps page dimensions for same format", () => {
   const portrait = generateSwissGrid({
     format: "A4",

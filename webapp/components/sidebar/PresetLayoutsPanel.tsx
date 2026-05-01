@@ -363,12 +363,6 @@ export function PresetLayoutsPanel({
           : group
       ))
       .filter((group) => group.presets.length > 0)
-      .sort((a, b) => {
-        if (userPresets.length === 0) return 0
-        if (a.category === "users") return -1
-        if (b.category === "users") return 1
-        return 0
-      })
   ), [userPresets])
 
   const handleCopyUserPreset = useCallback(async (preset: LayoutPreset) => {
@@ -452,6 +446,7 @@ export function PresetLayoutsPanel({
   return (
     <div
       data-tooltip-boundary="preset-browser"
+      className="pb-12"
     >
       {!compact ? (
         <>
