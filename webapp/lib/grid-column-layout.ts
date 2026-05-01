@@ -1,5 +1,5 @@
-import type { GridResult } from "@/lib/grid-calculator"
-import { buildAxisStarts, resolveAxisSizes, sumAxisSpan } from "@/lib/grid-rhythm"
+import type { GridResult } from "./grid-calculator.ts"
+import { buildAxisStarts, resolveAxisSizes, sumAxisSpan } from "./grid-rhythm.ts"
 
 export function resolveGridModuleWidths(result: GridResult): number[] {
   return resolveAxisSizes(result.module.widths, result.settings.gridCols, result.module.width)

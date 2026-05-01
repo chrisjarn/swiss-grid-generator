@@ -34,6 +34,8 @@ test("buildResolvedSnapshotState resolves spans, alignments, and row-derived fie
     getBlockHeightBaselines: (key) => (key === "body" ? 3 : 0),
     isTextReflowEnabled: (key) => key === "body",
     isSyllableDivisionEnabled: (key) => key === "body",
+    isSnapToColumnsEnabled: () => true,
+    isSnapToBaselineEnabled: () => true,
     getBlockFontWeight: (key) => (key === "caption" ? 500 : 400),
     isBlockOpticalKerningEnabled: (key) => key !== "caption",
     getBlockTrackingScale: (key) => (key === "caption" ? 120 : 0),

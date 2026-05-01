@@ -197,10 +197,10 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     /metricsEngineFactory:\s*resolveLayoutTextMetricsEngineFactory\(layoutEngine\)/,
     "live preview planning should select deterministic font-file metrics from the layout contract",
   )
-  assert.match(
+  assert.doesNotMatch(
     layoutEngineContractSource,
-    /LEGACY_BROWSER_COMPAT_LAYOUT_ENGINE_CONTRACT[\s\S]*?textMetricsEngine:\s*"font-file-deterministic-v1"[\s\S]*?opticalMarginModel:\s*"browser-canvas-compat-v1"/,
-    "the legacy layout contract should preserve the existing deterministic engine and compatibility optical margin",
+    /LEGACY_BROWSER_COMPAT_LAYOUT_ENGINE_CONTRACT|browser-canvas-compat-v1|swiss-grid-layout-v1/,
+    "production layout contracts should not keep the retired browser-compat v1 branch",
   )
   assert.match(
     layoutEngineContractSource,
@@ -209,8 +209,8 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     layoutEngineContractSource,
-    /parseLayoutEngineContract\(source:[\s\S]*?return CURRENT_LAYOUT_ENGINE_CONTRACT[\s\S]*?isLegacyBrowserCompatLayoutEngineContract/,
-    "missing saved layout contracts should resolve to the current deterministic optical-margin contract",
+    /parseLayoutEngineContract\(source:[\s\S]*?return CURRENT_LAYOUT_ENGINE_CONTRACT[\s\S]*?isDeterministicOpticalMarginLayoutEngineContract[\s\S]*?return DETERMINISTIC_OPTICAL_MARGIN_LAYOUT_ENGINE_CONTRACT[\s\S]*?return CURRENT_LAYOUT_ENGINE_CONTRACT/,
+    "missing, unknown, or retired saved layout contracts should resolve to the current deterministic optical-margin contract",
   )
   assert.match(
     layoutEngineContractSource,

@@ -97,11 +97,12 @@ test("reflow worker preserves id and posts computed plan", () => {
 
 test("autofit worker preserves id and handles no OffscreenCanvas context", () => {
   const source = readText("workers/autoFit.worker.ts")
-  assert.match(source, /self\.onmessage\s*=\s*\(event:\s*MessageEvent<AutoFitRequest>\)\s*=>/)
+  assert.match(source, /self\.onmessage\s*=\s*async\s*\(event:\s*MessageEvent<AutoFitRequest>\)\s*=>/)
   assert.match(source, /const\s+\{\s*id,\s*input\s*\}\s*=\s*event\.data/)
   assert.match(source, /if\s*\(!context\)/)
   assert.match(source, /const\s+fallback:\s*AutoFitResponse\s*=\s*\{\s*id,\s*output:\s*\{\s*spanUpdates:\s*\{\},\s*positionUpdates:\s*\{\}\s*\}\s*\}/)
   assert.match(source, /self\.postMessage\(fallback\)/)
+  assert.match(source, /await\s+preloadAutoFitFontFaces\(input\)/)
   assert.match(source, /const\s+response:\s*AutoFitResponse\s*=\s*\{\s*id,\s*output\s*\}/)
   assert.match(source, /self\.postMessage\(response\)/)
 })

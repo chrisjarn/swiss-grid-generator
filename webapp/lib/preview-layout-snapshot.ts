@@ -78,11 +78,11 @@ export function buildResolvedSnapshotState<
     return acc
   }, {} as Record<Key, number>)
   const resolvedAlignments = state.blockOrder.reduce((acc, key) => {
-    acc[key] = state.blockTextAlignments[key] ?? defaultTextAlign
+    acc[key] = state.blockTextAlignments?.[key] ?? defaultTextAlign
     return acc
   }, {} as Record<Key, TextAlignMode>)
   const resolvedVerticalAlignments = state.blockOrder.reduce((acc, key) => {
-    acc[key] = state.blockVerticalAlignments[key] ?? "top"
+    acc[key] = state.blockVerticalAlignments?.[key] ?? "top"
     return acc
   }, {} as Record<Key, TextVerticalAlignMode>)
   const resolvedRows = state.blockOrder.reduce((acc, key) => {
@@ -145,7 +145,7 @@ export function buildResolvedSnapshotState<
     textContent: { ...state.textContent },
     blockTextEdited: { ...state.blockTextEdited },
     styleAssignments: { ...state.styleAssignments },
-    blockFontFamilies: { ...state.blockFontFamilies },
+    blockFontFamilies: { ...(state.blockFontFamilies ?? {}) },
     blockFontWeights: resolvedFontWeights,
     blockOpticalKerning: resolvedOpticalKerning,
     blockTrackingScales: resolvedTrackingScales,
@@ -162,7 +162,7 @@ export function buildResolvedSnapshotState<
     blockSnapToBaseline: resolvedSnapToBaseline,
     blockItalic: resolvedItalic,
     blockRotations: resolvedRotations,
-    blockModulePositions: { ...state.blockModulePositions },
+    blockModulePositions: { ...(state.blockModulePositions ?? {}) },
   }
 }
 

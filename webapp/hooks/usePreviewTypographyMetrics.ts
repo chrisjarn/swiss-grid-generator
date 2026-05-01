@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { type FontFamily } from "@/lib/config/fonts"
 import {
@@ -78,10 +78,6 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   const textMetrics = textMetricsRef.current.service
   const [fontRenderEpoch, setFontRenderEpoch] = useState(0)
 
-  const clearCaches = useCallback(() => {
-    textMetricsRef.current.service.clearCaches()
-  }, [])
-
   const fontBlocks = useMemo(() => {
     if (!showTypography) return []
     return blockOrder.flatMap((key) => {
@@ -117,7 +113,6 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
   const specs = useMemo(() => collectBrowserFontLoadSpecs(fontBlocks), [fontBlocks])
   const metricFaces = useMemo(() => collectFontFileMetricFacesFromBlocks(fontBlocks), [fontBlocks])
   const metricFacesReady = !showTypography || areFontFileMetricFacesLoaded(metricFaces)
-  const resetCachesAfterFontPreload = layoutEngine.opticalMarginModel === "browser-canvas-compat-v1"
   const fontLoadSignature = useMemo(() => {
     if (!specs.length && !metricFaces.length) return ""
     return [
@@ -146,7 +141,6 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
       .then(() => {
         if (cancelled) return
         completedFontLoadSignatureRef.current = fontLoadSignature
-        if (resetCachesAfterFontPreload) clearCaches()
         setFontRenderEpoch((value) => value + 1)
       })
 
@@ -154,9 +148,7 @@ export function usePreviewTypographyMetrics<Key extends string, StyleKey extends
       cancelled = true
     }
   }, [
-    clearCaches,
     fontLoadSignature,
-    resetCachesAfterFontPreload,
     showTypography,
   ])
 

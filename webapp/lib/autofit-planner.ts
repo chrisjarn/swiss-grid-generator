@@ -1,4 +1,4 @@
-import type { FontFamily } from "@/lib/config/fonts"
+import type { FontFamily } from "./config/fonts.ts"
 import { resolveBlockHeight } from "./block-height.ts"
 import { sumGridColumnSpan } from "./grid-column-layout.ts"
 import type { TextRange, TextTrackingRun } from "./text-tracking-runs.ts"

@@ -16,7 +16,7 @@ test("project transfers carry an explicit deterministic layout engine contract",
   const manifestSource = readText("lib/presets/generated-manifest.ts")
 
   assert.match(contractSource, /CURRENT_LAYOUT_ENGINE_CONTRACT/)
-  assert.match(contractSource, /LEGACY_BROWSER_COMPAT_LAYOUT_ENGINE_CONTRACT/)
+  assert.doesNotMatch(contractSource, /LEGACY_BROWSER_COMPAT_LAYOUT_ENGINE_CONTRACT|browser-canvas-compat-v1|swiss-grid-layout-v1/)
   assert.match(contractSource, /CURRENT_LAYOUT_ENGINE_CONTRACT:\s*LayoutEngineContract\s*=\s*[\s\S]*?DETERMINISTIC_OPTICAL_MARGIN_LAYOUT_ENGINE_CONTRACT/)
   assert.match(contractSource, /textMetricsEngine:\s*"font-file-deterministic-optical-margin-v1"/)
   assert.match(contractSource, /parseLayoutEngineContract\(source:[\s\S]*?return CURRENT_LAYOUT_ENGINE_CONTRACT/)
