@@ -253,6 +253,16 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     "preset thumbnail planning should consume the canonical page export plan under the saved layout metrics contract",
   )
   assert.match(
+    typographyRendererHookSource,
+    /buildPageExportPlan\(\{[\s\S]*?layout:\s*buildLayoutSnapshot\(\)[\s\S]*?layoutEngine[\s\S]*?buildCanvasRenderPlansFromPageExportPlan/,
+    "idle live preview should consume the same canonical page export plan as thumbnails and exports",
+  )
+  assert.match(
+    typographyRendererHookSource,
+    /drawCanonicalPointPlans[\s\S]*?bufferCtx\.scale\(scale,\s*scale\)[\s\S]*?drawCanvasLayerStack/,
+    "idle live preview should draw canonical point-space plans under the same scale transform used by thumbnails",
+  )
+  assert.match(
     pageExportSource,
     /createLoadedFontFileGlyphBoundsMeasureForCanvasFont/,
     "export glyph positioning should prefer loaded outline bounds",

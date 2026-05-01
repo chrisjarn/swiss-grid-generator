@@ -37,6 +37,60 @@ type DragState<BlockId extends string> = {
   copyOnDrop: boolean
 }
 
+function scaleRect(rect: BlockRect, factor: number): BlockRect {
+  return {
+    x: rect.x * factor,
+    y: rect.y * factor,
+    width: rect.width * factor,
+    height: rect.height * factor,
+  }
+}
+
+function scaleTextRenderPlan<BlockId extends string>(
+  plan: BlockRenderPlan<BlockId>,
+  factor: number,
+): BlockRenderPlan<BlockId> {
+  type Segment = BlockRenderPlan<BlockId>["segmentLines"][number][number]
+  const scaleSegment = (segment: Segment): Segment => {
+    const metrics = segment as Segment & { width?: number; ascent?: number; descent?: number }
+    return {
+      ...segment,
+      x: segment.x * factor,
+      y: segment.y * factor,
+      fontSize: segment.fontSize * factor,
+      ...(typeof metrics.width === "number" ? { width: metrics.width * factor } : {}),
+      ...(typeof metrics.ascent === "number" ? { ascent: metrics.ascent * factor } : {}),
+      ...(typeof metrics.descent === "number" ? { descent: metrics.descent * factor } : {}),
+    } as Segment
+  }
+
+  return {
+    ...plan,
+    rect: scaleRect(plan.rect, factor),
+    guideRects: plan.guideRects.map((rect) => scaleRect(rect, factor)),
+    rotationOriginX: plan.rotationOriginX * factor,
+    rotationOriginY: plan.rotationOriginY * factor,
+    segmentLines: plan.segmentLines.map((line) => line.map(scaleSegment)),
+    renderedLines: plan.renderedLines.map((line) => ({
+      ...line,
+      left: line.left * factor,
+      top: line.top * factor,
+      width: line.width * factor,
+      height: line.height * factor,
+      baselineY: line.baselineY * factor,
+      caretStops: line.caretStops.map((stop) => ({
+        ...stop,
+        x: stop.x * factor,
+      })),
+    })),
+    commands: plan.commands.map((command) => ({
+      ...command,
+      x: command.x * factor,
+      y: command.y * factor,
+    })),
+  }
+}
+
 type Args<BlockId extends string> = {
   canvasRef: RefObject<HTMLCanvasElement | null>
   blockRectsRef: MutableRefObject<Record<BlockId, BlockRect>>
@@ -273,6 +327,8 @@ export function useTypographyRenderer<BlockId extends string>({
       let dragPreviewImagePlan: CanvasImageRenderPlan | null = null
       let dragPreviewTextPlan: BlockRenderPlan<BlockId> | null = null
       let orderedKeysOverride: BlockId[] | null = null
+      let committedTextPlans = draftPlans
+      let drawCanonicalPointPlans = false
       const textDuplicatePreviewKey = dragState?.copyOnDrop && blockOrder.includes(dragState.key)
         ? dragState.key
         : null
@@ -327,14 +383,19 @@ export function useTypographyRenderer<BlockId extends string>({
           key as BlockId,
           plan as BlockRenderPlan<BlockId>,
         ]))
+        committedTextPlans = new Map(Array.from(draftPlans.entries()).map(([key, plan]) => [
+          key,
+          scaleTextRenderPlan(plan, scale),
+        ]))
         imageRectsRef.current = Object.fromEntries(
-          Array.from(imagePlans.entries()).map(([key, plan]) => [key, plan.rect]),
+          Array.from(imagePlans.entries()).map(([key, plan]) => [key, scaleRect(plan.rect, scale)]),
         ) as Record<BlockId, BlockRect>
         blockRectsRef.current = Object.fromEntries(
-          Array.from(draftPlans.entries()).map(([key, plan]) => [key, plan.rect]),
+          Array.from(committedTextPlans.entries()).map(([key, plan]) => [key, plan.rect]),
         ) as Record<BlockId, BlockRect>
         Object.assign(overflowByBlock, exportPlan.overflowByBlock)
         orderedKeysOverride = canvasRenderPlans.orderedKeys as BlockId[]
+        drawCanonicalPointPlans = true
       } else if (showImagePlaceholders) {
         const imageRenderState = buildCanvasImagePlans({
           imageOrder,
@@ -465,6 +526,7 @@ export function useTypographyRenderer<BlockId extends string>({
         })
         const typographyRenderState = buildTextRenderState(blockOrder)
         draftPlans = typographyRenderState.textPlans
+        committedTextPlans = draftPlans
         blockRectsRef.current = typographyRenderState.blockRects
         Object.assign(overflowByBlock, typographyRenderState.overflowByBlock)
         if (textDuplicatePreviewKey && dragState) {
@@ -524,7 +586,9 @@ export function useTypographyRenderer<BlockId extends string>({
       bufferCtx.translate(bufferCssWidth / 2, bufferCssHeight / 2)
       bufferCtx.rotate((rotation * Math.PI) / 180)
       bufferCtx.translate(-pageWidth / 2, -pageHeight / 2)
+      if (drawCanonicalPointPlans) bufferCtx.scale(scale, scale)
       drawCanvasLayerStack(bufferCtx, orderedKeys, imagePlans, draftPlans)
+      if (drawCanonicalPointPlans) bufferCtx.scale(1 / Math.max(scale, 0.0001), 1 / Math.max(scale, 0.0001))
       if (dragPreviewImagePlan) {
         drawCanvasImagePlan(bufferCtx, dragPreviewImagePlan)
       }
@@ -536,7 +600,7 @@ export function useTypographyRenderer<BlockId extends string>({
       ctx.setTransform(1, 0, 0, 1, 0, 0)
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       ctx.drawImage(typographyBuffer, 0, 0)
-      previousPlansRef.current = draftPlans
+      previousPlansRef.current = committedTextPlans
       onPlansCommit?.()
       endDrawMark()
       recordPerfMetric("drawMs", performance.now() - drawStartedAt)
