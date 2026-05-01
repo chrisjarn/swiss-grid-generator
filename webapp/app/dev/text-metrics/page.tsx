@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import {
   DEFAULT_TEXT_METRICS_PARITY_THRESHOLDS,
   evaluateDeterministicOpticalMarginThresholds,
+  evaluatePreviewPlanThresholds,
   evaluateTextMetricsProductionParityThresholds,
   evaluateTextMetricsParityThresholds,
   type TextMetricsParityThresholdReport,
@@ -22,6 +23,7 @@ type CaptureState =
       thresholdReport: null
       productionThresholdReport: null
       deterministicOpticalMarginThresholdReport: null
+      previewPlanThresholdReport: null
       error: null
     }
   | {
@@ -32,6 +34,7 @@ type CaptureState =
       thresholdReport: TextMetricsParityThresholdReport
       productionThresholdReport: TextMetricsParityThresholdReport
       deterministicOpticalMarginThresholdReport: TextMetricsParityThresholdReport
+      previewPlanThresholdReport: TextMetricsParityThresholdReport
       error: null
     }
   | {
@@ -42,6 +45,7 @@ type CaptureState =
       thresholdReport: null
       productionThresholdReport: null
       deterministicOpticalMarginThresholdReport: null
+      previewPlanThresholdReport: null
       error: string
     }
 
@@ -167,6 +171,7 @@ export default function TextMetricsDevPage() {
     thresholdReport: null,
     productionThresholdReport: null,
     deterministicOpticalMarginThresholdReport: null,
+    previewPlanThresholdReport: null,
     error: null,
   })
   const [options, setOptions] = useState<Required<TextMetricsPresetParityReportOptions>>(DEFAULT_OPTIONS)
@@ -186,6 +191,7 @@ export default function TextMetricsDevPage() {
         thresholdReport: null,
         productionThresholdReport: null,
         deterministicOpticalMarginThresholdReport: null,
+        previewPlanThresholdReport: null,
         error: "Text metrics capture is only available in development builds.",
       })
       return
@@ -205,6 +211,7 @@ export default function TextMetricsDevPage() {
       thresholdReport: null,
       productionThresholdReport: null,
       deterministicOpticalMarginThresholdReport: null,
+      previewPlanThresholdReport: null,
       error: null,
     })
 
@@ -216,6 +223,7 @@ export default function TextMetricsDevPage() {
       const deterministicOpticalMarginThresholdReport = evaluateDeterministicOpticalMarginThresholds(
         report.deterministicOpticalMargin,
       )
+      const previewPlanThresholdReport = evaluatePreviewPlanThresholds(report.previewPlan)
       const browser = getBrowserMetadata()
       const payload = JSON.stringify({
         kind: "swiss-grid-generator.text-metrics-parity-capture",
@@ -225,6 +233,7 @@ export default function TextMetricsDevPage() {
         thresholdReport,
         productionThresholdReport,
         deterministicOpticalMarginThresholdReport,
+        previewPlanThresholdReport,
         report: summarizeReport(report),
       })
       const blob = new Blob([payload], { type: "application/json" })
@@ -241,6 +250,7 @@ export default function TextMetricsDevPage() {
         thresholdReport,
         productionThresholdReport,
         deterministicOpticalMarginThresholdReport,
+        previewPlanThresholdReport,
         error: null,
       })
     } catch (error) {
@@ -253,6 +263,7 @@ export default function TextMetricsDevPage() {
         thresholdReport: null,
         productionThresholdReport: null,
         deterministicOpticalMarginThresholdReport: null,
+        previewPlanThresholdReport: null,
         error: error instanceof Error ? error.stack ?? error.message : String(error),
       })
     }
@@ -354,6 +365,9 @@ export default function TextMetricsDevPage() {
               Production parity: {captureState.productionThresholdReport.status}
               {captureState.deterministicOpticalMarginThresholdReport
                 ? ` / Deterministic optical margin: ${captureState.deterministicOpticalMarginThresholdReport.status}`
+                : ""}
+              {captureState.previewPlanThresholdReport
+                ? ` / Preview plan: ${captureState.previewPlanThresholdReport.status}`
                 : ""}
               {captureState.thresholdReport.status !== captureState.productionThresholdReport.status
                 ? ` / Browser canvas diagnostic: ${captureState.thresholdReport.status}`

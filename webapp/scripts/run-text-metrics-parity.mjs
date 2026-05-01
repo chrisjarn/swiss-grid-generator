@@ -32,6 +32,13 @@ const DEFAULT_THRESHOLDS = {
   deterministicOpticalMarginMaxAbsCommandXDelta: 0.16,
   deterministicOpticalMarginMaxAbsCommandYDelta: 0.01,
   deterministicOpticalMarginMaxAbsRectDelta: 0.01,
+  previewPlanChangedPlanCount: 0,
+  previewPlanChangedCommandCount: 0,
+  previewPlanChangedCommandTextCount: 0,
+  previewPlanChangedGraphemeCount: 0,
+  previewPlanMaxAbsCommandDelta: 0.01,
+  previewPlanMaxAbsRectDelta: 0.01,
+  previewPlanMaxAbsGraphemeDelta: 0.01,
 }
 
 const EXPECTED_PRODUCTION_EXPORT_PLAN_SIGNATURES = [
@@ -271,6 +278,34 @@ const thresholds = {
   deterministicOpticalMarginMaxAbsRectDelta: toNumber(
     process.env.SGG_PARITY_DETERMINISTIC_OPTICAL_MARGIN_MAX_RECT_DELTA,
     DEFAULT_THRESHOLDS.deterministicOpticalMarginMaxAbsRectDelta,
+  ),
+  previewPlanChangedPlanCount: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_CHANGED_PLAN_COUNT,
+    DEFAULT_THRESHOLDS.previewPlanChangedPlanCount,
+  ),
+  previewPlanChangedCommandCount: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_CHANGED_COMMAND_COUNT,
+    DEFAULT_THRESHOLDS.previewPlanChangedCommandCount,
+  ),
+  previewPlanChangedCommandTextCount: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_CHANGED_COMMAND_TEXT_COUNT,
+    DEFAULT_THRESHOLDS.previewPlanChangedCommandTextCount,
+  ),
+  previewPlanChangedGraphemeCount: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_CHANGED_GRAPHEME_COUNT,
+    DEFAULT_THRESHOLDS.previewPlanChangedGraphemeCount,
+  ),
+  previewPlanMaxAbsCommandDelta: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_MAX_COMMAND_DELTA,
+    DEFAULT_THRESHOLDS.previewPlanMaxAbsCommandDelta,
+  ),
+  previewPlanMaxAbsRectDelta: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_MAX_RECT_DELTA,
+    DEFAULT_THRESHOLDS.previewPlanMaxAbsRectDelta,
+  ),
+  previewPlanMaxAbsGraphemeDelta: toNumber(
+    process.env.SGG_PARITY_PREVIEW_PLAN_MAX_GRAPHEME_DELTA,
+    DEFAULT_THRESHOLDS.previewPlanMaxAbsGraphemeDelta,
   ),
 }
 
@@ -665,6 +700,33 @@ function assertDeterministicOpticalMarginThresholds(report) {
   ])
 }
 
+function assertPreviewPlanThresholds(report) {
+  if (!report) return ["previewPlan: expected report, got missing"]
+
+  return collectCheckFailures([
+    ["previewPlan.changedPlanCount", report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
+    ["previewPlan.changedCommandCount", report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
+    [
+      "previewPlan.changedCommandTextCount",
+      report.changedCommandTextCount,
+      "<=",
+      thresholds.previewPlanChangedCommandTextCount,
+    ],
+    ["previewPlan.changedGraphemeCount", report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
+    ["previewPlan.maxAbsCommandXDelta", report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    ["previewPlan.maxAbsCommandYDelta", report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    ["previewPlan.maxAbsRectXDelta", report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectYDelta", report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectWidthDelta", report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectHeightDelta", report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsGraphemeXDelta", report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeYDelta", report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeWidthDelta", report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeAscentDelta", report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeDescentDelta", report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+  ])
+}
+
 function assertExportPlanSignatures(labelPrefix, expectedSignatures, signatures) {
   if (!signatures) return [`${labelPrefix}: expected ${expectedSignatures.length}, got missing`]
 
@@ -885,11 +947,12 @@ async function main() {
       EXPECTED_DETERMINISTIC_OPTICAL_MARGIN_EXPORT_PLAN_SIGNATURES,
       report.deterministicOpticalMarginExportPlanSignatures,
     ))
+    const previewPlanFailures = assertPreviewPlanThresholds(report.previewPlan)
     const productionFailures = assertProductionThresholds(report)
     const failOnBrowserDiagnostic = process.env.SGG_PARITY_FAIL_ON_BROWSER_DIAGNOSTIC === "1"
     const failures = failOnBrowserDiagnostic
-      ? productionFailures.concat(browserDiagnosticFailures, deterministicOpticalMarginFailures)
-      : productionFailures.concat(deterministicOpticalMarginFailures)
+      ? productionFailures.concat(browserDiagnosticFailures, deterministicOpticalMarginFailures, previewPlanFailures)
+      : productionFailures.concat(deterministicOpticalMarginFailures, previewPlanFailures)
     console.log(JSON.stringify({
       options,
       thresholds,
@@ -898,6 +961,8 @@ async function main() {
       productionFailures,
       deterministicOpticalMarginStatus: deterministicOpticalMarginFailures.length === 0 ? "passed" : "failed",
       deterministicOpticalMarginFailures,
+      previewPlanStatus: previewPlanFailures.length === 0 ? "passed" : "failed",
+      previewPlanFailures,
       browserDiagnosticStatus: browserDiagnosticFailures.length === 0 ? "passed" : "failed",
       browserDiagnosticFailures,
       status: failures.length === 0 ? "passed" : "failed",

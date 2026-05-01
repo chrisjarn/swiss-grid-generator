@@ -143,10 +143,10 @@ export function createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey extends 
       align,
       fontSize,
       styleKey,
-      font: canvasFont ?? context.font,
+      font: canvasFont,
       measureWidth: (sample) => engine.measureWidth({
         text: sample,
-        canvasFont: canvasFont ?? context.font,
+        canvasFont,
         trackingScale: DEFAULT_TRACKING_SCALE,
         opticalKerning,
         sourceText: sample,

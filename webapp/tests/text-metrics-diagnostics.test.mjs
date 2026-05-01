@@ -101,6 +101,11 @@ test("direct browser canvas text metrics usage is classified", () => {
     /\.measureText\(/,
     "canvas preview renderer must consume planned geometry, not browser TextMetrics",
   )
+  assert.doesNotMatch(
+    readText(CANVAS_PAGE_RENDERER_PATH),
+    /const\s+planFont\s*=\s*ctx\.font/,
+    "canvas preview plans must retain authored font strings instead of browser-normalized ctx.font readback",
+  )
   assert.match(
     readText(DIAGNOSTIC_BROWSER_ENGINE_PATH),
     /createDiagnosticBrowserCanvasTextMetricsEngine<[\s\S]*?measureDiagnosticCanvasTextAscent[\s\S]*?measureDiagnosticCanvasTextDescent/,
@@ -123,8 +128,8 @@ test("font-file candidate prefers explicit canvasFont over mutable context.font"
 
   assert.match(
     source,
-    /parseFontFileCanvasFontDescriptor\(request\.canvasFont\s*\?\?\s*context\.font\)/,
-    "font-file metrics must not depend only on browser-normalized context.font",
+    /parseFontFileCanvasFontDescriptor\(request\.canvasFont\)/,
+    "font-file metrics must use the authored request font instead of browser-normalized context.font",
   )
   assert.match(
     source,
@@ -439,8 +444,8 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     fontFileEngineSource,
-    /authoredCanvasFont\s*=\s*canvasFont\s*\?\?\s*context\.font[\s\S]*?createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont\(authoredCanvasFont\)[\s\S]*?getOpticalMarginAnchorOffset/,
-    "deterministic optical-margin candidate should feed outline contour glyph bounds into optical margin planning",
+    /canvasFont[\s\S]*?createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont\(canvasFont\)[\s\S]*?getOpticalMarginAnchorOffset/,
+    "deterministic optical-margin candidate should use the authored request font for outline contour glyph bounds",
   )
   assert.match(
     fontFileEngineSource,
@@ -699,6 +704,7 @@ test("Safari capture page runs the same browser report with threshold metadata",
   const thresholdSource = readText(THRESHOLDS_PATH)
   const browserDiagnosticsSource = readText(BROWSER_DIAGNOSTICS_PATH)
   const devReportSource = readText(DEV_REPORT_PATH)
+  const scriptSource = readText(BROWSER_PARITY_SCRIPT_PATH)
 
   assert.match(
     pageSource,
@@ -722,6 +728,11 @@ test("Safari capture page runs the same browser report with threshold metadata",
   )
   assert.match(
     pageSource,
+    /evaluatePreviewPlanThresholds/,
+    "Safari capture page should expose the preview/export canonical-plan parity gate",
+  )
+  assert.match(
+    pageSource,
     /deterministicOpticalMarginThresholdReport/,
     "Safari capture JSON should include deterministic optical-margin threshold status",
   )
@@ -734,6 +745,16 @@ test("Safari capture page runs the same browser report with threshold metadata",
     thresholdSource,
     /deterministicOpticalMarginMaxAbsCommandXDelta:\s*0\.16/,
     "deterministic optical-margin replacement should be pinned to the current tight X-drift tolerance",
+  )
+  assert.match(
+    thresholdSource,
+    /previewPlanChangedCommandCount:\s*0[\s\S]*?previewPlanChangedGraphemeCount:\s*0[\s\S]*?previewPlanMaxAbsGraphemeDelta:\s*0\.01/,
+    "preview-plan parity should be a hard guardrail for command and grapheme geometry drift",
+  )
+  assert.match(
+    scriptSource,
+    /assertPreviewPlanThresholds[\s\S]*?previewPlan\.changedCommandCount[\s\S]*?previewPlan\.maxAbsGraphemeWidthDelta[\s\S]*?previewPlanFailures/,
+    "browser parity command should fail on live-preview/export plan drift",
   )
   assert.match(
     pageSource,

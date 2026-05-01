@@ -999,7 +999,7 @@ export function measureLoadedFontFileTextWidth({
 }
 
 function buildRequiredFontFileMetricsError(message: string, request: TextWidthRequest<string, string>): Error {
-  return new Error(`${message}: ${request.canvasFont ?? "unknown font"} / ${request.text.slice(0, 80)}`)
+  return new Error(`${message}: ${request.canvasFont} / ${request.text.slice(0, 80)}`)
 }
 
 function requireFontFileWidth<StyleKey extends string, Family extends string>(
@@ -1149,7 +1149,7 @@ export function createFontFileTextMetricsEngine<StyleKey extends string, Family 
     id: "font-file-v2",
     measureWidth: (request) => {
       if (shouldDelegateWidth(request)) return fallbackEngine.measureWidth(request)
-      const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont ?? context.font)
+      const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
       const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
       if (!descriptor || !font) return fallbackEngine.measureWidth(request)
 
@@ -1216,7 +1216,7 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
     request: TextWidthRequest<StyleKey, Family>,
     widthOptions: FontFileRangeCalibrationOptions = options,
   ): number | null => {
-    const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont ?? context.font)
+    const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
     const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
     if (!descriptor || !font) return null
 
@@ -1330,12 +1330,11 @@ export function createDeterministicFontFileOpticalMarginTextMetricsEngine<StyleK
       styleKey,
       line,
       align,
-    fontSize,
-    opticalKerning,
-    canvasFont,
-  }) => {
-      const authoredCanvasFont = canvasFont ?? context.font
-      const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(authoredCanvasFont) ?? undefined
+      fontSize,
+      opticalKerning,
+      canvasFont,
+    }) => {
+      const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
       return getOpticalMarginAnchorOffset({
         line,
         align,
@@ -1344,7 +1343,7 @@ export function createDeterministicFontFileOpticalMarginTextMetricsEngine<StyleK
         measureGlyphBounds,
         measureWidth: (sample) => engine.measureWidth({
           text: sample,
-          canvasFont: authoredCanvasFont,
+          canvasFont,
           trackingScale: 0,
           opticalKerning,
           sourceText: sample,

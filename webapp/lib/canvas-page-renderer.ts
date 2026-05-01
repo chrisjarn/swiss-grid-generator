@@ -746,7 +746,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       font: canvasFont,
       opticalKerning,
     })
-    const planFont = ctx.font
+    const planFont = canvasFont
     const segmentLines = plan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(ctx, {
       sourceText,
       command,

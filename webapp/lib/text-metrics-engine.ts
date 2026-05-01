@@ -9,7 +9,7 @@ export type TextMeasureContext = {
 
 export type TextWidthRequest<StyleKey extends string, Family extends string> = {
   text: string
-  canvasFont?: string
+  canvasFont: string
   trackingScale: number
   opticalKerning: boolean
   sourceText: string
@@ -22,7 +22,7 @@ export type TextWidthRequest<StyleKey extends string, Family extends string> = {
 
 export type TextWrapRequest<StyleKey extends string, Family extends string> = {
   text: string
-  canvasFont?: string
+  canvasFont: string
   maxWidth: number
   hyphenate: boolean
   trackingScale: number
@@ -35,7 +35,7 @@ export type TextWrapRequest<StyleKey extends string, Family extends string> = {
 }
 
 export type OpticalOffsetRequest<StyleKey extends string> = {
-  canvasFont?: string
+  canvasFont: string
   styleKey: StyleKey
   line: string
   align: TextAlignMode

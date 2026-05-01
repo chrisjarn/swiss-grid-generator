@@ -21,6 +21,13 @@ export type TextMetricsParityThresholds = {
   deterministicOpticalMarginMaxAbsCommandXDelta: number
   deterministicOpticalMarginMaxAbsCommandYDelta: number
   deterministicOpticalMarginMaxAbsRectDelta: number
+  previewPlanChangedPlanCount: number
+  previewPlanChangedCommandCount: number
+  previewPlanChangedCommandTextCount: number
+  previewPlanChangedGraphemeCount: number
+  previewPlanMaxAbsCommandDelta: number
+  previewPlanMaxAbsRectDelta: number
+  previewPlanMaxAbsGraphemeDelta: number
 }
 
 export type TextMetricsParityThresholdFailure = {
@@ -41,6 +48,7 @@ type TextMetricsProductionExportPlanSignatureLike = {
 }
 
 type TextMetricsExportPlanParityLike = {
+  changedPlanCount?: number
   changedCommandCount: number
   changedCommandTextCount: number
   maxAbsCommandXDelta: number
@@ -49,6 +57,16 @@ type TextMetricsExportPlanParityLike = {
   maxAbsRectYDelta: number
   maxAbsRectWidthDelta: number
   maxAbsRectHeightDelta: number
+}
+
+type TextMetricsPreviewPlanParityLike = TextMetricsExportPlanParityLike & {
+  changedPlanCount: number
+  changedGraphemeCount: number
+  maxAbsGraphemeXDelta: number
+  maxAbsGraphemeYDelta: number
+  maxAbsGraphemeWidthDelta: number
+  maxAbsGraphemeAscentDelta: number
+  maxAbsGraphemeDescentDelta: number
 }
 
 export type TextMetricsParityReportLike = {
@@ -62,6 +80,7 @@ export type TextMetricsParityReportLike = {
   wrappedTextChangedCount: number
   wrappedLineCountChangedCount: number
   exportPlan: TextMetricsExportPlanParityLike
+  previewPlan?: TextMetricsPreviewPlanParityLike
 }
 
 export type TextMetricsProductionParityReportLike = {
@@ -69,6 +88,7 @@ export type TextMetricsProductionParityReportLike = {
   exportPlan: TextMetricsExportPlanParityLike
   rangeCalibrationClassCorrection?: TextMetricsExportPlanParityLike
   deterministicOpticalMargin?: TextMetricsExportPlanParityLike
+  previewPlan?: TextMetricsPreviewPlanParityLike
   productionExportPlanSignatures?: readonly TextMetricsProductionExportPlanSignatureLike[]
   deterministicOpticalMarginExportPlanSignatures?: readonly TextMetricsProductionExportPlanSignatureLike[]
 }
@@ -96,6 +116,13 @@ export const DEFAULT_TEXT_METRICS_PARITY_THRESHOLDS: TextMetricsParityThresholds
   deterministicOpticalMarginMaxAbsCommandXDelta: 0.16,
   deterministicOpticalMarginMaxAbsCommandYDelta: 0.01,
   deterministicOpticalMarginMaxAbsRectDelta: 0.01,
+  previewPlanChangedPlanCount: 0,
+  previewPlanChangedCommandCount: 0,
+  previewPlanChangedCommandTextCount: 0,
+  previewPlanChangedGraphemeCount: 0,
+  previewPlanMaxAbsCommandDelta: 0.01,
+  previewPlanMaxAbsRectDelta: 0.01,
+  previewPlanMaxAbsGraphemeDelta: 0.01,
 }
 
 export const EXPECTED_TEXT_METRICS_PRODUCTION_EXPORT_PLAN_SIGNATURES: readonly TextMetricsProductionExportPlanSignatureLike[] = [
@@ -467,6 +494,44 @@ export function evaluateDeterministicOpticalMarginThresholds(
   }
 }
 
+export function evaluatePreviewPlanThresholds(
+  report: TextMetricsPreviewPlanParityLike,
+  thresholds: TextMetricsParityThresholds = DEFAULT_TEXT_METRICS_PARITY_THRESHOLDS,
+): TextMetricsParityThresholdReport {
+  const checks: [string, number, "<=" | ">=", number][] = [
+    ["previewPlan.changedPlanCount", report.changedPlanCount, "<=", thresholds.previewPlanChangedPlanCount],
+    ["previewPlan.changedCommandCount", report.changedCommandCount, "<=", thresholds.previewPlanChangedCommandCount],
+    [
+      "previewPlan.changedCommandTextCount",
+      report.changedCommandTextCount,
+      "<=",
+      thresholds.previewPlanChangedCommandTextCount,
+    ],
+    ["previewPlan.changedGraphemeCount", report.changedGraphemeCount, "<=", thresholds.previewPlanChangedGraphemeCount],
+    ["previewPlan.maxAbsCommandXDelta", report.maxAbsCommandXDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    ["previewPlan.maxAbsCommandYDelta", report.maxAbsCommandYDelta, "<=", thresholds.previewPlanMaxAbsCommandDelta],
+    ["previewPlan.maxAbsRectXDelta", report.maxAbsRectXDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectYDelta", report.maxAbsRectYDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectWidthDelta", report.maxAbsRectWidthDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsRectHeightDelta", report.maxAbsRectHeightDelta, "<=", thresholds.previewPlanMaxAbsRectDelta],
+    ["previewPlan.maxAbsGraphemeXDelta", report.maxAbsGraphemeXDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeYDelta", report.maxAbsGraphemeYDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeWidthDelta", report.maxAbsGraphemeWidthDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeAscentDelta", report.maxAbsGraphemeAscentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+    ["previewPlan.maxAbsGraphemeDescentDelta", report.maxAbsGraphemeDescentDelta, "<=", thresholds.previewPlanMaxAbsGraphemeDelta],
+  ]
+
+  const failures = checks.flatMap(([label, actual, operator, expected]) => {
+    const passed = operator === ">=" ? actual >= expected : actual <= expected
+    return passed ? [] : [{ label, actual, operator, expected }]
+  })
+
+  return {
+    status: failures.length === 0 ? "passed" : "failed",
+    failures,
+  }
+}
+
 export function evaluateTextMetricsProductionParityThresholds(
   report: TextMetricsProductionParityReportLike,
   thresholds: TextMetricsParityThresholds = DEFAULT_TEXT_METRICS_PARITY_THRESHOLDS,
@@ -498,6 +563,9 @@ export function evaluateTextMetricsProductionParityThresholds(
     failures.push(...evaluateDeterministicOpticalMarginExportPlanSignatures(
       report.deterministicOpticalMarginExportPlanSignatures,
     ))
+  }
+  if (report.previewPlan) {
+    failures.push(...evaluatePreviewPlanThresholds(report.previewPlan, thresholds).failures)
   }
   failures.push(...evaluateProductionExportPlanSignatures(report.productionExportPlanSignatures))
 
