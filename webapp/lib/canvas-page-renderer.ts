@@ -90,6 +90,46 @@ type CanvasTextPlanSignatureInput = {
   segmentLines: BlockRenderPlan<string>["segmentLines"]
 }
 
+type CanvasRenderPlanAdapterOptions = {
+  scale?: number
+}
+
+function resolveAdapterScale(scale: number | undefined): number {
+  return typeof scale === "number" && Number.isFinite(scale) && scale > 0 ? scale : 1
+}
+
+function scaleBlockRect(rect: BlockRect, scale: number): BlockRect {
+  if (scale === 1) return rect
+  return {
+    x: rect.x * scale,
+    y: rect.y * scale,
+    width: rect.width * scale,
+    height: rect.height * scale,
+  }
+}
+
+function scaleTextDrawCommand(command: TextDrawCommand, scale: number): TextDrawCommand {
+  if (scale === 1) return command
+  return {
+    ...command,
+    x: command.x * scale,
+    y: command.y * scale,
+  }
+}
+
+function scaleTextSegments(
+  segmentLines: PageExportTextPlan["segmentLines"],
+  scale: number,
+): PageExportTextPlan["segmentLines"] {
+  if (scale === 1) return segmentLines
+  return segmentLines.map((line) => line.map((segment) => ({
+    ...segment,
+    x: segment.x * scale,
+    y: segment.y * scale,
+    fontSize: segment.fontSize * scale,
+  })))
+}
+
 function buildCanvasTextPlanSignature({
   styleKey,
   fontFamily,
@@ -927,14 +967,20 @@ export function buildOrderedCanvasLayerKeys<Key extends string>(
 
 export function buildCanvasTextRenderPlanFromPageExportPlan(
   textPlan: PageExportTextPlan,
+  options: CanvasRenderPlanAdapterOptions = {},
 ): BlockRenderPlan<string> {
+  const scale = resolveAdapterScale(options.scale)
   const textColor = formatSvgColor(textPlan.textColor)
-  const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
-  const segmentLines = textPlan.segmentLines
+  const fontSize = textPlan.fontSize * scale
+  const rect = scaleBlockRect(textPlan.rect, scale)
+  const guideRects = textPlan.guideRects.map((guideRect) => scaleBlockRect(guideRect, scale))
+  const commands = textPlan.commands.map((command) => scaleTextDrawCommand(command, scale))
+  const segmentLines = scaleTextSegments(textPlan.segmentLines, scale)
+  const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, fontSize)
   return {
     key: textPlan.key,
-    rect: textPlan.rect,
-    guideRects: textPlan.guideRects,
+    rect,
+    guideRects,
     signature: buildCanvasTextPlanSignature({
       styleKey: textPlan.styleKey,
       fontFamily: textPlan.fontFamily,
@@ -950,11 +996,11 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
       rowSpan: textPlan.rowSpan,
       columnReflow: textPlan.columnReflow,
       heightBaselines: textPlan.heightBaselines,
-      rotationOriginX: textPlan.rotationOriginX,
-      rotationOriginY: textPlan.rotationOriginY,
-      rect: textPlan.rect,
-      guideRects: textPlan.guideRects,
-      commands: textPlan.commands,
+      rotationOriginX: textPlan.rotationOriginX * scale,
+      rotationOriginY: textPlan.rotationOriginY * scale,
+      rect,
+      guideRects,
+      commands,
       segmentLines,
     }),
     font,
@@ -962,42 +1008,40 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
     textAlign: textPlan.textAlign,
     textVerticalAlign: textPlan.textVerticalAlign,
     blockRotation: textPlan.blockRotation,
-    rotationOriginX: textPlan.rotationOriginX,
-    rotationOriginY: textPlan.rotationOriginY,
+    rotationOriginX: textPlan.rotationOriginX * scale,
+    rotationOriginY: textPlan.rotationOriginY * scale,
     opticalKerning: textPlan.opticalKerning,
     trackingScale: textPlan.trackingScale,
     trackingRuns: textPlan.trackingRuns,
     segmentLines,
     renderedLines: buildRenderedTextLines(
       textPlan.sourceText,
-      textPlan.commands,
+      commands,
       segmentLines,
       font,
     ),
-    commands: textPlan.commands,
+    commands,
   }
 }
 
 export function buildCanvasImageRenderPlanFromPageExportPlan(
   imagePlan: PageExportImagePlan,
+  options: CanvasRenderPlanAdapterOptions = {},
 ): CanvasImageRenderPlan {
+  const scale = resolveAdapterScale(options.scale)
   return {
-    rect: {
-      x: imagePlan.x,
-      y: imagePlan.y,
-      width: imagePlan.width,
-      height: imagePlan.height,
-    },
+    rect: scaleBlockRect(imagePlan, scale),
     color: formatSvgColor(imagePlan.fillColor),
     opacity: imagePlan.opacity,
     rotation: imagePlan.rotation,
-    rotationOriginX: imagePlan.rotationOriginX,
-    rotationOriginY: imagePlan.rotationOriginY,
+    rotationOriginX: imagePlan.rotationOriginX * scale,
+    rotationOriginY: imagePlan.rotationOriginY * scale,
   }
 }
 
 export function buildCanvasRenderPlansFromPageExportPlan(
   exportPlan: PageExportPlan,
+  options: CanvasRenderPlanAdapterOptions = {},
 ): {
   orderedKeys: string[]
   imagePlans: Map<string, CanvasImageRenderPlan>
@@ -1007,11 +1051,11 @@ export function buildCanvasRenderPlansFromPageExportPlan(
     orderedKeys: exportPlan.orderedLayerKeys,
     imagePlans: new Map(exportPlan.imagePlans.map((imagePlan) => [
       imagePlan.key,
-      buildCanvasImageRenderPlanFromPageExportPlan(imagePlan),
+      buildCanvasImageRenderPlanFromPageExportPlan(imagePlan, options),
     ])),
     textPlans: new Map(exportPlan.textPlans.map((textPlan) => [
       textPlan.key,
-      buildCanvasTextRenderPlanFromPageExportPlan(textPlan),
+      buildCanvasTextRenderPlanFromPageExportPlan(textPlan, options),
     ])),
   }
 }
