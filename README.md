@@ -102,8 +102,9 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Project page creation is capped at `1000` pages per document
 - `Page Up` / `Page Down` step to the previous or next project page when multiple pages are present, and `Home` / `End` jump to the first or last page
 - Text and image layers with stable grid-based positioning
-- Drag to move, Alt/Option+drag to duplicate
+- Drag to move
 - Hovered text paragraphs expose a `+` affordance: click copies the full paragraph, `Shift`+click copies `Paragraph` settings, `Alt/Option`+click copies `Typo` settings, and `Alt/Option`+`Shift`+click copies both onto another paragraph, even across pages and loaded layouts
+- Hovered image placeholders expose a `+` affordance for duplication
 - Arrow keys nudge the selected unlocked layer; snapped axes move by whole modules, `Shift` switches snapped Y nudging to baselines, and unsnapped axes use tenth-step logical nudges with `Shift` as a 10x multiplier
 - Layer cards include a lock toggle in the Project panel; locked layers stay visible but cannot be hovered, edited, or moved in preview until unlocked
 - Logical anchoring (Column × Row + Baseline Offset)
@@ -177,11 +178,21 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Next.js 15 (App Router)
 - TypeScript
 - Tailwind CSS + Radix UI
-- Canvas rendering with custom rhythm engine
+- Canonical page planning with deterministic font-file metrics; canvas is used as the live output surface
 - Zustand for state management
 - IndexedDB/Dexie for local offline project storage
 - Supabase for optional authentication, cloud sync, and feedback storage
 - jsPDF for print output
+
+---
+
+## Architecture
+
+Version 2.0.0 defines the core rendering contract of Swiss Grid Generator: the layout is planned once, in pure deterministic math, and every surface consumes that same plan.
+
+Fonts, wrapping, line positions, paragraph boxes, image placeholders, grid geometry, z-order, and export commands are resolved into a canonical `PageExportPlan`. Canvas is only the output surface. It draws the plan; it does not decide the layout.
+
+That means preset thumbnails, the live preview, drag previews, edit geometry, and PDF/SVG/IDML export planning all share the same source of truth. Browser text metrics are diagnostic only, so a Safari, Firefox, Chrome, or future browser update must not silently change authored layouts.
 
 ---
 
@@ -190,6 +201,21 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 1. Visit **[preview.swiss-grid-generator.com](https://preview.swiss-grid-generator.com)**
 2. Start with one of the bundled presets or build from scratch
 3. Explore the rhythm modes — they’re the soul of the tool
+
+## Verification
+
+Before release, run:
+
+```bash
+cd webapp
+npm run lint
+npx tsc --noEmit
+npm run test:text-metrics
+SGG_PARITY_SUMMARY_ONLY=1 SGG_PARITY_EXPORT_PAGE_LIMIT=20 npm run test:text-metrics:browser
+npm run test:preview-interactions
+```
+
+`test:text-metrics:browser` gates deterministic text/export/preview parity in a real browser. `test:preview-interactions` loads a preset, drags a text layer, opens inline edit mode, and verifies text selection.
 
 ---
 

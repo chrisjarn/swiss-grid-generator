@@ -232,6 +232,7 @@ Default: `swiss`
 - Image cards display `Image Placeholder` and a single color swatch.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
 - Hovered text paragraphs in preview expose a `+` affordance: click copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied content/settings, even across pages and loaded layouts.
+- Hovered image placeholders expose a `+` affordance for duplication.
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
 - Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
 - Layer cards include a lock toggle to the left of delete. Locked layers stay visible in the stack but cannot be hovered, edited, or moved in preview until unlocked.
@@ -453,12 +454,12 @@ Font behavior:
 - If a paragraph font is set to the current `Base Font`, it is stored as inherited (no explicit override entry).
 - If a paragraph font differs from `Base Font`, it is stored as an explicit paragraph override.
 - Changing `Base Font` re-renders the preview immediately for inherited paragraphs only.
-- Preview, thumbnails, and vector export planning use deterministic font-file metrics from local strict font assets:
+- Preview, thumbnails, drag previews, edit-mode geometry, and vector export planning use deterministic font-file metrics from local strict font assets:
   - `public/fonts/google/<slug>/regular.ttf`
   - `public/fonts/google/<slug>/bold.ttf`
   - `public/fonts/google/<slug>/italic.ttf`
   - `public/fonts/google/<slug>/bolditalic.ttf`
-- Browser canvas text metrics are diagnostics only; they are not the production source for text wrapping or export plans.
+- Browser canvas text metrics are diagnostics only; they are not the production source for text wrapping, drag/edit geometry, thumbnail layout, or export plans.
 - Asset sync routine:
   - `npm run fonts:sync` (reads `lib/config/fonts.ts` and rebuilds local Google font assets)
 
@@ -470,8 +471,8 @@ Syllable division behavior:
 
 Drag behavior:
 - Default drag moves a paragraph.
-- `Alt/Option` + drag duplicates a paragraph and drops the copy.
 - Hovered text paragraphs expose a `+` affordance: click copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. Click another paragraph to apply the copied content/settings, even across pages and loaded layouts.
+- Hovered image placeholders expose a `+` affordance for duplication.
 - Paragraphs and image placeholders are stored as logical anchors: `{ column, row, baselineOffset }`.
 - Paragraphs and image placeholders also persist independent `Snap to Columns (X)` and `Snap to Baseline (Y)` flags. When either axis snap is off, the corresponding `column` and/or `baselineOffset` value may remain fractional while the logical row anchor stays stable.
 - With `Snap to Columns (X)` off, horizontal placement clamps symmetrically: one-column side-margin overhang remains available on both left and right.

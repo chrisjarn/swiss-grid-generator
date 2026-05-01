@@ -447,12 +447,14 @@ Note: this affects only the rendered typography on the preview/export canvas; UI
 
 ### Deterministic Text Metrics
 
-Text layout planning uses the deterministic font-file metrics engine, not browser canvas text metrics. The same engine is used for:
-- live preview typography planning
+Text layout planning uses the deterministic font-file metrics engine, not browser canvas text metrics. The same canonical `PageExportPlan` planning path is used for:
 - preset thumbnails
+- idle live preview
+- drag previews
+- text edit geometry
 - PDF, SVG, and IDML export plans
 
-Canvas remains an output surface. Browser `measureText(...)` values are diagnostic evidence only and must not be the production source of wrapping, inline range width, export command planning, or thumbnail layout.
+Canvas remains an output surface. Browser `measureText(...)` values are diagnostic evidence only and must not be the production source of wrapping, inline range width, preview geometry, export command planning, or thumbnail layout.
 
 The production engine resolves widths from loaded font files with the authored canvas font string carried through every request:
 
@@ -640,7 +642,7 @@ maxCol = gridCols
 
 So a free-X layer may overhang one column into either side margin while still staying inside the page field.
 
-Alt/Option-duplicate behavior (`Alt/Option` + drag) reuses the same anchor math; only the state mutation differs (new layer key is created instead of moving the original).
+Duplication is handled by explicit `+` affordances instead of modifier-key movement. Text `+` starts paragraph/content/settings transfer onto another paragraph. Image-placeholder `+` starts a duplicate placement using the same canonical preview planning path as normal movement.
 
 During paragraph or image-placeholder drag, a layer with `Snap to Baseline (Y)` enabled resolves Y to the nearest module-top row start by default while leaving X placement under the layer's current `Snap to Columns (X)` setting:
 
