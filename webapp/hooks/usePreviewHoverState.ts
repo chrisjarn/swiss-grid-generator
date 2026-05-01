@@ -56,7 +56,7 @@ export function usePreviewHoverState<Key extends string>({
     setHoverCopyIntent(false)
   }, [setHoverCopyIntent, setHoverImageKey, setHoverState])
 
-  const handleCanvasMouseMoveInner = useCallback((clientX: number, clientY: number, altKey: boolean) => {
+  const handleCanvasMouseMoveInner = useCallback((clientX: number, clientY: number) => {
     mouseMoveRafRef.current = null
 
     if (!showTypography || dragState) {
@@ -72,7 +72,7 @@ export function usePreviewHoverState<Key extends string>({
 
     if (hoverState?.key && isPointWithinHoverTarget(hoverState.key, pagePoint.x, pagePoint.y)) {
       setHoverImageKey(null)
-      setHoverCopyIntent(editorOpen ? false : altKey)
+      setHoverCopyIntent(false)
       setHoverState((prev) => (
         prev?.key === hoverState.key
           ? { key: hoverState.key, point: pagePoint }
@@ -91,7 +91,7 @@ export function usePreviewHoverState<Key extends string>({
     const textKey = findTopmostBlockAtPoint(pagePoint.x, pagePoint.y)
     if (textKey) {
       setHoverImageKey(null)
-      setHoverCopyIntent(editorOpen ? false : altKey)
+      setHoverCopyIntent(false)
       setHoverState((prev) => (
         prev?.key === textKey
         && prev.point.x === pagePoint.x
@@ -127,8 +127,8 @@ export function usePreviewHoverState<Key extends string>({
 
   const handleCanvasMouseMove = useCallback((event: ReactMouseEvent<HTMLCanvasElement>) => {
     if (mouseMoveRafRef.current !== null) return
-    const { altKey, clientX, clientY } = event
-    mouseMoveRafRef.current = requestAnimationFrame(() => handleCanvasMouseMoveInner(clientX, clientY, altKey))
+    const { clientX, clientY } = event
+    mouseMoveRafRef.current = requestAnimationFrame(() => handleCanvasMouseMoveInner(clientX, clientY))
   }, [handleCanvasMouseMoveInner])
 
   useEffect(() => {
@@ -141,16 +141,7 @@ export function usePreviewHoverState<Key extends string>({
       return
     }
 
-    const handleModifierKeyChange = (event: KeyboardEvent) => {
-      setHoverCopyIntent(event.altKey)
-    }
-
-    window.addEventListener("keydown", handleModifierKeyChange)
-    window.addEventListener("keyup", handleModifierKeyChange)
-    return () => {
-      window.removeEventListener("keydown", handleModifierKeyChange)
-      window.removeEventListener("keyup", handleModifierKeyChange)
-    }
+    if (hoverCopyIntent) setHoverCopyIntent(false)
   }, [dragState, editorOpen, hasTextHoverTarget, hoverCopyIntent, setHoverCopyIntent, showTypography])
 
   useEffect(() => {
@@ -163,15 +154,15 @@ export function usePreviewHoverState<Key extends string>({
     dragState
       ? (dragState.copyOnDrop ? "cursor-default" : "cursor-grabbing")
       : hasHoverTarget
-        ? ((hoverCopyIntent || (persistentTextCopyIntent && hasTextHoverTarget)) ? "cursor-default" : "cursor-grab")
+        ? ((persistentTextCopyIntent && hasTextHoverTarget) ? "cursor-default" : "cursor-grab")
         : "cursor-default"
-  ), [dragState, hasHoverTarget, hasTextHoverTarget, hoverCopyIntent, persistentTextCopyIntent])
+  ), [dragState, hasHoverTarget, hasTextHoverTarget, persistentTextCopyIntent])
 
   const canvasCursorStyle = useMemo<CSSProperties | undefined>(() => (
-    (dragState?.copyOnDrop || hoverCopyIntent || (persistentTextCopyIntent && hasTextHoverTarget))
+    (dragState?.copyOnDrop || (persistentTextCopyIntent && hasTextHoverTarget))
       ? { cursor: COPY_CURSOR_STYLE_VALUE }
       : undefined
-  ), [dragState?.copyOnDrop, hasTextHoverTarget, hoverCopyIntent, persistentTextCopyIntent])
+  ), [dragState?.copyOnDrop, hasTextHoverTarget, persistentTextCopyIntent])
 
   return {
     clearHover,

@@ -26,6 +26,7 @@ const TEXT_RENDERING_PATH = path.join(ROOT, "lib", "text-rendering.ts")
 const TEXT_TRACKING_RUNS_PATH = path.join(ROOT, "lib", "text-tracking-runs.ts")
 const INLINE_EDITOR_PATH = path.join(ROOT, "components", "editor", "InlineBlockTextarea.tsx")
 const TYPOGRAPHY_RENDERER_HOOK_PATH = path.join(ROOT, "hooks", "useTypographyRenderer.ts")
+const PREVIEW_DRAG_HOOK_PATH = path.join(ROOT, "hooks", "usePreviewDrag.ts")
 const PREVIEW_AUTOFIT_PLACEMENT_PATH = path.join(ROOT, "hooks", "usePreviewAutoFitPlacement.ts")
 const PREVIEW_REFLOW_CONTROLLER_PATH = path.join(ROOT, "hooks", "usePreviewLayoutReflowController.ts")
 const AUTOFIT_WORKER_PATH = path.join(ROOT, "workers", "autoFit.worker.ts")
@@ -183,6 +184,7 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   const pageExportSource = readText(PAGE_EXPORT_PLAN_PATH)
   const canvasRendererSource = readText(CANVAS_PAGE_RENDERER_PATH)
   const typographyRendererHookSource = readText(TYPOGRAPHY_RENDERER_HOOK_PATH)
+  const previewDragHookSource = readText(PREVIEW_DRAG_HOOK_PATH)
   const fontFileEngineSource = readText(FONT_FILE_ENGINE_PATH)
   const textFormatRunsSource = readText(TEXT_FORMAT_RUNS_PATH)
   const textRenderingSource = readText(TEXT_RENDERING_PATH)
@@ -254,23 +256,33 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     typographyRendererHookSource,
-    /buildPageExportPlan\(\{[\s\S]*?layout:\s*buildLayoutSnapshot\(\)[\s\S]*?layoutEngine[\s\S]*?buildCanvasRenderPlansFromPageExportPlan/,
-    "idle live preview should consume the same canonical page export plan as thumbnails and exports",
+    /const baseLayout = buildLayoutSnapshot\(\)[\s\S]*?buildLayoutWithDragPreviewPosition[\s\S]*?buildPageExportPlan\(\{[\s\S]*?layout:\s*exportLayout[\s\S]*?layoutEngine[\s\S]*?buildCanvasRenderPlansFromPageExportPlan/,
+    "live preview should consume the same canonical page export plan as thumbnails and exports, including drag-preview overrides",
   )
   assert.match(
     typographyRendererHookSource,
-    /drawCanonicalPointPlans[\s\S]*?bufferCtx\.scale\(scale,\s*scale\)[\s\S]*?drawCanvasLayerStack/,
-    "idle live preview should draw canonical point-space plans under the same scale transform used by thumbnails",
+    /bufferCtx\.scale\(scale,\s*scale\)[\s\S]*?drawCanvasLayerStack\(bufferCtx,\s*canvasRenderPlans\.orderedKeys/,
+    "live preview should draw canonical point-space plans under the same scale transform used by thumbnails",
   )
   assert.match(
     typographyRendererHookSource,
-    /const canonicalLivePreviewEnabled = dragState === null/,
-    "text edit mode should stay on the canonical preview path; only drag previews use the transient canvas planner",
+    /dragState\?\.copyOnDrop[\s\S]*?duplicateLayout[\s\S]*?buildPageExportPlan\(\{[\s\S]*?layout:\s*duplicateLayout/,
+    "explicit copy-affordance drag previews should also be planned through the canonical page export plan",
   )
   assert.doesNotMatch(
     typographyRendererHookSource,
     /activeEditorTarget/,
     "opening an editor should not switch live preview back to a separate layout path",
+  )
+  assert.doesNotMatch(
+    typographyRendererHookSource,
+    /buildCanvasTypographyRenderPlans|buildCanvasImagePlans|buildOrderedCanvasLayerKeys|canonicalLivePreviewEnabled/,
+    "live preview should not keep a separate transient canvas planning path for drag or editor states",
+  )
+  assert.doesNotMatch(
+    previewDragHookSource,
+    /event\.altKey[\s\S]*copyOnDrop|copyOnDrop[\s\S]*event\.altKey/,
+    "Alt-drag copy should stay removed; copying is handled by the explicit plus affordance",
   )
   assert.match(
     pageExportSource,

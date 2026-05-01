@@ -174,7 +174,7 @@ export function usePreviewDrag<Key extends string, DragPreviewContext = void>({
       pointerOffsetY: pagePoint.y - dragAnchorPoint.y,
       preview: snapped,
       moved: false,
-      copyOnDrop: event.pointerType !== "touch" && event.altKey,
+      copyOnDrop: false,
     }
 
     const pointerId = event.pointerId
@@ -262,7 +262,7 @@ export function usePreviewDrag<Key extends string, DragPreviewContext = void>({
     const moved = dragState.moved
       || Math.abs(point.x - dragState.startPageX) > PREVIEW_DRAG_MOVE_THRESHOLD_PX
       || Math.abs(point.y - dragState.startPageY) > PREVIEW_DRAG_MOVE_THRESHOLD_PX
-    const copyOnDrop = dragState.detached ? true : event.pointerType !== "touch" && event.altKey
+    const copyOnDrop = dragState.detached === true
     pendingDragPreviewRef.current = { preview: snap, moved, copyOnDrop }
     if (dragRafRef.current !== null) return
     dragRafRef.current = window.requestAnimationFrame(() => {
