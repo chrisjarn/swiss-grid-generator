@@ -100,7 +100,7 @@ Current capability inventory for Swiss Grid Generator.
 - `Shift` + double-click empty module to create an image placeholder (`Ctrl` fallback).
 - Paragraph creation uses the actual clicked module rather than the nearest module center.
 - Drag paragraphs and placeholders to move them.
-- Hovered text paragraphs expose a `+` affordance: click copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts.
+- Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Default paragraph drag respects each paragraph's current `Snap to Columns (X)` state and, when `Snap to Baseline (Y)` is on, snaps Y to the nearest module top.
 - Holding `Shift` during paragraph or image-placeholder drag temporarily snaps the Y position to the nearest baseline row (`Ctrl` fallback).

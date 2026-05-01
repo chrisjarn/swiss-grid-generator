@@ -103,7 +103,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - `Page Up` / `Page Down` step to the previous or next project page when multiple pages are present, and `Home` / `End` jump to the first or last page
 - Text and image layers with stable grid-based positioning
 - Drag to move
-- Hovered text paragraphs expose a `+` affordance: click copies the full paragraph, `Shift`+click copies `Paragraph` settings, `Alt/Option`+click copies `Typo` settings, and `Alt/Option`+`Shift`+click copies both onto another paragraph, even across pages and loaded layouts
+- Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift`+click copies `Paragraph` settings, `Alt/Option`+click copies `Typo` settings, and `Alt/Option`+`Shift`+click copies both onto another paragraph, even across pages and loaded layouts
 - Hovered image placeholders expose a `+` affordance for duplication
 - Arrow keys nudge the selected unlocked layer; snapped axes move by whole modules, `Shift` switches snapped Y nudging to baselines, and unsnapped axes use tenth-step logical nudges with `Shift` as a 10x multiplier
 - Layer cards include a lock toggle in the Project panel; locked layers stay visible but cannot be hovered, edited, or moved in preview until unlocked

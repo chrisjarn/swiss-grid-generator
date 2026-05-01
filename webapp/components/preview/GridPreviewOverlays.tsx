@@ -259,11 +259,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 })
               }}
               aria-label={hoveredEditTarget.kind === "text"
-                ? "Copy paragraph or copy settings"
+                ? "Duplicate paragraph or copy settings"
                 : "Duplicate image placeholder"}
               title={hoveredEditTarget.kind === "text"
-                ? "Copy paragraph. Shift-click: copy Paragraph. Alt-click: copy Typo. Alt+Shift-click: copy both."
-                : "Duplicate image placeholder"}
+                ? "Duplicate paragraph, even across pages. Shift-click: copy Paragraph. Alt-click: copy Typo. Alt+Shift-click: copy both."
+                : "Duplicate image placeholder, even across pages."}
             >
               <Plus className="h-3 w-3" />
             </button>

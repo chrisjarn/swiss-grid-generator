@@ -322,20 +322,21 @@ export function usePreviewDrag<Key extends string, DragPreviewContext = void>({
     finishDrag()
   }, [dragState, finishDrag])
 
-  const beginDetachedCopyDrag = useCallback((key: Key, clientX: number, clientY: number) => {
+  const beginDetachedCopyDrag = useCallback((key: Key, clientX: number, clientY: number, context?: DragPreviewContext) => {
     const canvas = canvasRef.current
     const block = getBlockRect ? getBlockRect(key) : blockRectsRef.current[key]
     if (!canvas) return
     const rect = canvas.getBoundingClientRect()
     const pagePoint = toPagePoint(clientX - rect.left, clientY - rect.top)
     if (!pagePoint) return
-    const anchorPoint = getDragAnchorPoint?.(key)
+    const anchorPoint = getDragAnchorPoint?.(key, context)
     const dragAnchorPoint = anchorPoint ?? (block ? { x: block.x, y: block.y } : null)
     if (!dragAnchorPoint) return
     const snapped = blockModulePositions[key] ?? resolveDragPreviewPosition(
       dragAnchorPoint.x,
       dragAnchorPoint.y,
       key,
+      context,
     )
     setDragState({
       key,

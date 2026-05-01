@@ -33,7 +33,7 @@ Core editing and layout workflows.
 - Hold `1..5` while double-clicking empty space to choose the new paragraph hierarchy: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`. New hierarchy blocks start as Caption `1x1`, Body/Subhead `1x2`, Headline/Display `1x3`, clamped to the remaining columns from the clicked module.
 - Hover a layer to reveal edit access and placement guides.
 - Drag to move.
-- Hovered text paragraphs expose a `+` affordance: click to copy the full paragraph, `Shift` + click to copy `Paragraph` settings, `Alt/Option` + click to copy `Typo` settings, and `Alt/Option` + `Shift` + click to copy both. Then click another paragraph to apply the copied content/settings, even on a different page or after loading another layout.
+- Hovered text paragraphs expose a `+` affordance: click to duplicate the paragraph, then click the target placement, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown on the active page.
 - Locked layers stay visible but cannot be hovered, moved, or edited until unlocked in the Project panel.

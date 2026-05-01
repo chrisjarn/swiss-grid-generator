@@ -4,7 +4,7 @@ import { clampRotation, hasSignificantRotation } from "@/lib/block-constraints"
 import type { FontFamily } from "@/lib/config/fonts"
 import { getStyleDefaultFontWeight, resolveFontVariant } from "@/lib/config/fonts"
 import type { TextLayerCollections } from "@/lib/preview-layer-state"
-import { normalizeTextFormatRuns } from "@/lib/text-format-runs"
+import { normalizeTextFormatRuns, type TextFormatRun } from "@/lib/text-format-runs"
 import { toTextBlockPosition } from "@/lib/text-block-position"
 import { clampTextBlockAnchorPosition } from "./text-block-anchor-clamp.ts"
 import {
@@ -12,7 +12,7 @@ import {
   DEFAULT_TRACKING_SCALE,
   normalizeTrackingScale,
 } from "@/lib/text-rendering"
-import { normalizeTextTrackingRuns } from "@/lib/text-tracking-runs"
+import { normalizeTextTrackingRuns, type TextTrackingRun } from "@/lib/text-tracking-runs"
 import type { ModulePosition, TextBlockPosition, TextVerticalAlignMode } from "@/lib/types/layout-primitives"
 import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
 
@@ -82,6 +82,41 @@ type DuplicateTextLayerArgs<Key extends string, StyleKey extends string> = {
   position: ModulePosition | TextBlockPosition
   rowStartBaselines: readonly number[]
   baseFont: FontFamily
+}
+
+export type TextLayerDuplicateSnapshot<StyleKey extends string> = {
+  text: string
+  textEdited: boolean
+  styleKey: StyleKey
+  sourceBaseFont: FontFamily
+  fontFamily?: FontFamily
+  fontWeight?: number
+  opticalKerning?: boolean
+  trackingScale?: number
+  trackingRuns?: TextTrackingRun[]
+  textFormatRuns?: TextFormatRun<StyleKey, FontFamily>[]
+  italic?: boolean
+  rotation?: number
+  columns: number
+  rows: number
+  heightBaselines: number
+  align: BlockEditorTextAlign
+  verticalAlign: TextVerticalAlignMode
+  reflow: boolean
+  syllableDivision: boolean
+  snapToColumns: boolean
+  snapToBaseline: boolean
+}
+
+type InsertTextLayerDuplicateSnapshotArgs<Key extends string, StyleKey extends string> = {
+  newKey: Key
+  snapshot: TextLayerDuplicateSnapshot<StyleKey>
+  gridCols: number
+  gridRows: number
+  position: ModulePosition | TextBlockPosition
+  rowStartBaselines: readonly number[]
+  baseFont: FontFamily
+  afterKey?: Key | null
 }
 
 export function clampTextBlockPosition({
@@ -555,6 +590,171 @@ export function duplicateTextLayerInCollections<
         gridRows,
         snapToColumns,
         snapToBaseline,
+      }),
+    },
+  }
+}
+
+export function insertTextLayerDuplicateSnapshotInCollections<
+  Key extends string,
+  StyleKey extends string,
+>(
+  current: PreviewTextLayerCollectionsState<Key, StyleKey>,
+  {
+    newKey,
+    snapshot,
+    gridCols,
+    gridRows,
+    position,
+    rowStartBaselines,
+    baseFont,
+    afterKey,
+  }: InsertTextLayerDuplicateSnapshotArgs<Key, StyleKey>,
+): PreviewTextLayerCollectionsState<Key, StyleKey> {
+  const height = normalizeHeightMetrics({
+    rows: snapshot.rows,
+    baselines: snapshot.heightBaselines,
+    gridRows,
+  })
+  const nextOrder = current.blockOrder.filter((item) => item !== newKey)
+  if (afterKey) {
+    const insertIndex = nextOrder.indexOf(afterKey)
+    if (insertIndex >= 0) {
+      nextOrder.splice(insertIndex + 1, 0, newKey)
+    } else {
+      nextOrder.push(newKey)
+    }
+  } else {
+    nextOrder.push(newKey)
+  }
+
+  const sourceFont = snapshot.fontFamily ?? snapshot.sourceBaseFont
+  const nextFonts = { ...current.blockFontFamilies }
+  if (sourceFont === baseFont) delete nextFonts[newKey]
+  else nextFonts[newKey] = sourceFont
+
+  const nextFontWeights = { ...current.blockFontWeights }
+  if (typeof snapshot.fontWeight === "number" && Number.isFinite(snapshot.fontWeight)) {
+    nextFontWeights[newKey] = snapshot.fontWeight
+  } else {
+    delete nextFontWeights[newKey]
+  }
+
+  const nextItalic = { ...current.blockItalic }
+  if (snapshot.italic === true || snapshot.italic === false) {
+    nextItalic[newKey] = snapshot.italic
+  } else {
+    delete nextItalic[newKey]
+  }
+
+  const nextOpticalKerning = { ...current.blockOpticalKerning }
+  if (snapshot.opticalKerning === true || snapshot.opticalKerning === false) {
+    nextOpticalKerning[newKey] = snapshot.opticalKerning
+  } else {
+    delete nextOpticalKerning[newKey]
+  }
+
+  const nextTrackingScales = { ...current.blockTrackingScales }
+  if (typeof snapshot.trackingScale === "number" && Number.isFinite(snapshot.trackingScale)) {
+    nextTrackingScales[newKey] = normalizeTrackingScale(snapshot.trackingScale)
+  } else {
+    delete nextTrackingScales[newKey]
+  }
+
+  const nextTrackingRuns = { ...current.blockTrackingRuns }
+  if (Array.isArray(snapshot.trackingRuns) && snapshot.trackingRuns.length > 0) {
+    nextTrackingRuns[newKey] = normalizeTextTrackingRuns(
+      snapshot.text,
+      snapshot.trackingRuns,
+      snapshot.trackingScale ?? DEFAULT_TRACKING_SCALE,
+    )
+  } else {
+    delete nextTrackingRuns[newKey]
+  }
+
+  const nextTextFormatRuns = { ...current.blockTextFormatRuns }
+  if (Array.isArray(snapshot.textFormatRuns) && snapshot.textFormatRuns.length > 0) {
+    nextTextFormatRuns[newKey] = snapshot.textFormatRuns.map((run) => ({ ...run }))
+  } else {
+    delete nextTextFormatRuns[newKey]
+  }
+
+  const nextRotations = { ...current.blockRotations }
+  if (typeof snapshot.rotation === "number" && Number.isFinite(snapshot.rotation) && hasSignificantRotation(snapshot.rotation)) {
+    nextRotations[newKey] = clampRotation(snapshot.rotation)
+  } else {
+    delete nextRotations[newKey]
+  }
+
+  return {
+    ...current,
+    blockOrder: nextOrder,
+    textContent: {
+      ...current.textContent,
+      [newKey]: snapshot.text,
+    },
+    blockTextEdited: {
+      ...current.blockTextEdited,
+      [newKey]: snapshot.textEdited,
+    },
+    styleAssignments: {
+      ...current.styleAssignments,
+      [newKey]: snapshot.styleKey,
+    },
+    blockFontFamilies: nextFonts,
+    blockFontWeights: nextFontWeights,
+    blockOpticalKerning: nextOpticalKerning,
+    blockTrackingScales: nextTrackingScales,
+    blockTrackingRuns: nextTrackingRuns,
+    blockTextFormatRuns: nextTextFormatRuns,
+    blockItalic: nextItalic,
+    blockRotations: nextRotations,
+    blockColumnSpans: {
+      ...current.blockColumnSpans,
+      [newKey]: snapshot.columns,
+    },
+    blockRowSpans: {
+      ...current.blockRowSpans,
+      [newKey]: height.rows,
+    },
+    blockHeightBaselines: {
+      ...current.blockHeightBaselines,
+      [newKey]: height.baselines,
+    },
+    blockTextAlignments: {
+      ...current.blockTextAlignments,
+      [newKey]: snapshot.align,
+    },
+    blockVerticalAlignments: {
+      ...current.blockVerticalAlignments,
+      [newKey]: snapshot.verticalAlign,
+    },
+    blockTextReflow: {
+      ...current.blockTextReflow,
+      [newKey]: snapshot.reflow,
+    },
+    blockSyllableDivision: {
+      ...current.blockSyllableDivision,
+      [newKey]: snapshot.syllableDivision,
+    },
+    blockSnapToColumns: {
+      ...current.blockSnapToColumns,
+      [newKey]: snapshot.snapToColumns,
+    },
+    blockSnapToBaseline: {
+      ...current.blockSnapToBaseline,
+      [newKey]: snapshot.snapToBaseline,
+    },
+    blockModulePositions: {
+      ...current.blockModulePositions,
+      [newKey]: clampTextBlockAnchorPosition({
+        position: toTextBlockPosition(position, rowStartBaselines),
+        span: snapshot.columns,
+        rows: height.rows,
+        gridCols,
+        gridRows,
+        snapToColumns: snapshot.snapToColumns,
+        snapToBaseline: snapshot.snapToBaseline,
       }),
     },
   }

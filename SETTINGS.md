@@ -231,7 +231,7 @@ Default: `swiss`
 - Text cards display hierarchy, font, and a short text preview rendered in the selected paragraph color and font.
 - Image cards display `Image Placeholder` and a single color swatch.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
-- Hovered text paragraphs in preview expose a `+` affordance: click copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied content/settings, even across pages and loaded layouts.
+- Hovered text paragraphs in preview expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
 - Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
@@ -471,7 +471,7 @@ Syllable division behavior:
 
 Drag behavior:
 - Default drag moves a paragraph.
-- Hovered text paragraphs expose a `+` affordance: click copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. Click another paragraph to apply the copied content/settings, even across pages and loaded layouts.
+- Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. Click another paragraph to apply the copied settings, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Paragraphs and image placeholders are stored as logical anchors: `{ column, row, baselineOffset }`.
 - Paragraphs and image placeholders also persist independent `Snap to Columns (X)` and `Snap to Baseline (Y)` flags. When either axis snap is off, the corresponding `column` and/or `baselineOffset` value may remain fractional while the logical row anchor stays stable.

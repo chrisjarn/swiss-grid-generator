@@ -33,13 +33,18 @@ import {
 import { buildSmartTextZoomGeometrySignature } from "@/lib/preview-smart-text-zoom"
 import { getHoveredPreviewTextGuideRect, getPreviewTextGuideRect } from "@/lib/preview-guide-rect"
 import { removeTextLayerFromCollections } from "@/lib/preview-layer-state"
-import { clampTextBlockPosition } from "@/lib/preview-text-layer-state"
+import {
+  clampTextBlockPosition,
+  insertTextLayerDuplicateSnapshotInCollections,
+  type TextLayerDuplicateSnapshot,
+} from "@/lib/preview-text-layer-state"
 import {
   applyOptionalTransferredValue,
   applyTextStyleTransferToCollections,
   type TextStyleTransferMode,
   type TextStyleTransferSnapshot,
 } from "@/lib/preview-text-style-transfer"
+import { resolveTextCopyAffordanceAction } from "@/lib/preview-copy-affordance"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
 import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
 import { findNearestAxisIndex } from "@/lib/grid-rhythm"
@@ -89,6 +94,29 @@ import {
 type BlockId = string
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PendingTextStyleTransfer = TextStyleTransferSnapshot<BlockId, TypographyStyleKey>
+type PendingLayerDuplicate =
+  | {
+      kind: "text"
+      sourceKey: BlockId
+      sourceLayoutToken: number
+      snapshot: TextLayerDuplicateSnapshot<TypographyStyleKey>
+      customSize?: number
+      customLeading?: number
+      textColor?: string
+    }
+  | {
+      kind: "image"
+      sourceKey: BlockId
+      sourceLayoutToken: number
+      columns: number
+      rows: number
+      heightBaselines: number
+      color: string
+      opacity: number
+      snapToColumns: boolean
+      snapToBaseline: boolean
+      rotation: number
+    }
 
 function unionRects(rects: BlockRect[]): BlockRect | null {
   if (rects.length === 0) return null
@@ -293,6 +321,7 @@ export const GridPreview = memo(function GridPreview({
   const [hoverImageKey, setHoverImageKey] = useState<BlockId | null>(null)
   const [hoverCopyIntent, setHoverCopyIntent] = useState(false)
   const [pendingTextStyleTransfer, setPendingTextStyleTransfer] = useState<PendingTextStyleTransfer | null>(null)
+  const [pendingLayerDuplicate, setPendingLayerDuplicate] = useState<PendingLayerDuplicate | null>(null)
   const [layoutEmissionEnabled, setLayoutEmissionEnabled] = useState(initialLayoutToken === 0)
   const [pendingLayerEditorMode, setPendingLayerEditorMode] = useState<"text" | "image" | null>(null)
   const [activeTextZoomTarget, setActiveTextZoomTarget] = useState<BlockId | null>(null)
@@ -405,6 +434,8 @@ export const GridPreview = memo(function GridPreview({
     blockFontWeights,
     blockOpticalKerning,
     blockTrackingScales,
+    blockTrackingRuns,
+    blockTextFormatRuns,
     blockGridPositions,
     blockModulePositions,
     blockColumnSpans,
@@ -627,6 +658,58 @@ export const GridPreview = memo(function GridPreview({
               : undefined,
           }
         : undefined,
+    }
+  }
+
+  const buildTextDuplicateSnapshot = (sourceKey: BlockId): Extract<PendingLayerDuplicate, { kind: "text" }> | null => {
+    if (isImagePlaceholderKey(sourceKey)) return null
+    return {
+      kind: "text",
+      sourceKey,
+      sourceLayoutToken: initialLayoutToken,
+      snapshot: {
+        text: textContent[sourceKey] ?? "",
+        textEdited: blockTextEdited[sourceKey] ?? true,
+        styleKey: getStyleKeyForBlock(sourceKey),
+        sourceBaseFont: baseFont,
+        fontFamily: blockFontFamilies[sourceKey],
+        fontWeight: blockFontWeights[sourceKey],
+        opticalKerning: blockOpticalKerning[sourceKey],
+        trackingScale: blockTrackingScales[sourceKey],
+        trackingRuns: blockTrackingRuns[sourceKey]?.map((run) => ({ ...run })),
+        textFormatRuns: blockTextFormatRuns[sourceKey]?.map((run) => ({ ...run })),
+        italic: blockItalic[sourceKey],
+        rotation: blockRotations[sourceKey],
+        columns: getBlockSpan(sourceKey),
+        rows: getBlockRows(sourceKey),
+        heightBaselines: getBlockHeightBaselines(sourceKey),
+        align: blockTextAlignments[sourceKey] ?? "left",
+        verticalAlign: blockVerticalAlignments[sourceKey] ?? "top",
+        reflow: isTextReflowEnabled(sourceKey),
+        syllableDivision: isSyllableDivisionEnabled(sourceKey),
+        snapToColumns: isSnapToColumnsEnabled(sourceKey),
+        snapToBaseline: isSnapToBaselineEnabled(sourceKey),
+      },
+      customSize: blockCustomSizes[sourceKey],
+      customLeading: blockCustomLeadings[sourceKey],
+      textColor: blockTextColors[sourceKey],
+    }
+  }
+
+  const buildImageDuplicateSnapshot = (sourceKey: BlockId): Extract<PendingLayerDuplicate, { kind: "image" }> | null => {
+    if (!isImagePlaceholderKey(sourceKey)) return null
+    return {
+      kind: "image",
+      sourceKey,
+      sourceLayoutToken: initialLayoutToken,
+      columns: getImageSpan(sourceKey),
+      rows: getImageRows(sourceKey),
+      heightBaselines: getImageHeightBaselines(sourceKey),
+      color: getImageColorReference(sourceKey),
+      opacity: getImageOpacity(sourceKey),
+      snapToColumns: isImageSnapToColumnsEnabled(sourceKey),
+      snapToBaseline: isImageSnapToBaselineEnabled(sourceKey),
+      rotation: getImageRotation(sourceKey),
     }
   }
 
@@ -939,6 +1022,166 @@ export const GridPreview = memo(function GridPreview({
     setBlockTextColors,
   ])
 
+  const resolvePendingDuplicatePosition = useCallback((clientX: number, clientY: number, {
+    columns,
+    snapToColumns,
+    snapToBaseline,
+  }: {
+    columns: number
+    snapToColumns: boolean
+    snapToBaseline: boolean
+  }) => {
+    const pagePoint = toPagePointFromClient(clientX, clientY)
+    if (!pagePoint) return null
+    const modulePosition = resolveModulePositionAtPagePoint(pagePoint.x, pagePoint.y)
+    if (!modulePosition) return null
+    const metrics = getGridMetrics()
+    const rawCol = snapToColumns
+      ? modulePosition.col
+      : metrics.getInterpolatedCol(pagePoint.x)
+    const rawRow = snapToBaseline
+      ? modulePosition.row
+      : (pagePoint.y - metrics.baselineOriginTop) / Math.max(metrics.baselineStep, 0.0001)
+    return {
+      col: clampLayerColumn(rawCol, {
+        span: columns,
+        gridCols: metrics.gridCols,
+        snapToColumns,
+      }),
+      row: clampFreePlacementRow(rawRow, metrics.maxBaselineRow),
+    }
+  }, [getGridMetrics, resolveModulePositionAtPagePoint, toPagePointFromClient])
+
+  const clearPendingLayerDuplicate = useCallback(() => {
+    setPendingLayerDuplicate(null)
+  }, [])
+
+  const shouldApplyPendingLayerDuplicatePlacementBeforeDrag = useCallback(() => (
+    pendingLayerDuplicate !== null && pendingLayerDuplicate.sourceLayoutToken !== initialLayoutToken
+  ), [initialLayoutToken, pendingLayerDuplicate])
+
+  const tryApplyPendingLayerDuplicatePlacement = useCallback((clientX: number, clientY: number): boolean => {
+    if (!pendingLayerDuplicate) return false
+
+    if (pendingLayerDuplicate.kind === "text") {
+      const position = resolvePendingDuplicatePosition(clientX, clientY, {
+        columns: pendingLayerDuplicate.snapshot.columns,
+        snapToColumns: pendingLayerDuplicate.snapshot.snapToColumns,
+        snapToBaseline: pendingLayerDuplicate.snapshot.snapToBaseline,
+      })
+      if (!position) return false
+
+      const sourceText = pendingLayerDuplicate.snapshot.text
+      const maxParagraphCount = result.settings.gridCols * result.settings.gridRows
+      const activeParagraphCount = blockOrder.filter((key) => (textContent[key] ?? "").trim().length > 0).length
+      if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
+        onRequestNotice?.({
+          title: "Paragraph Limit Reached",
+          message: `Maximum paragraphs reached (${maxParagraphCount}).`,
+        })
+        return true
+      }
+
+      const newKey = getNextCustomBlockId()
+      const metrics = getGridMetrics()
+      recordHistoryBeforeChange()
+      setBlockCollections((current) => insertTextLayerDuplicateSnapshotInCollections(current, {
+        newKey,
+        snapshot: pendingLayerDuplicate.snapshot,
+        gridCols: result.settings.gridCols,
+        gridRows: result.settings.gridRows,
+        position,
+        rowStartBaselines: metrics.rowStartBaselines,
+        baseFont,
+        afterKey: blockOrder.includes(pendingLayerDuplicate.sourceKey)
+          ? pendingLayerDuplicate.sourceKey
+          : null,
+      }))
+      setBlockCustomSizes((current) => {
+        const next = { ...current }
+        const value = pendingLayerDuplicate.customSize
+        if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+          next[newKey] = value
+        } else {
+          delete next[newKey]
+        }
+        return next
+      })
+      setBlockCustomLeadings((current) => {
+        const next = { ...current }
+        const value = pendingLayerDuplicate.customLeading
+        if (typeof value === "number" && Number.isFinite(value) && value > 0) {
+          next[newKey] = value
+        } else {
+          delete next[newKey]
+        }
+        return next
+      })
+      setBlockTextColors((current) => {
+        const next = { ...current }
+        if (pendingLayerDuplicate.textColor) next[newKey] = pendingLayerDuplicate.textColor
+        else delete next[newKey]
+        return next
+      })
+      promoteLayerToTop(newKey)
+      onSelectLayer?.(newKey)
+      setPendingLayerDuplicate(null)
+      clearHover()
+      return true
+    }
+
+    const position = resolvePendingDuplicatePosition(clientX, clientY, {
+      columns: pendingLayerDuplicate.columns,
+      snapToColumns: pendingLayerDuplicate.snapToColumns,
+      snapToBaseline: pendingLayerDuplicate.snapToBaseline,
+    })
+    if (!position) return false
+
+    const newKey = getNextImagePlaceholderId()
+    onShowImagePlaceholdersChange?.(true)
+    recordHistoryBeforeChange()
+    insertImagePlaceholder(newKey, {
+      position,
+      columns: pendingLayerDuplicate.columns,
+      rows: pendingLayerDuplicate.rows,
+      heightBaselines: pendingLayerDuplicate.heightBaselines,
+      color: pendingLayerDuplicate.color,
+      opacity: pendingLayerDuplicate.opacity,
+      snapToColumns: pendingLayerDuplicate.snapToColumns,
+      snapToBaseline: pendingLayerDuplicate.snapToBaseline,
+      rotation: pendingLayerDuplicate.rotation,
+      afterKey: imageOrder.includes(pendingLayerDuplicate.sourceKey)
+        ? pendingLayerDuplicate.sourceKey
+        : null,
+    })
+    promoteLayerToTop(newKey)
+    onSelectLayer?.(newKey)
+    setPendingLayerDuplicate(null)
+    clearHover()
+    return true
+  }, [
+    baseFont,
+    blockOrder,
+    clearHover,
+    getGridMetrics,
+    insertImagePlaceholder,
+    onRequestNotice,
+    onSelectLayer,
+    onShowImagePlaceholdersChange,
+    pendingLayerDuplicate,
+    promoteLayerToTop,
+    recordHistoryBeforeChange,
+    resolvePendingDuplicatePosition,
+    result.settings.gridCols,
+    result.settings.gridRows,
+    setBlockCollections,
+    setBlockCustomLeadings,
+    setBlockCustomSizes,
+    setBlockTextColors,
+    textContent,
+    imageOrder,
+  ])
+
   const handleCanvasMouseLeave = useCallback((event: ReactMouseEvent<HTMLCanvasElement>) => {
     const nextTarget = event.relatedTarget
     if (nextTarget instanceof HTMLElement && nextTarget.closest("[data-preview-edit-affordance='true']")) {
@@ -1062,6 +1305,9 @@ export const GridPreview = memo(function GridPreview({
     touchLongPressMs: PREVIEW_TOUCH_LONG_PRESS_MS,
     touchCancelDistancePx: PREVIEW_TOUCH_CANCEL_DISTANCE_PX,
     tryApplyPendingTextStyleTransfer,
+    tryApplyPendingLayerDuplicatePlacement,
+    shouldApplyPendingLayerDuplicatePlacementBeforeDrag,
+    onCopyPlacementCommitted: clearPendingLayerDuplicate,
   })
 
   const handleCopyAffordanceActivate = ({
@@ -1080,25 +1326,33 @@ export const GridPreview = memo(function GridPreview({
     shiftKey: boolean
   }) => {
     if (kind === "text") {
-      const mode: TextStyleTransferMode = altKey && shiftKey
-        ? "both"
-        : shiftKey
-          ? "paragraph"
-          : altKey
-            ? "typo"
-            : "full"
+      const action = resolveTextCopyAffordanceAction({ altKey, shiftKey })
+      if (action.kind === "duplicate") {
+        const duplicate = buildTextDuplicateSnapshot(key)
+        if (!duplicate) return
+        setPendingTextStyleTransfer(null)
+        setPendingLayerDuplicate(duplicate)
+        beginDetachedCopyDrag(key, clientX, clientY)
+        return
+      }
+
+      const mode = action.mode
       const transfer = buildTextStyleTransfer(key, mode)
       if (!transfer) return
       closeEditor()
       closeImageEditor()
       clearHover()
+      setPendingLayerDuplicate(null)
       setPendingTextStyleTransfer(transfer)
       onSelectLayer?.(key)
       announceTextStyleTransfer(mode)
       return
     }
 
+    const duplicate = buildImageDuplicateSnapshot(key)
+    if (!duplicate) return
     setPendingTextStyleTransfer(null)
+    setPendingLayerDuplicate(duplicate)
     beginDetachedCopyDrag(key, clientX, clientY)
   }
 
@@ -1113,7 +1367,7 @@ export const GridPreview = memo(function GridPreview({
     hoverState,
     hoverImageKey,
     hoverCopyIntent,
-    persistentTextCopyIntent: pendingTextStyleTransfer !== null,
+    persistentTextCopyIntent: pendingTextStyleTransfer !== null || pendingLayerDuplicate !== null,
     setHoverState,
     setHoverImageKey,
     setHoverCopyIntent,

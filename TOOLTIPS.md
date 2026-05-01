@@ -45,7 +45,7 @@ Drag to establish the rough position. Use cursor keys to make controlled placeme
 With snapped axes enabled, arrow keys move the selected unlocked layer by columns and module rows. Hold `Shift` while nudging to switch snapped Y movement to baseline rows. On unsnapped axes, `Shift` increases the fine movement step.
 
 ### Duplicate Without Losing Rhythm {#tooltip-duplicate-layer}
-Use the visible `+` affordance instead of modifier-key duplication. On text paragraphs, `+` copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts. On image placeholders, `+` duplicates the placeholder.
+Use the visible `+` affordance instead of modifier-key duplication. On text paragraphs, `+` duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts. On image placeholders, `+` duplicates the placeholder, including after switching pages.
 
 ### Free Placement Is An Exception {#tooltip-free-placement}
 Turn off `Snap to Columns (X)` or `Snap to Baseline (Y)` only when the composition needs a controlled exception. Free X placement allows a disciplined one-column side-margin overhang. It is useful for optical tension, not casual alignment drift.

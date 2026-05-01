@@ -109,7 +109,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the visible `+` affordance instead of modifier-key duplication. On text paragraphs, `+` copies the full paragraph, `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts. On image placeholders, `+` duplicates the placeholder."
+        "text": "Use the visible `+` affordance instead of modifier-key duplication. On text paragraphs, `+` duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts. On image placeholders, `+` duplicates the placeholder, including after switching pages."
       }
     ]
   },

@@ -35,6 +35,9 @@ type Args<Key extends string, StyleKey extends string> = Pick<
   | "isSnapToBaselineEnabled"
   | "isImageSnapToBaselineEnabled"
   | "tryApplyPendingTextStyleTransfer"
+  | "tryApplyPendingLayerDuplicatePlacement"
+  | "shouldApplyPendingLayerDuplicatePlacementBeforeDrag"
+  | "onCopyPlacementCommitted"
 > & {
   handleTextDrop: (drag: PreviewDragState<Key>, nextPreview: ModulePosition, copyOnDrop: boolean) => void
   handleImageDrop: (drag: PreviewDragState<Key>, nextPreview: ModulePosition, copyOnDrop: boolean) => void
@@ -71,6 +74,9 @@ export function usePreviewPointerSelectionRouting<Key extends string, StyleKey e
   openTextEditor,
   openImageEditor,
   tryApplyPendingTextStyleTransfer,
+  tryApplyPendingLayerDuplicatePlacement,
+  shouldApplyPendingLayerDuplicatePlacementBeforeDrag,
+  onCopyPlacementCommitted,
   handleTextDrop,
   handleImageDrop,
   openTextEditorFromCanvas,
@@ -130,9 +136,34 @@ export function usePreviewPointerSelectionRouting<Key extends string, StyleKey e
     dragEndedAtRef,
   })
 
+  const beginDetachedCopyDrag = useCallback((key: Key, clientX: number, clientY: number) => {
+    const dragPreviewContext: LayerPlacementOptions = {
+      dragYMode: isImagePlaceholderKey(key)
+        ? (isImageSnapToBaselineEnabled(key) ? "moduleTop" : "free")
+        : (isSnapToBaselineEnabled(key) ? "moduleTop" : "free"),
+    }
+    beginDetachedCopyDragInternal(key, clientX, clientY, dragPreviewContext)
+  }, [
+    beginDetachedCopyDragInternal,
+    isImagePlaceholderKey,
+    isImageSnapToBaselineEnabled,
+    isSnapToBaselineEnabled,
+  ])
+
   const handlePreviewPointerDown = useCallback((event: ReactPointerEvent<HTMLCanvasElement>) => {
     if (dragState?.detached) {
+      if (
+        shouldApplyPendingLayerDuplicatePlacementBeforeDrag?.()
+        && tryApplyPendingLayerDuplicatePlacement?.(event.clientX, event.clientY)
+      ) {
+        setDragState(null)
+        return
+      }
       handleCanvasPointerDown(event)
+      onCopyPlacementCommitted?.()
+      return
+    }
+    if (tryApplyPendingLayerDuplicatePlacement?.(event.clientX, event.clientY)) {
       return
     }
     const target = resolveSelectedLayerAtClientPoint(event.clientX, event.clientY)
@@ -152,14 +183,19 @@ export function usePreviewPointerSelectionRouting<Key extends string, StyleKey e
   }, [
     activeEditorTarget,
     clearHover,
+    dragState,
     editorOpen,
     handleCanvasPointerDown,
     isImageSnapToBaselineEnabled,
     isImagePlaceholderKey,
     onSelectLayer,
+    onCopyPlacementCommitted,
     openImageEditor,
     openTextEditor,
     resolveSelectedLayerAtClientPoint,
+    shouldApplyPendingLayerDuplicatePlacementBeforeDrag,
+    setDragState,
+    tryApplyPendingLayerDuplicatePlacement,
     tryApplyPendingTextStyleTransfer,
   ])
 
@@ -185,7 +221,7 @@ export function usePreviewPointerSelectionRouting<Key extends string, StyleKey e
   return {
     dragState,
     setDragState,
-    beginDetachedCopyDrag: beginDetachedCopyDragInternal,
+    beginDetachedCopyDrag,
     handlePreviewPointerDown,
     handleCanvasPointerMove,
     handleCanvasPointerUp,

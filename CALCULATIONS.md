@@ -642,7 +642,7 @@ maxCol = gridCols
 
 So a free-X layer may overhang one column into either side margin while still staying inside the page field.
 
-Duplication is handled by explicit `+` affordances instead of modifier-key movement. Text `+` starts paragraph/content/settings transfer onto another paragraph. Image-placeholder `+` starts a duplicate placement using the same canonical preview planning path as normal movement.
+Duplication is handled by explicit `+` affordances instead of modifier-key movement. Text and image-placeholder `+` both capture a deterministic layer snapshot and start duplicate placement using the same canonical preview planning path as normal movement, so placement can continue after switching pages. Text modifier clicks remain reserved for style transfer: `Shift` copies `Paragraph` settings, `Alt/Option` copies `Typo` settings, and `Alt/Option` + `Shift` copies both onto another paragraph.
 
 During paragraph or image-placeholder drag, a layer with `Snap to Baseline (Y)` enabled resolves Y to the nearest module-top row start by default while leaving X placement under the layer's current `Snap to Columns (X)` setting:
 

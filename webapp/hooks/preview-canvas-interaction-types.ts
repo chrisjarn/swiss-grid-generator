@@ -116,6 +116,9 @@ export type PreviewCanvasInteractionArgs<Key extends string, StyleKey extends st
   openImageEditor: (key: Key, options?: OpenImageEditorOptions) => void
   closeImageEditorPanel: () => void
   tryApplyPendingTextStyleTransfer?: (key: Key | null) => boolean
+  tryApplyPendingLayerDuplicatePlacement?: (clientX: number, clientY: number) => boolean
+  shouldApplyPendingLayerDuplicatePlacementBeforeDrag?: () => boolean
+  onCopyPlacementCommitted?: () => void
   clearHover: () => void
   dragEndedAtRef: MutableRefObject<number>
   touchLongPressMs: number
