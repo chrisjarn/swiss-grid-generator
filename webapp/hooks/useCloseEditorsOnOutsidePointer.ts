@@ -1,6 +1,8 @@
 import { useEffect } from "react"
 import type { MutableRefObject } from "react"
 
+import { eventPathHasEditorOwnedTarget } from "@/lib/editor-interaction-ownership"
+
 type Args = {
   isEditorOpen: boolean
   editorSidebarHost: HTMLDivElement | null
@@ -18,29 +20,11 @@ export function useCloseEditorsOnOutsidePointer({
 }: Args) {
   useEffect(() => {
     if (!isEditorOpen) return
-    const isEditorOwnedTarget = (target: EventTarget | null): boolean => {
-      if (target instanceof Node) {
-        if (textareaRef.current?.contains(target)) return true
-        if (editorSidebarHost?.contains(target)) return true
-      }
-      if (!(target instanceof Element)) return false
-      return Boolean(
-        target.closest('[data-editor-interactive-root="true"]')
-        || target.closest('[data-editor-retarget-root="true"]')
-        || target.closest('[data-preview-edit-affordance="true"]')
-      )
-    }
 
     const handlePointerDown = (event: PointerEvent) => {
-      if (isEditorOwnedTarget(event.target)) return
+      const ownedNodes = [textareaRef.current, editorSidebarHost]
+      if (eventPathHasEditorOwnedTarget(event, ownedNodes)) return
       if (shouldKeepEditorsOpenForPointerDown?.(event)) return
-
-      const composedPath = typeof event.composedPath === "function"
-        ? event.composedPath()
-        : []
-      for (const pathTarget of composedPath) {
-        if (isEditorOwnedTarget(pathTarget)) return
-      }
 
       onCloseEditors()
     }

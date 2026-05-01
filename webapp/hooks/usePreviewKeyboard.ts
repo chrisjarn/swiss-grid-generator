@@ -1,5 +1,7 @@
 import { useEffect } from "react"
 
+import { isEditorOwnedEventTarget } from "@/lib/editor-interaction-ownership"
+
 export type PreviewNudgeDirection = "left" | "right" | "up" | "down"
 
 export type PreviewNudgeRequest = {
@@ -38,6 +40,7 @@ export function usePreviewKeyboard({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        if (isEditorOwnedEventTarget(event.target)) return
         event.preventDefault()
         onCloseEditor()
       }

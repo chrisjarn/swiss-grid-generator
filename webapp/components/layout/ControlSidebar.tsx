@@ -31,6 +31,7 @@ export const ControlSidebar = memo(function ControlSidebar({
 }: Props) {
   return (
     <div
+      data-editor-mode-preserve-root="true"
       className={`w-full md:w-[280px] md:basis-[280px] md:shrink-0 flex max-h-[50vh] flex-col overflow-hidden border-r border-b transition-colors md:max-h-full md:border-b-0 ${uiTheme.leftPanel} ${
         editorMode ? uiTheme.leftPanelEdit : ""
       }`}
