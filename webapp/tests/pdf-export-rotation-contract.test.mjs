@@ -172,17 +172,21 @@ test("pdf export constructs real jsPDF graphics-state instances before registeri
 test("pdf export attaches an embedded output intent profile for print-aware exports", () => {
   const source = readText("lib/pdf-output-intent.ts")
   assert.match(source, /putResources/)
-  assert.match(source, /putXobjectDict/)
   assert.match(source, /postPutResources/)
   assert.match(source, /putCatalog/)
-  assert.match(source, /\/DefaultRGB/)
-  assert.match(source, /\/DefaultCMYK/)
-  assert.match(source, /\/ICCBased/)
+  assert.match(source, /key:\s*"N",\s*value:\s*current\.profile\.channels/)
+  assert.match(source, /key:\s*"Alternate",\s*value:\s*current\.profile\.alternateDevice/)
   assert.match(source, /\/OutputIntents\s*\[<</)
   assert.match(source, /\/DestOutputProfile\s+\$\{current\.profileObjectId\}\s+0\s+R/)
   assert.match(source, /\/S\s+\/GTS_PDFX/)
   assert.match(source, /coated-fogra39\.icc/)
   assert.match(source, /srgb-iec61966-2-1\.icc/)
+})
+
+test("pdf output intent does not inject color spaces into the XObject dictionary", () => {
+  const source = readText("lib/pdf-output-intent.ts")
+  assert.doesNotMatch(source, /putXobjectDict/)
+  assert.doesNotMatch(source, /\/DefaultRGB|\/DefaultCMYK/)
 })
 
 test("pdf export presets stay ordered from digital to offset and drive color-management mode", () => {

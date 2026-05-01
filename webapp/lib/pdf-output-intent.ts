@@ -115,16 +115,6 @@ function ensureOutputIntentHooks(pdf: PdfWithInternals): OutputIntentState {
     current.profileObjectId = this.internal.newObjectDeferred()
   })
 
-  pdf.internal.events.subscribe("putXobjectDict", function (this: PdfWithInternals) {
-    const current = this.internal.collections[OUTPUT_INTENT_NAMESPACE] as OutputIntentState | undefined
-    if (!current?.binaryString || current.profileObjectId === null) return
-
-    const defaultColorSpaceName = current.profile.alternateDevice === "/DeviceCMYK" ? "/DefaultCMYK" : "/DefaultRGB"
-    this.internal.write("/ColorSpace <<")
-    this.internal.write(`${defaultColorSpaceName} [/ICCBased ${current.profileObjectId} 0 R]`)
-    this.internal.write(">>")
-  })
-
   pdf.internal.events.subscribe("postPutResources", function (this: PdfWithInternals) {
     const current = this.internal.collections[OUTPUT_INTENT_NAMESPACE] as OutputIntentState | undefined
     if (!current?.binaryString) return
