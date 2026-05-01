@@ -194,18 +194,7 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
     }
   }
 
-  if (!payload.uiSettings || typeof payload.uiSettings !== "object") {
-    throw new Error("Invalid project JSON: missing pages or legacy uiSettings payload.")
-  }
-
-  // NEW: Preserve legacy single-page JSON by wrapping it in a default one-page project.
-  return createDefaultProject({
-    uiSettings: payload.uiSettings as Record<string, unknown>,
-    previewLayout: toLoadedPreviewLayout<Layout>(payload.previewLayout),
-    metadata,
-    layoutEngine,
-    tour,
-  })
+  throw new Error("Invalid project JSON: missing pages array.")
 }
 
 export function getPreviewLayoutSeed<Layout>(layout: Layout | null, defaultLayout: Layout | null): Layout {

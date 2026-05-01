@@ -115,14 +115,9 @@ function getBlockFontVariant(
   const requestedFont = layout.blockFontFamilies?.[key]
   const fontFamily = isFontFamily(requestedFont) ? requestedFont : page.baseFont
   const weightOverride = layout.blockFontWeights?.[key]
-  const legacyBoldOverride = layout.blockBold?.[key]
   const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
     ? weightOverride
-    : legacyBoldOverride === true
-      ? 700
-      : legacyBoldOverride === false
-        ? 400
-        : getStyleDefaultFontWeight(styleDefinitions[styleKey]?.weight)
+    : getStyleDefaultFontWeight(styleDefinitions[styleKey]?.weight)
   const italicOverride = layout.blockItalic?.[key]
   const requestedItalic = italicOverride === true || italicOverride === false
     ? italicOverride

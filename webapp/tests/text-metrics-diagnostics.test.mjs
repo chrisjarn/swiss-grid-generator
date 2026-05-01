@@ -469,15 +469,15 @@ test("preview and vector exports use deterministic font-file metrics for plannin
     /function requireFontFileWidth[\s\S]*?throw buildRequiredFontFileMetricsError/,
     "missing deterministic font-file widths should be explicit failures, not browser fallback",
   )
-  assert.match(
+  assert.doesNotMatch(
     fontFileEngineSource,
-    /function createLegacyBrowserOpticalOffsetForCompatibility[\s\S]*?createDiagnosticBrowserCanvasTextMetricsEngine[\s\S]*?return fallbackEngine\.opticalOffset/,
-    "legacy browser-backed optical margin must stay explicit until it can be migrated without changing saved layout signatures",
+    /createLegacyBrowserOpticalOffsetForCompatibility|opticalOffset:\s*createDiagnosticBrowserCanvasTextMetricsEngine/,
+    "font-file engines must not use browser-backed optical margin offsets",
   )
   assert.match(
     fontFileEngineSource,
-    /opticalOffset:\s*createLegacyBrowserOpticalOffsetForCompatibility\(context\)/,
-    "font-file engines should expose optical margin as the named compatibility bridge, not an implicit fallback-engine property",
+    /function createFontFileOpticalOffset[\s\S]*?getOpticalMarginAnchorOffset/,
+    "font-file engines should use deterministic contour optical-margin offsets",
   )
   assert.match(
     fontFileEngineSource,
@@ -501,8 +501,8 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     fontFileEngineSource,
-    /measureWidth:\s*\(sample\)\s*=>\s*engine\.measureWidth\(\{[\s\S]*?canvasFont/,
-    "deterministic optical-margin candidate should keep edge glyph width measurement on the font-file engine",
+    /function createFontFileOpticalOffset[\s\S]*?measureWidth:\s*\(sample\)\s*=>\s*measureWidth\(\{[\s\S]*?canvasFont/,
+    "deterministic optical-margin should keep edge glyph width measurement on the injected font-file engine",
   )
   assert.match(
     readText(DEV_REPORT_PATH),

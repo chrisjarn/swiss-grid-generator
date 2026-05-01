@@ -27,11 +27,8 @@ test("project transfers carry an explicit deterministic layout engine contract",
   assert.match(sessionSource, /layoutEngine:\s*LayoutEngineContract/)
   assert.match(sessionSource, /layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT/)
   assert.match(sessionSource, /parseLayoutEngineContract\(payload\.layoutEngine\)/)
-  assert.match(
-    sessionSource,
-    /createDefaultProject\(\{[\s\S]*?layoutEngine,[\s\S]*?tour,/,
-    "legacy single-page imports should use the parsed layout contract policy",
-  )
+  assert.match(sessionSource, /throw new Error\("Invalid project JSON: missing pages array\."\)/)
+  assert.doesNotMatch(sessionSource, /missing pages or legacy uiSettings payload|Preserve legacy single-page/)
   assert.match(
     manifestSource,
     /\\"layoutEngine\\":\{\\"id\\":\\"swiss-grid-layout-v2\\",\\"version\\":2,\\"textMetricsEngine\\":\\"font-file-deterministic-optical-margin-v1\\"/,

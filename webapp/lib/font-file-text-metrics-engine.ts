@@ -1134,35 +1134,56 @@ function shouldDelegateWidth<StyleKey extends string, Family extends string>(
     || request.baseFormat !== undefined
 }
 
-function createLegacyBrowserOpticalOffsetForCompatibility<StyleKey extends string, Family extends string>(
-  context: TextMeasureContext,
+function createFontFileOpticalOffset<StyleKey extends string, Family extends string>(
+  measureWidth: (request: TextWidthRequest<StyleKey, Family>) => number,
 ): TextMetricsEngine<StyleKey, Family>["opticalOffset"] {
-  const fallbackEngine = createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey, Family>(context)
-  return fallbackEngine.opticalOffset
+  return ({
+    styleKey,
+    line,
+    align,
+    fontSize,
+    opticalKerning,
+    canvasFont,
+  }) => {
+    const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+    return getOpticalMarginAnchorOffset({
+      line,
+      align,
+      fontSize,
+      styleKey,
+      measureGlyphBounds,
+      measureWidth: (sample) => measureWidth({
+        text: sample,
+        canvasFont,
+        trackingScale: 0,
+        opticalKerning,
+        sourceText: sample,
+        trackingRuns: [],
+      }),
+    })
+  }
 }
 
 export function createFontFileTextMetricsEngine<StyleKey extends string, Family extends string>(
   context: TextMeasureContext,
 ): TextMetricsEngine<StyleKey, Family> {
   const fallbackEngine = createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey, Family>(context)
-  const engine: TextMetricsEngine<StyleKey, Family> = {
-    id: "font-file-v2",
-    measureWidth: (request) => {
-      if (shouldDelegateWidth(request)) return fallbackEngine.measureWidth(request)
-      const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
-      const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
-      if (!descriptor || !font) return fallbackEngine.measureWidth(request)
+  const measureWidth = (request: TextWidthRequest<StyleKey, Family>): number => {
+    if (shouldDelegateWidth(request)) return fallbackEngine.measureWidth(request)
+    const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
+    const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
+    if (!descriptor || !font) return fallbackEngine.measureWidth(request)
 
-      return measureFontFilePlainTextWidth(
-        font,
-        request.text,
-        descriptor,
-        request.trackingScale,
-        request.opticalKerning ? "optical" : "font",
-        request.baseFormat?.styleKey,
-      ) ?? fallbackEngine.measureWidth(request)
-    },
-    wrapText: ({
+    return measureFontFilePlainTextWidth(
+      font,
+      request.text,
+      descriptor,
+      request.trackingScale,
+      request.opticalKerning ? "optical" : "font",
+      request.baseFormat?.styleKey,
+    ) ?? fallbackEngine.measureWidth(request)
+  }
+  const wrapText = ({
       text,
       canvasFont,
       maxWidth,
@@ -1178,7 +1199,7 @@ export function createFontFileTextMetricsEngine<StyleKey extends string, Family 
       text,
       maxWidth,
       hyphenate,
-      (sample, range) => engine.measureWidth({
+      (sample, range) => measureWidth({
         text: sample,
         canvasFont,
         trackingScale,
@@ -1191,10 +1212,14 @@ export function createFontFileTextMetricsEngine<StyleKey extends string, Family 
         resolveFontSize,
       }),
       trace,
-    ),
+    )
+  const engine: TextMetricsEngine<StyleKey, Family> = {
+    id: "font-file-v2",
+    measureWidth,
+    wrapText,
     textAscent: (canvasFont, fallbackFontSize) => measureDeterministicTextTopAscent(canvasFont, fallbackFontSize),
     textDescent: (_canvasFont, fallbackFontSize) => measureDeterministicLayoutDescent(fallbackFontSize),
-    opticalOffset: createLegacyBrowserOpticalOffsetForCompatibility(context),
+    opticalOffset: createFontFileOpticalOffset(measureWidth),
   }
 
   return engine
@@ -1239,19 +1264,13 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
       request.baseFormat?.styleKey,
     )
   }
-  const engine: TextMetricsEngine<StyleKey, Family> = {
-    id: options.boundaryClassCorrection
-      ? "font-file-range-calibration-boundary-class-correction-v1"
-      : options.classCorrection
-      ? "font-file-range-calibration-class-correction-v1"
-      : "font-file-range-calibration-v1",
-    measureWidth: (request) => {
-      const width = measureFontFileWidth(request)
-      return allowDiagnosticBrowserFallback
-        ? width ?? fallbackEngine.measureWidth(request)
-        : requireFontFileWidth(width, request)
-    },
-    wrapText: ({
+  const measureWidth = (request: TextWidthRequest<StyleKey, Family>): number => {
+    const width = measureFontFileWidth(request)
+    return allowDiagnosticBrowserFallback
+      ? width ?? fallbackEngine.measureWidth(request)
+      : requireFontFileWidth(width, request)
+  }
+  const wrapText = ({
       text,
       canvasFont,
       maxWidth,
@@ -1292,10 +1311,18 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
         return width <= maxWidth && correctedWidth > maxWidth ? correctedWidth : width
       },
       trace,
-    ),
+    )
+  const engine: TextMetricsEngine<StyleKey, Family> = {
+    id: options.boundaryClassCorrection
+      ? "font-file-range-calibration-boundary-class-correction-v1"
+      : options.classCorrection
+      ? "font-file-range-calibration-class-correction-v1"
+      : "font-file-range-calibration-v1",
+    measureWidth,
+    wrapText,
     textAscent: (canvasFont, fallbackFontSize) => measureDeterministicTextTopAscent(canvasFont, fallbackFontSize),
     textDescent: (_canvasFont, fallbackFontSize) => measureDeterministicLayoutDescent(fallbackFontSize),
-    opticalOffset: createLegacyBrowserOpticalOffsetForCompatibility(context),
+    opticalOffset: createFontFileOpticalOffset(measureWidth),
   }
 
   return engine
@@ -1326,30 +1353,6 @@ export function createDeterministicFontFileOpticalMarginTextMetricsEngine<StyleK
   return {
     ...engine,
     id: "font-file-deterministic-optical-margin-v1",
-    opticalOffset: ({
-      styleKey,
-      line,
-      align,
-      fontSize,
-      opticalKerning,
-      canvasFont,
-    }) => {
-      const measureGlyphBounds = createLoadedFontFileOpticalMarginGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
-      return getOpticalMarginAnchorOffset({
-        line,
-        align,
-        fontSize,
-        styleKey,
-        measureGlyphBounds,
-        measureWidth: (sample) => engine.measureWidth({
-          text: sample,
-          canvasFont,
-          trackingScale: 0,
-          opticalKerning,
-          sourceText: sample,
-          trackingRuns: [],
-        }),
-      })
-    },
+    opticalOffset: createFontFileOpticalOffset(engine.measureWidth),
   }
 }

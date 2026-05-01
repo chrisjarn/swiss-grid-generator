@@ -455,7 +455,6 @@ export function buildPageExportPlan({
   const blockTrackingScales = layout?.blockTrackingScales ?? {}
   const blockTrackingRuns = layout?.blockTrackingRuns ?? {}
   const blockTextFormatRuns = layout?.blockTextFormatRuns ?? {}
-  const blockBold = layout?.blockBold ?? {}
   const blockItalic = layout?.blockItalic ?? {}
   const blockRotations = layout?.blockRotations ?? {}
   const blockCustomSizes = layout?.blockCustomSizes ?? {}
@@ -516,14 +515,9 @@ export function buildPageExportPlan({
   )
   const getResolvedFontVariantForBlock = (key: BlockId, styleKey: TypographyStyleKey) => {
     const weightOverride = blockFontWeights[key]
-    const legacyBoldOverride = blockBold[key]
     const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
       ? weightOverride
-      : legacyBoldOverride === true
-        ? 700
-        : legacyBoldOverride === false
-          ? 400
-          : getStyleDefaultWeight(styleKey)
+      : getStyleDefaultWeight(styleKey)
     const italicOverride = blockItalic[key]
     const requestedItalic = italicOverride === true || italicOverride === false
       ? italicOverride

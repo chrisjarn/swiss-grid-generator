@@ -42,14 +42,6 @@ export function isGridRhythmColsDirection(value: unknown): value is GridRhythmCo
   return typeof value === "string" && GRID_RHYTHM_COLS_DIRECTION_SET.has(value as GridRhythmColsDirection)
 }
 
-export const LEGACY_GRID_RHYTHM_ROTATIONS = [0, 90, 180, 360] as const
-export type LegacyGridRhythmRotation = (typeof LEGACY_GRID_RHYTHM_ROTATIONS)[number]
-const LEGACY_GRID_RHYTHM_ROTATION_SET = new Set<number>(LEGACY_GRID_RHYTHM_ROTATIONS)
-
-export function isLegacyGridRhythmRotation(value: unknown): value is LegacyGridRhythmRotation {
-  return typeof value === "number" && LEGACY_GRID_RHYTHM_ROTATION_SET.has(value)
-}
-
 export type GridRhythmAxisSettings = {
   rhythmRowsEnabled: boolean
   rhythmRowsDirection: GridRhythmRowsDirection
@@ -66,43 +58,4 @@ const DEFAULT_GRID_RHYTHM_AXIS_SETTINGS: GridRhythmAxisSettings = {
 
 export function defaultGridRhythmAxisSettings(): GridRhythmAxisSettings {
   return { ...DEFAULT_GRID_RHYTHM_AXIS_SETTINGS }
-}
-
-export function resolveLegacyGridRhythmAxisSettings(
-  rhythmRotation: unknown,
-  rhythmRotate90: unknown,
-): GridRhythmAxisSettings {
-  if (rhythmRotate90 === true) {
-    return {
-      rhythmRowsEnabled: true,
-      rhythmRowsDirection: "rtl",
-      rhythmColsEnabled: true,
-      rhythmColsDirection: "btt",
-    }
-  }
-
-  if (!isLegacyGridRhythmRotation(rhythmRotation)) {
-    return defaultGridRhythmAxisSettings()
-  }
-
-  switch (rhythmRotation) {
-    case 180:
-      return {
-        rhythmRowsEnabled: true,
-        rhythmRowsDirection: "rtl",
-        rhythmColsEnabled: true,
-        rhythmColsDirection: "btt",
-      }
-    case 90:
-      return {
-        rhythmRowsEnabled: true,
-        rhythmRowsDirection: "rtl",
-        rhythmColsEnabled: true,
-        rhythmColsDirection: "ttb",
-      }
-    case 0:
-    case 360:
-    default:
-      return defaultGridRhythmAxisSettings()
-  }
 }

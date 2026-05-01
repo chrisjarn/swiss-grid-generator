@@ -29,8 +29,6 @@ export type PreviewLayoutState<
   blockSyllableDivision?: Record<Key, boolean>
   blockSnapToColumns?: Record<Key, boolean>
   blockSnapToBaseline?: Record<Key, boolean>
-  // Legacy compatibility for older saved layouts.
-  blockBold?: Record<Key, boolean>
   blockItalic?: Record<Key, boolean>
   blockRotations?: Record<Key, number>
   blockCustomSizes?: Partial<Record<Key, number>>

@@ -10,7 +10,7 @@ Current capability inventory for Swiss Grid Generator.
 - Mixed page layer stack with text paragraphs and image placeholders.
 - Save/load as plain project JSON or gzip-compressed `.swissgridgenerator` archives.
 - Bundled presets use the same project JSON schema as saved documents.
-- Legacy single-page JSON is still accepted and wrapped into a one-page project on load.
+- Imported projects use the 2.0 project schema with an explicit `pages` array.
 - Optional guided project tours embedded in project JSON and rendered as an in-app step overlay.
 - Optional Supabase email-code authentication for cloud sync.
 - Authenticated projects keep a local offline cache and use Supabase as the remote source of truth.

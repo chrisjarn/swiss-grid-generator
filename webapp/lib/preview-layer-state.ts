@@ -144,9 +144,6 @@ export function removeLayerFromPreviewLayout<
     blockSnapToBaseline: layout.blockSnapToBaseline
       ? omitRequiredRecordKey(layout.blockSnapToBaseline, key)
       : undefined,
-    blockBold: layout.blockBold
-      ? omitRequiredRecordKey(layout.blockBold, key)
-      : undefined,
     blockItalic: layout.blockItalic
       ? omitRequiredRecordKey(layout.blockItalic, key)
       : undefined,

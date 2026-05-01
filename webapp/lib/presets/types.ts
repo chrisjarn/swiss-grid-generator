@@ -31,10 +31,6 @@ export type LayoutPresetUiSettings = Record<string, unknown> & {
   rhythmRowsDirection?: "ltr" | "rtl"
   rhythmColsEnabled?: boolean
   rhythmColsDirection?: "ttb" | "btt"
-  // Legacy fallback for older saved presets.
-  rhythmRotation?: 0 | 90 | 180 | 360
-  // Legacy fallback for older saved presets.
-  rhythmRotate90?: boolean
 }
 
 export type LayoutPresetProjectSource = Record<string, unknown>

@@ -4,11 +4,10 @@ import {
   calculateModuleSizes
 } from "./grid-rhythm.ts"
 import {
-  resolveLegacyGridRhythmAxisSettings,
+  defaultGridRhythmAxisSettings,
   type GridRhythm,
   type GridRhythmColsDirection,
   type GridRhythmRowsDirection,
-  type LegacyGridRhythmRotation,
 } from "./config/defaults.ts"
 
 export interface FormatDimensions {
@@ -31,10 +30,6 @@ export interface GridSettings {
   rhythmRowsDirection?: GridRhythmRowsDirection;
   rhythmColsEnabled?: boolean;
   rhythmColsDirection?: GridRhythmColsDirection;
-  // Legacy compatibility for old saved settings payloads.
-  rhythmRotation?: LegacyGridRhythmRotation;
-  // Legacy compatibility for old saved settings payloads.
-  rhythmRotate90?: boolean;
   customMargins?: { top: number; bottom: number; left: number; right: number };
   typographyScale?: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci";
 }
@@ -698,18 +693,15 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
     typographyScale = "swiss",
   } = settings;
 
-  const legacyRhythmAxisSettings = resolveLegacyGridRhythmAxisSettings(
-    settings.rhythmRotation,
-    settings.rhythmRotate90,
-  );
+  const defaultRhythmAxis = defaultGridRhythmAxisSettings();
   const resolvedRhythmRowsEnabled = typeof rhythmRowsEnabled === "boolean"
     ? rhythmRowsEnabled
-    : legacyRhythmAxisSettings.rhythmRowsEnabled;
-  const resolvedRhythmRowsDirection = rhythmRowsDirection ?? legacyRhythmAxisSettings.rhythmRowsDirection;
+    : defaultRhythmAxis.rhythmRowsEnabled;
+  const resolvedRhythmRowsDirection = rhythmRowsDirection ?? defaultRhythmAxis.rhythmRowsDirection;
   const resolvedRhythmColsEnabled = typeof rhythmColsEnabled === "boolean"
     ? rhythmColsEnabled
-    : legacyRhythmAxisSettings.rhythmColsEnabled;
-  const resolvedRhythmColsDirection = rhythmColsDirection ?? legacyRhythmAxisSettings.rhythmColsDirection;
+    : defaultRhythmAxis.rhythmColsEnabled;
+  const resolvedRhythmColsDirection = rhythmColsDirection ?? defaultRhythmAxis.rhythmColsDirection;
 
   if (orientation !== "portrait" && orientation !== "landscape") {
     throw new Error(`Unsupported orientation: ${String(orientation)}`);

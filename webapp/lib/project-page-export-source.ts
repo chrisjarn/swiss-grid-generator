@@ -10,8 +10,6 @@ import {
   isGridRhythm,
   isGridRhythmColsDirection,
   isGridRhythmRowsDirection,
-  isLegacyGridRhythmRotation,
-  resolveLegacyGridRhythmAxisSettings,
   isTypographyScale,
 } from "@/lib/config/defaults"
 import {
@@ -194,8 +192,6 @@ export function resolveProjectPageUiSettings(
   const rhythmRowsDirectionSource = source.rhythmRowsDirection
   const rhythmColsEnabledSource = source.rhythmColsEnabled
   const rhythmColsDirectionSource = source.rhythmColsDirection
-  const rhythmRotationSource = source.rhythmRotation
-  const rhythmRotate90Source = source.rhythmRotate90
   const useCustomMargins = source.useCustomMargins === true
 
   if (typeof gridCols !== "number" || !Number.isFinite(gridCols) || gridCols <= 0) {
@@ -237,20 +233,10 @@ export function resolveProjectPageUiSettings(
   if (rhythmColsDirectionSource !== undefined && !isGridRhythmColsDirection(rhythmColsDirectionSource)) {
     throw new Error(`Invalid project page "${sourcePath}": uiSettings.rhythmColsDirection must be "ttb" or "btt"`)
   }
-  if (rhythmRotationSource !== undefined && !isLegacyGridRhythmRotation(rhythmRotationSource)) {
-    throw new Error(`Invalid project page "${sourcePath}": uiSettings.rhythmRotation must be 0, 90, 180, or 360`)
-  }
-  if (rhythmRotate90Source !== undefined && typeof rhythmRotate90Source !== "boolean") {
-    throw new Error(`Invalid project page "${sourcePath}": uiSettings.rhythmRotate90 must be a boolean`)
-  }
   if (source.typographyScale !== undefined && !isTypographyScale(source.typographyScale)) {
     throw new Error(`Invalid project page "${sourcePath}": uiSettings.typographyScale is not supported`)
   }
 
-  const legacyRhythmAxisSettings = resolveLegacyGridRhythmAxisSettings(
-    rhythmRotationSource,
-    rhythmRotate90Source,
-  )
   const customMarginMultipliers = useCustomMargins
     ? resolveCustomMarginMultipliers(source.customMarginMultipliers, sourcePath)
     : undefined
@@ -281,16 +267,16 @@ export function resolveProjectPageUiSettings(
     rhythm: isGridRhythm(rhythmSource) ? rhythmSource : resolved.rhythm,
     rhythmRowsEnabled: typeof rhythmRowsEnabledSource === "boolean"
       ? rhythmRowsEnabledSource
-      : legacyRhythmAxisSettings.rhythmRowsEnabled,
+      : resolved.rhythmRowsEnabled,
     rhythmRowsDirection: isGridRhythmRowsDirection(rhythmRowsDirectionSource)
       ? rhythmRowsDirectionSource
-      : legacyRhythmAxisSettings.rhythmRowsDirection,
+      : resolved.rhythmRowsDirection,
     rhythmColsEnabled: typeof rhythmColsEnabledSource === "boolean"
       ? rhythmColsEnabledSource
-      : legacyRhythmAxisSettings.rhythmColsEnabled,
+      : resolved.rhythmColsEnabled,
     rhythmColsDirection: isGridRhythmColsDirection(rhythmColsDirectionSource)
       ? rhythmColsDirectionSource
-      : legacyRhythmAxisSettings.rhythmColsDirection,
+      : resolved.rhythmColsDirection,
     showBaselines: resolveBooleanSetting(source.showBaselines, DEFAULT_UI.showBaselines),
     showModules: resolveBooleanSetting(source.showModules, DEFAULT_UI.showModules),
     showMargins: resolveBooleanSetting(source.showMargins, DEFAULT_UI.showMargins),

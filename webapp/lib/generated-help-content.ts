@@ -301,7 +301,7 @@ export const HELP_CONTENT_GROUPS = [
               "Save stores project metadata, pages, page settings, layout state, and optional tours.",
               "`Save to Library` opens a metadata dialog for project title plus optional description and author, then stores the full project in the local `Users` library as a gzip-compressed archive.",
               "`Import` restores the full project and active page from either a saved project JSON or a compressed `.swissgridgenerator` archive.",
-              "Legacy single-page JSON is still accepted and wrapped into a one-page project.",
+              "Imported projects must use the 2.0 project schema with an explicit `pages` array.",
               "Positioned layers are stored with logical anchors so layouts stay stable across grid changes.",
               "Supabase email-code auth is optional and used only for cloud sync."
             ]

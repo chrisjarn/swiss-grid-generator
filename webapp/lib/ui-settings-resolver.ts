@@ -7,7 +7,6 @@ import {
   isGridRhythmColsDirection,
   isGridRhythmRowsDirection,
   isTypographyScale,
-  resolveLegacyGridRhythmAxisSettings,
 } from "@/lib/config/defaults"
 import {
   getImageSchemeColorToken,
@@ -25,7 +24,6 @@ import {
 } from "@/lib/config/ui-defaults"
 import {
   FORMAT_BASELINES,
-  FORMATS_PT,
   CUSTOM_CANVAS_FORMAT,
   clampCustomCanvasRatioUnit,
   generateSwissGrid,
@@ -132,7 +130,6 @@ export function resolveUiSettingsSnapshot(
 ): UiSettingsSnapshot {
   const canvasRatio = resolveCanvasRatio(source)
   const previewFormat = resolvePreviewFormat(canvasRatio)
-  const legacyRhythmAxis = resolveLegacyGridRhythmAxisSettings(source.rhythmRotation, source.rhythmRotate90)
   const defaultRhythmAxis = defaultGridRhythmAxisSettings()
   const imageColorScheme = normalizeImageColorSchemeId(source.imageColorScheme) ?? DEFAULT_UI.imageColorScheme
   const resolvedCollapsedSource = (
@@ -170,18 +167,18 @@ export function resolveUiSettingsSnapshot(
     rhythm: isGridRhythm(source.rhythm) ? source.rhythm : DEFAULT_UI.rhythm,
     rhythmRowsEnabled: resolveBoolean(
       source.rhythmRowsEnabled,
-      legacyRhythmAxis.rhythmRowsEnabled ?? defaultRhythmAxis.rhythmRowsEnabled,
+      defaultRhythmAxis.rhythmRowsEnabled,
     ),
     rhythmRowsDirection: isGridRhythmRowsDirection(source.rhythmRowsDirection)
       ? source.rhythmRowsDirection
-      : legacyRhythmAxis.rhythmRowsDirection ?? defaultRhythmAxis.rhythmRowsDirection,
+      : defaultRhythmAxis.rhythmRowsDirection,
     rhythmColsEnabled: resolveBoolean(
       source.rhythmColsEnabled,
-      legacyRhythmAxis.rhythmColsEnabled ?? defaultRhythmAxis.rhythmColsEnabled,
+      defaultRhythmAxis.rhythmColsEnabled,
     ),
     rhythmColsDirection: isGridRhythmColsDirection(source.rhythmColsDirection)
       ? source.rhythmColsDirection
-      : legacyRhythmAxis.rhythmColsDirection ?? defaultRhythmAxis.rhythmColsDirection,
+      : defaultRhythmAxis.rhythmColsDirection,
     typographyScale: isTypographyScale(source.typographyScale) ? source.typographyScale : DEFAULT_UI.typographyScale,
     baseFont: isFontFamily(source.baseFont) ? source.baseFont : DEFAULT_BASE_FONT,
     imageColorScheme,
@@ -334,8 +331,4 @@ export function resolvePreviewFormatForCanvasRatio(canvasRatio: UiSettingsSnapsh
 
 export function resolveDefaultCanvasBackgroundColor(): string {
   return getImageSchemeColorToken(0)
-}
-
-export function isLegacyFormatKey(value: unknown): value is string {
-  return typeof value === "string" && Boolean(FORMATS_PT[value])
 }

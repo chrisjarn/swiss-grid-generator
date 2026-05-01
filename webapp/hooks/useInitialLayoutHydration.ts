@@ -149,11 +149,7 @@ export function useInitialLayoutHydration<StyleKey extends string, BlockKey exte
       const numeric = initialLayout.blockFontWeights?.[key]
       if (typeof numeric === "number" && Number.isFinite(numeric) && numeric > 0) {
         acc[key] = numeric
-        return acc
       }
-      const legacy = initialLayout.blockBold?.[key]
-      if (legacy === true) acc[key] = 700
-      if (legacy === false) acc[key] = 400
       return acc
     }, {} as Partial<Record<BlockKey, number>>)
 
@@ -257,8 +253,7 @@ export function useInitialLayoutHydration<StyleKey extends string, BlockKey exte
     const nextTextFormatRuns = normalizedKeys.reduce((acc, key) => {
       const styleKey = nextStyleAssignments[key]
       const fontFamily = nextFontFamilies[key] ?? baseFont
-      const fontWeight = nextFontWeights[key]
-        ?? (initialLayout.blockBold?.[key] === true ? 700 : initialLayout.blockBold?.[key] === false ? 400 : 400)
+      const fontWeight = nextFontWeights[key] ?? 400
       const italic = nextItalic[key] === true
       const color = typeof initialLayout.blockTextColors?.[key] === "string" && initialLayout.blockTextColors[key]
         ? initialLayout.blockTextColors[key] as string
