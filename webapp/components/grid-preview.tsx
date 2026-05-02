@@ -952,6 +952,9 @@ export const GridPreview = memo(function GridPreview({
     textareaRef,
     shouldKeepEditorsOpenForPointerDown: (event: PointerEvent) => {
       const target = event.target
+      if (target instanceof HTMLElement && target.closest("[data-preview-header-action]")) {
+        return true
+      }
       if (!(target instanceof HTMLCanvasElement) && !(target instanceof HTMLElement && target.closest("canvas"))) {
         return false
       }
