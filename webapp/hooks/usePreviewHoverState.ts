@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef } from "react"
 import type { MouseEvent as ReactMouseEvent } from "react"
 import type { CSSProperties, Dispatch, SetStateAction } from "react"
 import type { PagePoint } from "@/lib/preview-types"
+import { resolvePreviewHoverTarget } from "@/lib/preview-hover-target"
 export type PreviewHoverState<Key extends string> = {
   key: Key
   point: PagePoint
@@ -72,47 +73,37 @@ export function usePreviewHoverState<Key extends string>({
       return
     }
 
-    if (hoverState?.key && isPointWithinHoverTarget(hoverState.key, pagePoint.x, pagePoint.y)) {
-      setHoverImageKey(null)
-      setHoverCopyIntent(false)
-      setHoverState((prev) => (
-        prev?.key === hoverState.key
-          ? { key: hoverState.key, point: pagePoint }
-          : prev
-      ))
+    const nextHoverTarget = resolvePreviewHoverTarget({
+      pageX: pagePoint.x,
+      pageY: pagePoint.y,
+      currentTextKey: hoverState?.key ?? null,
+      currentImageKey: hoverImageKey,
+      findTopmostBlockAtPoint,
+      findTopmostImageAtPoint,
+      isPointWithinHoverTarget,
+    })
+
+    if (!nextHoverTarget) {
+      clearHover()
       return
     }
 
-    if (hoverImageKey && isPointWithinHoverTarget(hoverImageKey, pagePoint.x, pagePoint.y)) {
+    if (nextHoverTarget.kind === "image") {
       setHoverState(null)
       setHoverCopyIntent(false)
-      setHoverImageKey((prev) => (prev === hoverImageKey ? prev : hoverImageKey))
+      setHoverImageKey((prev) => (prev === nextHoverTarget.key ? prev : nextHoverTarget.key))
       return
     }
 
-    const textKey = findTopmostBlockAtPoint(pagePoint.x, pagePoint.y)
-    if (textKey) {
-      setHoverImageKey(null)
-      setHoverCopyIntent(false)
-      setHoverState((prev) => (
-        prev?.key === textKey
-        && prev.point.x === pagePoint.x
-        && prev.point.y === pagePoint.y
-          ? prev
-          : { key: textKey, point: pagePoint }
-      ))
-      return
-    }
-
-    const imageKey = findTopmostImageAtPoint(pagePoint.x, pagePoint.y)
-    if (imageKey) {
-      setHoverState(null)
-      setHoverCopyIntent(false)
-      setHoverImageKey((prev) => (prev === imageKey ? prev : imageKey))
-      return
-    }
-
-    clearHover()
+    setHoverImageKey(null)
+    setHoverCopyIntent(false)
+    setHoverState((prev) => (
+      prev?.key === nextHoverTarget.key
+      && prev.point.x === pagePoint.x
+      && prev.point.y === pagePoint.y
+        ? prev
+        : { key: nextHoverTarget.key, point: pagePoint }
+    ))
   }, [
     clearHover,
     dragState,
