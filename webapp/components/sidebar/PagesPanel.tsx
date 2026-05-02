@@ -17,6 +17,28 @@ import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
 
+const PAGE_CARD_COLLAPSED_HEIGHT_PX = 62
+const PAGE_CARD_GAP_PX = 8
+const PAGE_CARD_SLOT_HEIGHT_PX = PAGE_CARD_COLLAPSED_HEIGHT_PX + PAGE_CARD_GAP_PX
+const PAGE_LIST_OVERSCAN = 6
+const PAGE_LIST_VIRTUALIZATION_THRESHOLD = 80
+
+type PagesPanelPerfSnapshot = {
+  timestamp: number
+  pageCount: number
+  renderedPageCount: number
+  virtualized: boolean
+  commitMs: number
+}
+
+declare global {
+  interface Window {
+    __sggUiPerf?: {
+      pagesPanel?: PagesPanelPerfSnapshot
+    }
+  }
+}
+
 type Props = {
   pages: ProjectPage<PreviewLayoutState>[]
   activePageId: string
@@ -49,6 +71,17 @@ function getLayerCount(page: ProjectPage<PreviewLayoutState>): number {
   return textLayerCount + imageLayerCount
 }
 
+function clampIndex(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value))
+}
+
+function recordPagesPanelPerf(snapshot: PagesPanelPerfSnapshot) {
+  window.__sggUiPerf = {
+    ...(window.__sggUiPerf ?? {}),
+    pagesPanel: snapshot,
+  }
+}
+
 export function PagesPanel({
   pages,
   activePageId,
@@ -74,14 +107,17 @@ export function PagesPanel({
   onLayerDelete,
   isDarkMode = false,
 }: Props) {
-  const PROJECT_CARD_MIN_HEIGHT_CLASS = "min-h-[50px]"
+  const renderStartedAt = typeof performance !== "undefined" ? performance.now() : 0
+  const PROJECT_CARD_MIN_HEIGHT_CLASS = "min-h-[62px]"
   const [editingPageId, setEditingPageId] = useState<string | null>(null)
   const [pageNameDraft, setPageNameDraft] = useState("")
   const [draggingPageId, setDraggingPageId] = useState<string | null>(null)
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null)
+  const [scrollFrame, setScrollFrame] = useState({ top: 0, height: 0 })
   const [expandedPageId, setExpandedPageId] = useState<string | null>(() => (
     pages.length <= 1 ? activePageId : null
   ))
+  const panelRootRef = useRef<HTMLDivElement | null>(null)
   const previousPageIdsRef = useRef<string[]>(pages.map((page) => page.id))
   const scrollToPageHeaderRef = useRef<string | null>(null)
   const restoreExpandedPageIdRef = useRef<string | null | undefined>(undefined)
@@ -90,6 +126,44 @@ export function PagesPanel({
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const dropIndicatorIndexRef = useRef<number | null>(null)
   const selectionLockCleanupRef = useRef<(() => void) | null>(null)
+
+  const virtualizationEnabled = pages.length > PAGE_LIST_VIRTUALIZATION_THRESHOLD && draggingPageId === null
+
+  useEffect(() => {
+    const panelRoot = panelRootRef.current
+    if (!panelRoot) return undefined
+    const scrollRoot = panelRoot.closest("[data-help-scroll-root='true']") as HTMLElement | null
+    if (!scrollRoot) return undefined
+
+    let rafId: number | null = null
+    const readScrollFrame = () => {
+      rafId = null
+      const nextTop = scrollRoot.scrollTop
+      const nextHeight = scrollRoot.clientHeight
+      setScrollFrame((current) => (
+        current.top === nextTop && current.height === nextHeight
+          ? current
+          : { top: nextTop, height: nextHeight }
+      ))
+    }
+    const scheduleRead = () => {
+      if (rafId !== null) return
+      rafId = window.requestAnimationFrame(readScrollFrame)
+    }
+
+    scheduleRead()
+    scrollRoot.addEventListener("scroll", scheduleRead, { passive: true })
+    const resizeObserver = typeof ResizeObserver !== "undefined"
+      ? new ResizeObserver(scheduleRead)
+      : null
+    resizeObserver?.observe(scrollRoot)
+
+    return () => {
+      scrollRoot.removeEventListener("scroll", scheduleRead)
+      resizeObserver?.disconnect()
+      if (rafId !== null) window.cancelAnimationFrame(rafId)
+    }
+  }, [pages.length])
 
   useEffect(() => {
     if (!editingPageId) return
@@ -157,9 +231,23 @@ export function PagesPanel({
   useEffect(() => {
     if (scrollToPageHeaderRef.current !== activePageId) return
     const target = cardRefs.current[activePageId]
-    if (!target) return
-    const scrollRoot = target.closest("[data-help-scroll-root='true']") as HTMLElement | null
+    const scrollRoot = (
+      target?.closest("[data-help-scroll-root='true']")
+      ?? panelRootRef.current?.closest("[data-help-scroll-root='true']")
+    ) as HTMLElement | null
     if (!scrollRoot) return
+
+    if (!target) {
+      const pageIndex = pages.findIndex((page) => page.id === activePageId)
+      if (pageIndex < 0) return
+      const topGapPx = 10
+      const nextTop = pageIndex * PAGE_CARD_SLOT_HEIGHT_PX - topGapPx
+      window.requestAnimationFrame(() => {
+        scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
+      })
+      scrollToPageHeaderRef.current = null
+      return
+    }
 
     const topGapPx = 10
     const rootRect = scrollRoot.getBoundingClientRect()
@@ -171,7 +259,7 @@ export function PagesPanel({
       scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
     })
     scrollToPageHeaderRef.current = null
-  }, [activePageId, expandedPageId])
+  }, [activePageId, expandedPageId, pages])
 
   useEffect(() => {
     const releaseOnMouseUp = () => {
@@ -210,13 +298,52 @@ export function PagesPanel({
       }
 
   const stationaryPages = useMemo(
-    () => pages.filter((page) => page.id !== draggingPageId),
+    () => (draggingPageId ? pages.filter((page) => page.id !== draggingPageId) : pages),
     [draggingPageId, pages],
   )
   const stationaryIndexByPageId = useMemo(
-    () => new Map(stationaryPages.map((page, index) => [page.id, index])),
-    [stationaryPages],
+    () => (draggingPageId ? new Map(stationaryPages.map((page, index) => [page.id, index])) : null),
+    [draggingPageId, stationaryPages],
   )
+
+  const virtualRange = useMemo(() => {
+    if (!virtualizationEnabled) {
+      return {
+        startIndex: 0,
+        endIndex: pages.length,
+        topSpacerPx: 0,
+        bottomSpacerPx: 0,
+      }
+    }
+
+    const visibleStart = Math.floor(scrollFrame.top / PAGE_CARD_SLOT_HEIGHT_PX)
+    const visibleEnd = Math.ceil((scrollFrame.top + scrollFrame.height) / PAGE_CARD_SLOT_HEIGHT_PX)
+    const startIndex = clampIndex(visibleStart - PAGE_LIST_OVERSCAN, 0, pages.length)
+    const endIndex = clampIndex(visibleEnd + PAGE_LIST_OVERSCAN, startIndex, pages.length)
+
+    return {
+      startIndex,
+      endIndex,
+      topSpacerPx: startIndex * PAGE_CARD_SLOT_HEIGHT_PX,
+      bottomSpacerPx: Math.max(0, (pages.length - endIndex) * PAGE_CARD_SLOT_HEIGHT_PX),
+    }
+  }, [pages.length, scrollFrame.height, scrollFrame.top, virtualizationEnabled])
+
+  const visiblePages = useMemo(
+    () => pages.slice(virtualRange.startIndex, virtualRange.endIndex),
+    [pages, virtualRange.endIndex, virtualRange.startIndex],
+  )
+
+  useEffect(() => {
+    if (typeof performance === "undefined") return
+    recordPagesPanelPerf({
+      timestamp: Date.now(),
+      pageCount: pages.length,
+      renderedPageCount: visiblePages.length,
+      virtualized: virtualizationEnabled,
+      commitMs: performance.now() - renderStartedAt,
+    })
+  })
 
   const beginRename = (page: ProjectPage<PreviewLayoutState>) => {
     setEditingPageId(page.id)
@@ -313,6 +440,7 @@ export function PagesPanel({
 
   return (
     <div
+      ref={panelRootRef}
       className="flex flex-col pb-4 md:pb-6"
       onDragOver={handleListDragOver}
       onDrop={handleListDrop}
@@ -324,18 +452,21 @@ export function PagesPanel({
           >
             {renderDropMarker(0)}
           </div>
-          {pages.map((page, index) => {
+          {virtualRange.topSpacerPx > 0 ? (
+            <div aria-hidden="true" style={{ height: virtualRange.topSpacerPx }} />
+          ) : null}
+          {visiblePages.map((page, visibleIndex) => {
             const layerCount = getLayerCount(page)
             const isActive = page.id === activePageId
             const isEditing = page.id === editingPageId
             const isExpanded = expandedPageId === page.id
             const isFacingPage = page.layoutMode === "facing"
             const deleteDisabled = pages.length <= 1
-            const stationaryIndex = stationaryIndexByPageId.get(page.id) ?? null
+            const stationaryIndex = stationaryIndexByPageId?.get(page.id) ?? null
 
             return (
               <Fragment key={page.id}>
-                {page.id !== draggingPageId && stationaryIndex !== null && stationaryIndex > 0
+                {draggingPageId !== null && page.id !== draggingPageId && stationaryIndex !== null && stationaryIndex > 0
                   ? renderDropMarker(stationaryIndex)
                   : null}
                 <div
@@ -375,7 +506,7 @@ export function PagesPanel({
                     scrollToPageHeaderRef.current = page.id
                     setExpandedPageId(page.id)
                   }}
-                  className={`${index > 0 ? "mt-2" : ""} ${PROJECT_CARD_MIN_HEIGHT_CLASS} rounded-md border px-3 py-2 text-xs leading-snug transition-colors ${
+                  className={`${visibleIndex > 0 ? "mt-2" : ""} ${isExpanded ? PROJECT_CARD_MIN_HEIGHT_CLASS : "h-[62px]"} rounded-md border px-3 py-2 text-xs leading-snug transition-colors ${
                     draggingPageId === page.id
                       ? `${tone.card} opacity-45`
                       : tone.card
@@ -518,6 +649,9 @@ export function PagesPanel({
               </Fragment>
             )
           })}
+          {virtualRange.bottomSpacerPx > 0 ? (
+            <div aria-hidden="true" style={{ height: virtualRange.bottomSpacerPx }} />
+          ) : null}
           <div
             className={draggingPageId ? "relative h-5 shrink-0" : "hidden"}
             onDragOver={handleListDragOver}
