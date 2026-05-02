@@ -19,6 +19,7 @@ type Args<Key extends string> = {
   dragState: DragCursorState | null
   hoverState: PreviewHoverState<Key> | null
   hoverImageKey: Key | null
+  hoverTargetLocked?: boolean
   hoverCopyIntent: boolean
   persistentTextCopyIntent: boolean
   setHoverState: Dispatch<SetStateAction<PreviewHoverState<Key> | null>>
@@ -36,6 +37,7 @@ export function usePreviewHoverState<Key extends string>({
   dragState,
   hoverState,
   hoverImageKey,
+  hoverTargetLocked = false,
   hoverCopyIntent,
   persistentTextCopyIntent,
   setHoverState,
@@ -154,9 +156,9 @@ export function usePreviewHoverState<Key extends string>({
     dragState
       ? (dragState.copyOnDrop ? "cursor-default" : "cursor-grabbing")
       : hasHoverTarget
-        ? (persistentTextCopyIntent ? "cursor-default" : "cursor-grab")
+        ? (persistentTextCopyIntent || hoverTargetLocked ? "cursor-default" : "cursor-grab")
         : "cursor-default"
-  ), [dragState, hasHoverTarget, persistentTextCopyIntent])
+  ), [dragState, hasHoverTarget, hoverTargetLocked, persistentTextCopyIntent])
 
   const canvasCursorStyle = useMemo<CSSProperties | undefined>(() => (
     (dragState?.copyOnDrop || persistentTextCopyIntent)

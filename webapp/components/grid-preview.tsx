@@ -532,6 +532,8 @@ export const GridPreview = memo(function GridPreview({
     resolveLayerPlacement,
     findTopmostBlockAtPoint,
     findTopmostImageAtPoint,
+    findTopmostHoverBlockAtPoint,
+    findTopmostHoverImageAtPoint,
     findTopmostDraggableAtPoint,
     resolveSelectedLayerAtClientPoint,
   } = usePreviewHitTesting({
@@ -1380,6 +1382,36 @@ export const GridPreview = memo(function GridPreview({
     beginDetachedCopyDrag(key, clientX, clientY)
   }
 
+  const handleHoveredLayerLockToggle = useCallback((key: BlockId, locked: boolean) => {
+    if (!blockOrder.includes(key) && !imageOrder.includes(key)) return
+    if (isLayerLocked(key) === locked) return
+    recordHistoryBeforeChange()
+    setLockedLayers((current) => (
+      locked
+        ? { ...current, [key]: true }
+        : omitOptionalRecordKey(current, key)
+    ))
+    if (locked) {
+      setDragState((current) => (current?.key === key ? null : current))
+      setEditorState((current) => (current?.target === key ? null : current))
+      setImageEditorState((current) => (current?.target === key ? null : current))
+    }
+    clearHover()
+  }, [
+    blockOrder,
+    clearHover,
+    imageOrder,
+    isLayerLocked,
+    recordHistoryBeforeChange,
+    setDragState,
+    setEditorState,
+    setImageEditorState,
+    setLockedLayers,
+  ])
+
+  const activeHoveredLayerKey = hoverState?.key ?? hoverImageKey ?? null
+  const activeHoveredLayerLocked = activeHoveredLayerKey ? isLayerLocked(activeHoveredLayerKey) : false
+
   const {
     handleCanvasMouseMove,
     canvasCursorClass,
@@ -1390,13 +1422,14 @@ export const GridPreview = memo(function GridPreview({
     dragState,
     hoverState,
     hoverImageKey,
+    hoverTargetLocked: activeHoveredLayerLocked,
     hoverCopyIntent,
     persistentTextCopyIntent: pendingTextStyleTransfer !== null || pendingLayerDuplicate !== null,
     setHoverState,
     setHoverImageKey,
     setHoverCopyIntent,
-    findTopmostBlockAtPoint,
-    findTopmostImageAtPoint,
+    findTopmostBlockAtPoint: findTopmostHoverBlockAtPoint,
+    findTopmostImageAtPoint: findTopmostHoverImageAtPoint,
     isPointWithinHoverTarget: (key, pageX, pageY) => {
       if (isImagePlaceholderKey(key)) {
         return isPointWithinRect(pageX, pageY, imageRectsRef.current[key] ?? null)
@@ -1686,7 +1719,6 @@ export const GridPreview = memo(function GridPreview({
   const hoveredImageRect = hoverImageKey
     ? imageRectsRef.current[hoverImageKey] ?? null
     : linkedHoveredImageRect
-
   usePreviewOverlayCanvas({
     overlayCanvasRef,
     blockRectsRef,
@@ -1993,6 +2025,8 @@ export const GridPreview = memo(function GridPreview({
         hoveredTextRect={hoveredTextGuideRect}
         hoveredImageKey={hoverImageKey}
         hoveredImageRect={hoveredImageRect}
+        hoveredLayerLocked={activeHoveredLayerLocked}
+        onHoveredLayerLockToggle={handleHoveredLayerLockToggle}
         openTextEditor={openTextEditor}
         openImageEditor={openImageEditor}
         onCopyAffordanceActivate={handleCopyAffordanceActivate}

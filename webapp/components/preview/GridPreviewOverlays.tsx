@@ -1,6 +1,6 @@
 "use client"
 
-import { Plus, SquarePen, Trash2 } from "lucide-react"
+import { Lock, Plus, SquarePen, Trash2 } from "lucide-react"
 import { createPortal } from "react-dom"
 import { useEffect, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
@@ -29,6 +29,8 @@ type Props<StyleKey extends string> = {
   hoveredTextRect: BlockRect | null
   hoveredImageKey: string | null
   hoveredImageRect: BlockRect | null
+  hoveredLayerLocked: boolean
+  onHoveredLayerLockToggle: (key: string, locked: boolean) => void
   openTextEditor: (key: string) => void
   openImageEditor: (key: string) => void
   onCopyAffordanceActivate: (args: {
@@ -87,6 +89,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
   hoveredTextRect,
   hoveredImageKey,
   hoveredImageRect,
+  hoveredLayerLocked,
+  onHoveredLayerLockToggle,
   openTextEditor,
   openImageEditor,
   onCopyAffordanceActivate,
@@ -118,11 +122,12 @@ export function GridPreviewOverlays<StyleKey extends string>({
   const actionButtonGap = 4
   const editButtonInset = 6
   const leftActionGroupWidth = actionButtonSize * 2 + actionButtonGap
+  const actionGroupWidth = hoveredLayerLocked ? actionButtonSize : leftActionGroupWidth
   const leftActionGroupLeft = hoveredEditTarget
     ? Math.max(
       editButtonInset,
       Math.min(
-        pageWidthCss - editButtonInset - leftActionGroupWidth,
+        pageWidthCss - editButtonInset - actionGroupWidth,
         hoveredEditTarget.rect.x + editButtonInset,
       ),
     )
@@ -242,26 +247,21 @@ export function GridPreviewOverlays<StyleKey extends string>({
             transformOrigin: `${pageWidthCss / 2}px ${pageHeightCss / 2}px`,
           }}
         >
-          <div
-            className="pointer-events-auto absolute flex items-center"
-            style={{
-              left: leftActionGroupLeft,
-              top: actionGroupTop,
-              transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
-            }}
-            onMouseLeave={() => clearHover()}
-          >
+          {hoveredLayerLocked ? (
             <button
               type="button"
               data-preview-edit-affordance="true"
-              className={`flex items-center justify-center rounded-sm border shadow-md transition-colors ${
+              className={`pointer-events-auto absolute flex items-center justify-center rounded-sm border shadow-md transition-colors ${
                 isDarkMode
-                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-gray-600 hover:bg-gray-800 hover:text-gray-50"
-                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-gray-300 hover:bg-white hover:text-gray-900"
+                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-orange-400 hover:bg-gray-800 hover:text-orange-300"
+                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-orange-300 hover:bg-white hover:text-orange-600"
               }`}
               style={{
+                left: leftActionGroupLeft,
+                top: actionGroupTop,
                 width: actionButtonSize,
                 height: actionButtonSize,
+                transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
               }}
               onMouseDown={(event) => {
                 event.preventDefault()
@@ -270,96 +270,135 @@ export function GridPreviewOverlays<StyleKey extends string>({
               onClick={(event) => {
                 event.preventDefault()
                 event.stopPropagation()
-                clearHover()
-                onPreviewEditorOpen?.()
-                if (hoveredEditTarget.kind === "text") {
-                  openTextEditor(hoveredEditTarget.key)
-                  return
-                }
-                openImageEditor(hoveredEditTarget.key)
+                onHoveredLayerLockToggle(hoveredEditTarget.key, false)
               }}
-              aria-label={`Edit ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
-              title={hoveredEditTarget.kind === "text" ? "Edit paragraph" : "Edit image placeholder"}
+              aria-label={`Unlock ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
+              title={hoveredEditTarget.kind === "text" ? "Unlock paragraph" : "Unlock image placeholder"}
             >
-              <SquarePen className="h-3 w-3" />
+              <Lock className="h-3 w-3" />
             </button>
-            <button
-              type="button"
-              data-preview-edit-affordance="true"
-              className={`flex items-center justify-center rounded-sm border shadow-md transition-colors ${
-                copyButtonClassName
-              }`}
-              style={{
-                width: actionButtonSize,
-                height: actionButtonSize,
-                marginLeft: actionButtonGap,
-              }}
-              onMouseDown={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-              }}
-              onMouseEnter={(event) => {
-                setCopyAffordanceHovered(true)
-                setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
-              }}
-              onMouseMove={(event) => {
-                setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
-              }}
-              onMouseLeave={() => {
-                setCopyAffordanceHovered(false)
-                setCopyAffordanceIntent("duplicate")
-              }}
-              onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                onCopyAffordanceActivate({
-                  key: hoveredEditTarget.key,
-                  kind: hoveredEditTarget.kind,
-                  clientX: event.clientX,
-                  clientY: event.clientY,
-                  altKey: event.altKey,
-                  shiftKey: event.shiftKey,
-                })
-              }}
-              aria-label={hoveredEditTarget.kind === "text"
-                ? "Duplicate paragraph or copy settings"
-                : "Duplicate image placeholder"}
-              title={hoveredEditTarget.kind === "text"
-                ? getTextCopyRolloverTitle()
-                : "Duplicate image placeholder, even across pages."}
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-          </div>
-          <button
-            type="button"
-            data-preview-edit-affordance="true"
-            className={`pointer-events-auto absolute flex items-center justify-center rounded-sm border shadow-md transition-colors ${
-              isDarkMode
-                ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-red-500/70 hover:bg-gray-800 hover:text-red-300"
-                : "border-gray-200 bg-white/95 text-gray-700 hover:border-red-300 hover:bg-white hover:text-red-600"
-            }`}
-            style={{
-              left: deleteButtonLeft,
-              top: actionGroupTop,
-              width: actionButtonSize,
-              height: actionButtonSize,
-              transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
-            }}
-            onMouseDown={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-            }}
-            onClick={(event) => {
-              event.preventDefault()
-              event.stopPropagation()
-              deletePreviewTarget(hoveredEditTarget.key)
-            }}
-            aria-label={`Delete ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
-            title={hoveredEditTarget.kind === "text" ? "Delete paragraph" : "Delete image placeholder"}
-          >
-            <Trash2 className="h-3 w-3" />
-          </button>
+          ) : (
+            <>
+              <div
+                className="pointer-events-auto absolute flex items-center"
+                style={{
+                  left: leftActionGroupLeft,
+                  top: actionGroupTop,
+                  transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
+                }}
+                onMouseLeave={() => clearHover()}
+              >
+                <button
+                  type="button"
+                  data-preview-edit-affordance="true"
+                  className={`flex items-center justify-center rounded-sm border shadow-md transition-colors ${
+                    isDarkMode
+                      ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-gray-600 hover:bg-gray-800 hover:text-gray-50"
+                      : "border-gray-200 bg-white/95 text-gray-700 hover:border-gray-300 hover:bg-white hover:text-gray-900"
+                  }`}
+                  style={{
+                    width: actionButtonSize,
+                    height: actionButtonSize,
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    clearHover()
+                    onPreviewEditorOpen?.()
+                    if (hoveredEditTarget.kind === "text") {
+                      openTextEditor(hoveredEditTarget.key)
+                      return
+                    }
+                    openImageEditor(hoveredEditTarget.key)
+                  }}
+                  aria-label={`Edit ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
+                  title={hoveredEditTarget.kind === "text" ? "Edit paragraph" : "Edit image placeholder"}
+                >
+                  <SquarePen className="h-3 w-3" />
+                </button>
+                <button
+                  type="button"
+                  data-preview-edit-affordance="true"
+                  className={`flex items-center justify-center rounded-sm border shadow-md transition-colors ${
+                    copyButtonClassName
+                  }`}
+                  style={{
+                    width: actionButtonSize,
+                    height: actionButtonSize,
+                    marginLeft: actionButtonGap,
+                  }}
+                  onMouseDown={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                  }}
+                  onMouseEnter={(event) => {
+                    setCopyAffordanceHovered(true)
+                    setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
+                  }}
+                  onMouseMove={(event) => {
+                    setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
+                  }}
+                  onMouseLeave={() => {
+                    setCopyAffordanceHovered(false)
+                    setCopyAffordanceIntent("duplicate")
+                  }}
+                  onClick={(event) => {
+                    event.preventDefault()
+                    event.stopPropagation()
+                    onCopyAffordanceActivate({
+                      key: hoveredEditTarget.key,
+                      kind: hoveredEditTarget.kind,
+                      clientX: event.clientX,
+                      clientY: event.clientY,
+                      altKey: event.altKey,
+                      shiftKey: event.shiftKey,
+                    })
+                  }}
+                  aria-label={hoveredEditTarget.kind === "text"
+                    ? "Duplicate paragraph or copy settings"
+                    : "Duplicate image placeholder"}
+                  title={hoveredEditTarget.kind === "text"
+                    ? getTextCopyRolloverTitle()
+                    : "Duplicate image placeholder, even across pages."}
+                >
+                  <Plus className="h-3 w-3" />
+                </button>
+              </div>
+              <button
+                type="button"
+                data-preview-edit-affordance="true"
+                className={`pointer-events-auto absolute flex items-center justify-center rounded-sm border shadow-md transition-colors ${
+                  isDarkMode
+                    ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-red-500/70 hover:bg-gray-800 hover:text-red-300"
+                    : "border-gray-200 bg-white/95 text-gray-700 hover:border-red-300 hover:bg-white hover:text-red-600"
+                }`}
+                style={{
+                  left: deleteButtonLeft,
+                  top: actionGroupTop,
+                  width: actionButtonSize,
+                  height: actionButtonSize,
+                  transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
+                }}
+                onMouseDown={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                }}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  deletePreviewTarget(hoveredEditTarget.key)
+                }}
+                aria-label={`Delete ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
+                title={hoveredEditTarget.kind === "text" ? "Delete paragraph" : "Delete image placeholder"}
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </>
+          )}
         </div>
       ) : null}
 

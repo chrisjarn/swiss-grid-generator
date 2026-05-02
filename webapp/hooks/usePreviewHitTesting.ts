@@ -137,10 +137,14 @@ export function usePreviewHitTesting<Key extends string>({
     isSnapToColumnsEnabled,
   ])
 
-  const findTopmostLayerAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
+  const findTopmostLayerAtPoint = useCallback((
+    pageX: number,
+    pageY: number,
+    { includeLocked = false }: { includeLocked?: boolean } = {},
+  ): Key | null => {
     for (let index = resolvedLayerOrder.length - 1; index >= 0; index -= 1) {
       const key = resolvedLayerOrder[index]
-      if (isLayerLocked(key)) continue
+      if (!includeLocked && isLayerLocked(key)) continue
       const isImage = imageKeySet.has(key)
       if (isImage && !showImagePlaceholders) continue
 
@@ -184,6 +188,18 @@ export function usePreviewHitTesting<Key extends string>({
     return key
   }, [findTopmostLayerAtPoint, imageKeySet])
 
+  const findTopmostHoverBlockAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
+    const key = findTopmostLayerAtPoint(pageX, pageY, { includeLocked: true })
+    if (!key || imageKeySet.has(key)) return null
+    return key
+  }, [findTopmostLayerAtPoint, imageKeySet])
+
+  const findTopmostHoverImageAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
+    const key = findTopmostLayerAtPoint(pageX, pageY, { includeLocked: true })
+    if (!key || !imageKeySet.has(key)) return null
+    return key
+  }, [findTopmostLayerAtPoint, imageKeySet])
+
   const findTopmostDraggableAtPoint = useCallback((pageX: number, pageY: number): Key | null => (
     findTopmostLayerAtPoint(pageX, pageY)
   ), [findTopmostLayerAtPoint])
@@ -203,6 +219,8 @@ export function usePreviewHitTesting<Key extends string>({
     findTopmostLayerAtPoint,
     findTopmostBlockAtPoint,
     findTopmostImageAtPoint,
+    findTopmostHoverBlockAtPoint,
+    findTopmostHoverImageAtPoint,
     findTopmostDraggableAtPoint,
     resolveSelectedLayerAtClientPoint,
   }
