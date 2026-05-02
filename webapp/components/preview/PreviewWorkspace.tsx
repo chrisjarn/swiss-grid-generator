@@ -665,7 +665,7 @@ export function PreviewWorkspace({
                 </div>
                 <div
                   data-help-scroll-root="true"
-                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 md:px-6"
+                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
                 >
                   <PagesPanel
                     pages={projectPages}

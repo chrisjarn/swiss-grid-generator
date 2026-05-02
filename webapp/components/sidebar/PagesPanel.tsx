@@ -74,7 +74,6 @@ export function PagesPanel({
   onLayerDelete,
   isDarkMode = false,
 }: Props) {
-  const PROJECT_CARD_MIN_HEIGHT_CLASS = "min-h-[50px]"
   const [editingPageId, setEditingPageId] = useState<string | null>(null)
   const [pageNameDraft, setPageNameDraft] = useState("")
   const [draggingPageId, setDraggingPageId] = useState<string | null>(null)
@@ -197,14 +196,14 @@ export function PagesPanel({
 
   const tone = isDarkMode
     ? {
-        card: "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]",
-        cardMuted: "text-[#8D98AA]",
+        row: "border-[#313A47] text-[#F4F6F8] hover:bg-[#232A35]",
+        rowMuted: "text-[#8D98AA]",
         close: "text-[#A8B1BF] hover:bg-[#232A35] hover:text-[#F4F6F8]",
         input: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA]",
       }
     : {
-        card: "border-gray-200 bg-gray-100 text-gray-900",
-        cardMuted: "text-gray-500",
+        row: "border-gray-200 text-gray-900 hover:bg-gray-100",
+        rowMuted: "text-gray-500",
         close: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
         input: "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
       }
@@ -324,7 +323,7 @@ export function PagesPanel({
           >
             {renderDropMarker(0)}
           </div>
-          {pages.map((page, index) => {
+          {pages.map((page) => {
             const layerCount = getLayerCount(page)
             const isActive = page.id === activePageId
             const isEditing = page.id === editingPageId
@@ -375,11 +374,11 @@ export function PagesPanel({
                     scrollToPageHeaderRef.current = page.id
                     setExpandedPageId(page.id)
                   }}
-                  className={`${index > 0 ? "mt-2" : ""} ${PROJECT_CARD_MIN_HEIGHT_CLASS} rounded-md border px-3 py-2 text-xs leading-snug transition-colors ${
+                  className={`min-h-[50px] border-t px-4 py-2 text-xs leading-snug transition-colors md:px-6 ${tone.row} ${
                     draggingPageId === page.id
-                      ? `${tone.card} opacity-45`
-                      : tone.card
-                  } ${isActive ? "border-l-[#fe9f97] border-t-[#fe9f97]" : ""} ${
+                      ? "opacity-45"
+                      : ""
+                  } ${
                     isEditing || isExpanded ? "select-none" : "cursor-grab select-none"
                   }`}
                 >
@@ -460,7 +459,7 @@ export function PagesPanel({
                       </button>
                     </div>
                   </div>
-                  <div className={`mt-1.5 grid w-full grid-cols-[1fr_auto_1fr] items-center text-[11px] ${tone.cardMuted}`}>
+                  <div className={`mt-1.5 grid w-full grid-cols-[1fr_auto_1fr] items-center text-[11px] ${tone.rowMuted}`}>
                     <span className="justify-self-start">
                       {layerCount} {layerCount === 1 ? "layer" : "layers"}
                     </span>
@@ -474,7 +473,7 @@ export function PagesPanel({
                   {isExpanded ? (
                     <div data-card-drag-ignore="true" className="mt-3">
                       <div className="flex items-center justify-between gap-3">
-                        <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] ${tone.cardMuted}`}>
+                        <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] ${tone.rowMuted}`}>
                           Facing Pages
                         </span>
                         <button
