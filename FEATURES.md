@@ -109,17 +109,17 @@ Current capability inventory for Swiss Grid Generator.
 - Paragraph hover guides follow the configured `rows + baselines` height rather than only the rendered text bounds.
 - Paragraph hover edit affordance is anchored at the paragraph's top-left origin so shallow frames remain reachable.
 - Preview rollover stays active while editing, so clicking another existing unlocked paragraph or image placeholder retargets the already open editor instead of leaving edit mode.
-- Project panel supports page switching, page-card open/close toggles with inline layer lists, reordering, renaming, deletion, and single-page creation.
+- Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and single-page creation.
 - Project panel includes an editable `TITLE` section that expands to reveal inline `description` and `author` metadata fields storing on blur.
 - Project panel includes a document-info toggle with project/page/layer/type summary text.
-- Opened page cards expose a `Facing pages` control above `Layers`, converting a page into a true facing spread with mirrored inner/outer margins, a zero-gap preview seam, and doubled effective columns across the spread.
+- Opened page rows expose a `Facing pages` control above `Layers`, converting a page into a true facing spread with mirrored inner/outer margins, a zero-gap preview seam, and doubled effective columns across the spread.
 - The Project header includes an `i` toggle for document info text.
 - `Page Up` and `Page Down` step through project pages when multiple pages are present, and `Home` / `End` jump to the first or last page.
 - Facing spreads stay a single project page and keep the normal layer editing workflow inside one continuous spread space.
 - `Add Page` always creates a new single page, even from a facing spread.
 - Projects are capped at `1000` pages.
-- Single-clicking a page card selects it; double-clicking toggles its inline layer list and aligns opened pages to the top of the panel.
-- Expanded page cards expose rename, delete, facing-pages, and inline layer-management controls.
+- Single-clicking a page row selects it; double-clicking toggles its inline layer list and aligns opened pages to the top of the panel.
+- Expanded page rows expose rename, delete, facing-pages, and inline layer-management controls.
 - Newly added pages open automatically.
 - Project JSON supports an optional `tour` definition for quick onboarding tied to real pages and layers.
 - Tour overlay supports open/close, back/next, step captions, optional layer focus, optional editor opening, and click-to-advance steps.

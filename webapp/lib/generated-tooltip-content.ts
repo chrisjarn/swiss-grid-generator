@@ -235,11 +235,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
   },
   {
     "id": "tooltip-page-cards",
-    "title": "Use Page Cards For Document Rhythm",
+    "title": "Use Page Rows For Document Rhythm",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use page cards to activate, rename, reorder, and inspect pages. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy."
+        "text": "Use page rows to activate, rename, reorder, and inspect pages. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy."
       }
     ]
   },

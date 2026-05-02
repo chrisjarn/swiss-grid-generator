@@ -218,16 +218,16 @@ Default: `swiss`
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
 - `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed, and `Add Page` always creates a new single page.
 - Page creation is capped at `1000` pages per project.
-- `Facing pages`: one-way control inside an opened page card, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
+- `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, and `Home` / `End` jump to the first or last page when multiple pages exist.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
-- Single-clicking a page card selects that page.
-- Double-clicking a page card toggles its inline layer list and aligns opened pages to the top of the panel.
-- Each page card also has an open/close toggle that reveals that page's layers inline.
+- Single-clicking a page row selects that page.
+- Double-clicking a page row toggles its inline layer list and aligns opened pages to the top of the panel.
+- Each page row also has an open/close toggle that reveals that page's layers inline.
 - Newly added pages open automatically.
 - Every page stores its own settings payload plus preview layout state.
 - Project JSON can also carry an optional `tour` block for guided onboarding that steps through pages, layers, help, and editor targets.
-- Expanded page cards show the mixed text/image stack for that page using current `layerOrder`.
+- Expanded page rows show the mixed text/image stack for that page using current `layerOrder`.
 - Text cards display hierarchy, font, and a short text preview rendered in the selected paragraph color and font.
 - Image cards display `Image Placeholder` and a single color swatch.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
