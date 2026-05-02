@@ -449,7 +449,7 @@ export function ProjectPageLayersList({
                       aria-pressed={isLocked}
                       className={`rounded-sm p-1 transition-colors ${
                         isLocked
-                          ? (isDarkMode ? "bg-[#313A47] text-[#F4F6F8]" : "bg-gray-200 text-gray-900")
+                          ? (isDarkMode ? "bg-[#313A47] text-[#fe9f97]" : "bg-gray-200 text-[#f54123]")
                           : tone.cardMuted
                       } ${isLocked ? "" : "hover:text-[#fe9f97]"}`}
                       onClick={(event) => {

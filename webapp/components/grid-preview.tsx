@@ -32,6 +32,7 @@ import {
 } from "@/lib/preview-interaction-constants"
 import { buildSmartTextZoomGeometrySignature } from "@/lib/preview-smart-text-zoom"
 import { getHoveredPreviewTextGuideRect, getPreviewTextGuideRect } from "@/lib/preview-guide-rect"
+import { isPointWithinRect } from "@/lib/preview-hover-affordance"
 import { removeTextLayerFromCollections } from "@/lib/preview-layer-state"
 import {
   clampTextBlockPosition,
@@ -130,16 +131,6 @@ function unionRects(rects: BlockRect[]): BlockRect | null {
     width: Math.max(1, right - left),
     height: Math.max(1, bottom - top),
   }
-}
-
-function isPointWithinRect(pageX: number, pageY: number, rect: BlockRect | null | undefined): boolean {
-  if (!rect || rect.width <= 0 || rect.height <= 0) return false
-  return (
-    pageX >= rect.x
-    && pageX <= rect.x + rect.width
-    && pageY >= rect.y
-    && pageY <= rect.y + rect.height
-  )
 }
 
 let runtimeIdCounter = 0
@@ -543,6 +534,8 @@ export const GridPreview = memo(function GridPreview({
     resolvedLayerOrder,
     imageOrder,
     showImagePlaceholders,
+    pageWidth: pageWidthCss,
+    pageHeight: pageHeightCss,
     getGridMetrics,
     getPlacementSpan,
     isSnapToColumnsEnabled,

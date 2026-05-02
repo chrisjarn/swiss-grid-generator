@@ -12,6 +12,12 @@ import type { PreviewColorSchemeOption, TextEditorControls } from "@/lib/preview
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import type { BlockRect } from "@/lib/preview-types"
 import type { HelpSectionId } from "@/lib/help-registry"
+import {
+  resolvePreviewHoverActionTop,
+  resolvePreviewHoverBandRect,
+  resolvePreviewHoverDeleteActionLeft,
+  resolvePreviewHoverPrimaryActionLeft,
+} from "@/lib/preview-hover-affordance"
 
 type Props<StyleKey extends string> = {
   showEditorHelpIcon: boolean
@@ -120,38 +126,21 @@ export function GridPreviewOverlays<StyleKey extends string>({
   )
   const actionButtonSize = 22
   const actionButtonGap = 4
-  const editButtonInset = 6
-  const leftActionGroupWidth = actionButtonSize * 2 + actionButtonGap
-  const actionGroupWidth = hoveredLayerLocked ? actionButtonSize : leftActionGroupWidth
-  const leftActionGroupLeft = hoveredEditTarget
-    ? Math.max(
-      editButtonInset,
-      Math.min(
-        pageWidthCss - editButtonInset - actionGroupWidth,
-        hoveredEditTarget.rect.x + editButtonInset,
-      ),
-    )
+  const hoverBandRect = hoveredEditTarget
+    ? resolvePreviewHoverBandRect({
+        targetRect: hoveredEditTarget.rect,
+        pageWidth: pageWidthCss,
+        pageHeight: pageHeightCss,
+      })
+    : null
+  const leftActionGroupLeft = hoverBandRect
+    ? resolvePreviewHoverPrimaryActionLeft(hoverBandRect)
     : 0
-  const deleteButtonLeft = hoveredEditTarget
-    ? Math.max(
-      leftActionGroupLeft + leftActionGroupWidth + actionButtonGap,
-      Math.max(
-        editButtonInset,
-        Math.min(
-          pageWidthCss - editButtonInset - actionButtonSize,
-          hoveredEditTarget.rect.x + hoveredEditTarget.rect.width - actionButtonSize - editButtonInset,
-        ),
-      ),
-    )
+  const deleteButtonLeft = hoverBandRect
+    ? resolvePreviewHoverDeleteActionLeft(hoverBandRect, hoveredLayerLocked)
     : 0
-  const actionGroupTop = hoveredEditTarget
-    ? Math.max(
-      editButtonInset,
-      Math.min(
-        pageHeightCss - editButtonInset - actionButtonSize,
-        hoveredEditTarget.rect.y + editButtonInset,
-      ),
-    )
+  const actionGroupTop = hoverBandRect
+    ? resolvePreviewHoverActionTop(hoverBandRect)
     : 0
   const copyButtonClassName = (() => {
     if (hoveredEditTarget?.kind !== "text" || copyAffordanceIntent === "duplicate") {

@@ -229,7 +229,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Lock layers once their position and role are resolved. Locked layers stay visible but cannot be hovered, moved, edited, or retargeted until unlocked, which protects stable structure during later edits."
+        "text": "Lock layers once their position and role are resolved. Locked layers still show rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked."
       }
     ]
   },

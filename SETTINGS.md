@@ -235,7 +235,7 @@ Default: `swiss`
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
 - Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
-- Layer cards include a lock toggle to the left of delete. Locked layers stay visible in the stack but cannot be hovered, edited, or moved in preview until unlocked.
+- Layer cards include a lock toggle to the left of delete. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
 - Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel.
 - Deleting from the panel removes the layer from the active page and saved project JSON.
 - `Pages` section header single-clicks to collapse.
@@ -373,7 +373,7 @@ Editor controls:
 - text editor sections: `Paragraph`, `Typo`, `Symbols`, `Placeholders`, `Info`
 - image editor sections: `Geometry`, `Color`, `Info`
 - while edit mode is active, preview hover stays visible on other unlocked existing blocks and clicking one retargets the already open editor
-- locked layers are excluded from preview hover, drag, and editor retarget/open behavior until unlocked from the Project panel
+- locked layers still participate in preview rollover for guides and unlocking, but drag, edit, duplicate, delete, and editor retarget/open behavior stay disabled until unlocked from the Project panel
 - the text editor header uses the same user-facing layer label shown in the Project panel instead of the internal paragraph id
 - Paragraph section:
   - rows

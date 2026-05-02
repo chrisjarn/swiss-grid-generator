@@ -106,7 +106,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift`+click copies `Paragraph` settings, `Alt/Option`+click copies `Typo` settings, and `Alt/Option`+`Shift`+click copies both onto another paragraph, even across pages and loaded layouts
 - Hovered image placeholders expose a `+` affordance for duplication
 - Arrow keys nudge the selected unlocked layer; snapped axes move by whole modules, `Shift` switches snapped Y nudging to baselines, and unsnapped axes use tenth-step logical nudges with `Shift` as a 10x multiplier
-- Layer cards include a lock toggle in the Project panel; locked layers stay visible but cannot be hovered, edited, or moved in preview until unlocked
+- Layer cards include a lock toggle in the Project panel; locked layers still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked
 - Logical anchoring (Column × Row + Baseline Offset)
 - Increasing a paragraph's column span preserves its anchored column, even when the wider frame intentionally overhangs the page edge
 - Bundled presets now use the same project JSON schema as saved documents

@@ -126,7 +126,7 @@ Current capability inventory for Swiss Grid Generator.
 - Layer cards support selection, reordering, locking, deletion, and editor opening.
 - Active-page layer cards now use single-click for selection and double-click for editor open/retarget, so keyboard nudging stays reachable from the Project panel without immediately entering edit mode.
 - Double-clicking a layer-card lock toggle applies the same lock or unlock state to every layer on that page.
-- Locked layers stay visible but are excluded from preview hover, drag, and editor retarget/open behavior until unlocked.
+- Locked layers stay visible and still participate in preview rollover for guides and unlocking, but drag, edit, duplicate, delete, and editor retarget/open behavior remain disabled until unlocked.
 - `Custom Ratio` accepts fractional width/height units, including decimal comma input for formats such as `2:1,414`.
 - Text paragraphs and image placeholders use logical grid anchors:
   - `column`

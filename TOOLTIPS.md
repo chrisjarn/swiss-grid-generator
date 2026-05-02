@@ -87,7 +87,7 @@ When first selected, `Custom` copies the paragraph's resolved size and leading. 
 Single-click a layer card to select it, then use arrow keys to nudge it. This keeps placement changes precise and avoids entering edit mode when you only need a positional adjustment.
 
 ### Lock Finished Layers {#tooltip-lock-finished-layers}
-Lock layers once their position and role are resolved. Locked layers stay visible but cannot be hovered, moved, edited, or retargeted until unlocked, which protects stable structure during later edits.
+Lock layers once their position and role are resolved. Locked layers still show rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked.
 
 ### Use Page Cards For Document Rhythm {#tooltip-page-cards}
 Use page cards to activate, rename, reorder, and inspect pages. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy.

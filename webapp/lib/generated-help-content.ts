@@ -85,7 +85,7 @@ export const HELP_CONTENT_GROUPS = [
               "Hovered text paragraphs expose a `+` affordance: click to duplicate the paragraph, then click the target placement, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.",
               "Hovered image placeholders expose a `+` affordance for duplication.",
               "Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown on the active page.",
-              "Locked layers stay visible but cannot be hovered, moved, or edited until unlocked in the Project panel.",
+              "Locked layers still show preview rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked in the Project panel.",
               "Arrow keys nudge the selected unlocked layer. Snapped axes move by the grid; unsnapped axes move in fine steps. `Shift` increases the unsnapped step and switches snapped Y to baseline movement.",
               "`Page Up`, `Page Down`, `Home`, and `End` navigate project pages.",
               "Undo/redo includes placement, duplication, deletion, and editor changes."
@@ -641,7 +641,7 @@ export const HELP_CONTENT_GROUPS = [
               "Layer cards include lock and delete controls.",
               "Single-click a layer card to select it. Double-click an unlocked layer card to open or retarget its corresponding text or image editor.",
               "Double-click a layer card's lock toggle to apply the same lock state to every layer on that page.",
-              "Locked layers stay visible and selectable, but preview hover, move, and editor access are disabled until unlocked."
+              "Locked layers stay visible and selectable, and their preview rollover remains available for guides and unlocking, but move, edit, duplicate, delete, and editor retarget/open actions stay disabled until unlocked."
             ]
           }
         ],
