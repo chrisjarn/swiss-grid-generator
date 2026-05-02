@@ -90,7 +90,7 @@ export function resolveBlockHeight({
 
   const moduleHeight = (rowStart < 0 || rowStart >= gridRows)
     ? normalizedRows * fallbackModuleHeight + Math.max(normalizedRows - 1, 0) * gutterY
-    : sumAxisSpan(Array.from(moduleHeights), rowStart, normalizedRows, gutterY)
+    : sumAxisSpan(moduleHeights, rowStart, normalizedRows, gutterY)
 
   return moduleHeight + extraBaselineHeight
 }

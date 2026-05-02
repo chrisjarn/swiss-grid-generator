@@ -6,6 +6,7 @@ import {
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { formatSvgColor, parseHexColor } from "@/lib/export-colors"
 import { loadOutlineFont } from "@/lib/font-outline"
+import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
 import { buildPageExportPlan } from "@/lib/page-export-plan"
 import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
@@ -140,7 +141,7 @@ async function renderOutlinedGrapheme(
   return `<path d="${quoteAttr(pathData)}" fill="${fillColor}" />`
 }
 
-export async function renderSwissGridVectorSvg({
+async function renderSwissGridVectorSvgInternal({
   width,
   height,
   result,
@@ -281,4 +282,17 @@ export async function renderSwissGridVectorSvg({
     `</g>`,
     `</svg>`,
   ].join("")
+}
+
+export async function renderSwissGridVectorSvg(options: ExportVectorSvgOptions): Promise<string> {
+  return measureLayoutPerformanceAsync(
+    "svg.renderSwissGridVectorSvg",
+    () => renderSwissGridVectorSvgInternal(options),
+    {
+      width: options.width,
+      height: options.height,
+      typography: options.showTypography,
+      placeholders: options.showImagePlaceholders,
+    },
+  )
 }

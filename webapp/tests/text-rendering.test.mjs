@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { drawCanvasText, measureCanvasTextWidth } from "../lib/text-rendering.ts"
+import { drawCanvasText, measureCanvasTextWidth, splitTextForTracking } from "../lib/text-rendering.ts"
 
 function createKerningContext() {
   const calls = []
@@ -43,6 +43,26 @@ function createKerningContext() {
 test("measureCanvasTextWidth keeps metric kerning when optical mode is off", () => {
   const { context } = createKerningContext()
   assert.equal(measureCanvasTextWidth(context, "AV", 0, 80, false), 74)
+})
+
+test("splitTextForTracking uses one glyph per ASCII code point", () => {
+  assert.deepEqual(splitTextForTracking("Swiss grid 123."), [
+    "S",
+    "w",
+    "i",
+    "s",
+    "s",
+    " ",
+    "g",
+    "r",
+    "i",
+    "d",
+    " ",
+    "1",
+    "2",
+    "3",
+    ".",
+  ])
 })
 
 test("measureCanvasTextWidth tightens expressive pairs in optical mode", () => {

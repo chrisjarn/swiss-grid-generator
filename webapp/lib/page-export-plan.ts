@@ -80,6 +80,7 @@ import {
   resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
+import { isLayoutProfilingEnabled, measureLayoutPerformance } from "@/lib/layout-performance"
 import {
   resolveDocumentVariableContent,
   type DocumentVariableContext,
@@ -198,63 +199,113 @@ type ExportTextContext = {
   measureWidth: (text: string, range?: { start: number; end: number }) => number
 }
 
-function createTextMeasureContext(): CanvasRenderingContext2D | null {
-  if (typeof document === "undefined") return null
-  const canvas = document.createElement("canvas")
-  return canvas.getContext("2d")
+type PageExportGridGeometry = {
+  moduleWidths: number[]
+  moduleHeights: number[]
+  colStarts: number[]
+  rowStarts: number[]
+  rowStartsInBaselines: number[]
+  firstColumnStep: number
+  firstRowStep: number
 }
 
-function reconcileLayerOrder(
-  current: readonly BlockId[],
-  blockOrder: readonly BlockId[],
-  imageOrder: readonly BlockId[],
-): BlockId[] {
-  const validKeys = new Set<BlockId>([...imageOrder, ...blockOrder])
-  const next: BlockId[] = []
-  const seen = new Set<BlockId>()
+type HeightMetricsResolver = (
+  rows: number | undefined,
+  baselines: number | undefined,
+) => ReturnType<typeof normalizeHeightMetrics>
 
-  for (const key of current) {
-    if (!validKeys.has(key) || seen.has(key)) continue
-    next.push(key)
-    seen.add(key)
-  }
-
-  for (const key of imageOrder) {
-    if (seen.has(key)) continue
-    next.push(key)
-    seen.add(key)
-  }
-
-  for (const key of blockOrder) {
-    if (seen.has(key)) continue
-    next.push(key)
-    seen.add(key)
-  }
-
-  return next
+type PageExportGuidePlan = {
+  pageOutline: PageExportPlan["pageOutline"]
+  guideGroups: PageExportGuideGroup[]
 }
 
-export function buildPageExportPlan({
-  result,
-  layout,
-  documentVariableContext = null,
-  baseFont = DEFAULT_BASE_FONT,
-  imageColorScheme,
-  canvasBackground = null,
-  rotation,
-  showBaselines,
-  showModules,
-  showMargins,
-  showImagePlaceholders,
-  showTypography,
-  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
-  rawDocumentVariableBlockKey = null,
-  textMetricsEngineFactory,
-  textWrapTraceCollector,
-}: BuildPageExportPlanArgs): PageExportPlan {
-  const sourceWidth = result.pageSizePt.width
-  const sourceHeight = result.pageSizePt.height
-  const { margins, gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
+type BuildPageExportGuidePlanArgs = {
+  result: GridResult
+  geometry: PageExportGridGeometry
+  showBaselines: boolean
+  showModules: boolean
+  showMargins: boolean
+}
+
+type BuildPageExportImagePlansArgs = {
+  imageOrder: BlockId[]
+  imageColorScheme: ImageColorSchemeId
+  imageModulePositions: PreviewLayoutState["imageModulePositions"]
+  imageColumnSpans: PreviewLayoutState["imageColumnSpans"]
+  imageRowSpans: PreviewLayoutState["imageRowSpans"]
+  imageHeightBaselines: PreviewLayoutState["imageHeightBaselines"]
+  imageSnapToColumns: PreviewLayoutState["imageSnapToColumns"]
+  imageSnapToBaseline: PreviewLayoutState["imageSnapToBaseline"]
+  imageRotations: PreviewLayoutState["imageRotations"]
+  imageColors: PreviewLayoutState["imageColors"]
+  imageOpacities: PreviewLayoutState["imageOpacities"]
+  geometry: PageExportGridGeometry
+  contentLeft: number
+  baselineOriginTop: number
+  baselineStep: number
+  maxBaselineRow: number
+  gridCols: number
+  gridRows: number
+  gridUnit: number
+  gutterX: number
+  gutterY: number
+  fallbackModuleHeight: number
+  getHeightMetrics: HeightMetricsResolver
+}
+
+const PAGE_EXPORT_GRID_GEOMETRY_CACHE_LIMIT = 512
+const pageExportGridGeometryCache = new Map<string, PageExportGridGeometry>()
+
+function formatGeometryCacheNumber(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(6) : String(value)
+}
+
+function formatGeometryCacheArray(values: readonly number[] | undefined): string {
+  return Array.isArray(values)
+    ? values.map(formatGeometryCacheNumber).join(",")
+    : ""
+}
+
+function rememberPageExportGridGeometry(
+  key: string,
+  geometry: PageExportGridGeometry,
+): PageExportGridGeometry {
+  pageExportGridGeometryCache.set(key, geometry)
+  if (pageExportGridGeometryCache.size > PAGE_EXPORT_GRID_GEOMETRY_CACHE_LIMIT) {
+    const oldestKey = pageExportGridGeometryCache.keys().next().value
+    if (oldestKey) pageExportGridGeometryCache.delete(oldestKey)
+  }
+  return geometry
+}
+
+function buildPageExportGridGeometryCacheKey(result: GridResult): string {
+  const { gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
+  const { width: modW, height: modH, widths, heights } = result.module
+  const { gridCols, gridRows } = result.settings
+  return [
+    gridCols,
+    gridRows,
+    formatGeometryCacheNumber(modW),
+    formatGeometryCacheNumber(modH),
+    formatGeometryCacheNumber(gridUnit),
+    formatGeometryCacheNumber(gridMarginHorizontal),
+    formatGeometryCacheNumber(gridMarginVertical),
+    formatGeometryCacheArray(widths),
+    formatGeometryCacheArray(heights),
+    formatGeometryCacheArray(result.grid.columnStarts),
+  ].join("|")
+}
+
+function resolvePageExportGridGeometry(result: GridResult): PageExportGridGeometry {
+  const cacheKey = buildPageExportGridGeometryCacheKey(result)
+  const cached = pageExportGridGeometryCache.get(cacheKey)
+  if (cached) {
+    pageExportGridGeometryCache.delete(cacheKey)
+    pageExportGridGeometryCache.set(cacheKey, cached)
+    return cached
+  }
+
+  const { gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
   const { width: modW, height: modH } = result.module
   const { gridCols, gridRows } = result.settings
   const moduleWidths = resolveAxisSizes(result.module.widths, gridCols, modW)
@@ -264,6 +315,38 @@ export function buildPageExportPlan({
   const rowStartsInBaselines = rowStarts.map((value) => value / Math.max(0.0001, gridUnit))
   const firstColumnStep = resolveGridFirstColumnStep(moduleWidths, colStarts, gridMarginHorizontal, modW)
   const firstRowStep = (moduleHeights[0] ?? modH) + gridMarginVertical
+
+  return rememberPageExportGridGeometry(cacheKey, {
+    moduleWidths,
+    moduleHeights,
+    colStarts,
+    rowStarts,
+    rowStartsInBaselines,
+    firstColumnStep,
+    firstRowStep,
+  })
+}
+
+function buildPageExportGuidePlan({
+  result,
+  geometry,
+  showBaselines,
+  showModules,
+  showMargins,
+}: BuildPageExportGuidePlanArgs): PageExportGuidePlan {
+  const sourceWidth = result.pageSizePt.width
+  const sourceHeight = result.pageSizePt.height
+  const { margins, gridUnit } = result.grid
+  const { width: modW, height: modH } = result.module
+  const { gridCols, gridRows } = result.settings
+  const {
+    moduleWidths,
+    moduleHeights,
+    colStarts,
+    rowStarts,
+    firstColumnStep,
+    firstRowStep,
+  } = geometry
   const showPageOutline = showMargins || showModules || showBaselines
   const guideContentTop = margins.top
   const guideBaselineSpacing = gridUnit
@@ -272,19 +355,6 @@ export function buildPageExportPlan({
     Math.round((sourceHeight - (margins.top + margins.bottom)) / guideBaselineSpacing),
   )
   const guideContentBottom = guideContentTop + guideBaselineRows * guideBaselineSpacing
-  const contentTop = margins.top
-  const contentLeft = margins.left
-  const baselineStep = gridUnit
-  const baselineOriginTop = contentTop - baselineStep
-  const maxBaselineRow = Math.max(
-    0,
-    Math.floor((sourceHeight - margins.top - margins.bottom) / gridUnit),
-  )
-
-  const backgroundColor = canvasBackground
-    ? parseHexColor(resolveImageSchemeColor(canvasBackground, imageColorScheme))
-    : null
-
   const pageOutline = showPageOutline
     ? {
       strokeColor: { r: 229, g: 229, b: 229 },
@@ -367,6 +437,204 @@ export function buildPageExportPlan({
     })
   }
 
+  return {
+    pageOutline,
+    guideGroups,
+  }
+}
+
+function buildPageExportImagePlans({
+  imageOrder,
+  imageColorScheme,
+  imageModulePositions: storedImageModulePositions = {},
+  imageColumnSpans = {},
+  imageRowSpans = {},
+  imageHeightBaselines = {},
+  imageSnapToColumns = {},
+  imageSnapToBaseline = {},
+  imageRotations = {},
+  imageColors = {},
+  imageOpacities = {},
+  geometry,
+  contentLeft,
+  baselineOriginTop,
+  baselineStep,
+  maxBaselineRow,
+  gridCols,
+  gridRows,
+  gridUnit,
+  gutterX,
+  gutterY,
+  fallbackModuleHeight,
+  getHeightMetrics,
+}: BuildPageExportImagePlansArgs): PageExportImagePlan[] {
+  const imageModulePositions = mapTextBlockPositionsToAbsolute(
+    storedImageModulePositions,
+    geometry.rowStartsInBaselines,
+  )
+  const fallbackImageColor = parseHexColor(resolveImageSchemeColor(undefined, imageColorScheme)) ?? { r: 11, g: 53, b: 54 }
+  const imagePlans: PageExportImagePlan[] = []
+
+  for (const key of imageOrder) {
+    const manual = imageModulePositions[key]
+    if (!manual || typeof manual.col !== "number" || typeof manual.row !== "number") continue
+
+    const height = getHeightMetrics(imageRowSpans[key], imageHeightBaselines[key])
+    const geometryPlan = buildImagePlaceholderGeometryPlan({
+      key,
+      position: manual,
+      getImageSpan: (imageKey) => imageColumnSpans[imageKey] ?? 1,
+      getImageRows: () => height.rows,
+      getImageHeightBaselines: () => height.baselines,
+      getImageRotation: (imageKey) => imageRotations[imageKey] ?? 0,
+      isImageSnapToColumnsEnabled: (imageKey) => imageSnapToColumns[imageKey] !== false,
+      isImageSnapToBaselineEnabled: (imageKey) => imageSnapToBaseline[imageKey] !== false,
+      toColumnX: (col) => contentLeft + resolvePreviewColumnX(col, geometry.colStarts, geometry.firstColumnStep),
+      baselineOriginTop,
+      baselineStep,
+      baselineStepForHeight: gridUnit,
+      maxBaselineRow,
+      gridCols,
+      rowStartsInBaselines: geometry.rowStartsInBaselines,
+      gridRows,
+      moduleWidths: geometry.moduleWidths,
+      moduleHeights: geometry.moduleHeights,
+      columnStarts: geometry.colStarts,
+      gutterX,
+      gutterY,
+      fallbackModuleHeight,
+    })
+    imagePlans.push({
+      key,
+      x: geometryPlan.x,
+      y: geometryPlan.y,
+      width: geometryPlan.width,
+      height: geometryPlan.height,
+      fillColor: parseHexColor(resolveImageSchemeColor(imageColors[key], imageColorScheme)) ?? fallbackImageColor,
+      opacity: normalizeImagePlaceholderOpacity(imageOpacities[key]),
+      rotation: geometryPlan.rotation,
+      rotationOriginX: geometryPlan.rotationOriginX,
+      rotationOriginY: geometryPlan.rotationOriginY,
+    })
+  }
+
+  return imagePlans
+}
+
+function createTextMeasureContext(): CanvasRenderingContext2D | null {
+  if (typeof document === "undefined") return null
+  const canvas = document.createElement("canvas")
+  return canvas.getContext("2d")
+}
+
+function reconcileLayerOrder(
+  current: readonly BlockId[],
+  blockOrder: readonly BlockId[],
+  imageOrder: readonly BlockId[],
+): BlockId[] {
+  const validKeys = new Set<BlockId>([...imageOrder, ...blockOrder])
+  const next: BlockId[] = []
+  const seen = new Set<BlockId>()
+
+  for (const key of current) {
+    if (!validKeys.has(key) || seen.has(key)) continue
+    next.push(key)
+    seen.add(key)
+  }
+
+  for (const key of imageOrder) {
+    if (seen.has(key)) continue
+    next.push(key)
+    seen.add(key)
+  }
+
+  for (const key of blockOrder) {
+    if (seen.has(key)) continue
+    next.push(key)
+    seen.add(key)
+  }
+
+  return next
+}
+
+function buildPageExportPlanInternal({
+  result,
+  layout,
+  documentVariableContext = null,
+  baseFont = DEFAULT_BASE_FONT,
+  imageColorScheme,
+  canvasBackground = null,
+  rotation,
+  showBaselines,
+  showModules,
+  showMargins,
+  showImagePlaceholders,
+  showTypography,
+  layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  rawDocumentVariableBlockKey = null,
+  textMetricsEngineFactory,
+  textWrapTraceCollector,
+}: BuildPageExportPlanArgs): PageExportPlan {
+  const sourceWidth = result.pageSizePt.width
+  const sourceHeight = result.pageSizePt.height
+  const { margins, gridUnit, gridMarginHorizontal, gridMarginVertical } = result.grid
+  const { width: modW, height: modH } = result.module
+  const { gridCols, gridRows } = result.settings
+  const profilePhases = isLayoutProfilingEnabled()
+  const geometry = profilePhases
+    ? measureLayoutPerformance(
+        "buildPageExportPlan.geometry",
+        () => resolvePageExportGridGeometry(result),
+        {
+          cols: gridCols,
+          rows: gridRows,
+        },
+      )
+    : resolvePageExportGridGeometry(result)
+  const {
+    moduleWidths,
+    moduleHeights,
+    colStarts,
+    rowStartsInBaselines,
+    firstColumnStep,
+  } = geometry
+  const contentTop = margins.top
+  const contentLeft = margins.left
+  const baselineStep = gridUnit
+  const baselineOriginTop = contentTop - baselineStep
+  const maxBaselineRow = Math.max(
+    0,
+    Math.floor((sourceHeight - margins.top - margins.bottom) / gridUnit),
+  )
+
+  const backgroundColor = canvasBackground
+    ? parseHexColor(resolveImageSchemeColor(canvasBackground, imageColorScheme))
+    : null
+
+  const { pageOutline, guideGroups } = profilePhases
+    ? measureLayoutPerformance(
+        "buildPageExportPlan.guides",
+        () => buildPageExportGuidePlan({
+          result,
+          geometry,
+          showBaselines,
+          showModules,
+          showMargins,
+        }),
+        {
+          baselines: showBaselines,
+          modules: showModules,
+          margins: showMargins,
+        },
+      )
+    : buildPageExportGuidePlan({
+        result,
+        geometry,
+        showBaselines,
+        showModules,
+        showMargins,
+      })
+
   const imageOrder = layout?.imageOrder?.filter(
     (key): key is BlockId => typeof key === "string" && key.length > 0,
   ) ?? []
@@ -379,59 +647,82 @@ export function buildPageExportPlan({
   const imageRotations = layout?.imageRotations ?? {}
   const imageColors = layout?.imageColors ?? {}
   const imageOpacities = layout?.imageOpacities ?? {}
-  const fallbackImageColor = parseHexColor(resolveImageSchemeColor(undefined, imageColorScheme)) ?? { r: 11, g: 53, b: 54 }
   const defaultTextColor = getDefaultTextSchemeColor(imageColorScheme)
-  const imagePlans: PageExportImagePlan[] = []
-
-  if (showImagePlaceholders) {
-    const imageModulePositions = mapTextBlockPositionsToAbsolute(storedImageModulePositions, rowStartsInBaselines)
-    for (const key of imageOrder) {
-      const manual = imageModulePositions[key]
-      if (!manual || typeof manual.col !== "number" || typeof manual.row !== "number") continue
-
-      const height = normalizeHeightMetrics({
-        rows: imageRowSpans[key],
-        baselines: imageHeightBaselines[key],
-        gridRows,
-      })
-      const geometry = buildImagePlaceholderGeometryPlan({
-        key,
-        position: manual,
-        getImageSpan: (imageKey) => imageColumnSpans[imageKey] ?? 1,
-        getImageRows: () => height.rows,
-        getImageHeightBaselines: () => height.baselines,
-        getImageRotation: (imageKey) => imageRotations[imageKey] ?? 0,
-        isImageSnapToColumnsEnabled: (imageKey) => imageSnapToColumns[imageKey] !== false,
-        isImageSnapToBaselineEnabled: (imageKey) => imageSnapToBaseline[imageKey] !== false,
-        toColumnX: (col) => contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep),
-        baselineOriginTop,
-        baselineStep,
-        baselineStepForHeight: gridUnit,
-        maxBaselineRow,
-        gridCols,
-        rowStartsInBaselines,
-        gridRows,
-        moduleWidths,
-        moduleHeights,
-        columnStarts: colStarts,
-        gutterX: gridMarginHorizontal,
-        gutterY: gridMarginVertical,
-        fallbackModuleHeight: modH,
-      })
-      imagePlans.push({
-        key,
-        x: geometry.x,
-        y: geometry.y,
-        width: geometry.width,
-        height: geometry.height,
-        fillColor: parseHexColor(resolveImageSchemeColor(imageColors[key], imageColorScheme)) ?? fallbackImageColor,
-        opacity: normalizeImagePlaceholderOpacity(imageOpacities[key]),
-        rotation: geometry.rotation,
-        rotationOriginX: geometry.rotationOriginX,
-        rotationOriginY: geometry.rotationOriginY,
-      })
-    }
+  const heightMetricsByInput = new Map<string, ReturnType<typeof normalizeHeightMetrics>>()
+  const getHeightMetrics = (rows: number | undefined, baselines: number | undefined) => {
+    const key = `${rows ?? ""}|${baselines ?? ""}|${gridRows}`
+    const cached = heightMetricsByInput.get(key)
+    if (cached) return cached
+    const resolved = normalizeHeightMetrics({
+      rows,
+      baselines,
+      gridRows,
+    })
+    heightMetricsByInput.set(key, resolved)
+    return resolved
   }
+
+  const imagePlans = showImagePlaceholders
+    ? (
+        profilePhases
+          ? measureLayoutPerformance(
+              "buildPageExportPlan.images",
+              () => buildPageExportImagePlans({
+                imageOrder,
+                imageColorScheme,
+                imageModulePositions: storedImageModulePositions,
+                imageColumnSpans,
+                imageRowSpans,
+                imageHeightBaselines,
+                imageSnapToColumns,
+                imageSnapToBaseline,
+                imageRotations,
+                imageColors,
+                imageOpacities,
+                geometry,
+                contentLeft,
+                baselineOriginTop,
+                baselineStep,
+                maxBaselineRow,
+                gridCols,
+                gridRows,
+                gridUnit,
+                gutterX: gridMarginHorizontal,
+                gutterY: gridMarginVertical,
+                fallbackModuleHeight: modH,
+                getHeightMetrics,
+              }),
+              {
+                placeholders: imageOrder.length,
+              },
+            )
+          : buildPageExportImagePlans({
+          imageOrder,
+          imageColorScheme,
+          imageModulePositions: storedImageModulePositions,
+          imageColumnSpans,
+          imageRowSpans,
+          imageHeightBaselines,
+          imageSnapToColumns,
+          imageSnapToBaseline,
+          imageRotations,
+          imageColors,
+          imageOpacities,
+          geometry,
+          contentLeft,
+          baselineOriginTop,
+          baselineStep,
+          maxBaselineRow,
+          gridCols,
+          gridRows,
+          gridUnit,
+          gutterX: gridMarginHorizontal,
+          gutterY: gridMarginVertical,
+          fallbackModuleHeight: modH,
+          getHeightMetrics,
+        })
+      )
+    : []
 
   const styleDefinitions = result.typography.styles
   const blockOrder = layout?.blockOrder?.filter((key): key is BlockId => typeof key === "string" && key.length > 0) ?? [...BASE_BLOCK_IDS]
@@ -479,19 +770,11 @@ export function buildPageExportPlan({
   }
 
   const getBlockRows = (key: BlockId) => {
-    return normalizeHeightMetrics({
-      rows: blockRowSpans[key],
-      baselines: blockHeightBaselines[key],
-      gridRows,
-    }).rows
+    return getHeightMetrics(blockRowSpans[key], blockHeightBaselines[key]).rows
   }
 
   const getBlockHeightBaselines = (key: BlockId) => {
-    return normalizeHeightMetrics({
-      rows: blockRowSpans[key],
-      baselines: blockHeightBaselines[key],
-      gridRows,
-    }).baselines
+    return getHeightMetrics(blockRowSpans[key], blockHeightBaselines[key]).baselines
   }
 
   const getStyleKeyForBlock = (key: BlockId): TypographyStyleKey => {
@@ -771,7 +1054,9 @@ export function buildPageExportPlan({
   }
 
   const layoutOutput = showTypography
-    ? buildTypographyLayoutPlan<BlockId, TypographyStyleKey, ExportTextContext>({
+    ? measureLayoutPerformance(
+        "buildPageExportPlan.typographyLayout",
+        () => buildTypographyLayoutPlan<BlockId, TypographyStyleKey, ExportTextContext>({
       blockOrder,
       textContent: resolvedTextContent,
       styleAssignments,
@@ -933,7 +1218,11 @@ export function buildPageExportPlan({
               context.canvasFont,
             )
           : 0,
-    })
+    }),
+        {
+          blocks: blockOrder.length,
+        },
+      )
     : { plans: [] as TypographyLayoutPlan<BlockId, TypographyStyleKey>[], rects: {} as Record<BlockId, PageExportRect>, overflowByBlock: {} }
 
   const textPlans: PageExportTextPlan[] = layoutOutput.plans.map((plan) => ({
@@ -955,74 +1244,90 @@ export function buildPageExportPlan({
     graphemeLines: [],
   }))
 
-  const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
-  const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
-  for (const textPlan of textPlans) {
-    if (!textMeasureContext) continue
-    const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
-    const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []
-    const measureGlyphBounds = formatRuns.length === 0
-      ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
-      : undefined
-    applyCanvasTextConfig(textMeasureContext, {
-      font: canvasFont,
-      opticalKerning: textPlan.opticalKerning,
-    })
-    textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
-      sourceText: textPlan.sourceText,
-      command,
-      textAlign: textPlan.textAlign,
-      baseFormat: {
-        fontFamily: textPlan.fontFamily,
-        fontWeight: textPlan.fontWeight,
-        italic: textPlan.italic,
-        styleKey: textPlan.styleKey,
-        color: getResolvedBlockTextColor(textPlan.key),
+  const positionTextGlyphs = () => {
+    const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
+    const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
+    for (const textPlan of textPlans) {
+      if (!textMeasureContext) continue
+      const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
+      const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []
+      const measureGlyphBounds = formatRuns.length === 0
+        ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+        : undefined
+      applyCanvasTextConfig(textMeasureContext, {
+        font: canvasFont,
+        opticalKerning: textPlan.opticalKerning,
+      })
+      textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
+        sourceText: textPlan.sourceText,
+        command,
+        textAlign: textPlan.textAlign,
+        baseFormat: {
+          fontFamily: textPlan.fontFamily,
+          fontWeight: textPlan.fontWeight,
+          italic: textPlan.italic,
+          styleKey: textPlan.styleKey,
+          color: getResolvedBlockTextColor(textPlan.key),
+        },
+        formatRuns,
+        baseTrackingScale: textPlan.trackingScale,
+        trackingRuns: textPlan.trackingRuns,
+        resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
+        opticalKerning: textPlan.opticalKerning,
+        measureGlyphBounds,
+        measureResolvedGlyphBounds,
+        measureResolvedPairAdvance,
+      }))
+      textPlan.segmentLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingSegments(textMeasureContext, {
+        sourceText: textPlan.sourceText,
+        command,
+        textAlign: textPlan.textAlign,
+        baseFormat: {
+          fontFamily: textPlan.fontFamily,
+          fontWeight: textPlan.fontWeight,
+          italic: textPlan.italic,
+          styleKey: textPlan.styleKey,
+          color: getResolvedBlockTextColor(textPlan.key),
+        },
+        formatRuns,
+        baseTrackingScale: textPlan.trackingScale,
+        trackingRuns: textPlan.trackingRuns,
+        resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
+        opticalKerning: textPlan.opticalKerning,
+        measureGlyphBounds,
+        measureResolvedGlyphBounds,
+        measureResolvedPairAdvance,
+      }))
+    }
+  }
+  if (profilePhases) {
+    measureLayoutPerformance(
+      "buildPageExportPlan.positionedGlyphs",
+      positionTextGlyphs,
+      {
+        textPlans: textPlans.length,
       },
-      formatRuns,
-      baseTrackingScale: textPlan.trackingScale,
-      trackingRuns: textPlan.trackingRuns,
-      resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
-      opticalKerning: textPlan.opticalKerning,
-      measureGlyphBounds,
-      measureResolvedGlyphBounds,
-      measureResolvedPairAdvance,
-    }))
-    textPlan.segmentLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingSegments(textMeasureContext, {
-      sourceText: textPlan.sourceText,
-      command,
-      textAlign: textPlan.textAlign,
-      baseFormat: {
-        fontFamily: textPlan.fontFamily,
-        fontWeight: textPlan.fontWeight,
-        italic: textPlan.italic,
-        styleKey: textPlan.styleKey,
-        color: getResolvedBlockTextColor(textPlan.key),
-      },
-      formatRuns,
-      baseTrackingScale: textPlan.trackingScale,
-      trackingRuns: textPlan.trackingRuns,
-      resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
-      opticalKerning: textPlan.opticalKerning,
-      measureGlyphBounds,
-      measureResolvedGlyphBounds,
-      measureResolvedPairAdvance,
-    }))
+    )
+  } else {
+    positionTextGlyphs()
   }
 
-  const resolvedOrderedLayerKeys = orderedLayerKeys.filter((key) =>
-    imagePlans.some((plan) => plan.key === key) || textPlans.some((plan) => plan.key === key),
-  )
+  const plannedImageKeys = new Set(imagePlans.map((plan) => plan.key))
+  const plannedTextKeys = new Set(textPlans.map((plan) => plan.key))
+  const resolvedOrderedLayerKeys = orderedLayerKeys.filter((key) => (
+    plannedImageKeys.has(key) || plannedTextKeys.has(key)
+  ))
+  const resolvedLayerKeySet = new Set(resolvedOrderedLayerKeys)
   for (const key of imageOrder) {
-    if ((imagePlans.some((plan) => plan.key === key) || textPlans.some((plan) => plan.key === key))
-      && !resolvedOrderedLayerKeys.includes(key)) {
+    if ((plannedImageKeys.has(key) || plannedTextKeys.has(key)) && !resolvedLayerKeySet.has(key)) {
       resolvedOrderedLayerKeys.push(key)
+      resolvedLayerKeySet.add(key)
     }
   }
   for (const key of blockOrder) {
-    if ((imagePlans.some((plan) => plan.key === key) || textPlans.some((plan) => plan.key === key))
-      && !resolvedOrderedLayerKeys.includes(key)) {
+    if ((plannedImageKeys.has(key) || plannedTextKeys.has(key)) && !resolvedLayerKeySet.has(key)) {
       resolvedOrderedLayerKeys.push(key)
+      resolvedLayerKeySet.add(key)
     }
   }
 
@@ -1038,4 +1343,19 @@ export function buildPageExportPlan({
     textPlans,
     overflowByBlock: layoutOutput.overflowByBlock,
   }
+}
+
+export function buildPageExportPlan(args: BuildPageExportPlanArgs): PageExportPlan {
+  if (!isLayoutProfilingEnabled()) return buildPageExportPlanInternal(args)
+
+  return measureLayoutPerformance(
+    "buildPageExportPlan",
+    () => buildPageExportPlanInternal(args),
+    {
+      width: args.result.pageSizePt.width,
+      height: args.result.pageSizePt.height,
+      typography: args.showTypography,
+      placeholders: args.showImagePlaceholders,
+    },
+  )
 }

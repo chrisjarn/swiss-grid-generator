@@ -65,6 +65,7 @@ const graphemeSegmenter = typeof Intl !== "undefined" && "Segmenter" in Intl
 
 export function splitTextForTracking(text: string): string[] {
   if (!text) return []
+  if (/^[\x00-\x7F]+$/.test(text)) return text.split("")
   if (!graphemeSegmenter) return Array.from(text)
   return Array.from(graphemeSegmenter.segment(text), ({ segment }) => segment)
 }

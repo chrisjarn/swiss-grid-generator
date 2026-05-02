@@ -6,6 +6,7 @@ import {
   type FontFileMetricFace,
 } from "@/lib/font-file-text-metrics-engine"
 import { buildSwissGridIdmlPackage } from "@/lib/idml/builder"
+import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
 import type { SwissGridIdmlDocument } from "@/lib/idml/types"
 import { buildResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
 import {
@@ -48,7 +49,7 @@ function collectIdmlTextMetricFaces(project: LoadedProject<Record<string, unknow
   ))
 }
 
-export async function renderSwissGridIdmlProject(
+async function renderSwissGridIdmlProjectInternal(
   project: LoadedProject<Record<string, unknown>>,
   layoutEngine: LayoutEngineContract = project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
   onProgress?: (progress: IdmlExportProgress) => void | Promise<void>,
@@ -110,4 +111,19 @@ export async function renderSwissGridIdmlProject(
     metadata: project.metadata,
     pages,
   } satisfies SwissGridIdmlDocument)
+}
+
+export async function renderSwissGridIdmlProject(
+  project: LoadedProject<Record<string, unknown>>,
+  layoutEngine: LayoutEngineContract = project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
+  onProgress?: (progress: IdmlExportProgress) => void | Promise<void>,
+  assertNotCancelled?: () => void,
+): Promise<Uint8Array> {
+  return measureLayoutPerformanceAsync(
+    "idml.renderSwissGridIdmlProject",
+    () => renderSwissGridIdmlProjectInternal(project, layoutEngine, onProgress, assertNotCancelled),
+    {
+      pages: project.pages.length,
+    },
+  )
 }

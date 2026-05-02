@@ -14,6 +14,7 @@ import {
 } from "@/lib/canvas-page-renderer"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
+import { measureLayoutPerformance } from "@/lib/layout-performance"
 import { buildPageExportPlan } from "@/lib/page-export-plan"
 import type { BlockRect, BlockRenderPlan } from "@/lib/preview-types"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
@@ -238,7 +239,14 @@ export function useTypographyRenderer<BlockId extends string>({
         layoutEngine,
         rawDocumentVariableBlockKey,
       })
-      const canvasRenderPlans = buildCanvasRenderPlansFromPageExportPlan(exportPlan)
+      const canvasRenderPlans = measureLayoutPerformance(
+        "canvas.buildRenderPlansFromPageExportPlan",
+        () => buildCanvasRenderPlansFromPageExportPlan(exportPlan),
+        {
+          textPlans: exportPlan.textPlans.length,
+          imagePlans: exportPlan.imagePlans.length,
+        },
+      )
       imagePlans = new Map(Array.from(canvasRenderPlans.imagePlans.entries()).map(([key, plan]) => [
         key as BlockId,
         plan,
@@ -277,7 +285,14 @@ export function useTypographyRenderer<BlockId extends string>({
           layoutEngine,
           rawDocumentVariableBlockKey,
         })
-        const duplicateCanvasPlans = buildCanvasRenderPlansFromPageExportPlan(duplicateExportPlan)
+        const duplicateCanvasPlans = measureLayoutPerformance(
+          "canvas.buildDragPreviewRenderPlansFromPageExportPlan",
+          () => buildCanvasRenderPlansFromPageExportPlan(duplicateExportPlan),
+          {
+            textPlans: duplicateExportPlan.textPlans.length,
+            imagePlans: duplicateExportPlan.imagePlans.length,
+          },
+        )
         dragPreviewImagePlan = duplicateCanvasPlans.imagePlans.get(dragState.key) as CanvasImageRenderPlan | undefined ?? null
         dragPreviewTextPlan = duplicateCanvasPlans.textPlans.get(dragState.key) as BlockRenderPlan<BlockId> | undefined ?? null
       }
@@ -324,7 +339,15 @@ export function useTypographyRenderer<BlockId extends string>({
       bufferCtx.rotate((rotation * Math.PI) / 180)
       bufferCtx.translate(-pageWidth / 2, -pageHeight / 2)
       bufferCtx.scale(scale, scale)
-      drawCanvasLayerStack(bufferCtx, canvasRenderPlans.orderedKeys as BlockId[], imagePlans, draftPlans)
+      measureLayoutPerformance(
+        "canvas.drawLayerStack",
+        () => drawCanvasLayerStack(bufferCtx, canvasRenderPlans.orderedKeys as BlockId[], imagePlans, draftPlans),
+        {
+          layers: canvasRenderPlans.orderedKeys.length,
+          textPlans: draftPlans.size,
+          imagePlans: imagePlans.size,
+        },
+      )
       if (dragPreviewImagePlan) {
         drawCanvasImagePlan(bufferCtx, dragPreviewImagePlan)
       }

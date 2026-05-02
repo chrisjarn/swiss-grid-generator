@@ -204,6 +204,8 @@ That means preset thumbnails, the live preview, drag previews, edit geometry, an
 
 ## Verification
 
+Performance measurement for the canonical 2.0 layout planner is documented in [PERFORMANCE.md](PERFORMANCE.md). Use `NEXT_PUBLIC_LAYOUT_PROFILING=1 npm run dev` for live timing logs and `npm run benchmark:layout` from `webapp/` for deterministic stress-page planning runs.
+
 Before release, run:
 
 ```bash

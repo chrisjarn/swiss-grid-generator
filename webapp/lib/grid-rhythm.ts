@@ -96,7 +96,7 @@ export function buildAxisStarts(sizes: number[], gutter: number): number[] {
 }
 
 export function sumAxisSpan(
-  sizes: number[],
+  sizes: readonly number[],
   startIndex: number,
   span: number,
   gutter: number,

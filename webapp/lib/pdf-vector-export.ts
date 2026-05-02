@@ -8,6 +8,7 @@ import {
   type FontFamily,
 } from "@/lib/config/fonts"
 import { buildPageExportPlan } from "@/lib/page-export-plan"
+import { measureLayoutPerformance } from "@/lib/layout-performance"
 import { resolvePdfFontFamily } from "@/lib/pdf-font-registry"
 import {
   DEFAULT_TRACKING_SCALE,
@@ -169,7 +170,7 @@ function isRenderableTextFragment(text: string): boolean {
   return text.replace(/\s+/g, "").length > 0
 }
 
-export function renderSwissGridVectorPdf({
+function renderSwissGridVectorPdfInternal({
   pdf,
   width,
   height,
@@ -554,4 +555,17 @@ export function renderSwissGridVectorPdf({
       }
     }
   }
+}
+
+export function renderSwissGridVectorPdf(options: ExportVectorPdfOptions): void {
+  return measureLayoutPerformance(
+    "pdf.renderSwissGridVectorPdf",
+    () => renderSwissGridVectorPdfInternal(options),
+    {
+      width: options.width,
+      height: options.height,
+      typography: options.showTypography,
+      placeholders: options.showImagePlaceholders,
+    },
+  )
 }

@@ -183,16 +183,18 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     rects[key] = { x: 0, y: 0, width: 0, height: 0 }
   }
 
-  const resolvedModuleWidths = (
-    Array.isArray(moduleWidths) && moduleWidths.length === gridCols
-      ? moduleWidths
-      : Array(Math.max(1, gridCols)).fill(moduleWidth)
-  ).map((value) => (Number.isFinite(value) && value > 0 ? value : moduleWidth))
-  const resolvedModuleHeights = (
-    Array.isArray(moduleHeights) && moduleHeights.length === gridRows
-      ? moduleHeights
-      : Array(Math.max(1, gridRows)).fill(moduleHeight)
-  ).map((value) => (Number.isFinite(value) && value > 0 ? value : moduleHeight))
+  const hasValidModuleWidths = Array.isArray(moduleWidths)
+    && moduleWidths.length === gridCols
+    && moduleWidths.every((value) => Number.isFinite(value) && value > 0)
+  const hasValidModuleHeights = Array.isArray(moduleHeights)
+    && moduleHeights.length === gridRows
+    && moduleHeights.every((value) => Number.isFinite(value) && value > 0)
+  const resolvedModuleWidths = hasValidModuleWidths
+    ? moduleWidths
+    : Array(Math.max(1, gridCols)).fill(moduleWidth)
+  const resolvedModuleHeights = hasValidModuleHeights
+    ? moduleHeights
+    : Array(Math.max(1, gridRows)).fill(moduleHeight)
 
   const getColumnWidthAt = (columnIndex: number) => {
     if (columnIndex < 0 || columnIndex >= gridCols) return moduleWidth
