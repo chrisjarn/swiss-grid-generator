@@ -2,6 +2,7 @@
 
 import { Plus, SquarePen, Trash2 } from "lucide-react"
 import { createPortal } from "react-dom"
+import { useEffect, useState } from "react"
 import type { Dispatch, SetStateAction } from "react"
 
 import { ImageEditorDialog, type ImageEditorState } from "@/components/dialogs/ImageEditorDialog"
@@ -52,6 +53,24 @@ type Props<StyleKey extends string> = {
   isDarkMode?: boolean
 }
 
+type CopyAffordanceIntent = "duplicate" | "paragraph" | "typo" | "both"
+
+function getCopyAffordanceIntent(altKey: boolean, shiftKey: boolean): CopyAffordanceIntent {
+  if (altKey && shiftKey) return "both"
+  if (shiftKey) return "paragraph"
+  if (altKey) return "typo"
+  return "duplicate"
+}
+
+function getTextCopyRolloverTitle(): string {
+  return [
+    "Duplicate paragraph",
+    "Shift-click: copy paragraph settings",
+    "Alt-click: copy typo settings",
+    "Alt+Shift-click: copy paragraph + typo settings",
+  ].join("\n")
+}
+
 export function GridPreviewOverlays<StyleKey extends string>({
   showEditorHelpIcon,
   showRolloverInfo,
@@ -84,6 +103,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
   onOpenHelpSection,
   isDarkMode = false,
 }: Props<StyleKey>) {
+  const [copyAffordanceIntent, setCopyAffordanceIntent] = useState<CopyAffordanceIntent>("duplicate")
+  const [copyAffordanceHovered, setCopyAffordanceHovered] = useState(false)
   const activeEditorTarget = editorState?.target ?? imageEditorState?.target ?? null
   const hoveredEditTarget = hoveredTextKey && hoveredTextRect
     ? { kind: "text" as const, key: hoveredTextKey, rect: hoveredTextRect }
@@ -127,6 +148,39 @@ export function GridPreviewOverlays<StyleKey extends string>({
       ),
     )
     : 0
+  const copyButtonClassName = (() => {
+    if (hoveredEditTarget?.kind !== "text" || copyAffordanceIntent === "duplicate") {
+      return isDarkMode
+        ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-gray-600 hover:bg-gray-800 hover:text-gray-50"
+        : "border-gray-200 bg-white/95 text-gray-700 hover:border-gray-300 hover:bg-white hover:text-gray-900"
+    }
+    if (copyAffordanceIntent === "paragraph") {
+      return isDarkMode
+        ? "border-orange-400 bg-orange-500 text-white hover:border-orange-300 hover:bg-orange-400"
+        : "border-orange-500 bg-orange-500 text-white hover:border-orange-600 hover:bg-orange-600"
+    }
+    if (copyAffordanceIntent === "typo") {
+      return isDarkMode
+        ? "border-gray-500 bg-gray-600 text-white hover:border-gray-400 hover:bg-gray-500"
+        : "border-gray-500 bg-gray-600 text-white hover:border-gray-600 hover:bg-gray-700"
+    }
+    return isDarkMode
+      ? "border-orange-400 bg-orange-500 text-gray-900 ring-1 ring-gray-400 hover:border-orange-300 hover:bg-orange-400"
+      : "border-orange-500 bg-orange-500 text-gray-900 ring-1 ring-gray-600 hover:border-orange-600 hover:bg-orange-600"
+  })()
+
+  useEffect(() => {
+    if (!copyAffordanceHovered || hoveredEditTarget?.kind !== "text") return
+    const updateIntent = (event: KeyboardEvent) => {
+      setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
+    }
+    window.addEventListener("keydown", updateIntent)
+    window.addEventListener("keyup", updateIntent)
+    return () => {
+      window.removeEventListener("keydown", updateIntent)
+      window.removeEventListener("keyup", updateIntent)
+    }
+  }, [copyAffordanceHovered, hoveredEditTarget?.kind])
 
   const editorSidebar = editorSidebarHost
     ? createPortal(
@@ -233,9 +287,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
               type="button"
               data-preview-edit-affordance="true"
               className={`flex items-center justify-center rounded-sm border shadow-md transition-colors ${
-                isDarkMode
-                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-gray-600 hover:bg-gray-800 hover:text-gray-50"
-                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-gray-300 hover:bg-white hover:text-gray-900"
+                copyButtonClassName
               }`}
               style={{
                 width: actionButtonSize,
@@ -245,6 +297,17 @@ export function GridPreviewOverlays<StyleKey extends string>({
               onMouseDown={(event) => {
                 event.preventDefault()
                 event.stopPropagation()
+              }}
+              onMouseEnter={(event) => {
+                setCopyAffordanceHovered(true)
+                setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
+              }}
+              onMouseMove={(event) => {
+                setCopyAffordanceIntent(getCopyAffordanceIntent(event.altKey, event.shiftKey))
+              }}
+              onMouseLeave={() => {
+                setCopyAffordanceHovered(false)
+                setCopyAffordanceIntent("duplicate")
               }}
               onClick={(event) => {
                 event.preventDefault()
@@ -262,7 +325,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 ? "Duplicate paragraph or copy settings"
                 : "Duplicate image placeholder"}
               title={hoveredEditTarget.kind === "text"
-                ? "Duplicate paragraph, even across pages. Shift-click: copy Paragraph. Alt-click: copy Typo. Alt+Shift-click: copy both."
+                ? getTextCopyRolloverTitle()
                 : "Duplicate image placeholder, even across pages."}
             >
               <Plus className="h-3 w-3" />

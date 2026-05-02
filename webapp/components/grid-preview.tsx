@@ -1310,6 +1310,30 @@ export const GridPreview = memo(function GridPreview({
     onCopyPlacementCommitted: clearPendingLayerDuplicate,
   })
 
+  useEffect(() => {
+    const copyPathActive = pendingTextStyleTransfer !== null || pendingLayerDuplicate !== null || dragState?.detached === true
+    if (!copyPathActive) return
+
+    const handleCopyCancelKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape") return
+      event.preventDefault()
+      event.stopPropagation()
+      setPendingTextStyleTransfer(null)
+      setPendingLayerDuplicate(null)
+      setDragState(null)
+      clearHover()
+    }
+
+    window.addEventListener("keydown", handleCopyCancelKeyDown, true)
+    return () => window.removeEventListener("keydown", handleCopyCancelKeyDown, true)
+  }, [
+    clearHover,
+    dragState?.detached,
+    pendingLayerDuplicate,
+    pendingTextStyleTransfer,
+    setDragState,
+  ])
+
   const handleCopyAffordanceActivate = ({
     key,
     kind,
