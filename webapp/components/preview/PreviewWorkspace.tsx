@@ -39,6 +39,20 @@ type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 type PreviewProjectPage = ProjectPage<PreviewLayoutState>
 
+type ProjectInfoStats = {
+  fontCount: number
+  cutCount: number
+  wordCount: number
+  characterCount: number
+}
+
+const EMPTY_PROJECT_INFO_STATS: ProjectInfoStats = {
+  fontCount: 0,
+  cutCount: 0,
+  wordCount: 0,
+  characterCount: 0,
+}
+
 type UiTheme = {
   divider: string
   bodyText: string
@@ -349,15 +363,18 @@ export function PreviewWorkspace({
     [projectPages],
   )
 
-  const totalLayerCount = useMemo(() => (
-    projectPages.reduce((sum, page) => (
+  const totalLayerCount = useMemo(() => {
+    if (!showProjectInfo) return 0
+    return projectPages.reduce((sum, page) => (
       sum
       + (page.previewLayout?.blockOrder.length ?? 0)
       + (page.previewLayout?.imageOrder?.length ?? 0)
     ), 0)
-  ), [projectPages])
+  }, [projectPages, showProjectInfo])
 
-  const projectInfoStats = useMemo(() => {
+  const projectInfoStats = useMemo<ProjectInfoStats>(() => {
+    if (!showProjectInfo) return EMPTY_PROJECT_INFO_STATS
+
     const usedFonts = new Set<string>()
     const usedCuts = new Set<string>()
     let wordCount = 0
@@ -402,9 +419,10 @@ export function PreviewWorkspace({
       wordCount,
       characterCount,
     }
-  }, [projectPages])
+  }, [projectPages, showProjectInfo])
 
   const formattedProjectCreatedAt = useMemo(() => {
+    if (!showProjectInfo) return null
     if (!projectCreatedAt) return null
     const timestamp = Date.parse(projectCreatedAt)
     if (Number.isNaN(timestamp)) return null
@@ -413,9 +431,11 @@ export function PreviewWorkspace({
       month: "long",
       year: "numeric",
     }).format(new Date(timestamp))
-  }, [projectCreatedAt])
+  }, [projectCreatedAt, showProjectInfo])
 
   const projectInfoSentence = useMemo(() => {
+    if (!showProjectInfo) return ""
+
     const authorText = projectAuthor.trim()
       ? ` It was created by ${projectAuthor.trim()}`
       : " It has no saved author"
@@ -423,7 +443,7 @@ export function PreviewWorkspace({
       ? ` on ${formattedProjectCreatedAt}.`
       : "."
     return `This document consists of ${documentVariablePageCount} ${documentVariablePageCount === 1 ? "page" : "pages"} with ${totalLayerCount} ${totalLayerCount === 1 ? "layer" : "layers"}, uses ${projectInfoStats.fontCount} ${projectInfoStats.fontCount === 1 ? "font" : "fonts"} and ${projectInfoStats.cutCount} ${projectInfoStats.cutCount === 1 ? "cut" : "cuts"}, and contains ${projectInfoStats.wordCount} ${projectInfoStats.wordCount === 1 ? "word" : "words"} and ${projectInfoStats.characterCount} ${projectInfoStats.characterCount === 1 ? "character" : "characters"}.${authorText}${createdAtText}`
-  }, [documentVariablePageCount, formattedProjectCreatedAt, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, totalLayerCount])
+  }, [documentVariablePageCount, formattedProjectCreatedAt, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, totalLayerCount])
 
   const documentVariableContext = useMemo(() => ({
     projectTitle,
