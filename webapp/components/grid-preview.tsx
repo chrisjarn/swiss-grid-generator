@@ -54,6 +54,7 @@ import {
   type BlockRenderPlan,
   type NoticeRequest,
   type OverflowLinesByBlock,
+  type PagePoint,
 } from "@/lib/preview-types"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize, getDummyTextForStyle } from "@/lib/preview-text-config"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
@@ -215,7 +216,7 @@ interface GridPreviewProps {
   editorSidebarHost?: HTMLDivElement | null
   onEditorModeChange?: (mode: "text" | "image" | null) => void
   onPreviewEditorOpen?: () => void
-  onPreviewParagraphCreate?: () => void
+  onPreviewParagraphCreate?: (key?: BlockId, point?: PagePoint) => void
   isDarkMode?: boolean
 }
 
@@ -607,6 +608,12 @@ export const GridPreview = memo(function GridPreview({
     setHoverCopyIntent(false)
   }, [])
 
+  const showImmediateTextHover = useCallback((key: BlockId, point: PagePoint) => {
+    setHoverImageKey(null)
+    setHoverCopyIntent(false)
+    setHoverState({ key, point })
+  }, [])
+
   const buildTextStyleTransfer = (
     sourceKey: BlockId,
     mode: TextStyleTransferMode,
@@ -925,7 +932,10 @@ export const GridPreview = memo(function GridPreview({
       getBlockRotation,
       promoteLayerToTop,
       onRequestNotice,
-      onParagraphCreated: onPreviewParagraphCreate,
+      onParagraphCreated: (key, point) => {
+        showImmediateTextHover(key, point)
+        onPreviewParagraphCreate?.(key, point)
+      },
     },
     blockOrder,
     imageOrder,
@@ -1389,10 +1399,8 @@ export const GridPreview = memo(function GridPreview({
       setEditorState((current) => (current?.target === key ? null : current))
       setImageEditorState((current) => (current?.target === key ? null : current))
     }
-    clearHover()
   }, [
     blockOrder,
-    clearHover,
     imageOrder,
     isLayerLocked,
     recordHistoryBeforeChange,
@@ -1599,13 +1607,11 @@ export const GridPreview = memo(function GridPreview({
     ))
 
     if (!requestedLayerLockValue) return
-    clearHover()
     setDragState((current) => (current && nextTargetSet.has(current.key) ? null : current))
     setEditorState((current) => (current && nextTargetSet.has(current.target) ? null : current))
     setImageEditorState((current) => (current && nextTargetSet.has(current.target) ? null : current))
   }, [
     blockOrder,
-    clearHover,
     imageOrder,
     isLayerLocked,
     recordHistoryBeforeChange,

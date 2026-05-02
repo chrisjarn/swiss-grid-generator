@@ -98,7 +98,7 @@ type Args = {
   getBlockRotation: (key: string) => number
   promoteLayerToTop: (key: string) => void
   onRequestNotice?: (notice: NoticeRequest) => void
-  onParagraphCreated?: () => void
+  onParagraphCreated?: (key: string, point: PagePoint) => void
 }
 
 export function useBlockEditorCanvasDoubleClick({
@@ -270,7 +270,7 @@ export function useBlockEditorCanvasDoubleClick({
       syllableDivision: false,
     }))
     promoteLayerToTop(newKey)
-    onParagraphCreated?.()
+    onParagraphCreated?.(newKey, pagePoint)
   }, [
     blockCustomLeadings,
     blockCustomSizes,
