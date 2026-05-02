@@ -66,6 +66,7 @@ Core editing and layout workflows.
 
 #### Symbols Section {#help-editor-symbols}
 - Insert typographic symbols at the caret or over the current selection.
+- The grouped symbol palette includes arrows, bullets, marks, math, Greek lowercase letters, geometry, and editorial punctuation.
 - Symbol insertion stores normal paragraph text plus a run-level `Noto Sans Symbols 2` font assignment for stable canvas and export rendering.
 - Recent symbols appear above the grouped palette after first use.
 

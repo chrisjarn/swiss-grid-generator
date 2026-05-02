@@ -1170,7 +1170,7 @@ export function TextEditorPanel<StyleKey extends string>({
           title="III. Symbols"
           tooltip="Insert typographic symbols at the caret or over the current selection"
           collapsed={collapsed.symbols}
-          collapsedSummary="Arrows, bullets, marks, math, geometry"
+          collapsedSummary="Arrows, bullets, marks, math, Greek"
           onHeaderClick={handleSectionHeaderClick("symbols")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}

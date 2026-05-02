@@ -26,6 +26,11 @@ export const TEXT_SYMBOL_PALETTE_GROUPS: readonly TextSymbolPaletteGroup[] = [
     symbols: ["+", "−", "×", "÷", "=", "≠", "≈", "≤", "≥", "±", "∞", "√"],
   },
   {
+    id: "greek",
+    label: "Greek",
+    symbols: ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"],
+  },
+  {
     id: "geometry",
     label: "Geometry",
     symbols: ["△", "▽", "▲", "▼", "◁", "▷", "◀", "▶", "◇", "◈", "⬡", "⬢"],
