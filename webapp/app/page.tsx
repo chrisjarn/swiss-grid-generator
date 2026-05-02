@@ -95,21 +95,9 @@ type TextMetricsParityRunner = (options?: {
   maxTextLength?: number
 }) => Promise<unknown>
 
-type KeyboardPageNavigationPerfSnapshot = {
-  timestamp: number
-  queuedCount: number
-  appliedCount: number
-  skippedCount: number
-  pendingPageId: string | null
-  lastAppliedPageId: string | null
-}
-
 declare global {
   interface Window {
     __sggTextMetricsParity?: TextMetricsParityRunner
-    __sggUiPerf?: {
-      keyboardPageNavigation?: KeyboardPageNavigationPerfSnapshot
-    }
   }
 }
 
@@ -143,7 +131,6 @@ type ProjectHistoryEntry = ProjectVisibilityHistoryEntry | ProjectMetadataHistor
 type EditableProjectMetadataField = "title" | "description" | "author"
 
 const PROJECT_HISTORY_LIMIT = 100
-const PROJECT_PAGE_KEYBOARD_NAVIGATION_DELAY_MS = 80
 
 function resolveProjectWideVisibilitySettingValue(
   source: Record<string, unknown>,
@@ -162,13 +149,6 @@ function readStoredNonNegativeInteger(key: string): number {
     return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
   } catch {
     return 0
-  }
-}
-
-function writeKeyboardPageNavigationPerf(snapshot: KeyboardPageNavigationPerfSnapshot) {
-  window.__sggUiPerf = {
-    ...(window.__sggUiPerf ?? {}),
-    keyboardPageNavigation: snapshot,
   }
 }
 
@@ -209,13 +189,6 @@ export default function Home() {
   const [projectHistoryFuture, setProjectHistoryFuture] = useState<ProjectHistoryEntry[]>([])
   const projectUndoHandlerRef = useRef<() => void>(() => {})
   const projectRedoHandlerRef = useRef<() => void>(() => {})
-  const pendingKeyboardPageSelectionTimeoutRef = useRef<number | null>(null)
-  const pendingKeyboardPageSelectionIdRef = useRef<string | null>(null)
-  const keyboardPageNavigationQueuedCountRef = useRef(0)
-  const keyboardPageNavigationAppliedCountRef = useRef(0)
-  const keyboardPageNavigationSkippedCountRef = useRef(0)
-  const activeProjectPageIdRef = useRef("")
-  const projectPageIdsRef = useRef<string[]>([])
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
   const [gridUi, dispatchGrid] = useReducer(gridUiReducer, INITIAL_GRID_UI_STATE)
   const [exportUi, dispatchExport] = useReducer(exportUiReducer, INITIAL_EXPORT_UI_STATE)
@@ -614,78 +587,6 @@ export default function Home() {
     onApplyPage: handleApplyProjectPage,
     onPageLimitReached: handleProjectPageLimitReached,
   })
-  const projectPageIds = useMemo(
-    () => projectPages.map((page) => page.id),
-    [projectPages],
-  )
-
-  useEffect(() => {
-    activeProjectPageIdRef.current = activePageId
-  }, [activePageId])
-
-  const cancelPendingKeyboardPageSelection = useCallback(() => {
-    if (pendingKeyboardPageSelectionTimeoutRef.current !== null) {
-      window.clearTimeout(pendingKeyboardPageSelectionTimeoutRef.current)
-      pendingKeyboardPageSelectionTimeoutRef.current = null
-    }
-    pendingKeyboardPageSelectionIdRef.current = null
-  }, [])
-
-  useEffect(() => {
-    projectPageIdsRef.current = projectPageIds
-    const pendingPageId = pendingKeyboardPageSelectionIdRef.current
-    if (pendingPageId && !projectPageIds.includes(pendingPageId)) {
-      cancelPendingKeyboardPageSelection()
-    }
-  }, [cancelPendingKeyboardPageSelection, projectPageIds])
-
-  useEffect(() => (
-    () => {
-      cancelPendingKeyboardPageSelection()
-    }
-  ), [cancelPendingKeyboardPageSelection])
-
-  const selectProjectPageImmediately = useCallback((pageId: string) => {
-    cancelPendingKeyboardPageSelection()
-    selectPage(pageId)
-  }, [cancelPendingKeyboardPageSelection, selectPage])
-
-  const recordKeyboardPageNavigationPerf = useCallback((lastAppliedPageId: string | null = null) => {
-    writeKeyboardPageNavigationPerf({
-      timestamp: Date.now(),
-      queuedCount: keyboardPageNavigationQueuedCountRef.current,
-      appliedCount: keyboardPageNavigationAppliedCountRef.current,
-      skippedCount: keyboardPageNavigationSkippedCountRef.current,
-      pendingPageId: pendingKeyboardPageSelectionIdRef.current,
-      lastAppliedPageId,
-    })
-  }, [])
-
-  const scheduleKeyboardProjectPageSelection = useCallback((pageId: string) => {
-    if (pageId === pendingKeyboardPageSelectionIdRef.current) return
-    if (pageId === activeProjectPageIdRef.current && pendingKeyboardPageSelectionIdRef.current === null) return
-
-    keyboardPageNavigationQueuedCountRef.current += 1
-    if (pendingKeyboardPageSelectionTimeoutRef.current !== null) {
-      keyboardPageNavigationSkippedCountRef.current += 1
-    }
-    pendingKeyboardPageSelectionIdRef.current = pageId
-    if (pendingKeyboardPageSelectionTimeoutRef.current !== null) {
-      window.clearTimeout(pendingKeyboardPageSelectionTimeoutRef.current)
-    }
-
-    pendingKeyboardPageSelectionTimeoutRef.current = window.setTimeout(() => {
-      const targetPageId = pendingKeyboardPageSelectionIdRef.current
-      pendingKeyboardPageSelectionTimeoutRef.current = null
-      pendingKeyboardPageSelectionIdRef.current = null
-      if (!targetPageId) return
-      keyboardPageNavigationAppliedCountRef.current += 1
-      recordKeyboardPageNavigationPerf(targetPageId)
-      selectPage(targetPageId)
-    }, PROJECT_PAGE_KEYBOARD_NAVIGATION_DELAY_MS)
-    recordKeyboardPageNavigationPerf()
-  }, [recordKeyboardPageNavigationPerf, selectPage])
-
   const projectTour = project.tour ?? null
   const activePageLayoutMode = activePage?.layoutMode ?? "single"
   const effectiveGridCols = activePageLayoutMode === "facing" ? gridCols * 2 : gridCols
@@ -1052,7 +953,7 @@ export default function Home() {
     setShowPresetsBrowser,
     activePageId,
     selectedLayerKey,
-    onSelectPage: selectProjectPageImmediately,
+    onSelectPage: selectPage,
     onSelectLayer: setSelectedLayerKeyWithGrace,
     onOpenSidebarPanel: openSidebarPanel,
     onOpenHelpSection: openHelpSection,
@@ -1176,46 +1077,44 @@ export default function Home() {
   }, [projectMetadata, signedInAuthor])
 
   const handleSelectPreviousProjectPage = useCallback(() => {
-    const basePageId = pendingKeyboardPageSelectionIdRef.current ?? activeProjectPageIdRef.current
     const nextPageId = resolveAdjacentProjectPageId(
-      projectPageIdsRef.current,
-      basePageId,
+      projectPages.map((page) => page.id),
+      activePageId,
       "previous",
     )
     if (!nextPageId) return
-    scheduleKeyboardProjectPageSelection(nextPageId)
-  }, [scheduleKeyboardProjectPageSelection])
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
 
   const handleSelectNextProjectPage = useCallback(() => {
-    const basePageId = pendingKeyboardPageSelectionIdRef.current ?? activeProjectPageIdRef.current
     const nextPageId = resolveAdjacentProjectPageId(
-      projectPageIdsRef.current,
-      basePageId,
+      projectPages.map((page) => page.id),
+      activePageId,
       "next",
     )
     if (!nextPageId) return
-    scheduleKeyboardProjectPageSelection(nextPageId)
-  }, [scheduleKeyboardProjectPageSelection])
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
 
   const handleSelectFirstProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
-      projectPageIds,
+      projectPages.map((page) => page.id),
       activePageId,
       "first",
     )
     if (!nextPageId) return
-    selectProjectPageImmediately(nextPageId)
-  }, [activePageId, projectPageIds, selectProjectPageImmediately])
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
 
   const handleSelectLastProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
-      projectPageIds,
+      projectPages.map((page) => page.id),
       activePageId,
       "last",
     )
     if (!nextPageId) return
-    selectProjectPageImmediately(nextPageId)
-  }, [activePageId, projectPageIds, selectProjectPageImmediately])
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
 
   const handleCommittedLayerOrderChange = useCallback((nextLayerOrder: string[]) => {
     preferCommittedPreviewLayoutRef.current = true
@@ -1804,7 +1703,7 @@ export default function Home() {
       onSendSignInCode={sendSignInCode}
       onVerifySignInCode={verifySignInCode}
       onSignOut={signOut}
-      onPageSelect={selectProjectPageImmediately}
+      onPageSelect={selectPage}
       onPageAdd={addPage}
       onPageFacingToggle={setFacingPageEnabled}
       onPageRename={renamePage}
