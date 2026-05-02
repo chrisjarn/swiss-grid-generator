@@ -992,9 +992,9 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           {fxSelected ? (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
               <div className="space-y-2">
-                <Label className={sectionLabelClassName}>Custom Size</Label>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>Custom Size</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1021,10 +1021,11 @@ export function TextEditorPanel<StyleKey extends string>({
                   }}
                   className={textInputClassName}
                 />
+                </LabeledControlRow>
               </div>
 
               <div className="space-y-2">
-                <Label className={sectionLabelClassName}>Custom Leading</Label>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>Custom Leading</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1051,6 +1052,7 @@ export function TextEditorPanel<StyleKey extends string>({
                   }}
                   className={textInputClassName}
                 />
+                </LabeledControlRow>
               </div>
             </div>
           ) : null}
@@ -1092,33 +1094,6 @@ export function TextEditorPanel<StyleKey extends string>({
             </Select>
             </LabeledControlRow>
           </div>
-
-          <EditorColorSchemeControls
-            schemes={controls.colorSchemes}
-            schemeValue={editorColorScheme}
-            onSchemeOpenChange={(open) => {
-              if (!open) setPreviewColorScheme(null)
-            }}
-            onSchemeValueChange={(value) => {
-              setEditorColorScheme(value as ImageColorSchemeId)
-              setPreviewColorScheme(null)
-            }}
-            onSchemeContentPointerLeave={() => setPreviewColorScheme(null)}
-            getSchemeItemPreviewProps={(value) => ({
-              onFocus: () => setPreviewColorScheme(value as ImageColorSchemeId),
-              onPointerMove: () => setPreviewColorScheme(value as ImageColorSchemeId),
-            })}
-            displayedColors={previewPalette}
-            selectedColor={selectionColor ?? controls.editorState.draftColor}
-            onColorSelect={(color) => {
-              applySelectionTextFormat({ color })
-            }}
-            isDarkMode={isDarkMode}
-            labelClassName={sectionLabelClassName}
-            triggerClassName={triggerClassName}
-            selectContentClassName={tone.selectContent}
-            ringOffsetClassName={tone.ringOffset}
-          />
 
           <div className="space-y-2">
             <LabeledControlRow label={<Label className={sectionLabelClassName}>Kerning</Label>}>
@@ -1162,6 +1137,33 @@ export function TextEditorPanel<StyleKey extends string>({
             />
             </LabeledControlRow>
           </div>
+
+          <EditorColorSchemeControls
+            schemes={controls.colorSchemes}
+            schemeValue={editorColorScheme}
+            onSchemeOpenChange={(open) => {
+              if (!open) setPreviewColorScheme(null)
+            }}
+            onSchemeValueChange={(value) => {
+              setEditorColorScheme(value as ImageColorSchemeId)
+              setPreviewColorScheme(null)
+            }}
+            onSchemeContentPointerLeave={() => setPreviewColorScheme(null)}
+            getSchemeItemPreviewProps={(value) => ({
+              onFocus: () => setPreviewColorScheme(value as ImageColorSchemeId),
+              onPointerMove: () => setPreviewColorScheme(value as ImageColorSchemeId),
+            })}
+            displayedColors={previewPalette}
+            selectedColor={selectionColor ?? controls.editorState.draftColor}
+            onColorSelect={(color) => {
+              applySelectionTextFormat({ color })
+            }}
+            isDarkMode={isDarkMode}
+            labelClassName={sectionLabelClassName}
+            triggerClassName={triggerClassName}
+            selectContentClassName={tone.selectContent}
+            ringOffsetClassName={tone.ringOffset}
+          />
         </EditorSidebarSection>
         </div>
 
