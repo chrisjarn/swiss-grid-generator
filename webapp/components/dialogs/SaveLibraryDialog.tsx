@@ -2,6 +2,12 @@
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import {
+  getCompactActionButtonClassName,
+  getPopupInputClassName,
+  getPopupMutedTextClassName,
+  getPopupSurfaceClassName,
+} from "@/components/ui/popup-styles"
 
 type Props = {
   isOpen: boolean
@@ -30,12 +36,16 @@ export function SaveLibraryDialog({
 }: Props) {
   if (!isOpen) return null
 
+  const actionButtonClassName = getCompactActionButtonClassName({ isDarkMode: isDarkUi })
+  const inputClassName = getPopupInputClassName(isDarkUi)
+  const mutedTextClassName = getPopupMutedTextClassName(isDarkUi)
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className={`${isDarkUi ? "dark" : ""} w-full max-w-md rounded-lg border border-border bg-card p-4 text-card-foreground shadow-xl space-y-4`}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4">
+      <div className={getPopupSurfaceClassName(isDarkUi, "w-full max-w-md space-y-4")}>
         <div className="space-y-1">
-          <h3 className="text-base font-semibold">Save to Library</h3>
-          <p className="text-xs text-muted-foreground">
+          <h3 className="text-sm font-semibold leading-tight">Save to Library</h3>
+          <p className={`text-xs leading-relaxed ${mutedTextClassName}`}>
             Stores the current project in the local `Users` library.
           </p>
         </div>
@@ -45,7 +55,7 @@ export function SaveLibraryDialog({
             type="text"
             value={title}
             onChange={(event) => onTitleChange(event.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className={inputClassName}
             placeholder="Project title"
           />
         </div>
@@ -54,7 +64,7 @@ export function SaveLibraryDialog({
           <textarea
             value={description}
             onChange={(event) => onDescriptionChange(event.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground min-h-20"
+            className={getPopupInputClassName(isDarkUi, "min-h-20")}
             placeholder="Short description"
           />
         </div>
@@ -64,15 +74,15 @@ export function SaveLibraryDialog({
             type="text"
             value={author}
             onChange={(event) => onAuthorChange(event.target.value)}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            className={inputClassName}
             placeholder="Author name"
           />
         </div>
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onClose}>
+        <div className="flex items-center justify-start gap-2">
+          <Button variant="outline" size="sm" className={actionButtonClassName} onClick={onClose}>
             Cancel
           </Button>
-          <Button size="sm" onClick={onConfirm}>
+          <Button size="sm" className={actionButtonClassName} onClick={onConfirm}>
             Save to Library
           </Button>
         </div>

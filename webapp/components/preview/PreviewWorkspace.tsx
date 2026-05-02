@@ -83,6 +83,17 @@ type Props = {
   isCloudSignedIn: boolean
   cloudStatusLabel: string
   cloudStatusIndicatorClassName: string
+  accountLogFocusNonce?: number
+  pendingCloudQueueCount?: number
+  cloudConflictCount?: number
+  hasActiveCloudConflict?: boolean
+  activeCloudConflictDetails?: {
+    title: string
+    localUpdatedAt?: string | null
+    lastSyncedAt?: string | null
+    localRevision?: number | null
+    remoteProjectId?: string | null
+  } | null
   authError: string | null
   authMessage: string | null
   projectPages: PreviewProjectPage[]
@@ -115,6 +126,9 @@ type Props = {
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
   onClearAuthFeedback: () => void
+  onKeepLocalCloudConflict?: () => Promise<void>
+  onUseCloudConflict?: () => Promise<void>
+  onDeleteCloudConflict?: () => Promise<void>
   onSendSignInCode: (email: string) => Promise<void>
   onVerifySignInCode: (email: string, code: string) => Promise<void>
   onSignOut: () => Promise<void>
@@ -230,6 +244,11 @@ export function PreviewWorkspace({
   isCloudSignedIn,
   cloudStatusLabel,
   cloudStatusIndicatorClassName,
+  accountLogFocusNonce,
+  pendingCloudQueueCount,
+  cloudConflictCount,
+  hasActiveCloudConflict,
+  activeCloudConflictDetails,
   authError,
   authMessage,
   projectPages,
@@ -262,6 +281,9 @@ export function PreviewWorkspace({
   onProjectDescriptionChange,
   onProjectAuthorChange,
   onClearAuthFeedback,
+  onKeepLocalCloudConflict,
+  onUseCloudConflict,
+  onDeleteCloudConflict,
   onSendSignInCode,
   onVerifySignInCode,
   onSignOut,
@@ -698,9 +720,17 @@ export function PreviewWorkspace({
                 userEmail={userEmail}
                 cloudStatusLabel={cloudStatusLabel}
                 cloudStatusIndicatorClassName={cloudStatusIndicatorClassName}
+                logFocusNonce={accountLogFocusNonce}
+                pendingQueueCount={pendingCloudQueueCount}
+                conflictQueueCount={cloudConflictCount}
+                hasActiveConflict={hasActiveCloudConflict}
+                activeConflictDetails={activeCloudConflictDetails}
                 authError={authError}
                 authMessage={authMessage}
                 onClearFeedback={onClearAuthFeedback}
+                onKeepLocalConflict={onKeepLocalCloudConflict}
+                onUseCloudConflict={onUseCloudConflict}
+                onDeleteConflict={onDeleteCloudConflict}
                 onSendSignInCode={onSendSignInCode}
                 onVerifySignInCode={onVerifySignInCode}
                 onSignOut={onSignOut}

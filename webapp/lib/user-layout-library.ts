@@ -9,9 +9,12 @@ import {
   parseProjectTransferPayloadBytes,
   toArrayBuffer,
 } from "@/lib/project-transfer"
+import { sha256Hex } from "@/lib/cloud-sync/hash"
 
-export type UserProjectSyncState = "local" | "syncing" | "synced" | "conflict" | "error" | "deleted"
+export type UserProjectSyncState = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type CloudActivityLevel = "info" | "success" | "warning" | "error"
+export type CloudSyncQueueAction = "upload" | "delete"
+export type CloudSyncQueueStatus = "pending" | "running" | "failed" | "conflict"
 
 export type CloudActivityLogEntry = {
   id: string
@@ -37,6 +40,7 @@ type StoredUserProjectRow = {
   syncState?: UserProjectSyncState
   syncError?: string | null
   lastSyncedAt?: string
+  contentHash?: string
   deletedAt?: string | null
   projectCompression?: "gzip"
   projectArchive?: ArrayBuffer
@@ -44,6 +48,38 @@ type StoredUserProjectRow = {
 }
 
 type StoredCloudActivityRow = CloudActivityLogEntry
+
+export type CloudSyncQueueEntry = {
+  id: string
+  projectId: string
+  action: CloudSyncQueueAction
+  status: CloudSyncQueueStatus
+  ownerUserId?: string
+  remoteProjectId?: string
+  baseRevision?: number
+  reason?: string
+  attemptCount: number
+  createdAt: string
+  updatedAt: string
+  runAfter: string
+  lastError?: string | null
+}
+
+type StoredCloudSyncQueueRow = CloudSyncQueueEntry
+
+export type ProjectAuditEntry = {
+  id: string
+  projectId: string
+  createdAt: string
+  action: string
+  actor: "local" | "cloud" | "system"
+  message?: string
+  baseRevision?: number
+  nextRevision?: number
+  checksum?: string
+}
+
+type StoredProjectAuditRow = ProjectAuditEntry
 
 export type UserProjectRecord = Omit<StoredUserProjectRow, "projectArchive"> & {
   project: LayoutPresetProjectSource
@@ -74,6 +110,17 @@ type SaveUserProjectArgs = {
   project: LayoutPresetProjectSource
 }
 
+type EnqueueCloudSyncOperationArgs = {
+  projectId: string
+  action: CloudSyncQueueAction
+  ownerUserId?: string | null
+  remoteProjectId?: string | null
+  baseRevision?: number | null
+  reason?: string | null
+  runAfter?: string | null
+  force?: boolean
+}
+
 export type UpdateUserProjectSyncArgs = {
   id: string
   ownerUserId?: string | null
@@ -102,6 +149,8 @@ const CLOUD_ACTIVITY_LOG_LIMIT = 100
 class UserLayoutLibraryDb extends Dexie {
   projects!: Dexie.Table<StoredUserProjectRow, string>
   cloudActivity!: Dexie.Table<StoredCloudActivityRow, string>
+  syncQueue!: Dexie.Table<StoredCloudSyncQueueRow, string>
+  projectAudit!: Dexie.Table<StoredProjectAuditRow, string>
 
   constructor() {
     super(USER_LAYOUT_LIBRARY_DB_NAME)
@@ -137,6 +186,12 @@ class UserLayoutLibraryDb extends Dexie {
       projects: "id, updatedAt, createdAt, label, ownerUserId, remoteProjectId, syncState",
       cloudActivity: "id, createdAt, level, action",
     })
+    this.version(5).stores({
+      projects: "id, updatedAt, createdAt, label, ownerUserId, remoteProjectId, syncState, contentHash",
+      cloudActivity: "id, createdAt, level, action",
+      syncQueue: "id, projectId, status, action, runAfter, updatedAt",
+      projectAudit: "id, projectId, createdAt, action",
+    })
   }
 }
 
@@ -164,6 +219,20 @@ function createCloudActivityId(): string {
     return crypto.randomUUID()
   }
   return `cloud-activity-${Date.now()}`
+}
+
+function createQueueItemId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
+  return `sync-queue-${Date.now()}`
+}
+
+function createProjectAuditId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID()
+  }
+  return `project-audit-${Date.now()}`
 }
 
 function toOptionalLogText(value: string | null | undefined): string | undefined {
@@ -199,6 +268,7 @@ function normalizeStoredProject(record: StoredUserProjectRow): UserProjectRecord
     syncState: record.syncState ?? (record.remoteProjectId ? "synced" : "local"),
     syncError: record.syncError ?? null,
     lastSyncedAt: record.lastSyncedAt ? new Date(record.lastSyncedAt).toISOString() : undefined,
+    contentHash: record.contentHash,
     deletedAt: record.deletedAt ? new Date(record.deletedAt).toISOString() : null,
     project: {
       ...projectSource,
@@ -303,6 +373,8 @@ export async function saveProjectToUserLibrary({
     buildProjectTransferPayload(projectDocument),
     true,
   )
+  const archiveBytes = toArrayBuffer(encoded.bytes)
+  const contentHash = await sha256Hex(archiveBytes)
 
   await getDb().projects.put({
     id: nextId,
@@ -327,9 +399,10 @@ export async function saveProjectToUserLibrary({
     syncState: syncState ?? "local",
     syncError: syncError ?? null,
     lastSyncedAt: lastSyncedAt ? normalizeIsoDate(lastSyncedAt, now) : existing?.lastSyncedAt,
+    contentHash,
     deletedAt: null,
     projectCompression: "gzip",
-    projectArchive: toArrayBuffer(encoded.bytes),
+    projectArchive: archiveBytes,
   })
 
   return nextId
@@ -354,8 +427,16 @@ export async function updateUserProjectSyncState({
 
   await getDb().projects.update(normalizedId, {
     ...(typeof ownerUserId === "string" ? { ownerUserId: ownerUserId.trim() || undefined } : {}),
-    ...(typeof remoteProjectId === "string" ? { remoteProjectId: remoteProjectId.trim() || undefined } : {}),
-    ...(typeof remoteRevision === "number" && Number.isFinite(remoteRevision) ? { remoteRevision } : {}),
+    ...(remoteProjectId === null
+      ? { remoteProjectId: undefined }
+      : typeof remoteProjectId === "string"
+        ? { remoteProjectId: remoteProjectId.trim() || undefined }
+        : {}),
+    ...(remoteRevision === null
+      ? { remoteRevision: undefined }
+      : typeof remoteRevision === "number" && Number.isFinite(remoteRevision)
+        ? { remoteRevision }
+        : {}),
     ...(syncState ? { syncState } : {}),
     ...(syncError !== undefined ? { syncError } : {}),
     ...(lastSyncedAt !== undefined ? { lastSyncedAt: lastSyncedAt ? normalizeIsoDate(lastSyncedAt, new Date().toISOString()) : undefined } : {}),
@@ -423,6 +504,169 @@ export async function markUserProjectDeleted(id: string): Promise<"deleted" | "p
     deletedAt: new Date().toISOString(),
   })
   return "deleted"
+}
+
+export async function enqueueCloudSyncOperation({
+  projectId,
+  action,
+  ownerUserId,
+  remoteProjectId,
+  baseRevision,
+  reason,
+  runAfter,
+  force = false,
+}: EnqueueCloudSyncOperationArgs): Promise<string | null> {
+  if (!isIndexedDbAvailable()) return null
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) return null
+
+  const table = getDb().syncQueue
+  const now = new Date().toISOString()
+  const normalizedRunAfter = normalizeIsoDate(runAfter, now)
+
+  if (action === "delete") {
+    const uploadKeys = await table
+      .where("projectId")
+      .equals(normalizedProjectId)
+      .filter((entry) => entry.action === "upload")
+      .primaryKeys()
+    if (uploadKeys.length > 0) await table.bulkDelete(uploadKeys as string[])
+  }
+
+  const existing = await table
+    .where("projectId")
+    .equals(normalizedProjectId)
+    .filter((entry) => entry.action === action && entry.status !== "conflict")
+    .first()
+
+  if (existing) {
+    await table.update(existing.id, {
+      status: "pending",
+      ownerUserId: ownerUserId?.trim() || existing.ownerUserId,
+      remoteProjectId: remoteProjectId?.trim() || existing.remoteProjectId,
+      baseRevision: typeof baseRevision === "number" && Number.isFinite(baseRevision)
+        ? baseRevision
+        : existing.baseRevision,
+      reason: toOptionalLogText(reason) ?? existing.reason,
+      attemptCount: force ? 0 : existing.attemptCount,
+      updatedAt: now,
+      runAfter: normalizedRunAfter,
+      lastError: null,
+    })
+    return existing.id
+  }
+
+  const id = createQueueItemId()
+  await table.add({
+    id,
+    projectId: normalizedProjectId,
+    action,
+    status: "pending",
+    ownerUserId: ownerUserId?.trim() || undefined,
+    remoteProjectId: remoteProjectId?.trim() || undefined,
+    baseRevision: typeof baseRevision === "number" && Number.isFinite(baseRevision) ? baseRevision : undefined,
+    reason: toOptionalLogText(reason),
+    attemptCount: 0,
+    createdAt: now,
+    updatedAt: now,
+    runAfter: normalizedRunAfter,
+    lastError: null,
+  })
+  return id
+}
+
+export async function claimDueCloudSyncQueueEntries(limit = 3): Promise<CloudSyncQueueEntry[]> {
+  if (!isIndexedDbAvailable()) return []
+  const now = new Date()
+  const entries = await getDb().syncQueue
+    .toArray()
+
+  const dueEntries = entries
+    .filter((entry) => (
+      (entry.status === "pending" || entry.status === "failed")
+      && new Date(entry.runAfter).getTime() <= now.getTime()
+    ))
+    .sort((a, b) => Date.parse(a.runAfter) - Date.parse(b.runAfter))
+    .slice(0, limit)
+
+  if (dueEntries.length === 0) return []
+  const updatedAt = new Date().toISOString()
+  await getDb().transaction("rw", getDb().syncQueue, async () => {
+    await Promise.all(dueEntries.map((entry) => getDb().syncQueue.update(entry.id, {
+      status: "running",
+      updatedAt,
+    })))
+  })
+
+  return dueEntries.map((entry) => ({ ...entry, status: "running", updatedAt }))
+}
+
+export async function completeCloudSyncQueueEntry(id: string): Promise<void> {
+  if (!isIndexedDbAvailable()) return
+  const normalizedId = id.trim()
+  if (!normalizedId) return
+  await getDb().syncQueue.delete(normalizedId)
+}
+
+export async function clearCloudSyncQueueEntriesForProject(projectId: string): Promise<void> {
+  if (!isIndexedDbAvailable()) return
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) return
+  const keys = await getDb().syncQueue
+    .where("projectId")
+    .equals(normalizedProjectId)
+    .primaryKeys()
+  if (keys.length > 0) await getDb().syncQueue.bulkDelete(keys as string[])
+}
+
+export async function failCloudSyncQueueEntry({
+  id,
+  error,
+  runAfter,
+  status = "failed",
+}: {
+  id: string
+  error: string
+  runAfter: string
+  status?: CloudSyncQueueStatus
+}): Promise<void> {
+  if (!isIndexedDbAvailable()) return
+  const normalizedId = id.trim()
+  if (!normalizedId) return
+  const existing = await getDb().syncQueue.get(normalizedId)
+  if (!existing) return
+  await getDb().syncQueue.update(normalizedId, {
+    status,
+    attemptCount: existing.attemptCount + 1,
+    updatedAt: new Date().toISOString(),
+    runAfter: normalizeIsoDate(runAfter, new Date().toISOString()),
+    lastError: toOptionalLogText(error),
+  })
+}
+
+export async function listCloudSyncQueueEntries(): Promise<CloudSyncQueueEntry[]> {
+  if (!isIndexedDbAvailable()) return []
+  return getDb().syncQueue
+    .orderBy("updatedAt")
+    .reverse()
+    .toArray()
+}
+
+export async function addProjectAuditEntry(entry: Omit<ProjectAuditEntry, "id" | "createdAt">): Promise<void> {
+  try {
+    if (!isIndexedDbAvailable()) return
+    const action = entry.action.trim()
+    if (!action) return
+    await getDb().projectAudit.add({
+      ...entry,
+      id: createProjectAuditId(),
+      createdAt: new Date().toISOString(),
+      action: action.slice(0, 80),
+      message: toOptionalLogText(entry.message),
+    })
+  } catch {
+    // Audit writes are diagnostic only; they must not block local saves or sync.
+  }
 }
 
 export async function purgeUserProjectFromLibrary(id: string): Promise<void> {
@@ -518,6 +762,7 @@ export async function listUserLayoutPresets(): Promise<LayoutPreset[]> {
 
 export const userLayoutPresetQuery = liveQuery(async () => listUserLayoutPresets())
 export const cloudActivityLogQuery = liveQuery(async () => listCloudActivityLogEntries())
+export const cloudSyncQueueQuery = liveQuery(async () => listCloudSyncQueueEntries())
 
 export function createUserProjectRecordQuery(id: string | null | undefined) {
   return liveQuery(async () => {

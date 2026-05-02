@@ -36,7 +36,7 @@ export type LayoutPresetUiSettings = Record<string, unknown> & {
 export type LayoutPresetProjectSource = Record<string, unknown>
 
 export type LayoutPresetCategory = "presets" | "examples" | "users"
-export type LayoutPresetSyncState = "local" | "syncing" | "synced" | "conflict" | "error" | "deleted"
+export type LayoutPresetSyncState = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 
 export type LayoutPresetBrowserPage = {
   id: string

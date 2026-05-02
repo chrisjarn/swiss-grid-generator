@@ -4,6 +4,7 @@ import { Paperclip, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
 import { Label } from "@/components/ui/label"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import {
@@ -238,7 +239,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         error: "border-[#fe9f97] bg-[#fe9f97]/10 text-[#c55a52]",
       }
   const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
-  const feedbackButtonClassName = `h-auto rounded-md border px-3 py-2 text-xs ${tone.button}`
+  const feedbackButtonClassName = getCompactActionButtonClassName({ isDarkMode })
   const attachmentClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
 
   const setField = <K extends keyof FeedbackFormState,>(key: K, value: FeedbackFormState[K]) => {

@@ -1,5 +1,5 @@
-export type CloudSyncIndicatorStatus = "signed_out" | "syncing" | "synced" | "offline" | "error" | "conflict"
-export type PresetSyncIndicatorStatus = "local" | "syncing" | "synced" | "conflict" | "error" | "deleted"
+export type CloudSyncIndicatorStatus = "signed_out" | "idle" | "syncing" | "synced" | "offline" | "error" | "conflict"
+export type PresetSyncIndicatorStatus = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type SaveStatusIndicatorStatus = "unsaved" | "local" | "synced"
 
 export const CLOUD_STATUS_GREEN_CLASSNAME = "bg-[#4CAF50]"
@@ -14,7 +14,7 @@ export function getCloudSyncStatusIndicatorClassName({
   isSignedIn: boolean
 }): string {
   if (!isSignedIn) return CLOUD_STATUS_ORANGE_CLASSNAME
-  if (status === "error") return CLOUD_STATUS_RED_CLASSNAME
+  if (status === "error" || status === "conflict") return CLOUD_STATUS_RED_CLASSNAME
   if (status === "synced") return CLOUD_STATUS_GREEN_CLASSNAME
   return CLOUD_STATUS_ORANGE_CLASSNAME
 }
@@ -27,7 +27,7 @@ export function getPresetSyncStatusIndicatorClassName({
   isSignedIn: boolean
 }): string {
   if (!isSignedIn) return CLOUD_STATUS_ORANGE_CLASSNAME
-  if (status === "error") return CLOUD_STATUS_RED_CLASSNAME
+  if (status === "error" || status === "conflict") return CLOUD_STATUS_RED_CLASSNAME
   if (status === "synced") return CLOUD_STATUS_GREEN_CLASSNAME
   return CLOUD_STATUS_ORANGE_CLASSNAME
 }

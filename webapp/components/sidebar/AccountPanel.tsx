@@ -1,10 +1,11 @@
 "use client"
 
-import { ChevronUp, Download, X } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { ChevronUp, Download, Trash2, X } from "lucide-react"
+import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import {
   cloudActivityLogQuery,
@@ -19,9 +20,23 @@ type Props = {
   userEmail: string | null
   cloudStatusLabel: string
   cloudStatusIndicatorClassName: string
+  logFocusNonce?: number
+  pendingQueueCount?: number
+  conflictQueueCount?: number
+  hasActiveConflict?: boolean
+  activeConflictDetails?: {
+    title: string
+    localUpdatedAt?: string | null
+    lastSyncedAt?: string | null
+    localRevision?: number | null
+    remoteProjectId?: string | null
+  } | null
   authError: string | null
   authMessage: string | null
   onClearFeedback: () => void
+  onKeepLocalConflict?: () => Promise<void>
+  onUseCloudConflict?: () => Promise<void>
+  onDeleteConflict?: () => Promise<void>
   onSendSignInCode: (email: string) => Promise<void>
   onVerifySignInCode: (email: string, code: string) => Promise<void>
   onSignOut: () => Promise<void>
@@ -78,9 +93,17 @@ export function AccountPanel({
   userEmail,
   cloudStatusLabel,
   cloudStatusIndicatorClassName,
+  logFocusNonce = 0,
+  pendingQueueCount = 0,
+  conflictQueueCount = 0,
+  hasActiveConflict = false,
+  activeConflictDetails = null,
   authError,
   authMessage,
   onClearFeedback,
+  onKeepLocalConflict,
+  onUseCloudConflict,
+  onDeleteConflict,
   onSendSignInCode,
   onVerifySignInCode,
   onSignOut,
@@ -92,6 +115,7 @@ export function AccountPanel({
   const [activityEntries, setActivityEntries] = useState<CloudActivityLogEntry[]>([])
   const [downloadState, setDownloadState] = useState<"idle" | "downloaded" | "error">("idle")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const logScrollAreaRef = useRef<HTMLDivElement | null>(null)
   const tone = isDarkMode
     ? {
         body: "text-[#A8B1BF]",
@@ -108,11 +132,9 @@ export function AccountPanel({
         field: "border-gray-300 bg-white text-gray-900",
       }
   const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
-  const authButtonClassName = `h-auto rounded-md border px-3 py-2 text-xs ${tone.button}`
+  const authButtonClassName = getCompactActionButtonClassName({ isDarkMode })
   const pairedHeaderValueClassName = tone.caption
   const hasPendingCode = !userEmail && Boolean(pendingEmail)
-  const latestActivityTimestamp = activityEntries[0]?.createdAt ?? null
-  const latestActivityLabel = useMemo(() => formatActivityTimestamp(latestActivityTimestamp), [latestActivityTimestamp])
 
   useEffect(() => {
     if (!userEmail) return
@@ -134,6 +156,18 @@ export function AccountPanel({
     const timeout = window.setTimeout(() => setDownloadState("idle"), 1800)
     return () => window.clearTimeout(timeout)
   }, [downloadState])
+
+  useEffect(() => {
+    if (logFocusNonce <= 0) return
+    setIsStatusOpen(true)
+    const frame = window.requestAnimationFrame(() => {
+      logScrollAreaRef.current?.scrollIntoView({
+        block: "start",
+        behavior: "smooth",
+      })
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [logFocusNonce])
 
   const feedbackSection = authError ? (
     <section className="space-y-2">
@@ -187,14 +221,8 @@ export function AccountPanel({
           onRowClick={() => setIsStatusOpen((open) => !open)}
         />
         {isStatusOpen ? (
-          <div className={`space-y-2 border-t pt-2 text-xs ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
-            <div className="flex items-start justify-between gap-3">
-              <div className={tone.body}>Last Event</div>
-              <div className={`text-right text-[11px] leading-tight ${tone.caption}`}>
-                {latestActivityLabel}
-              </div>
-            </div>
-            <div className={`max-h-48 overflow-y-auto border-y py-1 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
+          <div className="space-y-2 pt-1 text-xs">
+            <div ref={logScrollAreaRef} className="max-h-[190px] overflow-y-auto py-1">
               {activityEntries.length > 0 ? (
                 <div className="space-y-1">
                   {activityEntries.slice(0, 12).map((entry) => (
@@ -220,10 +248,7 @@ export function AccountPanel({
               )}
             </div>
             <div className="space-y-2">
-              <div className={`text-[11px] leading-tight ${tone.caption}`}>
-                {activityEntries.length} local {activityEntries.length === 1 ? "entry" : "entries"}
-              </div>
-              <div className="flex justify-end">
+              <div className="flex flex-wrap justify-start gap-2">
                 <Button
                   size="sm"
                   className={`${authButtonClassName} inline-flex items-center gap-1.5`}
@@ -237,11 +262,98 @@ export function AccountPanel({
                     }
                   }}
                 >
-                  <Download className="h-3 w-3" />
-                  {downloadState === "downloaded" ? "Saved" : downloadState === "error" ? "Failed" : "Download"}
+                  <Download className="h-2.5 w-2.5" />
+                  {downloadState === "downloaded" ? "Log File Saved" : downloadState === "error" ? "Log File Failed" : "Download Log File"}
                 </Button>
               </div>
             </div>
+            {userEmail && (pendingQueueCount > 0 || conflictQueueCount > 0) ? (
+              <div className={`rounded-md border px-3 py-2 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
+                <div className="grid grid-cols-2 gap-2 text-[11px] leading-tight">
+                  <div>
+                    <div className={tone.caption}>Queued</div>
+                    <div className={tone.body}>{pendingQueueCount}</div>
+                  </div>
+                  <div>
+                    <div className={tone.caption}>Conflicts</div>
+                    <div className={tone.body}>{conflictQueueCount}</div>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+            {userEmail && hasActiveConflict && onKeepLocalConflict && onUseCloudConflict ? (
+              <div className={`space-y-2 rounded-md border px-3 py-2 ${isDarkMode ? "border-[#5a3840] bg-[#fe9f97]/10" : "border-[#fe9f97] bg-[#fe9f97]/10"}`}>
+                <div className={`text-[11px] leading-snug ${isDarkMode ? "text-[#fe9f97]" : "text-[#c55a52]"}`}>
+                  The active project changed locally and in the cloud. Choose which copy should win.
+                </div>
+                {activeConflictDetails ? (
+                  <div className={`grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border px-2 py-2 text-[11px] leading-tight ${isDarkMode ? "border-[#5a3840]" : "border-[#fe9f97]/40"}`}>
+                    <div className={tone.caption}>Project</div>
+                    <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || "Untitled Project"}</div>
+                    <div className={tone.caption}>Local edit</div>
+                    <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.localUpdatedAt)}</div>
+                    <div className={tone.caption}>Last sync</div>
+                    <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.lastSyncedAt)}</div>
+                    <div className={tone.caption}>Revision</div>
+                    <div className={tone.body}>
+                      {typeof activeConflictDetails.localRevision === "number"
+                        ? `local base r${activeConflictDetails.localRevision}`
+                        : "local only"}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="flex flex-wrap justify-start gap-2">
+                  {onDeleteConflict ? (
+                    <Button
+                      size="sm"
+                      className={`${getCompactActionButtonClassName({ isDarkMode, danger: true })} inline-flex items-center gap-1.5`}
+                      disabled={isSubmitting}
+                      onClick={async () => {
+                        setIsSubmitting(true)
+                        try {
+                          await onDeleteConflict()
+                        } finally {
+                          setIsSubmitting(false)
+                        }
+                    }}
+                  >
+                      <Trash2 className="h-2.5 w-2.5" />
+                      Delete
+                    </Button>
+                  ) : null}
+                  <Button
+                    size="sm"
+                    className={authButtonClassName}
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setIsSubmitting(true)
+                      try {
+                        await onUseCloudConflict()
+                      } finally {
+                        setIsSubmitting(false)
+                      }
+                    }}
+                  >
+                    Use Cloud
+                  </Button>
+                  <Button
+                    size="sm"
+                    className={authButtonClassName}
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setIsSubmitting(true)
+                      try {
+                        await onKeepLocalConflict()
+                      } finally {
+                        setIsSubmitting(false)
+                      }
+                    }}
+                  >
+                    Keep Local
+                  </Button>
+                </div>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </section>
@@ -254,7 +366,7 @@ export function AccountPanel({
               value={userEmail}
               valueClassName={`text-right ${pairedHeaderValueClassName}`}
             />
-            <div className="flex justify-end pt-1">
+            <div className="flex justify-start pt-1">
               <Button
                 size="sm"
                 className={authButtonClassName}
@@ -304,7 +416,7 @@ export function AccountPanel({
             className={`w-full ${fieldClassName}`}
             placeholder="name@example.com"
           />
-          <div className="flex justify-end pt-1">
+          <div className="flex justify-start pt-1">
             <Button
               size="sm"
               className={authButtonClassName}
@@ -346,7 +458,7 @@ export function AccountPanel({
                 className={`w-full text-center font-mono tabular-nums ${fieldClassName}`}
                 placeholder="000000"
               />
-              <div className="flex justify-end pt-1">
+              <div className="flex justify-start pt-1">
                 <Button
                   size="sm"
                   className={authButtonClassName}

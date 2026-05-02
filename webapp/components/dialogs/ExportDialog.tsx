@@ -2,6 +2,12 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
+import {
+  getCompactActionButtonClassName,
+  getPopupInputClassName,
+  getPopupMutedTextClassName,
+  getPopupSurfaceClassName,
+} from "@/components/ui/popup-styles"
 import { EXPORT_DIALOG_PRINT_PRESETS } from "@/hooks/useExportActions"
 import type { ExportFormat, ExportProgressState, PrintPresetKey } from "@/hooks/useExportActions"
 import { cn } from "@/lib/utils"
@@ -75,10 +81,14 @@ export function ExportDialog({
 }: Props) {
   if (!isOpen) return null
 
-  const inputClassName = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground"
-  const helpTextClassName = "text-xs text-muted-foreground"
-  const toggleRowClassName = "flex items-center justify-between rounded-md border border-input bg-background px-3 py-2"
+  const inputClassName = getPopupInputClassName(isDarkUi)
+  const helpTextClassName = `text-xs leading-relaxed ${getPopupMutedTextClassName(isDarkUi)}`
+  const toggleRowClassName = cn(
+    "flex items-center justify-between rounded-[5px] border px-3 py-2",
+    isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-300 bg-white",
+  )
   const dialogThemeClassName = isDarkUi ? "dark" : undefined
+  const actionButtonClassName = getCompactActionButtonClassName({ isDarkMode: isDarkUi })
   const isPdfExport = exportFormatDraft === "pdf"
   const isSvgExport = exportFormatDraft === "svg"
   const isJsonExport = exportFormatDraft === "json"
@@ -89,35 +99,32 @@ export function ExportDialog({
     : 0
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/50 p-4 md:items-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/35 p-4 md:items-center">
       <div
-        className={cn(
-          dialogThemeClassName,
-          "w-full max-w-md max-h-[90vh] space-y-4 overflow-y-auto rounded-lg border border-border bg-background p-4 text-foreground shadow-xl",
-        )}
+        className={getPopupSurfaceClassName(isDarkUi, "w-full max-w-md max-h-[90vh] space-y-4 overflow-y-auto")}
       >
         <div className="space-y-1">
-          <h3 className="text-base font-semibold">Export</h3>
+          <h3 className="text-sm font-semibold leading-tight">Export</h3>
           <p className={helpTextClassName}>
             Vector exports follow the current preview exactly, including guides, typography, and placeholders. JSON exports preserve the editable project document.
           </p>
         </div>
         {isExporting ? (
-          <div className="space-y-2 rounded-md border border-input bg-background px-3 py-3">
+          <div className={cn("space-y-2 rounded-[5px] border px-3 py-3", isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-300 bg-white")}>
             <div className="flex items-baseline justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-sm font-medium">
                   {exportProgress.phase === "packaging" ? "Finalizing export" : `Rendering page ${exportProgress.currentPageNumber} of ${Math.max(1, exportProgress.totalSteps)}`}
                 </div>
-                <div className="truncate text-xs text-muted-foreground">
+                <div className={`truncate text-xs ${getPopupMutedTextClassName(isDarkUi)}`}>
                   {exportProgress.currentLabel}
                 </div>
               </div>
-              <div className="shrink-0 text-xs font-medium text-foreground">{totalProgressPercent}%</div>
+              <div className="shrink-0 text-xs font-medium">{totalProgressPercent}%</div>
             </div>
-            <div className="h-2 overflow-hidden rounded-sm bg-muted">
+            <div className={cn("h-2 overflow-hidden rounded-sm", isDarkUi ? "bg-[#313A47]" : "bg-gray-200")}>
               <div
-                className="h-full bg-foreground transition-[width] duration-200"
+                className={cn("h-full transition-[width] duration-200", isDarkUi ? "bg-[#F4F6F8]" : "bg-gray-900")}
                 style={{ width: `${totalProgressPercent}%` }}
               />
             </div>
@@ -128,9 +135,9 @@ export function ExportDialog({
           <div className="grid grid-cols-4 gap-2">
             <Button
               type="button"
-              variant={exportFormatDraft === "json" ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className="text-[11px]"
+              className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === "json" })}
               disabled={isExporting}
               onClick={() => onExportFormatChange("json")}
             >
@@ -138,9 +145,9 @@ export function ExportDialog({
             </Button>
             <Button
               type="button"
-              variant={exportFormatDraft === "pdf" ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className="text-[11px]"
+              className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === "pdf" })}
               disabled={isExporting}
               onClick={() => onExportFormatChange("pdf")}
             >
@@ -148,9 +155,9 @@ export function ExportDialog({
             </Button>
             <Button
               type="button"
-              variant={exportFormatDraft === "svg" ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className="text-[11px]"
+              className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === "svg" })}
               disabled={isExporting}
               onClick={() => onExportFormatChange("svg")}
             >
@@ -158,9 +165,9 @@ export function ExportDialog({
             </Button>
             <Button
               type="button"
-              variant={exportFormatDraft === "idml" ? "default" : "outline"}
+              variant="outline"
               size="sm"
-              className="text-[11px]"
+              className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === "idml" })}
               disabled={isExporting}
               onClick={() => onExportFormatChange("idml")}
             >
@@ -258,7 +265,7 @@ export function ExportDialog({
                 placeholder="Author name"
               />
             </div>
-            <label className="flex items-start gap-2 rounded-md border border-input bg-background px-3 py-2">
+            <label className={cn("flex items-start gap-2 rounded-[5px] border px-3 py-2", isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-300 bg-white")}>
               <input
                 type="checkbox"
                 checked={jsonCompressionEnabledDraft}
@@ -267,8 +274,8 @@ export function ExportDialog({
                 className="mt-0.5 h-3.5 w-3.5"
               />
               <span className="space-y-0.5">
-                <span className="block text-sm text-foreground">Gzip-compress export</span>
-                <span className="block text-xs text-muted-foreground">
+                <span className="block text-sm">Gzip-compress export</span>
+                <span className={`block text-xs ${getPopupMutedTextClassName(isDarkUi)}`}>
                   Save compressed project files as <code>.swissgridgenerator</code> instead of plain <code>.json</code>.
                 </span>
               </span>
@@ -287,9 +294,9 @@ export function ExportDialog({
                   <Button
                     key={preset.key}
                     type="button"
-                    variant={activePrintPresetDraft === preset.key ? "default" : "outline"}
+                    variant="outline"
                     size="sm"
-                    className="text-[11px]"
+                    className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: activePrintPresetDraft === preset.key })}
                     disabled={isExporting}
                     onClick={() => onApplyPrintPreset(preset.key)}
                   >
@@ -315,7 +322,7 @@ export function ExportDialog({
                 <div className={toggleRowClassName}>
                   <div className="space-y-0.5">
                     <Label className="text-sm">Registration-Style Marks</Label>
-                    <p className="text-[11px] text-muted-foreground">Uses rich CMYK marks instead of black.</p>
+                    <p className={`text-[11px] ${getPopupMutedTextClassName(isDarkUi)}`}>Uses rich CMYK marks instead of black.</p>
                   </div>
                   <Switch
                     checked={exportRegistrationMarksDraft}
@@ -338,11 +345,11 @@ export function ExportDialog({
             typography, and placeholder layers. Exported typography is frozen as geometry rather than live text.
           </p>
         )}
-        <div className="flex items-center justify-end gap-2">
-          <Button variant="outline" size="sm" onClick={onClose} disabled={isExporting}>
+        <div className="flex items-center justify-start gap-2">
+          <Button variant="outline" size="sm" className={actionButtonClassName} onClick={onClose} disabled={isExporting}>
             {isExporting ? "Exporting..." : "Cancel"}
           </Button>
-          <Button size="sm" onClick={onConfirm} disabled={isExporting}>
+          <Button size="sm" className={actionButtonClassName} onClick={onConfirm} disabled={isExporting}>
             {isExporting
               ? (isPdfExport ? "Exporting PDF" : isSvgExport ? "Exporting SVG" : "Exporting IDML")
               : isPdfExport ? "Export PDF" : isSvgExport ? "Export SVG" : isJsonExport ? "Save JSON" : "Export IDML"}

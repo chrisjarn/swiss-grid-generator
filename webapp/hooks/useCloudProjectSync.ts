@@ -4,10 +4,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { SupabaseClient, User } from "@supabase/supabase-js"
 
 import { parseLoadedProject, type LoadedProject } from "@/lib/document-session"
+import { getCloudSyncRetryAt, isRetryableCloudSyncError } from "@/lib/cloud-sync/retry"
+import { reportCloudSyncError } from "@/lib/cloud-sync/logger"
 import {
   createCloudProject,
   deleteCloudProject,
   downloadCloudProjectArchiveBytes,
+  getCloudProjectRow,
   listCloudProjectRows,
   updateCloudProject,
   CloudProjectConflictError,
@@ -19,16 +22,26 @@ import {
 } from "@/lib/supabase/error-messages"
 import {
   addCloudActivityLogEntry,
+  addProjectAuditEntry,
+  claimDueCloudSyncQueueEntries,
+  clearCloudSyncQueueEntriesForProject,
+  cloudSyncQueueQuery,
+  completeCloudSyncQueueEntry,
+  enqueueCloudSyncOperation,
+  failCloudSyncQueueEntry,
   getUserProjectRecord,
   listUserProjectRecords,
   markUserProjectDeleted,
   purgeUserProjectFromLibrary,
   upsertCloudProjectToUserLibrary,
   updateUserProjectSyncState,
+  type CloudSyncQueueEntry,
   type UserProjectRecord,
 } from "@/lib/user-layout-library"
-export type CloudSyncStatus = "signed_out" | "syncing" | "synced" | "offline" | "error" | "conflict"
-export type CloudSyncRequestReason = "session" | "online" | "focus" | "visible" | "preset_browser" | "manual"
+
+export type CloudSyncStatus = "signed_out" | "idle" | "syncing" | "synced" | "offline" | "error" | "conflict"
+export type CloudSyncRequestReason = "session" | "online" | "focus" | "visible" | "preset_browser" | "manual" | "save" | "retry"
+export type CloudConflictResolutionStrategy = "keep_local" | "use_cloud"
 
 type CloudSyncRequestOptions = {
   force?: boolean
@@ -47,9 +60,10 @@ type Args = {
 }
 
 const DEFAULT_SYNC_THROTTLE_MS = 60_000
+const QUEUE_DRAIN_BATCH_SIZE = 3
 
 function hasLocalChangesAfterLastSync(record: UserProjectRecord): boolean {
-  if (record.syncState === "local") return true
+  if (record.syncState === "local" || record.syncState === "offline" || record.syncState === "error") return true
   if (!record.lastSyncedAt) return false
   const updatedAt = Date.parse(record.updatedAt)
   const lastSyncedAt = Date.parse(record.lastSyncedAt)
@@ -73,18 +87,98 @@ function toLoadedProject(record: UserProjectRecord): LoadedProject<Record<string
   }
 }
 
+function isBrowserOffline(): boolean {
+  return typeof navigator !== "undefined" && !navigator.onLine
+}
+
+function queueStatusFromNotice(notice: UserFacingNotice): CloudSyncStatus {
+  return notice.title === "Cloud Offline" ? "offline" : "error"
+}
+
 export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
   const [status, setStatus] = useState<CloudSyncStatus>("signed_out")
   const [lastNotice, setLastNotice] = useState<UserFacingNotice | null>(null)
+  const [queueEntries, setQueueEntries] = useState<CloudSyncQueueEntry[]>([])
   const lastSyncAttemptAtRef = useRef(0)
+  const drainQueuePromiseRef = useRef<Promise<void> | null>(null)
   const syncAllProjectsPromiseRef = useRef<Promise<void> | null>(null)
 
-  const syncProjectByLocalId = useCallback(async (localId: string): Promise<string | null> => {
-    if (!supabase || !user) return null
-    const localRecord = await getUserProjectRecord(localId)
-    if (!localRecord) return null
-    if (localRecord.syncState === "deleted" || localRecord.deletedAt) return localRecord.remoteProjectId ?? null
-    if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) return localRecord.remoteProjectId ?? null
+  const handleSyncError = useCallback(async ({
+    error,
+    entry,
+    projectTitle,
+    projectId,
+  }: {
+    error: unknown
+    entry?: CloudSyncQueueEntry
+    projectTitle?: string | null
+    projectId?: string | null
+  }) => {
+    reportCloudSyncError(error, {
+      action: entry?.action ?? "sync",
+      projectId: projectId ?? entry?.projectId,
+      remoteProjectId: entry?.remoteProjectId,
+      queueId: entry?.id,
+      attemptCount: entry?.attemptCount,
+      userId: user?.id ?? null,
+    })
+
+    const notice = mapCloudSyncError(error)
+    setLastNotice(notice)
+    setStatus(queueStatusFromNotice(notice))
+
+    if (entry) {
+      const retryAt = isRetryableCloudSyncError(error)
+        ? getCloudSyncRetryAt(entry.attemptCount)
+        : new Date(Date.now() + 60 * 60_000).toISOString()
+      await failCloudSyncQueueEntry({
+        id: entry.id,
+        error: notice.message,
+        runAfter: retryAt,
+      })
+    }
+
+    if (projectId) {
+      await updateUserProjectSyncState({
+        id: projectId,
+        syncState: notice.title === "Cloud Offline" ? "offline" : "error",
+        syncError: notice.message,
+      })
+    }
+
+    void addCloudActivityLogEntry({
+      level: "error",
+      action: "Project sync failed",
+      message: notice.message,
+      projectTitle,
+    })
+  }, [user?.id])
+
+  const processUploadQueueEntry = useCallback(async (entry: CloudSyncQueueEntry) => {
+    if (!supabase || !user) return
+    const localRecord = await getUserProjectRecord(entry.projectId)
+    if (!localRecord) {
+      await completeCloudSyncQueueEntry(entry.id)
+      return
+    }
+
+    if (localRecord.deletedAt || localRecord.syncState === "deleted") {
+      await enqueueCloudSyncOperation({
+        projectId: localRecord.id,
+        action: "delete",
+        ownerUserId: user.id,
+        remoteProjectId: localRecord.remoteProjectId,
+        reason: "upload_record_deleted",
+        force: true,
+      })
+      await completeCloudSyncQueueEntry(entry.id)
+      return
+    }
+
+    if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) {
+      await completeCloudSyncQueueEntry(entry.id)
+      return
+    }
 
     await updateUserProjectSyncState({
       id: localRecord.id,
@@ -94,6 +188,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       syncState: "syncing",
       syncError: null,
     })
+
     void addCloudActivityLogEntry({
       level: "info",
       action: localRecord.remoteProjectId ? "Project upload started" : "Project cloud create started",
@@ -107,7 +202,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
           supabase,
           user.id,
           localRecord.remoteProjectId,
-          localRecord.remoteRevision ?? 0,
+          entry.baseRevision ?? localRecord.remoteRevision ?? 0,
           loadedProject,
         )
         : await createCloudProject(supabase, user.id, loadedProject)
@@ -121,14 +216,21 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         syncError: null,
         lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
       })
+      await completeCloudSyncQueueEntry(entry.id)
+      void addProjectAuditEntry({
+        projectId: localRecord.id,
+        actor: "cloud",
+        action: localRecord.remoteProjectId ? "upload" : "create",
+        baseRevision: localRecord.remoteRevision ?? 0,
+        nextRevision: remoteRow.revision,
+        checksum: localRecord.contentHash,
+      })
       void addCloudActivityLogEntry({
         level: "success",
         action: localRecord.remoteProjectId ? "Project uploaded" : "Project created in cloud",
         message: `revision ${remoteRow.revision}`,
         projectTitle: localRecord.title,
       })
-
-      return remoteRow.id
     } catch (error) {
       if (error instanceof CloudProjectConflictError) {
         await updateUserProjectSyncState({
@@ -136,34 +238,180 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
           syncState: "conflict",
           syncError: CLOUD_SYNC_CONFLICT_NOTICE.message,
         })
+        await failCloudSyncQueueEntry({
+          id: entry.id,
+          error: CLOUD_SYNC_CONFLICT_NOTICE.message,
+          runAfter: new Date(Date.now() + 24 * 60 * 60_000).toISOString(),
+          status: "conflict",
+        })
         setStatus("conflict")
-        setLastNotice(CLOUD_SYNC_CONFLICT_NOTICE)
+        setLastNotice({ ...CLOUD_SYNC_CONFLICT_NOTICE })
+        void addProjectAuditEntry({
+          projectId: localRecord.id,
+          actor: "system",
+          action: "conflict",
+          message: CLOUD_SYNC_CONFLICT_NOTICE.message,
+          baseRevision: localRecord.remoteRevision ?? 0,
+          checksum: localRecord.contentHash,
+        })
         void addCloudActivityLogEntry({
           level: "warning",
           action: "Project sync conflict",
           message: CLOUD_SYNC_CONFLICT_NOTICE.message,
           projectTitle: localRecord.title,
         })
-        return localRecord.remoteProjectId ?? null
+        return
       }
 
-      const notice = mapCloudSyncError(error)
+      await handleSyncError({
+        error,
+        entry,
+        projectTitle: localRecord.title,
+        projectId: localRecord.id,
+      })
+    }
+  }, [handleSyncError, supabase, user])
+
+  const processDeleteQueueEntry = useCallback(async (entry: CloudSyncQueueEntry) => {
+    if (!supabase || !user) return
+    const localRecord = await getUserProjectRecord(entry.projectId)
+    const remoteProjectId = localRecord?.remoteProjectId ?? entry.remoteProjectId
+
+    if (!remoteProjectId) {
+      await completeCloudSyncQueueEntry(entry.id)
+      if (localRecord) await purgeUserProjectFromLibrary(localRecord.id)
+      return
+    }
+
+    try {
+      void addCloudActivityLogEntry({
+        level: "info",
+        action: "Cloud delete started",
+        projectTitle: localRecord?.title,
+      })
+      await deleteCloudProject(supabase, user.id, remoteProjectId)
+      await completeCloudSyncQueueEntry(entry.id)
+      if (localRecord) await purgeUserProjectFromLibrary(localRecord.id)
+      void addProjectAuditEntry({
+        projectId: entry.projectId,
+        actor: "cloud",
+        action: "delete",
+        baseRevision: localRecord?.remoteRevision,
+      })
+      void addCloudActivityLogEntry({
+        level: "success",
+        action: "Cloud project deleted",
+        projectTitle: localRecord?.title,
+      })
+    } catch (error) {
+      await handleSyncError({
+        error,
+        entry,
+        projectTitle: localRecord?.title,
+        projectId: localRecord?.id ?? entry.projectId,
+      })
+    }
+  }, [handleSyncError, supabase, user])
+
+  const drainSyncQueue = useCallback(async () => {
+    if (drainQueuePromiseRef.current) {
+      await drainQueuePromiseRef.current
+      return
+    }
+
+    const drainPromise = (async () => {
+      if (!supabase || !user) {
+        setStatus("signed_out")
+        return
+      }
+      if (isBrowserOffline()) {
+        setStatus("offline")
+        return
+      }
+
+      setStatus("syncing")
+
+      for (;;) {
+        const dueEntries = await claimDueCloudSyncQueueEntries(QUEUE_DRAIN_BATCH_SIZE)
+        if (dueEntries.length === 0) break
+
+        for (const entry of dueEntries) {
+          if (entry.action === "delete") {
+            await processDeleteQueueEntry(entry)
+          } else {
+            await processUploadQueueEntry(entry)
+          }
+        }
+      }
+
+      const records = await listUserProjectRecords()
+      if (records.some((record) => record.syncState === "conflict")) {
+        setStatus("conflict")
+        return
+      }
+      if (records.some((record) => record.syncState === "error")) {
+        setStatus("error")
+        return
+      }
+      if (records.some((record) => record.syncState === "offline")) {
+        setStatus("offline")
+        return
+      }
+      setStatus("synced")
+    })()
+
+    drainQueuePromiseRef.current = drainPromise
+    try {
+      await drainPromise
+    } finally {
+      if (drainQueuePromiseRef.current === drainPromise) {
+        drainQueuePromiseRef.current = null
+      }
+    }
+  }, [processDeleteQueueEntry, processUploadQueueEntry, supabase, user])
+
+  const queueProjectSyncByLocalId = useCallback(async (
+    localId: string,
+    reason: CloudSyncRequestReason = "save",
+    options: { force?: boolean } = {},
+  ): Promise<boolean> => {
+    if (!user) return false
+    const localRecord = await getUserProjectRecord(localId)
+    if (!localRecord) return false
+    if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) return false
+    if (localRecord.syncState === "conflict" && !options.force) return false
+
+    await enqueueCloudSyncOperation({
+      projectId: localRecord.id,
+      action: localRecord.deletedAt || localRecord.syncState === "deleted" ? "delete" : "upload",
+      ownerUserId: user.id,
+      remoteProjectId: localRecord.remoteProjectId,
+      baseRevision: localRecord.remoteRevision,
+      reason,
+      force: options.force,
+    })
+
+    if (isBrowserOffline() || !supabase) {
       await updateUserProjectSyncState({
         id: localRecord.id,
-        syncState: "error",
-        syncError: notice.message,
+        ownerUserId: user.id,
+        syncState: "offline",
+        syncError: "Cloud sync is queued until the browser is online.",
       })
-      setStatus(navigator.onLine ? "error" : "offline")
-      setLastNotice(notice)
-      void addCloudActivityLogEntry({
-        level: "error",
-        action: "Project sync failed",
-        message: notice.message,
-        projectTitle: localRecord.title,
-      })
-      return localRecord.remoteProjectId ?? null
+      setStatus("offline")
+      return true
     }
-  }, [supabase, user])
+
+    void drainSyncQueue()
+    return true
+  }, [drainSyncQueue, supabase, user])
+
+  const syncProjectByLocalId = useCallback(async (localId: string): Promise<string | null> => {
+    await queueProjectSyncByLocalId(localId, "save", { force: true })
+    await drainSyncQueue()
+    const localRecord = await getUserProjectRecord(localId)
+    return localRecord?.remoteProjectId ?? null
+  }, [drainSyncQueue, queueProjectSyncByLocalId])
 
   const deleteProjectByLocalId = useCallback(async (localId: string): Promise<"no_op" | "purged_local" | "queued_cloud_delete" | "deleted_cloud"> => {
     const localRecord = await getUserProjectRecord(localId)
@@ -171,53 +419,34 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
 
     const deletionResult = await markUserProjectDeleted(localRecord.id)
 
-    if (!supabase || !user || !localRecord.remoteProjectId || localRecord.ownerUserId && localRecord.ownerUserId !== user.id) {
-      void addCloudActivityLogEntry({
-        level: "warning",
-        action: "Cloud delete queued",
-        projectTitle: localRecord.title,
-      })
-      return deletionResult === "purged" ? "purged_local" : "queued_cloud_delete"
+    if (deletionResult === "purged") {
+      return "purged_local"
     }
 
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
+    await enqueueCloudSyncOperation({
+      projectId: localRecord.id,
+      action: "delete",
+      ownerUserId: user?.id ?? localRecord.ownerUserId,
+      remoteProjectId: localRecord.remoteProjectId,
+      baseRevision: localRecord.remoteRevision,
+      reason: "delete",
+      force: true,
+    })
+
+    if (!supabase || !user || isBrowserOffline()) {
+      setStatus(isBrowserOffline() ? "offline" : status)
       void addCloudActivityLogEntry({
         level: "warning",
-        action: "Cloud delete queued offline",
+        action: isBrowserOffline() ? "Cloud delete queued offline" : "Cloud delete queued",
         projectTitle: localRecord.title,
       })
-      return deletionResult === "purged" ? "purged_local" : "queued_cloud_delete"
+      return "queued_cloud_delete"
     }
 
-    try {
-      setStatus("syncing")
-      void addCloudActivityLogEntry({
-        level: "info",
-        action: "Cloud delete started",
-        projectTitle: localRecord.title,
-      })
-      await deleteCloudProject(supabase, user.id, localRecord.remoteProjectId)
-      await purgeUserProjectFromLibrary(localRecord.id)
-      setStatus("synced")
-      void addCloudActivityLogEntry({
-        level: "success",
-        action: "Cloud project deleted",
-        projectTitle: localRecord.title,
-      })
-      return deletionResult === "purged" ? "purged_local" : "deleted_cloud"
-    } catch (error) {
-      const notice = mapCloudSyncError(error)
-      setStatus(notice.title === "Cloud Offline" ? "offline" : "error")
-      setLastNotice(notice)
-      void addCloudActivityLogEntry({
-        level: "error",
-        action: "Cloud delete failed",
-        message: notice.message,
-        projectTitle: localRecord.title,
-      })
-      return deletionResult === "purged" ? "purged_local" : "queued_cloud_delete"
-    }
-  }, [supabase, user])
+    await drainSyncQueue()
+    const remainingRecord = await getUserProjectRecord(localRecord.id)
+    return remainingRecord ? "queued_cloud_delete" : "deleted_cloud"
+  }, [drainSyncQueue, status, supabase, user])
 
   const syncAllProjects = useCallback(async (reason: CloudSyncRequestReason = "manual") => {
     if (syncAllProjectsPromiseRef.current) {
@@ -226,175 +455,201 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
     }
 
     const syncPromise = (async () => {
-    if (!supabase || !user) {
-      setStatus("signed_out")
-      return
-    }
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
-      setStatus("offline")
-      void addCloudActivityLogEntry({
-        level: "warning",
-        action: "Cloud sync skipped offline",
-      })
-      return
-    }
-
-    setStatus("syncing")
-    setLastNotice(null)
-    lastSyncAttemptAtRef.current = Date.now()
-    void addCloudActivityLogEntry({
-      level: "info",
-      action: "Cloud sync started",
-      message: reason,
-    })
-
-    try {
-      const initialLocalRecords = await listUserProjectRecords()
-
-      for (const record of initialLocalRecords) {
-        if ((record.syncState !== "deleted" && !record.deletedAt) || !record.remoteProjectId) continue
-        if (record.ownerUserId && record.ownerUserId !== user.id) continue
-        await deleteCloudProject(supabase, user.id, record.remoteProjectId)
-        await purgeUserProjectFromLibrary(record.id)
+      if (!supabase || !user) {
+        setStatus("signed_out")
+        return
+      }
+      if (isBrowserOffline()) {
+        setStatus("offline")
         void addCloudActivityLogEntry({
-          level: "success",
-          action: "Queued cloud delete completed",
-          projectTitle: record.title,
+          level: "warning",
+          action: "Cloud sync skipped offline",
         })
+        return
       }
 
-      const [localRecords, remoteRows] = await Promise.all([
-        listUserProjectRecords(),
-        listCloudProjectRows(supabase, user.id),
-      ])
-      const remoteProjectIds = new Set(remoteRows.map((row) => row.id))
+      setStatus("syncing")
+      setLastNotice(null)
+      lastSyncAttemptAtRef.current = Date.now()
+      void addCloudActivityLogEntry({
+        level: "info",
+        action: "Cloud sync started",
+        message: reason,
+      })
 
-      const localByRemoteId = new Map(
-        localRecords
-          .filter((record) => typeof record.remoteProjectId === "string" && record.remoteProjectId.length > 0)
-          .map((record) => [record.remoteProjectId as string, record]),
-      )
-
-      let sawConflict = false
-
-      for (const remoteRow of remoteRows) {
-        const localRecord = localByRemoteId.get(remoteRow.id)
-
-        if (!localRecord) {
-          const archiveBytes = await downloadCloudProjectArchiveBytes(supabase, remoteRow.archive_path)
-          await upsertCloudProjectToUserLibrary({
-            ownerUserId: user.id,
-            remoteProjectId: remoteRow.id,
-            remoteRevision: remoteRow.revision,
-            updatedAt: remoteRow.updated_at,
-            lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
-            archiveBytes,
-          })
-          void addCloudActivityLogEntry({
-            level: "success",
-            action: "Cloud project downloaded",
-            projectTitle: remoteRow.title,
-          })
-          continue
-        }
-
-        if (localRecord.syncState === "local" && localRecord.remoteRevision != null && localRecord.remoteRevision !== remoteRow.revision) {
-          await updateUserProjectSyncState({
-            id: localRecord.id,
-            syncState: "conflict",
-            syncError: CLOUD_SYNC_CONFLICT_NOTICE.message,
-          })
-          sawConflict = true
-          setLastNotice(CLOUD_SYNC_CONFLICT_NOTICE)
-          void addCloudActivityLogEntry({
-            level: "warning",
-            action: "Project sync conflict",
-            message: CLOUD_SYNC_CONFLICT_NOTICE.message,
-            projectTitle: localRecord.title,
-          })
-          continue
-        }
-
-        const localRevision = localRecord.remoteRevision ?? 0
-        const shouldPullRemote = (
-          (localRecord.syncState === "synced" || localRecord.syncState === "error")
-          && localRevision < remoteRow.revision
+      try {
+        const [localRecords, remoteRows] = await Promise.all([
+          listUserProjectRecords(),
+          listCloudProjectRows(supabase, user.id),
+        ])
+        const remoteProjectIds = new Set(remoteRows.map((row) => row.id))
+        const localByRemoteId = new Map(
+          localRecords
+            .filter((record) => typeof record.remoteProjectId === "string" && record.remoteProjectId.length > 0)
+            .map((record) => [record.remoteProjectId as string, record]),
         )
 
-        if (shouldPullRemote) {
-          const archiveBytes = await downloadCloudProjectArchiveBytes(supabase, remoteRow.archive_path)
-          await upsertCloudProjectToUserLibrary({
-            localId: localRecord.id,
-            ownerUserId: user.id,
-            remoteProjectId: remoteRow.id,
-            remoteRevision: remoteRow.revision,
-            updatedAt: remoteRow.updated_at,
-            lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
-            originPresetId: localRecord.originPresetId,
-            archiveBytes,
-          })
-          void addCloudActivityLogEntry({
-            level: "success",
-            action: "Cloud project updated locally",
-            message: `revision ${remoteRow.revision}`,
-            projectTitle: remoteRow.title,
-          })
-        }
-      }
+        let sawConflict = false
 
-      for (const localRecord of localRecords) {
-        if (!localRecord.remoteProjectId) continue
-        if (localRecord.deletedAt || localRecord.syncState === "deleted") continue
-        if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) continue
-        if (remoteProjectIds.has(localRecord.remoteProjectId)) continue
-
-        if (hasLocalChangesAfterLastSync(localRecord)) {
-          await updateUserProjectSyncState({
-            id: localRecord.id,
-            syncState: "conflict",
-            syncError: CLOUD_SYNC_CONFLICT_NOTICE.message,
-          })
-          sawConflict = true
-          setLastNotice(CLOUD_SYNC_CONFLICT_NOTICE)
-          void addCloudActivityLogEntry({
-            level: "warning",
-            action: "Project deleted remotely conflict",
-            message: CLOUD_SYNC_CONFLICT_NOTICE.message,
-            projectTitle: localRecord.title,
-          })
-          continue
+        for (const localRecord of localRecords) {
+          if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) continue
+          if ((localRecord.syncState === "deleted" || localRecord.deletedAt) && localRecord.remoteProjectId) {
+            await enqueueCloudSyncOperation({
+              projectId: localRecord.id,
+              action: "delete",
+              ownerUserId: user.id,
+              remoteProjectId: localRecord.remoteProjectId,
+              baseRevision: localRecord.remoteRevision,
+              reason,
+            })
+          }
         }
 
-        await purgeUserProjectFromLibrary(localRecord.id)
+        for (const remoteRow of remoteRows) {
+          const localRecord = localByRemoteId.get(remoteRow.id)
+
+          if (!localRecord) {
+            const archiveBytes = await downloadCloudProjectArchiveBytes(supabase, remoteRow.archive_path)
+            await upsertCloudProjectToUserLibrary({
+              ownerUserId: user.id,
+              remoteProjectId: remoteRow.id,
+              remoteRevision: remoteRow.revision,
+              updatedAt: remoteRow.updated_at,
+              lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
+              archiveBytes,
+            })
+            void addCloudActivityLogEntry({
+              level: "success",
+              action: "Cloud project downloaded",
+              projectTitle: remoteRow.title,
+            })
+            continue
+          }
+
+          if ((localRecord.syncState === "local" || localRecord.syncState === "offline" || localRecord.syncState === "error")
+            && localRecord.remoteRevision != null
+            && localRecord.remoteRevision !== remoteRow.revision) {
+            await updateUserProjectSyncState({
+              id: localRecord.id,
+              syncState: "conflict",
+              syncError: CLOUD_SYNC_CONFLICT_NOTICE.message,
+            })
+            await enqueueCloudSyncOperation({
+              projectId: localRecord.id,
+              action: "upload",
+              ownerUserId: user.id,
+              remoteProjectId: localRecord.remoteProjectId,
+              baseRevision: localRecord.remoteRevision,
+              reason: "conflict",
+            })
+            sawConflict = true
+            setLastNotice({ ...CLOUD_SYNC_CONFLICT_NOTICE })
+            void addCloudActivityLogEntry({
+              level: "warning",
+              action: "Project sync conflict",
+              message: CLOUD_SYNC_CONFLICT_NOTICE.message,
+              projectTitle: localRecord.title,
+            })
+            continue
+          }
+
+          const localRevision = localRecord.remoteRevision ?? 0
+          const shouldPullRemote = (
+            (localRecord.syncState === "synced" || localRecord.syncState === "idle")
+            && localRevision < remoteRow.revision
+          )
+
+          if (shouldPullRemote) {
+            const archiveBytes = await downloadCloudProjectArchiveBytes(supabase, remoteRow.archive_path)
+            await upsertCloudProjectToUserLibrary({
+              localId: localRecord.id,
+              ownerUserId: user.id,
+              remoteProjectId: remoteRow.id,
+              remoteRevision: remoteRow.revision,
+              updatedAt: remoteRow.updated_at,
+              lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
+              originPresetId: localRecord.originPresetId,
+              archiveBytes,
+            })
+            void addCloudActivityLogEntry({
+              level: "success",
+              action: "Cloud project updated locally",
+              message: `revision ${remoteRow.revision}`,
+              projectTitle: remoteRow.title,
+            })
+          }
+        }
+
+        for (const localRecord of localRecords) {
+          if (localRecord.ownerUserId && localRecord.ownerUserId !== user.id) continue
+          if (localRecord.syncState === "conflict") {
+            sawConflict = true
+            continue
+          }
+          if (!localRecord.remoteProjectId) {
+            if (!localRecord.deletedAt && localRecord.syncState !== "deleted") {
+              await enqueueCloudSyncOperation({
+                projectId: localRecord.id,
+                action: "upload",
+                ownerUserId: user.id,
+                reason,
+              })
+            }
+            continue
+          }
+          if (localRecord.deletedAt || localRecord.syncState === "deleted") continue
+
+          if (!remoteProjectIds.has(localRecord.remoteProjectId)) {
+            if (hasLocalChangesAfterLastSync(localRecord)) {
+              await updateUserProjectSyncState({
+                id: localRecord.id,
+                syncState: "conflict",
+                syncError: CLOUD_SYNC_CONFLICT_NOTICE.message,
+              })
+              sawConflict = true
+              setLastNotice({ ...CLOUD_SYNC_CONFLICT_NOTICE })
+              void addCloudActivityLogEntry({
+                level: "warning",
+                action: "Project deleted remotely conflict",
+                message: CLOUD_SYNC_CONFLICT_NOTICE.message,
+                projectTitle: localRecord.title,
+              })
+              continue
+            }
+
+            await purgeUserProjectFromLibrary(localRecord.id)
+            void addCloudActivityLogEntry({
+              level: "success",
+              action: "Remote delete applied locally",
+              projectTitle: localRecord.title,
+            })
+            continue
+          }
+
+          if (localRecord.syncState === "local" || localRecord.syncState === "offline" || localRecord.syncState === "error") {
+            await enqueueCloudSyncOperation({
+              projectId: localRecord.id,
+              action: "upload",
+              ownerUserId: user.id,
+              remoteProjectId: localRecord.remoteProjectId,
+              baseRevision: localRecord.remoteRevision,
+              reason,
+            })
+          }
+        }
+
+        await drainSyncQueue()
+
+        if (sawConflict) {
+          setStatus("conflict")
+        }
         void addCloudActivityLogEntry({
-          level: "success",
-          action: "Remote delete applied locally",
-          projectTitle: localRecord.title,
+          level: sawConflict ? "warning" : "success",
+          action: sawConflict ? "Cloud sync completed with conflict" : "Cloud sync completed",
         })
+      } catch (error) {
+        await handleSyncError({ error })
       }
-
-      const refreshedLocalRecords = await listUserProjectRecords()
-      for (const record of refreshedLocalRecords) {
-        if (record.ownerUserId && record.ownerUserId !== user.id) continue
-        if (record.syncState !== "local" && record.syncState !== "error") continue
-        await syncProjectByLocalId(record.id)
-      }
-
-      setStatus(sawConflict ? "conflict" : "synced")
-      void addCloudActivityLogEntry({
-        level: sawConflict ? "warning" : "success",
-        action: sawConflict ? "Cloud sync completed with conflict" : "Cloud sync completed",
-      })
-    } catch (error) {
-      const notice = mapCloudSyncError(error)
-      setLastNotice(notice)
-      setStatus(notice.title === "Cloud Offline" ? "offline" : "error")
-      void addCloudActivityLogEntry({
-        level: "error",
-        action: "Cloud sync failed",
-        message: notice.message,
-      })
-    }
     })()
 
     syncAllProjectsPromiseRef.current = syncPromise
@@ -405,14 +660,14 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         syncAllProjectsPromiseRef.current = null
       }
     }
-  }, [supabase, syncProjectByLocalId, user])
+  }, [drainSyncQueue, handleSyncError, supabase, user])
 
   const requestCloudSync = useCallback((
     reason: CloudSyncRequestReason = "manual",
     options: CloudSyncRequestOptions = {},
   ): boolean => {
     if (!supabase || !user) return false
-    if (typeof navigator !== "undefined" && !navigator.onLine) {
+    if (isBrowserOffline()) {
       setStatus("offline")
       void addCloudActivityLogEntry({
         level: "warning",
@@ -432,11 +687,105 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
     return true
   }, [supabase, syncAllProjects, user])
 
+  const resolveConflictByLocalId = useCallback(async (
+    localId: string,
+    strategy: CloudConflictResolutionStrategy,
+  ): Promise<boolean> => {
+    if (!supabase || !user) return false
+    const localRecord = await getUserProjectRecord(localId)
+    if (!localRecord || !localRecord.remoteProjectId) return false
+
+    const remoteRow = await getCloudProjectRow(supabase, user.id, localRecord.remoteProjectId)
+    if (!remoteRow || remoteRow.deleted_at) {
+      if (strategy === "use_cloud") return false
+      await clearCloudSyncQueueEntriesForProject(localRecord.id)
+      await updateUserProjectSyncState({
+        id: localRecord.id,
+        remoteProjectId: null,
+        remoteRevision: null,
+        syncState: "local",
+        syncError: null,
+      })
+      await enqueueCloudSyncOperation({
+        projectId: localRecord.id,
+        action: "upload",
+        ownerUserId: user.id,
+        reason: "resolve_keep_local_after_remote_delete",
+        force: true,
+      })
+      await drainSyncQueue()
+      return true
+    }
+
+    if (strategy === "use_cloud") {
+      const archiveBytes = await downloadCloudProjectArchiveBytes(supabase, remoteRow.archive_path)
+      await upsertCloudProjectToUserLibrary({
+        localId: localRecord.id,
+        ownerUserId: user.id,
+        remoteProjectId: remoteRow.id,
+        remoteRevision: remoteRow.revision,
+        updatedAt: remoteRow.updated_at,
+        lastSyncedAt: remoteRow.last_synced_at ?? remoteRow.updated_at,
+        originPresetId: localRecord.originPresetId,
+        archiveBytes,
+      })
+      await clearCloudSyncQueueEntriesForProject(localRecord.id)
+      setStatus("synced")
+      void addProjectAuditEntry({
+        projectId: localRecord.id,
+        actor: "local",
+        action: "resolve_use_cloud",
+        baseRevision: localRecord.remoteRevision,
+        nextRevision: remoteRow.revision,
+      })
+      void addCloudActivityLogEntry({
+        level: "success",
+        action: "Conflict resolved from cloud",
+        projectTitle: remoteRow.title,
+      })
+      return true
+    }
+
+    await clearCloudSyncQueueEntriesForProject(localRecord.id)
+    await updateUserProjectSyncState({
+      id: localRecord.id,
+      syncState: "local",
+      syncError: null,
+    })
+    await enqueueCloudSyncOperation({
+      projectId: localRecord.id,
+      action: "upload",
+      ownerUserId: user.id,
+      remoteProjectId: remoteRow.id,
+      baseRevision: remoteRow.revision,
+      reason: "resolve_keep_local",
+      force: true,
+    })
+    await drainSyncQueue()
+    void addProjectAuditEntry({
+      projectId: localRecord.id,
+      actor: "cloud",
+      action: "resolve_keep_local",
+      baseRevision: remoteRow.revision,
+      checksum: localRecord.contentHash,
+    })
+    return true
+  }, [drainSyncQueue, supabase, user])
+
+  useEffect(() => {
+    const subscription = cloudSyncQueueQuery.subscribe({
+      next: setQueueEntries,
+      error: () => setQueueEntries([]),
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
   useEffect(() => {
     if (!supabase || !user) {
       setStatus("signed_out")
       return
     }
+    setStatus("idle")
     void syncAllProjects("session")
   }, [supabase, syncAllProjects, user])
 
@@ -466,23 +815,36 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
     onRequestNotice(lastNotice)
   }, [lastNotice, onRequestNotice])
 
+  const pendingQueueCount = useMemo(() => (
+    queueEntries.filter((entry) => entry.status === "pending" || entry.status === "failed" || entry.status === "running").length
+  ), [queueEntries])
+
+  const conflictQueueCount = useMemo(() => (
+    queueEntries.filter((entry) => entry.status === "conflict").length
+  ), [queueEntries])
+
   const statusLabel = useMemo(() => {
     if (!supabase) return "Cloud unavailable"
     if (!user) return "Not connected"
-    if (status === "syncing") return "Cloud syncing"
+    if (status === "idle") return pendingQueueCount > 0 ? `${pendingQueueCount} queued` : "Cloud idle"
+    if (status === "syncing") return pendingQueueCount > 0 ? `Cloud syncing (${pendingQueueCount})` : "Cloud syncing"
     if (status === "synced") return "Cloud synced"
-    if (status === "offline") return "Cloud offline"
-    if (status === "conflict") return "Cloud conflict"
-    if (status === "error") return "Cloud error"
+    if (status === "offline") return pendingQueueCount > 0 ? `Cloud offline (${pendingQueueCount} queued)` : "Cloud offline"
+    if (status === "conflict") return conflictQueueCount > 0 ? `Cloud conflict (${conflictQueueCount})` : "Cloud conflict"
+    if (status === "error") return pendingQueueCount > 0 ? `Cloud error (${pendingQueueCount} queued)` : "Cloud error"
     return "Not connected"
-  }, [status, supabase, user])
+  }, [conflictQueueCount, pendingQueueCount, status, supabase, user])
 
   return {
     status,
     statusLabel,
     lastError: lastNotice?.message ?? null,
+    pendingQueueCount,
+    conflictQueueCount,
+    queueProjectSyncByLocalId,
     deleteProjectByLocalId,
     requestCloudSync,
+    resolveConflictByLocalId,
     syncAllProjects,
     syncProjectByLocalId,
   }

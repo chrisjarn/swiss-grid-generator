@@ -28,7 +28,7 @@ import { useUiSettingsPreview } from "@/hooks/useUiSettingsPreview"
 import { useProjectTourController } from "@/hooks/useProjectTourController"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { useCloudProjectSync } from "@/hooks/useCloudProjectSync"
-import { type LoadedProject, type ProjectMetadata, type ProjectPage } from "@/lib/document-session"
+import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage } from "@/lib/document-session"
 import { type FontFamily } from "@/lib/config/fonts"
 import { BASELINE_OPTIONS } from "@/lib/config/defaults"
 import { DEFAULT_UI } from "@/lib/config/ui-defaults"
@@ -66,6 +66,7 @@ import { resetEditorPanelPersistence } from "@/lib/editor-panel-persistence"
 import type { LayoutPreset } from "@/lib/presets"
 import {
   createUserProjectRecordQuery,
+  getUserProjectRecord,
   saveProjectToUserLibrary,
   type UserProjectRecord,
 } from "@/lib/user-layout-library"
@@ -215,6 +216,7 @@ export default function Home() {
     dispatchExport(action)
   }, [dispatchExport, dispatchGrid])
   const ui = useMemo(() => ({ ...gridUi, ...exportUi }), [gridUi, exportUi])
+  const [accountLogFocusNonce, setAccountLogFocusNonce] = useState(0)
   const handleRequestNotice = useCallback((notice: NonNullable<NoticeState>) => {
     setNoticeState(notice)
   }, [])
@@ -231,8 +233,12 @@ export default function Home() {
   const {
     status: cloudSyncStatus,
     statusLabel: cloudStatusLabel,
+    pendingQueueCount,
+    conflictQueueCount,
     deleteProjectByLocalId,
+    queueProjectSyncByLocalId,
     requestCloudSync,
+    resolveConflictByLocalId,
     syncProjectByLocalId,
   } = useCloudProjectSync({
     supabase,
@@ -373,6 +379,12 @@ export default function Home() {
     showLayers,
     onShowLayersChange: setShowLayers,
   })
+
+  useEffect(() => {
+    if (noticeState?.title !== "Cloud Sync Conflict") return
+    openSidebarPanel("account")
+    setAccountLogFocusNonce((nonce) => nonce + 1)
+  }, [noticeState, openSidebarPanel])
 
   useEffect(() => {
     const handleFocus = () => {
@@ -1380,7 +1392,7 @@ export default function Home() {
         })
         setActiveUserProjectId(savedId)
         if (syncCloud && user) {
-          await syncProjectByLocalId(savedId)
+          await queueProjectSyncByLocalId(savedId, "save")
         }
         replaceProjectSnapshot({
           ...currentProject,
@@ -1414,9 +1426,87 @@ export default function Home() {
     markClean,
     replaceProjectSnapshot,
     setProjectMetadata,
-    syncProjectByLocalId,
+    queueProjectSyncByLocalId,
     user,
   ])
+
+  const handleKeepLocalCloudConflict = useCallback(async () => {
+    if (!activeUserProjectId) return
+    const resolved = await resolveConflictByLocalId(activeUserProjectId, "keep_local")
+    handleRequestNotice({
+      title: resolved ? "Conflict Resolved" : "Conflict Resolution Failed",
+      message: resolved
+        ? "The local project will overwrite the cloud copy on the next successful sync."
+        : "Could not resolve the active project conflict. Check the cloud activity log and try again.",
+    })
+  }, [activeUserProjectId, handleRequestNotice, resolveConflictByLocalId])
+
+  const handleUseCloudConflict = useCallback(async () => {
+    if (!activeUserProjectId) return
+    const resolved = await resolveConflictByLocalId(activeUserProjectId, "use_cloud")
+    if (!resolved) {
+      handleRequestNotice({
+        title: "Conflict Resolution Failed",
+        message: "Could not load the cloud copy for the active project.",
+      })
+      return
+    }
+
+    const record = await getUserProjectRecord(activeUserProjectId)
+    if (record) {
+      handleApplyLoadedProject(parseLoadedProject<PreviewLayoutState>(record.project))
+      markClean()
+    }
+    handleRequestNotice({
+      title: "Cloud Copy Restored",
+      message: "The active project now uses the cloud copy and is marked synced locally.",
+    })
+  }, [activeUserProjectId, handleApplyLoadedProject, handleRequestNotice, markClean, resolveConflictByLocalId])
+
+  const handleDeleteCloudConflict = useCallback(async () => {
+    if (!activeUserProjectId) return
+    const deleteResult = await deleteProjectByLocalId(activeUserProjectId)
+    setActiveUserProjectId(null)
+    setActiveOriginPresetId(activeUserProjectRecord?.originPresetId ?? null)
+
+    if (deleteResult === "deleted_cloud") {
+      handleRequestNotice({
+        title: "Conflict Deleted",
+        message: "The conflicted project was removed locally and soft-deleted in Supabase.",
+      })
+      return
+    }
+
+    if (deleteResult === "queued_cloud_delete") {
+      handleRequestNotice({
+        title: "Conflict Delete Queued",
+        message: "The conflicted project was removed locally and will be soft-deleted in Supabase when cloud sync is available.",
+      })
+      return
+    }
+
+    handleRequestNotice({
+      title: "Conflict Deleted Locally",
+      message: "The conflicted local project was removed from the Users library.",
+    })
+  }, [
+    activeUserProjectId,
+    activeUserProjectRecord?.originPresetId,
+    deleteProjectByLocalId,
+    handleRequestNotice,
+  ])
+
+  const activeCloudConflictDetails = useMemo(() => (
+    activeUserProjectRecord?.syncState === "conflict"
+      ? {
+          title: activeUserProjectRecord.title,
+          localUpdatedAt: activeUserProjectRecord.updatedAt,
+          lastSyncedAt: activeUserProjectRecord.lastSyncedAt ?? null,
+          localRevision: activeUserProjectRecord.remoteRevision ?? null,
+          remoteProjectId: activeUserProjectRecord.remoteProjectId ?? null,
+        }
+      : null
+  ), [activeUserProjectRecord])
 
   useEffect(() => {
     if (!activeUserProjectId || !isDirty) return
@@ -1560,6 +1650,11 @@ export default function Home() {
       isCloudSignedIn={Boolean(user)}
       cloudStatusLabel={cloudStatusLabel}
       cloudStatusIndicatorClassName={cloudStatusIndicatorClassName}
+      accountLogFocusNonce={accountLogFocusNonce}
+      pendingCloudQueueCount={pendingQueueCount}
+      cloudConflictCount={conflictQueueCount}
+      hasActiveCloudConflict={activeUserProjectRecord?.syncState === "conflict"}
+      activeCloudConflictDetails={activeCloudConflictDetails}
       authError={authError}
       authMessage={authMessage}
       projectPages={projectPages}
@@ -1602,6 +1697,9 @@ export default function Home() {
       onProjectDescriptionChange={handleProjectDescriptionChange}
       onProjectAuthorChange={handleProjectAuthorChange}
       onClearAuthFeedback={clearAuthFeedback}
+      onKeepLocalCloudConflict={handleKeepLocalCloudConflict}
+      onUseCloudConflict={handleUseCloudConflict}
+      onDeleteCloudConflict={handleDeleteCloudConflict}
       onSendSignInCode={sendSignInCode}
       onVerifySignInCode={verifySignInCode}
       onSignOut={signOut}
