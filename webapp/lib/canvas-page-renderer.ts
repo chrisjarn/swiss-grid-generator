@@ -8,7 +8,6 @@ import { resolveTextDrawCommandRange } from "@/lib/text-draw-command"
 import type {
   BlockRenderPlan,
   BlockRect,
-  RenderedCaretStop,
   RenderedTextLine,
   TextAlignMode,
   TextVerticalAlignMode,
@@ -188,15 +187,6 @@ type RenderedTextMetricSegment = BlockRenderPlan<string>["segmentLines"][number]
   descent?: number
 }
 
-function pushCaretStop(stops: RenderedCaretStop[], index: number, x: number) {
-  const previous = stops[stops.length - 1]
-  if (previous?.index === index) {
-    previous.x = x
-    return
-  }
-  stops.push({ index, x })
-}
-
 function resolveFiniteMetric(value: number | undefined, fallback: number): number {
   return value !== undefined && Number.isFinite(value) && value >= 0 ? value : fallback
 }
@@ -221,7 +211,6 @@ function buildRenderedTextLines(
     const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
     const lineSourceStart = commandRange.sourceStart
     const lineSourceEnd = commandRange.sourceEnd
-    const lineVisibleStart = commandRange.visibleRange.start
     if (segments.length === 0) {
       const ascent = fallbackFontSize * 0.8
       const descent = fallbackFontSize * 0.2
@@ -233,22 +222,15 @@ function buildRenderedTextLines(
         width: 0,
         height: ascent + descent,
         baselineY: command.y,
-        caretStops: Array.from({ length: Math.max(1, lineSourceEnd - lineSourceStart + 1) }, (_, offset) => ({
-          index: lineSourceStart + offset,
-          x: command.x,
-        })),
+        caretStops: [],
       }
     }
 
     let lineTop = Number.POSITIVE_INFINITY
     let lineBottom = Number.NEGATIVE_INFINITY
     let visualLineLeft = Number.POSITIVE_INFINITY
-    const caretStops: RenderedCaretStop[] = []
     const lineLeft = segments[0]?.x ?? command.x
-
-    for (let hiddenIndex = lineSourceStart; hiddenIndex <= lineVisibleStart; hiddenIndex += 1) {
-      pushCaretStop(caretStops, hiddenIndex, lineLeft)
-    }
+    let lineRight = lineLeft
 
     for (let segmentIndex = 0; segmentIndex < segments.length; segmentIndex += 1) {
       const segment = segments[segmentIndex]!
@@ -262,8 +244,6 @@ function buildRenderedTextLines(
       lineTop = Math.min(lineTop, segment.y - ascent)
       lineBottom = Math.max(lineBottom, segment.y + descent)
       visualLineLeft = Math.min(visualLineLeft, segment.x)
-
-      pushCaretStop(caretStops, Math.max(lineVisibleStart, segment.start), segment.x)
 
       let segmentRight = nextSegment?.start === segment.end
         ? nextSegment.x
@@ -280,16 +260,11 @@ function buildRenderedTextLines(
           ? segment.x + terminalAdvance
           : segmentRight
       }
-      pushCaretStop(caretStops, Math.min(lineSourceEnd, segment.end), segmentRight)
+      lineRight = Math.max(lineRight, segmentRight)
     }
-
-    if (!caretStops.length) {
-      pushCaretStop(caretStops, lineSourceStart, lineLeft)
-    }
-    pushCaretStop(caretStops, lineSourceEnd, caretStops[caretStops.length - 1]?.x ?? lineLeft)
 
     const left = Number.isFinite(visualLineLeft) ? visualLineLeft : lineLeft
-    const right = caretStops[caretStops.length - 1]?.x ?? left
+    const right = lineRight
     return {
       sourceStart: lineSourceStart,
       sourceEnd: lineSourceEnd,
@@ -298,7 +273,7 @@ function buildRenderedTextLines(
       width: Math.max(0, right - left),
       height: Math.max(1, (Number.isFinite(lineBottom) ? lineBottom : command.y + fallbackFontSize * 0.2) - (Number.isFinite(lineTop) ? lineTop : command.y - fallbackFontSize * 0.8)),
       baselineY: command.y,
-      caretStops,
+      caretStops: [],
     }
   })
 

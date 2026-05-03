@@ -48,6 +48,7 @@ import {
 } from "@/lib/typography-layout-plan"
 import {
   buildPositionedTextFormatTrackingGraphemes,
+  buildPositionedTextFormatTrackingSegmentsDirect,
   buildPositionedTextFormatTrackingSegmentsFromGraphemes,
   normalizeTextFormatRuns,
   withTextFormatProfilingAccumulator,
@@ -173,6 +174,7 @@ type BuildPageExportPlanArgs = {
   showMargins: boolean
   showImagePlaceholders: boolean
   showTypography: boolean
+  includeGraphemeLines?: boolean
   layoutEngine?: LayoutEngineContract
   rawDocumentVariableBlockKey?: BlockId | null
   textMetricsEngineFactory?: TextMetricsEngineFactory<TypographyStyleKey, FontFamily>
@@ -644,6 +646,7 @@ function buildPageExportPlanInternal({
   showMargins,
   showImagePlaceholders,
   showTypography,
+  includeGraphemeLines = true,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   rawDocumentVariableBlockKey = null,
   textMetricsEngineFactory,
@@ -1371,10 +1374,8 @@ function buildPageExportPlanInternal({
             font: canvasFont,
             opticalKerning: textPlan.opticalKerning,
           })
-          const glyphGraphemesStartedAt = phaseAccumulator ? getNowMs() : 0
-          textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
+          const glyphArgs = {
             sourceText: textPlan.sourceText,
-            command,
             textAlign: textPlan.textAlign,
             baseFormat: {
               fontFamily: textPlan.fontFamily,
@@ -1391,16 +1392,35 @@ function buildPageExportPlanInternal({
             measureGlyphBounds,
             measureResolvedGlyphBounds,
             measureResolvedPairAdvance,
-          }))
-          if (phaseAccumulator) {
-            phaseAccumulator.glyphGraphemesMs += getNowMs() - glyphGraphemesStartedAt
           }
-          const glyphSegmentsStartedAt = phaseAccumulator ? getNowMs() : 0
-          textPlan.segmentLines = textPlan.graphemeLines.map((graphemes) => (
-            buildPositionedTextFormatTrackingSegmentsFromGraphemes(graphemes)
-          ))
-          if (phaseAccumulator) {
-            phaseAccumulator.glyphSegmentsMs += getNowMs() - glyphSegmentsStartedAt
+          if (includeGraphemeLines) {
+            const glyphGraphemesStartedAt = phaseAccumulator ? getNowMs() : 0
+            textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
+              ...glyphArgs,
+              command,
+            }))
+            if (phaseAccumulator) {
+              phaseAccumulator.glyphGraphemesMs += getNowMs() - glyphGraphemesStartedAt
+            }
+            const glyphSegmentsStartedAt = phaseAccumulator ? getNowMs() : 0
+            textPlan.segmentLines = textPlan.graphemeLines.map((graphemes) => (
+              buildPositionedTextFormatTrackingSegmentsFromGraphemes(graphemes)
+            ))
+            if (phaseAccumulator) {
+              phaseAccumulator.glyphSegmentsMs += getNowMs() - glyphSegmentsStartedAt
+            }
+          } else {
+            textPlan.graphemeLines = []
+            const glyphSegmentsStartedAt = phaseAccumulator ? getNowMs() : 0
+            textPlan.segmentLines = textPlan.commands.map((command) => (
+              buildPositionedTextFormatTrackingSegmentsDirect(textMeasureContext, {
+                ...glyphArgs,
+                command,
+              })
+            ))
+            if (phaseAccumulator) {
+              phaseAccumulator.glyphSegmentsMs += getNowMs() - glyphSegmentsStartedAt
+            }
           }
         }
       },
