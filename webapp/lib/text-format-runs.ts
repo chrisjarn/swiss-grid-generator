@@ -160,6 +160,12 @@ type ResolvedTextFormat<
   end: number
 }
 
+type ResolvedTrackingInterval = {
+  start: number
+  end: number
+  trackingScale: number
+}
+
 type FormatPatch<
   StyleKey extends string = string,
   FontFamily extends string = string,
@@ -376,7 +382,7 @@ function resolveEffectiveFormatFromRun<
   }
 }
 
-function getResolvedFormatIntervals<
+export function getResolvedFormatIntervals<
   StyleKey extends string,
   FontFamily extends string,
 >(
@@ -689,6 +695,8 @@ export function resolveFontTrackingGraphemes<
   baseTrackingScale,
   trackingRuns,
   resolveFontSize,
+  resolvedFormatIntervals,
+  resolvedTrackingIntervals,
 }: {
   sourceText: string
   renderedText: string
@@ -698,6 +706,8 @@ export function resolveFontTrackingGraphemes<
 	baseTrackingScale: number
 	trackingRuns: readonly TextTrackingRun[] | null | undefined
 	resolveFontSize: (styleKey: StyleKey) => number
+  resolvedFormatIntervals?: readonly ResolvedTextFormat<StyleKey, FontFamily>[]
+  resolvedTrackingIntervals?: readonly ResolvedTrackingInterval[]
 }): Array<ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>> {
   const startedAt = activeTextFormatProfilingAccumulator ? getNowMs() : 0
   const normalizedRange = normalizeRange(sourceText, range)
@@ -705,8 +715,10 @@ export function resolveFontTrackingGraphemes<
   const renderedGraphemes = splitTextForTracking(renderedText)
   const mappedCount = Math.min(normalizedSource.length, renderedGraphemes.length)
   const graphemes: Array<ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>> = []
-  const resolvedFormatIntervals = getResolvedFormatIntervals(sourceText, baseFormat, formatRuns)
-  const resolvedTrackingIntervals = getResolvedTrackingIntervals(sourceText, baseTrackingScale, trackingRuns)
+  const preparedFormatIntervals = resolvedFormatIntervals
+    ?? getResolvedFormatIntervals(sourceText, baseFormat, formatRuns)
+  const preparedTrackingIntervals = resolvedTrackingIntervals
+    ?? getResolvedTrackingIntervals(sourceText, baseTrackingScale, trackingRuns)
   const fontSizeByStyleKey = new Map<StyleKey, number>()
   const getFontSizeForStyleKey = (styleKey: StyleKey): number => {
     const cached = fontSizeByStyleKey.get(styleKey)
@@ -721,18 +733,18 @@ export function resolveFontTrackingGraphemes<
   for (let index = 0; index < mappedCount; index += 1) {
     const sourceGrapheme = normalizedSource[index]
     while (
-      formatIntervalIndex < resolvedFormatIntervals.length - 1
-      && sourceGrapheme.sourceStart >= (resolvedFormatIntervals[formatIntervalIndex]?.end ?? 0)
+      formatIntervalIndex < preparedFormatIntervals.length - 1
+      && sourceGrapheme.sourceStart >= (preparedFormatIntervals[formatIntervalIndex]?.end ?? 0)
     ) {
       formatIntervalIndex += 1
     }
     while (
-      trackingIntervalIndex < resolvedTrackingIntervals.length - 1
-      && sourceGrapheme.sourceStart >= (resolvedTrackingIntervals[trackingIntervalIndex]?.end ?? 0)
+      trackingIntervalIndex < preparedTrackingIntervals.length - 1
+      && sourceGrapheme.sourceStart >= (preparedTrackingIntervals[trackingIntervalIndex]?.end ?? 0)
     ) {
       trackingIntervalIndex += 1
     }
-    const resolvedFormatInterval = resolvedFormatIntervals[formatIntervalIndex]
+    const resolvedFormatInterval = preparedFormatIntervals[formatIntervalIndex]
     const resolvedFormat = resolvedFormatInterval
       ? {
           fontFamily: resolvedFormatInterval.fontFamily,
@@ -742,7 +754,7 @@ export function resolveFontTrackingGraphemes<
           color: resolvedFormatInterval.color,
         }
       : normalizeBaseTextFormat(baseFormat)
-    const resolvedTracking = resolvedTrackingIntervals[trackingIntervalIndex]?.trackingScale
+    const resolvedTracking = preparedTrackingIntervals[trackingIntervalIndex]?.trackingScale
       ?? normalizeTrackingScale(baseTrackingScale)
     graphemes.push({
       ...resolvedFormat,
@@ -1074,6 +1086,8 @@ export function buildPositionedTextFormatTrackingGraphemes<
     measureGlyphBounds,
     measureResolvedGlyphBounds,
     measureResolvedPairAdvance,
+    resolvedFormatIntervals,
+    resolvedTrackingIntervals,
   }: {
     sourceText: string
     command: TextDrawCommand
@@ -1087,14 +1101,11 @@ export function buildPositionedTextFormatTrackingGraphemes<
     measureGlyphBounds?: GlyphBoundsMeasure
     measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
     measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
+    resolvedFormatIntervals?: readonly ResolvedTextFormat<StyleKey, FontFamily>[]
+    resolvedTrackingIntervals?: readonly ResolvedTrackingInterval[]
   },
 ): PositionedTextFormatTrackingGrapheme<StyleKey, FontFamily>[] {
   const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
-  const normalizedTrackingRuns = normalizeTextTrackingRuns(
-    sourceText,
-    trackingRuns,
-    baseTrackingScale,
-  )
   const graphemes = resolveFontTrackingGraphemes({
     sourceText,
     renderedText: commandRange.renderedText,
@@ -1102,8 +1113,10 @@ export function buildPositionedTextFormatTrackingGraphemes<
     baseFormat,
     formatRuns,
     baseTrackingScale,
-    trackingRuns: normalizedTrackingRuns,
+    trackingRuns,
     resolveFontSize,
+    resolvedFormatIntervals,
+    resolvedTrackingIntervals,
   })
 
   if (!graphemes.length) return []
@@ -1235,6 +1248,8 @@ export function buildPositionedTextFormatTrackingSegmentsDirect<
     measureGlyphBounds,
     measureResolvedGlyphBounds,
     measureResolvedPairAdvance,
+    resolvedFormatIntervals,
+    resolvedTrackingIntervals,
   }: {
     sourceText: string
     command: TextDrawCommand
@@ -1248,14 +1263,11 @@ export function buildPositionedTextFormatTrackingSegmentsDirect<
     measureGlyphBounds?: GlyphBoundsMeasure
     measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
     measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
+    resolvedFormatIntervals?: readonly ResolvedTextFormat<StyleKey, FontFamily>[]
+    resolvedTrackingIntervals?: readonly ResolvedTrackingInterval[]
   },
 ): PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] {
   const commandRange = resolveTextDrawCommandRange(command, sourceText.length)
-  const normalizedTrackingRuns = normalizeTextTrackingRuns(
-    sourceText,
-    trackingRuns,
-    baseTrackingScale,
-  )
   const graphemes = resolveFontTrackingGraphemes({
     sourceText,
     renderedText: commandRange.renderedText,
@@ -1263,8 +1275,10 @@ export function buildPositionedTextFormatTrackingSegmentsDirect<
     baseFormat,
     formatRuns,
     baseTrackingScale,
-    trackingRuns: normalizedTrackingRuns,
+    trackingRuns,
     resolveFontSize,
+    resolvedFormatIntervals,
+    resolvedTrackingIntervals,
   })
 
   if (!graphemes.length) return []

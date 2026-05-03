@@ -50,6 +50,7 @@ import {
   buildPositionedTextFormatTrackingGraphemes,
   buildPositionedTextFormatTrackingSegmentsDirect,
   buildPositionedTextFormatTrackingSegmentsFromGraphemes,
+  getResolvedFormatIntervals,
   normalizeTextFormatRuns,
   withTextFormatProfilingAccumulator,
   type TextFormatRun,
@@ -65,6 +66,7 @@ import {
   normalizeTrackingScale,
 } from "@/lib/text-rendering"
 import {
+  getResolvedTrackingIntervals,
   normalizeTextTrackingRuns,
   type TextTrackingRun,
 } from "@/lib/text-tracking-runs"
@@ -1393,11 +1395,23 @@ function buildPageExportPlanInternal({
             measureResolvedGlyphBounds,
             measureResolvedPairAdvance,
           }
+          const resolvedFormatIntervals = getResolvedFormatIntervals(
+            textPlan.sourceText,
+            glyphArgs.baseFormat,
+            formatRuns,
+          )
+          const resolvedTrackingIntervals = getResolvedTrackingIntervals(
+            textPlan.sourceText,
+            textPlan.trackingScale,
+            textPlan.trackingRuns,
+          )
           if (includeGraphemeLines) {
             const glyphGraphemesStartedAt = phaseAccumulator ? getNowMs() : 0
             textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
               ...glyphArgs,
               command,
+              resolvedFormatIntervals,
+              resolvedTrackingIntervals,
             }))
             if (phaseAccumulator) {
               phaseAccumulator.glyphGraphemesMs += getNowMs() - glyphGraphemesStartedAt
@@ -1416,6 +1430,8 @@ function buildPageExportPlanInternal({
               buildPositionedTextFormatTrackingSegmentsDirect(textMeasureContext, {
                 ...glyphArgs,
                 command,
+                resolvedFormatIntervals,
+                resolvedTrackingIntervals,
               })
             ))
             if (phaseAccumulator) {
