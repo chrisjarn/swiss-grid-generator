@@ -64,6 +64,7 @@ function scaleTextRenderPlan<BlockId extends string>(
     guideRects: plan.guideRects.map((rect) => scaleRect(rect, factor)),
     rotationOriginX: plan.rotationOriginX * factor,
     rotationOriginY: plan.rotationOriginY * factor,
+    drawSegmentLines: plan.drawSegmentLines.map((line) => line.map(scaleSegment)),
     segmentLines: plan.segmentLines.map((line) => line.map(scaleSegment)),
     renderedLines: plan.renderedLines.map((line) => ({
       ...line,

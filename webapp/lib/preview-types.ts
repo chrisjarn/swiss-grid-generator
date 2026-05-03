@@ -48,6 +48,7 @@ export type BlockRenderPlan<Key extends string> = {
   opticalKerning: boolean
   trackingScale: number
   trackingRuns: TextTrackingRun[]
+  drawSegmentLines: PositionedTextFormatTrackingSegment[][]
   segmentLines: PositionedTextFormatTrackingSegment[][]
   renderedLines: RenderedTextLine[]
   commands: TextDrawCommand[]

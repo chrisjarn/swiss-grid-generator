@@ -5,6 +5,7 @@ import type { FontFamily } from "@/lib/config/fonts"
 import type { GridResult } from "@/lib/grid-calculator"
 import { resolveBlockHeight } from "@/lib/block-height"
 import { findNearestAxisIndex, sumAxisSpan } from "@/lib/grid-rhythm"
+import type { BaseTextFormat } from "@/lib/text-format-runs"
 import { applyCanvasTextConfig, buildCanvasFont } from "@/lib/text-rendering"
 import type { TextTrackingRun } from "@/lib/text-tracking-runs"
 import type { ModulePosition } from "@/lib/types/preview-layout"
@@ -28,6 +29,11 @@ type Args<Key extends string, StyleKey extends string> = {
     trackingScale: number,
     opticalKerning: boolean,
     trackingRuns?: readonly TextTrackingRun[],
+    baseFormat?: BaseTextFormat<StyleKey, FontFamily>,
+    formatRuns?: undefined,
+    resolveFontSize?: (styleKey: StyleKey) => number,
+    trace?: undefined,
+    canvasFont?: string,
   ) => WrappedTextLine[]
   getBlockFontSize: (key: Key, styleKey: StyleKey) => number
   getBlockFont: (key: Key) => FontFamily
@@ -142,8 +148,14 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
     const resolvedOpticalKerning = opticalKerning ?? isBlockOpticalKerningEnabled(key)
     const resolvedTrackingScale = trackingScale ?? getBlockTrackingScale(key)
     const resolvedTrackingRuns = trackingRuns ?? getBlockTrackingRuns(key)
+    const canvasFont = buildCanvasFont(
+      resolvedFontFamily,
+      resolvedFontWeight,
+      resolvedItalic,
+      fontSize,
+    )
     applyCanvasTextConfig(ctx, {
-      font: buildCanvasFont(resolvedFontFamily, resolvedFontWeight, resolvedItalic, fontSize),
+      font: canvasFont,
       opticalKerning: resolvedOpticalKerning,
     })
     const startCol = position
@@ -158,6 +170,17 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
       resolvedTrackingScale,
       resolvedOpticalKerning,
       resolvedTrackingRuns,
+      {
+        fontFamily: resolvedFontFamily,
+        fontWeight: resolvedFontWeight,
+        italic: resolvedItalic,
+        styleKey,
+        color: "#000000",
+      },
+      undefined,
+      (segmentStyleKey) => segmentStyleKey === styleKey ? fontSize : getBlockFontSize(key, segmentStyleKey) * scale,
+      undefined,
+      canvasFont,
     )
     const neededCols = Math.max(1, Math.ceil(lines.length / maxLinesPerColumn))
 

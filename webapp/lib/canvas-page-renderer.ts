@@ -67,86 +67,6 @@ type TypographyStyleDefinition = {
   baselineMultiplier: number
 }
 
-type CanvasTextPlanSignatureInput = {
-  styleKey: string
-  fontFamily: string
-  textColor: string
-  fontWeight: number
-  italic: boolean
-  opticalKerning: boolean
-  trackingScale: number
-  textAlign: TextAlignMode
-  textVerticalAlign: TextVerticalAlignMode
-  blockRotation: number
-  span: number
-  rowSpan: number
-  columnReflow: boolean
-  heightBaselines: number
-  rotationOriginX: number
-  rotationOriginY: number
-  rect: BlockRect
-  guideRects: BlockRect[]
-  commands: TextDrawCommand[]
-  segmentLines: BlockRenderPlan<string>["segmentLines"]
-}
-
-function buildCanvasTextPlanSignature({
-  styleKey,
-  fontFamily,
-  textColor,
-  fontWeight,
-  italic,
-  opticalKerning,
-  trackingScale,
-  textAlign,
-  textVerticalAlign,
-  blockRotation,
-  span,
-  rowSpan,
-  columnReflow,
-  heightBaselines,
-  rotationOriginX,
-  rotationOriginY,
-  rect,
-  guideRects,
-  commands,
-  segmentLines,
-}: CanvasTextPlanSignatureInput): string {
-  return [
-    styleKey,
-    fontFamily,
-    textColor,
-    fontWeight,
-    italic ? "italic" : "normal",
-    opticalKerning ? "kerning-on" : "kerning-off",
-    trackingScale,
-    textAlign,
-    textVerticalAlign,
-    blockRotation.toFixed(2),
-    span,
-    rowSpan,
-    columnReflow ? 1 : 0,
-    heightBaselines,
-    rotationOriginX.toFixed(3),
-    rotationOriginY.toFixed(3),
-    rect.width.toFixed(3),
-    rect.height.toFixed(3),
-    guideRects
-      .map((guideRect) => (
-        `${guideRect.x.toFixed(3)},${guideRect.y.toFixed(3)},${guideRect.width.toFixed(3)},${guideRect.height.toFixed(3)}`
-      ))
-      .join("||"),
-    commands
-      .map((command) => `${command.text}@${command.x.toFixed(3)},${command.y.toFixed(3)}`)
-      .join("||"),
-    segmentLines
-      .map((segments) => segments.map((segment) => (
-        `${segment.text}:${segment.fontFamily}:${segment.fontWeight}:${segment.italic ? 1 : 0}:${segment.styleKey}:${segment.color}:${segment.fontSize}:${segment.trackingScale}`
-      )).join("||"))
-      .join("###"),
-  ].join("|")
-}
-
 type BuildCanvasImagePlansArgs<Key extends string> = {
   imageOrder: Key[]
   imageModulePositions: Partial<Record<Key, ModulePosition>>
@@ -870,28 +790,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       key: plan.key,
       rect: plan.rect,
       guideRects: plan.guideRects,
-      signature: buildCanvasTextPlanSignature({
-        styleKey: plan.styleKey,
-        fontFamily: blockFont,
-        textColor,
-        fontWeight: blockFontWeight,
-        italic: blockItalic,
-        opticalKerning,
-        trackingScale,
-        textAlign: plan.textAlign,
-        textVerticalAlign: plan.textVerticalAlign,
-        blockRotation: plan.blockRotation,
-        span: plan.span,
-        rowSpan: plan.rowSpan,
-        columnReflow: plan.columnReflow,
-        heightBaselines: plan.heightBaselines,
-        rotationOriginX: plan.rotationOriginX,
-        rotationOriginY: plan.rotationOriginY,
-        rect: plan.rect,
-        guideRects: plan.guideRects,
-        commands: plan.commands,
-        segmentLines,
-      }),
+      signature: "",
       font: planFont,
       textColor,
       textAlign: plan.textAlign,
@@ -902,6 +801,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       opticalKerning,
       trackingScale,
       trackingRuns,
+      drawSegmentLines: segmentLines,
       segmentLines,
       renderedLines,
       commands: plan.commands,
@@ -937,35 +837,14 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
 ): BlockRenderPlan<string> {
   const textColor = formatSvgColor(textPlan.textColor)
   const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
-  const segmentLines = textPlan.graphemeLines.length > 0
+  const renderedSegmentLines = textPlan.graphemeLines.length > 0
     ? textPlan.graphemeLines
     : textPlan.segmentLines
   return {
     key: textPlan.key,
     rect: textPlan.rect,
     guideRects: textPlan.guideRects,
-    signature: buildCanvasTextPlanSignature({
-      styleKey: textPlan.styleKey,
-      fontFamily: textPlan.fontFamily,
-      textColor,
-      fontWeight: textPlan.fontWeight,
-      italic: textPlan.italic,
-      opticalKerning: textPlan.opticalKerning,
-      trackingScale: textPlan.trackingScale,
-      textAlign: textPlan.textAlign,
-      textVerticalAlign: textPlan.textVerticalAlign,
-      blockRotation: textPlan.blockRotation,
-      span: textPlan.span,
-      rowSpan: textPlan.rowSpan,
-      columnReflow: textPlan.columnReflow,
-      heightBaselines: textPlan.heightBaselines,
-      rotationOriginX: textPlan.rotationOriginX,
-      rotationOriginY: textPlan.rotationOriginY,
-      rect: textPlan.rect,
-      guideRects: textPlan.guideRects,
-      commands: textPlan.commands,
-      segmentLines,
-    }),
+    signature: "",
     font,
     textColor,
     textAlign: textPlan.textAlign,
@@ -976,11 +855,12 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
     opticalKerning: textPlan.opticalKerning,
     trackingScale: textPlan.trackingScale,
     trackingRuns: textPlan.trackingRuns,
-    segmentLines,
+    drawSegmentLines: textPlan.segmentLines,
+    segmentLines: renderedSegmentLines,
     renderedLines: buildRenderedTextLines(
       textPlan.sourceText,
       textPlan.commands,
-      segmentLines,
+      renderedSegmentLines,
       font,
     ),
     commands: textPlan.commands,
@@ -1068,8 +948,12 @@ export function drawCanvasTextPlan<Key extends string>(
   ctx: CanvasRenderingContext2D,
   textPlan: BlockRenderPlan<Key>,
 ): void {
-  ctx.fillStyle = textPlan.textColor
   ctx.textAlign = "left"
+  applyCanvasTextConfig(ctx, {
+    font: textPlan.font,
+    opticalKerning: textPlan.opticalKerning,
+  })
+  ctx.fillStyle = textPlan.textColor
   const angle = (textPlan.blockRotation * Math.PI) / 180
   const rotated = Math.abs(angle) > 0.0001
   if (rotated) {
@@ -1077,14 +961,40 @@ export function drawCanvasTextPlan<Key extends string>(
     ctx.translate(textPlan.rotationOriginX, textPlan.rotationOriginY)
     ctx.rotate(angle)
   }
-  for (const lineSegments of textPlan.segmentLines) {
+  let activeFillStyle = textPlan.textColor
+  let activeFont = textPlan.font
+  let lastFontFamily = ""
+  let lastFontWeight = Number.NaN
+  let lastItalic = false
+  let lastFontSize = Number.NaN
+  for (const lineSegments of textPlan.drawSegmentLines) {
     for (const segment of lineSegments) {
-      ctx.fillStyle = segment.color
-      const canvasFont = buildCanvasFont(segment.fontFamily, segment.fontWeight, segment.italic, segment.fontSize)
-      applyCanvasTextConfig(ctx, {
-        font: canvasFont,
-        opticalKerning: textPlan.opticalKerning,
-      })
+      if (segment.color !== activeFillStyle) {
+        activeFillStyle = segment.color
+        ctx.fillStyle = activeFillStyle
+      }
+      if (
+        segment.fontFamily !== lastFontFamily
+        || segment.fontWeight !== lastFontWeight
+        || segment.italic !== lastItalic
+        || segment.fontSize !== lastFontSize
+      ) {
+        lastFontFamily = segment.fontFamily
+        lastFontWeight = segment.fontWeight
+        lastItalic = segment.italic
+        lastFontSize = segment.fontSize
+        activeFont = buildCanvasFont(
+          segment.fontFamily,
+          segment.fontWeight,
+          segment.italic,
+          segment.fontSize,
+        )
+        if (activeFont !== ctx.font) {
+          ctx.font = activeFont
+        }
+      } else if (activeFont !== ctx.font) {
+        ctx.font = activeFont
+      }
       ctx.fillText(
         segment.text,
         rotated ? segment.x - textPlan.rotationOriginX : segment.x,
