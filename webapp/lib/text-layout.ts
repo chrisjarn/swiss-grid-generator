@@ -79,7 +79,7 @@ type WrapProfilingAccumulator = {
 }
 
 type WrapHyphenationCache = {
-  splitLines: Map<string, WrappedTextLine[]>
+  splitParts: Map<string, readonly string[]>
   inlineSplits: Map<string, InlineSplitResult | null>
 }
 
@@ -212,25 +212,30 @@ function hyphenateTokenToLines(
 ): WrappedTextLine[] {
   const startedAt = accumulator ? getNowMs() : 0
   const cacheKey = getHyphenationTokenCacheKey(token, maxWidth)
-  const cached = hyphenationCache.splitLines.get(cacheKey)
-  if (cached) {
+  let parts = hyphenationCache.splitParts.get(cacheKey)
+  if (parts) {
     if (accumulator) {
       accumulator.hyphenationCalls += 1
       accumulator.hyphenationMs += getNowMs() - startedAt
     }
-    return cached
+  } else {
+    parts = hyphenateWordEnglish(
+      token.text,
+      maxWidth,
+      (sample) => measureWidth(sample, {
+        start: token.start,
+        end: token.start + sample.replace(/-$/, "").length,
+      }),
+    )
+    hyphenationCache.splitParts.set(cacheKey, parts)
+    if (accumulator) {
+      accumulator.hyphenationCalls += 1
+      accumulator.hyphenationMs += getNowMs() - startedAt
+    }
   }
-  const parts = hyphenateWordEnglish(
-    token.text,
-    maxWidth,
-    (sample) => measureWidth(sample, {
-      start: token.start,
-      end: token.start + sample.replace(/-$/, "").length,
-    }),
-  )
 
   let cursor = token.start
-  const lines = parts.map((part) => {
+  return parts.map((part) => {
     const sourceLength = part.replace(/-$/, "").length
     const line = {
       text: part,
@@ -240,12 +245,6 @@ function hyphenateTokenToLines(
     cursor += sourceLength
     return line
   })
-  if (accumulator) {
-    accumulator.hyphenationCalls += 1
-    accumulator.hyphenationMs += getNowMs() - startedAt
-  }
-  hyphenationCache.splitLines.set(cacheKey, lines)
-  return lines
 }
 
 function trySplitWordAtLineEnd(
@@ -719,7 +718,7 @@ export function wrapTextDetailed(
       }
     : null
   const hyphenationCache: WrapHyphenationCache = {
-    splitLines: new Map(),
+    splitParts: new Map(),
     inlineSplits: new Map(),
   }
   const startedAt = accumulator ? getNowMs() : 0

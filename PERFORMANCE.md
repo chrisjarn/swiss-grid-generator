@@ -46,3 +46,78 @@ That test snapshots a normalized canonical stress plan hash so performance chang
 - Cache only pure deterministic calculations with explicit keys.
 - Do not cache or reuse returned plan objects across calls unless mutation safety is proven.
 - Run `npm run test:page-export-plan`, `npm run lint`, `npx tsc --noEmit`, and `npm run benchmark:layout` after planner changes.
+
+## 2026-05-03 Optimization Summary
+
+Today's work stayed within the planner-first contract and focused on the preview warm path plus the cold wrap-heavy typography path.
+
+### Kept Changes
+
+- Reused resolved text format/tracking intervals during glyph planning in `webapp/lib/text-format-runs.ts` and `webapp/lib/page-export-plan.ts`.
+- Added an exact boundary-correction width fast path in `webapp/lib/font-file-text-metrics-engine.ts` so punctuation-boundary probes do not always fall back to the heavier width path.
+- Added wrap-phase profiling in `webapp/lib/text-layout.ts` for:
+  - `wrapTextDetailed`
+  - `wrapTextDetailed.tokenize`
+  - `wrapTextDetailed.measureTokens`
+  - `wrapTextDetailed.hyphenation`
+  - `wrapTextDetailed.punctuationRebalance`
+  - `wrapTextDetailed.oversizeWhitespace`
+- Kept lightweight hyphenation caching:
+  - syllable cache in `webapp/lib/english-hyphenation.ts`
+  - per-wrap hyphenation result caches in `webapp/lib/text-layout.ts`
+
+### Measured Improvements
+
+- Warm `buildPageExportPlan`: from about `39-42ms` to about `33-35ms`
+- Warm `buildPageExportPlan.positionedGlyphs`: from about `35-36ms` to about `28-31ms`
+- Warm `buildPageExportPlan.glyphSegments`: from about `35-36ms` to about `28-31ms`
+- Warm `buildPageExportPlan.resolveFontTrackingGraphemes`: from about `9-15ms` to about `2-6ms`
+- `canvas.buildRenderPlansFromPageExportPlan`: stayed about `2-3ms`
+- `canvas.drawLayerStack`: stayed about `10-12ms`
+
+- Cold `fontFile.wrapText`: from about `114-117ms` to about `87-100ms`
+- Cold `fontFile.wrapText.measureFormattedRangeWidth`: from about `89-92ms` to about `53-64ms`
+
+### What Profiling Revealed
+
+After the font-width improvements landed, the remaining cold bottleneck was no longer tokenization or fit testing. The added `wrapTextDetailed.*` profiling showed:
+
+- `wrapTextDetailed.hyphenation`: about `65-79ms`
+- `wrapTextDetailed.measureTokens`: about `6-16ms`
+- `wrapTextDetailed.tokenize`: about `1ms`
+- `wrapTextDetailed.punctuationRebalance`: about `0ms`
+
+That means cold-wrap cost is still dominated by hyphenation control flow, not by planner geometry or canvas rendering.
+
+### Cold First-Pass Status
+
+The very first cold top-level typography pass improved less than the submetrics suggested and remained noisy:
+
+- Cold `buildPageExportPlan.wrapText` often remained around `269-303ms`
+- Cold first `buildPageExportPlan` total often remained around `333-372ms`
+
+The cold width engine got faster, but the full first-pass cost is still largely driven by wrap/hyphenation behavior.
+
+### Rejected Regression
+
+A search-based rewrite of the English hyphenator was tested and reverted. It regressed:
+
+- `wrapTextDetailed.hyphenation` to about `111-113ms`
+- `fontFile.wrapText` to about `129-131ms`
+- cold `buildPageExportPlan.wrapText` to about `322ms`
+- cold first `buildPageExportPlan` total to about `394ms`
+
+That experiment is not part of the kept state.
+
+### Validation
+
+The kept checkpoints were validated with:
+
+- `npm run lint`
+- `npx tsc --noEmit`
+
+Relevant commits from this pass:
+
+- `526127a` `Optimize hyphenated wrap width measurement`
+- `a9012f8` `Reuse text format intervals in glyph planning`
+- `91cf59f` `Optimize wrap profiling and boundary correction`
