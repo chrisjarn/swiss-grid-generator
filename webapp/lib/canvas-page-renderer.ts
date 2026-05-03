@@ -942,7 +942,7 @@ export function drawCanvasTextPlan<Key extends string>(
   let lastFontWeight = Number.NaN
   let lastItalic = false
   let lastFontSize = Number.NaN
-  for (const lineSegments of textPlan.drawSegmentLines) {
+  for (const lineSegments of textPlan.segmentLines) {
     for (const segment of lineSegments) {
       if (segment.color !== activeFillStyle) {
         activeFillStyle = segment.color
