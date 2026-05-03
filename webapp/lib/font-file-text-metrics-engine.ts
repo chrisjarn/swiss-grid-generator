@@ -969,6 +969,7 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
   const endExclusiveBySourceEnd = new Map<number, number>()
   const glyphWidths = new Array<number>(graphemes.length)
   const contributionPrefix = new Array<number>(graphemes.length).fill(0)
+  const terminalHyphenWidthByLastIndex = new Array<number | null>(graphemes.length).fill(null)
   const kerningMode: FontFileKerningMode = request.opticalKerning ? "optical" : "font"
 
   for (let index = 0; index < graphemes.length; index += 1) {
@@ -1010,16 +1011,43 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
   }
 
   const localCache = new Map<string, number | null>()
+  const getTerminalHyphenWidth = (lastIndex: number): number | null => {
+    const cached = terminalHyphenWidthByLastIndex[lastIndex]
+    if (cached !== null) return cached
+    const lastGrapheme = graphemes[lastIndex]
+    if (!lastGrapheme) return null
+    const hyphenWidth = measureFontFileGlyphWidth("-", lastGrapheme.descriptor)
+    if (hyphenWidth === null) return null
+    const pairAdvance = measureFontFilePairAdvance({
+      previous: lastGrapheme.text,
+      current: "-",
+      descriptor: lastGrapheme.descriptor,
+      kerningMode,
+      styleKey: lastGrapheme.styleKey,
+    })
+    if (pairAdvance === null) return null
+    const classCorrection = options.classCorrection
+      ? getRangeCalibrationClassCorrection({
+          previous: lastGrapheme.text,
+          current: "-",
+          descriptor: lastGrapheme.descriptor,
+          kerningMode,
+          styleKey: lastGrapheme.styleKey,
+        })
+      : 0
+    const width = pairAdvance
+      + classCorrection
+      + getTrackingLetterSpacing(lastGrapheme.descriptor.fontSize, lastGrapheme.trackingScale)
+      + hyphenWidth
+    terminalHyphenWidthByLastIndex[lastIndex] = width
+    return width
+  }
   return (renderedText, range) => {
     const cacheKey = `${range.start}:${range.end}:${renderedText}`
     const cached = localCache.get(cacheKey)
     if (cached !== undefined || localCache.has(cacheKey)) return cached ?? null
 
     const sourceSliceText = request.sourceText.slice(range.start, range.end)
-    if (renderedText !== sourceSliceText) {
-      localCache.set(cacheKey, null)
-      return null
-    }
     if (range.start === range.end) {
       const width = renderedText.length === 0 ? 0 : null
       localCache.set(cacheKey, width)
@@ -1034,13 +1062,25 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
     }
 
     const lastIndex = endExclusive - 1
-    const width = (
+    const exactWidth = (
       contributionPrefix[lastIndex]!
       - contributionPrefix[startIndex]!
       + glyphWidths[lastIndex]!
     )
-    localCache.set(cacheKey, width)
-    return width
+    if (renderedText === sourceSliceText) {
+      localCache.set(cacheKey, exactWidth)
+      return exactWidth
+    }
+    if (renderedText === `${sourceSliceText}-`) {
+      const terminalHyphenWidth = getTerminalHyphenWidth(lastIndex)
+      const width = terminalHyphenWidth === null
+        ? null
+        : exactWidth - glyphWidths[lastIndex]! + terminalHyphenWidth
+      localCache.set(cacheKey, width)
+      return width
+    }
+    localCache.set(cacheKey, null)
+    return null
   }
 }
 
