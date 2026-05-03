@@ -630,10 +630,15 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
           trackingRuns: rawTrackingRuns,
           resolveVariable: ({ name, rawText, rawStart, rawEnd, context }) => {
             if (name !== "lorem") return null
+            const rawPrefix = rawText.slice(0, rawStart)
+            const rawSuffix = rawText.slice(rawEnd)
+            const candidateLineCountCache = new Map<string, number>()
             return fitLoremTextToLineCapacity({
               maxLines: maxLoremLines,
               countLinesForCandidate: (candidate) => {
-                const candidateRawText = `${rawText.slice(0, rawStart)}${candidate}${rawText.slice(rawEnd)}`
+                const cachedLineCount = candidateLineCountCache.get(candidate)
+                if (cachedLineCount !== undefined) return cachedLineCount
+                const candidateRawText = `${rawPrefix}${candidate}${rawSuffix}`
                 const candidateResolved = resolveDocumentVariableContent({
                   text: candidateRawText,
                   context,
@@ -648,7 +653,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
                   baseFormat.italic,
                   resolveFontSize(styleKey),
                 )
-                return getWrappedText(
+                const lineCount = getWrappedText(
                   ctx,
                   candidateResolved.text,
                   wrapWidth,
@@ -662,6 +667,8 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
                   undefined,
                   candidateCanvasFont,
                 ).length
+                candidateLineCountCache.set(candidate, lineCount)
+                return lineCount
               },
             })
           },

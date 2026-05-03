@@ -7,6 +7,7 @@ import {
   normalizeTextTrackingRuns,
   remapTrackingRunsForTextEdit,
 } from "../lib/text-tracking-runs.ts"
+import { buildPositionedTextFormatTrackingSegmentsFromGraphemes } from "../lib/text-format-runs.ts"
 
 test("normalizeTextTrackingRuns merges adjacent runs and drops base-tracking ranges", () => {
   const runs = normalizeTextTrackingRuns("Swiss Grid", [
@@ -54,5 +55,92 @@ test("remapTrackingRunsForTextEdit preserves inserted text in the active trackin
 
   assert.deepEqual(nextRuns, [
     { start: 6, end: 20, trackingScale: 120 },
+  ])
+})
+
+test("buildPositionedTextFormatTrackingSegmentsFromGraphemes merges adjacent graphemes with matching typography", () => {
+  const segments = buildPositionedTextFormatTrackingSegmentsFromGraphemes([
+    {
+      text: "S",
+      start: 0,
+      end: 1,
+      trackingScale: 0,
+      fontFamily: "Inter",
+      fontWeight: 400,
+      italic: false,
+      styleKey: "body",
+      color: "#111111",
+      fontSize: 12,
+      x: 10,
+      y: 20,
+      width: 8,
+      ascent: 9,
+      descent: 3,
+    },
+    {
+      text: "w",
+      start: 1,
+      end: 2,
+      trackingScale: 0,
+      fontFamily: "Inter",
+      fontWeight: 400,
+      italic: false,
+      styleKey: "body",
+      color: "#111111",
+      fontSize: 12,
+      x: 18,
+      y: 20,
+      width: 8,
+      ascent: 9,
+      descent: 3,
+    },
+    {
+      text: "i",
+      start: 2,
+      end: 3,
+      trackingScale: 40,
+      fontFamily: "Inter",
+      fontWeight: 400,
+      italic: false,
+      styleKey: "body",
+      color: "#111111",
+      fontSize: 12,
+      x: 26,
+      y: 20,
+      width: 4,
+      ascent: 9,
+      descent: 3,
+    },
+  ])
+
+  assert.deepEqual(segments, [
+    {
+      text: "Sw",
+      start: 0,
+      end: 2,
+      trackingScale: 0,
+      fontFamily: "Inter",
+      fontWeight: 400,
+      italic: false,
+      styleKey: "body",
+      color: "#111111",
+      fontSize: 12,
+      x: 10,
+      y: 20,
+    },
+    {
+      text: "i",
+      start: 2,
+      end: 3,
+      trackingScale: 40,
+      fontFamily: "Inter",
+      fontWeight: 400,
+      italic: false,
+      styleKey: "body",
+      color: "#111111",
+      fontSize: 12,
+      x: 26,
+      y: 20,
+    },
   ])
 })

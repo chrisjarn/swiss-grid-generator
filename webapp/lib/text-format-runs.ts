@@ -9,12 +9,119 @@ import {
 } from "@/lib/text-rendering"
 import { resolveTextDrawCommandRange } from "@/lib/text-draw-command"
 import {
-  getTrackingScaleForIndex,
+  getResolvedTrackingIntervals,
   normalizeTextTrackingRuns,
   type TextTrackingRun,
 } from "@/lib/text-tracking-runs"
 import type { TextAlignMode } from "@/lib/types/layout-primitives"
 import type { TextDrawCommand } from "@/lib/typography-layout-plan"
+
+type TextFormatProfilingAccumulator = {
+  resolveFontTrackingGraphemesMs: number
+  measureFormattedTextRangeWidthMs: number
+  graphemeAdvanceMs: number
+  graphemeMetricsMs: number
+}
+
+function getNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
+}
+
+let activeTextFormatProfilingAccumulator: TextFormatProfilingAccumulator | null = null
+const GRAPHEME_METRICS_CACHE_LIMIT = 20000
+const graphemeMetricsCache = new Map<string, {
+  width: number
+  ascent: number
+  descent: number
+}>()
+const GRAPHEME_ADVANCE_CACHE_LIMIT = 30000
+const graphemeAdvanceCache = new Map<string, number>()
+
+function rememberCachedGraphemeMetrics(
+  key: string,
+  value: {
+    width: number
+    ascent: number
+    descent: number
+  },
+): {
+  width: number
+  ascent: number
+  descent: number
+} {
+  graphemeMetricsCache.set(key, value)
+  if (graphemeMetricsCache.size > GRAPHEME_METRICS_CACHE_LIMIT) {
+    const oldestKey = graphemeMetricsCache.keys().next().value
+    if (oldestKey) graphemeMetricsCache.delete(oldestKey)
+  }
+  return value
+}
+
+function rememberCachedGraphemeAdvance(
+  key: string,
+  value: number,
+): number {
+  graphemeAdvanceCache.set(key, value)
+  if (graphemeAdvanceCache.size > GRAPHEME_ADVANCE_CACHE_LIMIT) {
+    const oldestKey = graphemeAdvanceCache.keys().next().value
+    if (oldestKey) graphemeAdvanceCache.delete(oldestKey)
+  }
+  return value
+}
+
+function buildGraphemeMetricsCacheKey<
+  StyleKey extends string,
+  FontFamily extends string,
+>(
+  grapheme: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  source: "resolved" | "canvas",
+): string {
+  return [
+    source,
+    grapheme.fontFamily,
+    grapheme.fontWeight,
+    grapheme.italic ? 1 : 0,
+    grapheme.fontSize.toFixed(4),
+    grapheme.text,
+  ].join("::")
+}
+
+function buildGraphemeAdvanceCacheKey<
+  StyleKey extends string,
+  FontFamily extends string,
+>(
+  previous: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  current: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
+  opticalKerning: boolean,
+  source: "resolved" | "canvas",
+): string {
+  return [
+    source,
+    previous.fontFamily,
+    previous.fontWeight,
+    previous.italic ? 1 : 0,
+    previous.fontSize.toFixed(4),
+    previous.styleKey,
+    opticalKerning ? 1 : 0,
+    previous.text,
+    current.text,
+  ].join("::")
+}
+
+export function withTextFormatProfilingAccumulator<T>(
+  accumulator: TextFormatProfilingAccumulator | null,
+  run: () => T,
+): T {
+  const previous = activeTextFormatProfilingAccumulator
+  activeTextFormatProfilingAccumulator = accumulator
+  try {
+    return run()
+  } finally {
+    activeTextFormatProfilingAccumulator = previous
+  }
+}
 
 export type TextRange = {
   start: number
@@ -585,36 +692,62 @@ export function resolveFontTrackingGraphemes<
   range: TextRange
   baseFormat: BaseTextFormat<StyleKey, FontFamily>
   formatRuns: readonly TextFormatRun<StyleKey, FontFamily>[] | null | undefined
-  baseTrackingScale: number
-  trackingRuns: readonly TextTrackingRun[] | null | undefined
-  resolveFontSize: (styleKey: StyleKey) => number
+	baseTrackingScale: number
+	trackingRuns: readonly TextTrackingRun[] | null | undefined
+	resolveFontSize: (styleKey: StyleKey) => number
 }): Array<ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>> {
+  const startedAt = activeTextFormatProfilingAccumulator ? getNowMs() : 0
   const normalizedRange = normalizeRange(sourceText, range)
   const normalizedSource = toNormalizedSourceGraphemes(sourceText, normalizedRange)
   const renderedGraphemes = splitTextForTracking(renderedText)
   const mappedCount = Math.min(normalizedSource.length, renderedGraphemes.length)
   const graphemes: Array<ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>> = []
+  const resolvedFormatIntervals = getResolvedFormatIntervals(sourceText, baseFormat, formatRuns)
+  const resolvedTrackingIntervals = getResolvedTrackingIntervals(sourceText, baseTrackingScale, trackingRuns)
+  const fontSizeByStyleKey = new Map<StyleKey, number>()
+  const getFontSizeForStyleKey = (styleKey: StyleKey): number => {
+    const cached = fontSizeByStyleKey.get(styleKey)
+    if (cached !== undefined) return cached
+    const value = resolveFontSize(styleKey)
+    fontSizeByStyleKey.set(styleKey, value)
+    return value
+  }
+  let formatIntervalIndex = 0
+  let trackingIntervalIndex = 0
 
   for (let index = 0; index < mappedCount; index += 1) {
     const sourceGrapheme = normalizedSource[index]
-    const resolvedFormat = resolveTextFormatAtIndex(
-      sourceText,
-      sourceGrapheme.sourceStart,
-      baseFormat,
-      formatRuns,
-    )
+    while (
+      formatIntervalIndex < resolvedFormatIntervals.length - 1
+      && sourceGrapheme.sourceStart >= (resolvedFormatIntervals[formatIntervalIndex]?.end ?? 0)
+    ) {
+      formatIntervalIndex += 1
+    }
+    while (
+      trackingIntervalIndex < resolvedTrackingIntervals.length - 1
+      && sourceGrapheme.sourceStart >= (resolvedTrackingIntervals[trackingIntervalIndex]?.end ?? 0)
+    ) {
+      trackingIntervalIndex += 1
+    }
+    const resolvedFormatInterval = resolvedFormatIntervals[formatIntervalIndex]
+    const resolvedFormat = resolvedFormatInterval
+      ? {
+          fontFamily: resolvedFormatInterval.fontFamily,
+          fontWeight: resolvedFormatInterval.fontWeight,
+          italic: resolvedFormatInterval.italic,
+          styleKey: resolvedFormatInterval.styleKey,
+          color: resolvedFormatInterval.color,
+        }
+      : normalizeBaseTextFormat(baseFormat)
+    const resolvedTracking = resolvedTrackingIntervals[trackingIntervalIndex]?.trackingScale
+      ?? normalizeTrackingScale(baseTrackingScale)
     graphemes.push({
       ...resolvedFormat,
       text: renderedGraphemes[index] ?? "",
       start: sourceGrapheme.sourceStart,
       end: sourceGrapheme.sourceEnd,
-      trackingScale: getTrackingScaleForIndex(
-        sourceText,
-        sourceGrapheme.sourceStart,
-        baseTrackingScale,
-        trackingRuns,
-      ),
-      fontSize: resolveFontSize(resolvedFormat.styleKey),
+      trackingScale: resolvedTracking,
+      fontSize: getFontSizeForStyleKey(resolvedFormat.styleKey),
     })
   }
 
@@ -625,7 +758,7 @@ export function resolveFontTrackingGraphemes<
         start: normalizedRange.end,
         end: normalizedRange.end,
         trackingScale: normalizeTrackingScale(baseTrackingScale),
-        fontSize: resolveFontSize(normalizeBaseTextFormat(baseFormat).styleKey),
+        fontSize: getFontSizeForStyleKey(normalizeBaseTextFormat(baseFormat).styleKey),
         text: "",
       }
     const fallbackStart = normalizedRange.end
@@ -639,6 +772,9 @@ export function resolveFontTrackingGraphemes<
     }
   }
 
+  if (activeTextFormatProfilingAccumulator) {
+    activeTextFormatProfilingAccumulator.resolveFontTrackingGraphemesMs += getNowMs() - startedAt
+  }
   return graphemes
 }
 
@@ -651,9 +787,19 @@ function measureGraphemeWidth<
   measureGlyphBounds?: GlyphBoundsMeasure,
   measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
 ): number {
+  const resolvedCacheKey = buildGraphemeMetricsCacheKey(grapheme, "resolved")
+  const cachedResolvedMetrics = graphemeMetricsCache.get(resolvedCacheKey)
+  if (cachedResolvedMetrics) return cachedResolvedMetrics.width
+  const canvasCacheKey = buildGraphemeMetricsCacheKey(grapheme, "canvas")
+  const cachedCanvasMetrics = graphemeMetricsCache.get(canvasCacheKey)
+  if (cachedCanvasMetrics) return cachedCanvasMetrics.width
   const measured = measureResolvedGlyphBounds?.(grapheme) ?? measureGlyphBounds?.(grapheme.text)
   if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
-    return measured.advanceWidth
+    return rememberCachedGraphemeMetrics(resolvedCacheKey, {
+      width: measured.advanceWidth,
+      ascent: grapheme.fontSize * 0.8,
+      descent: grapheme.fontSize * 0.2,
+    }).width
   }
   context.font = buildCanvasFont(
     grapheme.fontFamily,
@@ -661,7 +807,12 @@ function measureGraphemeWidth<
     grapheme.italic,
     grapheme.fontSize,
   )
-  return context.measureText(grapheme.text).width
+  const metrics = context.measureText(grapheme.text)
+  return rememberCachedGraphemeMetrics(canvasCacheKey, {
+    width: metrics.width,
+    ascent: metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : grapheme.fontSize * 0.8,
+    descent: metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : grapheme.fontSize * 0.2,
+  }).width
 }
 
 function measureGraphemeMetrics<
@@ -677,13 +828,33 @@ function measureGraphemeMetrics<
   ascent: number
   descent: number
 } {
+  const startedAt = activeTextFormatProfilingAccumulator ? getNowMs() : 0
+  const resolvedCacheKey = buildGraphemeMetricsCacheKey(grapheme, "resolved")
+  const cachedResolvedMetrics = graphemeMetricsCache.get(resolvedCacheKey)
+  if (cachedResolvedMetrics) {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeMetricsMs += getNowMs() - startedAt
+    }
+    return cachedResolvedMetrics
+  }
+  const canvasCacheKey = buildGraphemeMetricsCacheKey(grapheme, "canvas")
+  const cachedCanvasMetrics = graphemeMetricsCache.get(canvasCacheKey)
+  if (cachedCanvasMetrics) {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeMetricsMs += getNowMs() - startedAt
+    }
+    return cachedCanvasMetrics
+  }
   const measured = measureResolvedGlyphBounds?.(grapheme) ?? measureGlyphBounds?.(grapheme.text)
   if (measured && Number.isFinite(measured.advanceWidth) && measured.advanceWidth >= 0) {
-    return {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeMetricsMs += getNowMs() - startedAt
+    }
+    return rememberCachedGraphemeMetrics(resolvedCacheKey, {
       width: measured.advanceWidth,
       ascent: grapheme.fontSize * 0.8,
       descent: grapheme.fontSize * 0.2,
-    }
+    })
   }
   context.font = buildCanvasFont(
     grapheme.fontFamily,
@@ -692,11 +863,15 @@ function measureGraphemeMetrics<
     grapheme.fontSize,
   )
   const metrics = context.measureText(grapheme.text)
-  return {
+  const result = rememberCachedGraphemeMetrics(canvasCacheKey, {
     width: metrics.width,
     ascent: metrics.actualBoundingBoxAscent > 0 ? metrics.actualBoundingBoxAscent : grapheme.fontSize * 0.8,
     descent: metrics.actualBoundingBoxDescent > 0 ? metrics.actualBoundingBoxDescent : grapheme.fontSize * 0.2,
+  })
+  if (activeTextFormatProfilingAccumulator) {
+    activeTextFormatProfilingAccumulator.graphemeMetricsMs += getNowMs() - startedAt
   }
+  return result
 }
 
 function measureGraphemeAdvance<
@@ -707,17 +882,39 @@ function measureGraphemeAdvance<
   previous: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
   current: ResolvedFormatTrackingGrapheme<StyleKey, FontFamily>,
   opticalKerning: boolean,
-  measureGlyphBounds?: GlyphBoundsMeasure,
-  measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
-  measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>,
+	measureGlyphBounds?: GlyphBoundsMeasure,
+	measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>,
+	measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>,
 ): number {
+  const startedAt = activeTextFormatProfilingAccumulator ? getNowMs() : 0
   const sameFontMetrics = previous.fontFamily === current.fontFamily
     && previous.fontWeight === current.fontWeight
     && previous.italic === current.italic
     && previous.fontSize === current.fontSize
 
   if (!sameFontMetrics) {
-    return measureGraphemeWidth(context, previous, measureGlyphBounds, measureResolvedGlyphBounds)
+    const width = measureGraphemeWidth(context, previous, measureGlyphBounds, measureResolvedGlyphBounds)
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeAdvanceMs += getNowMs() - startedAt
+    }
+    return width
+  }
+
+  const resolvedCacheKey = buildGraphemeAdvanceCacheKey(previous, current, opticalKerning, "resolved")
+  const cachedResolvedAdvance = graphemeAdvanceCache.get(resolvedCacheKey)
+  if (cachedResolvedAdvance !== undefined) {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeAdvanceMs += getNowMs() - startedAt
+    }
+    return cachedResolvedAdvance
+  }
+  const canvasCacheKey = buildGraphemeAdvanceCacheKey(previous, current, opticalKerning, "canvas")
+  const cachedCanvasAdvance = graphemeAdvanceCache.get(canvasCacheKey)
+  if (cachedCanvasAdvance !== undefined) {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeAdvanceMs += getNowMs() - startedAt
+    }
+    return cachedCanvasAdvance
   }
 
   const measuredPairAdvance = measureResolvedPairAdvance?.(previous, current, opticalKerning)
@@ -726,7 +923,10 @@ function measureGraphemeAdvance<
     && Number.isFinite(measuredPairAdvance)
     && measuredPairAdvance >= 0
   ) {
-    return measuredPairAdvance
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.graphemeAdvanceMs += getNowMs() - startedAt
+    }
+    return rememberCachedGraphemeAdvance(resolvedCacheKey, measuredPairAdvance)
   }
 
   context.font = buildCanvasFont(
@@ -735,7 +935,7 @@ function measureGraphemeAdvance<
     previous.italic,
     previous.fontSize,
   )
-  return measureTextPairAdvance(
+  const advance = measureTextPairAdvance(
     context,
     previous.text,
     current.text,
@@ -745,6 +945,10 @@ function measureGraphemeAdvance<
       ? (glyph) => measureResolvedGlyphBounds({ ...previous, text: glyph })
       : measureGlyphBounds,
   )
+  if (activeTextFormatProfilingAccumulator) {
+    activeTextFormatProfilingAccumulator.graphemeAdvanceMs += getNowMs() - startedAt
+  }
+  return rememberCachedGraphemeAdvance(canvasCacheKey, advance)
 }
 
 function segmentAttributesMatch<
@@ -793,9 +997,10 @@ export function measureFormattedTextRangeWidth<
     opticalKerning?: boolean
     measureGlyphBounds?: GlyphBoundsMeasure
     measureResolvedGlyphBounds?: ResolvedGlyphBoundsMeasure<StyleKey, FontFamily>
-    measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
-  },
+	measureResolvedPairAdvance?: ResolvedGlyphPairAdvanceMeasure<StyleKey, FontFamily>
+	},
 ): number {
+  const startedAt = activeTextFormatProfilingAccumulator ? getNowMs() : 0
   const normalizedTrackingRuns = normalizeTextTrackingRuns(
     sourceText,
     trackingRuns,
@@ -812,9 +1017,18 @@ export function measureFormattedTextRangeWidth<
     resolveFontSize,
   })
 
-  if (!graphemes.length) return 0
+  if (!graphemes.length) {
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.measureFormattedTextRangeWidthMs += getNowMs() - startedAt
+    }
+    return 0
+  }
   if (graphemes.length === 1) {
-    return measureGraphemeWidth(context, graphemes[0]!, measureGlyphBounds, measureResolvedGlyphBounds)
+    const width = measureGraphemeWidth(context, graphemes[0]!, measureGlyphBounds, measureResolvedGlyphBounds)
+    if (activeTextFormatProfilingAccumulator) {
+      activeTextFormatProfilingAccumulator.measureFormattedTextRangeWidthMs += getNowMs() - startedAt
+    }
+    return width
   }
 
   let width = 0
@@ -832,8 +1046,11 @@ export function measureFormattedTextRangeWidth<
     )
       + getTrackingLetterSpacing(previous.fontSize, previous.trackingScale)
   }
-
-  return width + measureGraphemeWidth(context, graphemes[graphemes.length - 1]!, measureGlyphBounds, measureResolvedGlyphBounds)
+  const totalWidth = width + measureGraphemeWidth(context, graphemes[graphemes.length - 1]!, measureGlyphBounds, measureResolvedGlyphBounds)
+  if (activeTextFormatProfilingAccumulator) {
+    activeTextFormatProfilingAccumulator.measureFormattedTextRangeWidthMs += getNowMs() - startedAt
+  }
+  return totalWidth
 }
 
 export function buildPositionedTextFormatTrackingGraphemes<
@@ -888,20 +1105,26 @@ export function buildPositionedTextFormatTrackingGraphemes<
 
   if (!graphemes.length) return []
 
-  const lineWidth = measureFormattedTextRangeWidth(context, {
-    sourceText,
-    renderedText: commandRange.renderedText,
-    range: commandRange.visibleRange,
-    baseFormat,
-    formatRuns,
-    baseTrackingScale,
-    trackingRuns: normalizedTrackingRuns,
-    resolveFontSize,
-    opticalKerning,
-    measureGlyphBounds,
-    measureResolvedGlyphBounds,
-    measureResolvedPairAdvance,
-  })
+  const metricsByIndex = graphemes.map((grapheme) => (
+    measureGraphemeMetrics(context, grapheme, measureGlyphBounds, measureResolvedGlyphBounds)
+  ))
+  const advanceByIndex = new Array<number>(graphemes.length).fill(0)
+  let lineWidth = metricsByIndex[graphemes.length - 1]?.width ?? 0
+  for (let index = 1; index < graphemes.length; index += 1) {
+    const previous = graphemes[index - 1]!
+    const current = graphemes[index]!
+    const advance = measureGraphemeAdvance(
+      context,
+      previous,
+      current,
+      opticalKerning,
+      measureGlyphBounds,
+      measureResolvedGlyphBounds,
+      measureResolvedPairAdvance,
+    ) + getTrackingLetterSpacing(previous.fontSize, previous.trackingScale)
+    advanceByIndex[index] = advance
+    lineWidth += advance
+  }
   const lineStartX = textAlign === "center"
     ? command.x - lineWidth / 2
     : textAlign === "right"
@@ -911,19 +1134,9 @@ export function buildPositionedTextFormatTrackingGraphemes<
   let cursorX = lineStartX
   return graphemes.map((grapheme, index) => {
     if (index > 0) {
-      const previous = graphemes[index - 1]!
-      cursorX += measureGraphemeAdvance(
-        context,
-        previous,
-        grapheme,
-        opticalKerning,
-        measureGlyphBounds,
-        measureResolvedGlyphBounds,
-        measureResolvedPairAdvance,
-      )
-        + getTrackingLetterSpacing(previous.fontSize, previous.trackingScale)
+      cursorX += advanceByIndex[index] ?? 0
     }
-    const metrics = measureGraphemeMetrics(context, grapheme, measureGlyphBounds, measureResolvedGlyphBounds)
+    const metrics = metricsByIndex[index]!
     return {
       text: grapheme.text,
       start: grapheme.start,
@@ -942,6 +1155,59 @@ export function buildPositionedTextFormatTrackingGraphemes<
       descent: metrics.descent,
     }
   })
+}
+
+export function buildPositionedTextFormatTrackingSegmentsFromGraphemes<
+  StyleKey extends string,
+  FontFamily extends string,
+>(
+  graphemes: readonly PositionedTextFormatTrackingGrapheme<StyleKey, FontFamily>[],
+): PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] {
+  if (!graphemes.length) return []
+
+  const positioned: PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] = []
+  let active: PositionedTextFormatTrackingSegment<StyleKey, FontFamily> = {
+    text: graphemes[0]!.text,
+    start: graphemes[0]!.start,
+    end: graphemes[0]!.end,
+    trackingScale: graphemes[0]!.trackingScale,
+    fontFamily: graphemes[0]!.fontFamily,
+    fontWeight: graphemes[0]!.fontWeight,
+    italic: graphemes[0]!.italic,
+    styleKey: graphemes[0]!.styleKey,
+    color: graphemes[0]!.color,
+    fontSize: graphemes[0]!.fontSize,
+    x: graphemes[0]!.x,
+    y: graphemes[0]!.y,
+  }
+
+  for (let index = 1; index < graphemes.length; index += 1) {
+    const current = graphemes[index]!
+    if (segmentAttributesMatch(active, current)) {
+      active.text += current.text
+      active.end = current.end
+      continue
+    }
+
+    positioned.push(active)
+    active = {
+      text: current.text,
+      start: current.start,
+      end: current.end,
+      trackingScale: current.trackingScale,
+      fontFamily: current.fontFamily,
+      fontWeight: current.fontWeight,
+      italic: current.italic,
+      styleKey: current.styleKey,
+      color: current.color,
+      fontSize: current.fontSize,
+      x: current.x,
+      y: current.y,
+    }
+  }
+
+  positioned.push(active)
+  return positioned
 }
 
 export function buildPositionedTextFormatTrackingSegments<
@@ -991,48 +1257,5 @@ export function buildPositionedTextFormatTrackingSegments<
     measureResolvedGlyphBounds,
     measureResolvedPairAdvance,
   })
-  if (!graphemes.length) return []
-  const positioned: PositionedTextFormatTrackingSegment<StyleKey, FontFamily>[] = []
-  let active: PositionedTextFormatTrackingSegment<StyleKey, FontFamily> = {
-    text: graphemes[0]!.text,
-    start: graphemes[0]!.start,
-    end: graphemes[0]!.end,
-    trackingScale: graphemes[0]!.trackingScale,
-    fontFamily: graphemes[0]!.fontFamily,
-    fontWeight: graphemes[0]!.fontWeight,
-    italic: graphemes[0]!.italic,
-    styleKey: graphemes[0]!.styleKey,
-    color: graphemes[0]!.color,
-    fontSize: graphemes[0]!.fontSize,
-    x: graphemes[0]!.x,
-    y: graphemes[0]!.y,
-  }
-
-  for (let index = 1; index < graphemes.length; index += 1) {
-    const current = graphemes[index]!
-    if (segmentAttributesMatch(active, current)) {
-      active.text += current.text
-      active.end = current.end
-      continue
-    }
-
-    positioned.push(active)
-    active = {
-      text: current.text,
-      start: current.start,
-      end: current.end,
-      trackingScale: current.trackingScale,
-      fontFamily: current.fontFamily,
-      fontWeight: current.fontWeight,
-      italic: current.italic,
-      styleKey: current.styleKey,
-      color: current.color,
-      fontSize: current.fontSize,
-      x: current.x,
-      y: current.y,
-    }
-  }
-
-  positioned.push(active)
-  return positioned
+  return buildPositionedTextFormatTrackingSegmentsFromGraphemes(graphemes)
 }

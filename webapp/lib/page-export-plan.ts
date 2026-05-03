@@ -48,8 +48,9 @@ import {
 } from "@/lib/typography-layout-plan"
 import {
   buildPositionedTextFormatTrackingGraphemes,
-  buildPositionedTextFormatTrackingSegments,
+  buildPositionedTextFormatTrackingSegmentsFromGraphemes,
   normalizeTextFormatRuns,
+  withTextFormatProfilingAccumulator,
   type TextFormatRun,
   type PositionedTextFormatTrackingGrapheme,
   type PositionedTextFormatTrackingSegment,
@@ -68,7 +69,7 @@ import {
 } from "@/lib/text-tracking-runs"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
-import { createTextMetricsService } from "@/lib/text-metrics-service"
+import { createTextMetricsService, type TextMetricsService } from "@/lib/text-metrics-service"
 import {
   createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
   createResolvedFontFileGlyphBoundsMeasure,
@@ -80,7 +81,11 @@ import {
   resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
-import { isLayoutProfilingEnabled, measureLayoutPerformance } from "@/lib/layout-performance"
+import {
+  isLayoutProfilingEnabled,
+  measureLayoutPerformance,
+  recordLayoutPerformanceMetric,
+} from "@/lib/layout-performance"
 import {
   resolveDocumentVariableContent,
   type DocumentVariableContext,
@@ -171,6 +176,7 @@ type BuildPageExportPlanArgs = {
   layoutEngine?: LayoutEngineContract
   rawDocumentVariableBlockKey?: BlockId | null
   textMetricsEngineFactory?: TextMetricsEngineFactory<TypographyStyleKey, FontFamily>
+  textMetricsService?: TextMetricsService<TypographyStyleKey, FontFamily>
   textWrapTraceCollector?: (trace: PageExportTextWrapTrace) => void
 }
 
@@ -197,6 +203,74 @@ type ExportTextContext = {
   resolveFontSize: (styleKey: TypographyStyleKey) => number
   sourceText: string
   measureWidth: (text: string, range?: { start: number; end: number }) => number
+}
+
+type ResolvedBlockPlan = {
+  key: BlockId
+  styleKey: TypographyStyleKey
+  span: number
+  rowSpan: number
+  heightBaselines: number
+  snapToColumns: boolean
+  startCol: number
+  startRow: number
+  blockHeight: number
+  wrapWidth: number
+  reflowEnabled: boolean
+  hyphenate: boolean
+  fontFamily: FontFamily
+  fontWeight: number
+  italic: boolean
+  opticalKerning: boolean
+  trackingScale: number
+  resolvedTextColor: string
+  baseFormat: {
+    fontFamily: FontFamily
+    fontWeight: number
+    italic: boolean
+    styleKey: TypographyStyleKey
+    color: string
+  }
+  defaultFontSize: number
+  defaultBaselineMultiplier: number
+  resolvedBaselineMultiplier: number
+  lineStep: number
+  baseFontSize: number
+  baseCanvasFont: string
+  rawText: string
+  rawTrackingRuns: TextTrackingRun[]
+  rawFormatRuns: TextFormatRun<TypographyStyleKey, FontFamily>[]
+  maxLoremLines: number
+  documentVariableContext: DocumentVariableContext | null
+  isManualPosition: boolean
+  manualRow: number | null
+  resolveFontSize: (styleKey: TypographyStyleKey) => number
+  rotation: number
+}
+
+type PageExportPlanPhaseAccumulator = {
+  resolveBlocksMs: number
+  documentVariablesMs: number
+  wrapTextMs: number
+  textMeasureWidthMs: number
+  textAscentMs: number
+  textDescentMs: number
+  opticalOffsetsMs: number
+  paragraphBoxesMs: number
+  lineCommandsMs: number
+  glyphGraphemesMs: number
+  glyphSegmentsMs: number
+  resolveFontTrackingGraphemesMs: number
+  measureFormattedTextRangeWidthMs: number
+  graphemeAdvanceMs: number
+  graphemeMetricsMs: number
+  layerOrderMs: number
+}
+
+function getNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
 }
 
 type PageExportGridGeometry = {
@@ -573,6 +647,7 @@ function buildPageExportPlanInternal({
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   rawDocumentVariableBlockKey = null,
   textMetricsEngineFactory,
+  textMetricsService,
   textWrapTraceCollector,
 }: BuildPageExportPlanArgs): PageExportPlan {
   const sourceWidth = result.pageSizePt.width
@@ -581,6 +656,26 @@ function buildPageExportPlanInternal({
   const { width: modW, height: modH } = result.module
   const { gridCols, gridRows } = result.settings
   const profilePhases = isLayoutProfilingEnabled()
+  const phaseAccumulator: PageExportPlanPhaseAccumulator | null = profilePhases
+    ? {
+        resolveBlocksMs: 0,
+        documentVariablesMs: 0,
+        wrapTextMs: 0,
+        textMeasureWidthMs: 0,
+        textAscentMs: 0,
+        textDescentMs: 0,
+        opticalOffsetsMs: 0,
+        paragraphBoxesMs: 0,
+        lineCommandsMs: 0,
+        glyphGraphemesMs: 0,
+        glyphSegmentsMs: 0,
+        resolveFontTrackingGraphemesMs: 0,
+        measureFormattedTextRangeWidthMs: 0,
+        graphemeAdvanceMs: 0,
+        graphemeMetricsMs: 0,
+        layerOrderMs: 0,
+      }
+    : null
   const geometry = profilePhases
     ? measureLayoutPerformance(
         "buildPageExportPlan.geometry",
@@ -760,22 +855,9 @@ function buildPageExportPlanInternal({
   )
 
   const textMeasureContext = createTextMeasureContext()
-  const textMetrics = createTextMetricsService<TypographyStyleKey, FontFamily>({
+  const textMetrics = textMetricsService ?? createTextMetricsService<TypographyStyleKey, FontFamily>({
     metricsEngineFactory: textMetricsEngineFactory ?? resolveLayoutTextMetricsEngineFactory(layoutEngine),
   })
-
-  const getBlockSpan = (key: BlockId) => {
-    const raw = blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
-    return Math.max(1, Math.min(gridCols, raw))
-  }
-
-  const getBlockRows = (key: BlockId) => {
-    return getHeightMetrics(blockRowSpans[key], blockHeightBaselines[key]).rows
-  }
-
-  const getBlockHeightBaselines = (key: BlockId) => {
-    return getHeightMetrics(blockRowSpans[key], blockHeightBaselines[key]).baselines
-  }
 
   const getStyleKeyForBlock = (key: BlockId): TypographyStyleKey => {
     const assigned = styleAssignments[key]
@@ -783,89 +865,33 @@ function buildPageExportPlanInternal({
     if (isBaseBlockId(key)) return DEFAULT_STYLE_ASSIGNMENTS[key] as TypographyStyleKey
     return "body"
   }
-
-  const isTextReflowEnabled = (key: BlockId) => (
-    resolveTextReflowEnabled(key, getStyleKeyForBlock(key), getBlockSpan(key), blockTextReflow)
-  )
-  const isSyllableDivisionEnabled = (key: BlockId) => (
-    resolveSyllableDivisionEnabled(key, getStyleKeyForBlock(key), blockSyllableDivision)
-  )
-  const isSnapToColumnsEnabled = (key: BlockId) => blockSnapToColumns[key] !== false
-  const getBlockFont = (key: BlockId): FontFamily => blockFontFamilies[key] ?? baseFont
   const getStyleDefaultItalic = (styleKey: TypographyStyleKey) => styleDefinitions[styleKey]?.blockItalic === true
   const getStyleDefaultWeight = (styleKey: TypographyStyleKey) => (
     getStyleDefaultFontWeight(styleDefinitions[styleKey]?.weight)
   )
-  const getResolvedFontVariantForBlock = (key: BlockId, styleKey: TypographyStyleKey) => {
-    const weightOverride = blockFontWeights[key]
-    const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
-      ? weightOverride
-      : getStyleDefaultWeight(styleKey)
-    const italicOverride = blockItalic[key]
-    const requestedItalic = italicOverride === true || italicOverride === false
-      ? italicOverride
-      : getStyleDefaultItalic(styleKey)
-    return resolveFontVariant(getBlockFont(key), requestedWeight, requestedItalic)
-  }
-  const getBlockFontWeight = (key: BlockId, styleKey: TypographyStyleKey) => (
-    getResolvedFontVariantForBlock(key, styleKey).weight
-  )
-  const isBlockItalic = (key: BlockId, styleKey: TypographyStyleKey) => (
-    getResolvedFontVariantForBlock(key, styleKey).italic
-  )
-  const isBlockOpticalKerningEnabled = (key: BlockId) => (
-    normalizeOpticalKerning(blockOpticalKerning[key] ?? DEFAULT_OPTICAL_KERNING)
-  )
-  const getBlockTrackingScale = (key: BlockId) => (
-    normalizeTrackingScale(blockTrackingScales[key] ?? DEFAULT_TRACKING_SCALE)
-  )
-  const getBlockTrackingRuns = (key: BlockId) => (
-    normalizeTextTrackingRuns(
-      textContent[key] ?? "",
-      blockTrackingRuns[key],
-      getBlockTrackingScale(key),
-    )
-  )
   const resolveExportTextColor = (value: unknown) => resolveTextSchemeColor(value, imageColorScheme)
-  const getResolvedBlockTextColor = (key: BlockId) => (
-    resolveExportTextColor(blockTextColors[key] ?? defaultTextColor)
-  )
-  const getBlockTextFormatRuns = (key: BlockId, styleKey: TypographyStyleKey) => (
-    normalizeTextFormatRuns(
-      textContent[key] ?? "",
-      (blockTextFormatRuns[key] ?? []).map((run) => (
-        run.color === undefined
-          ? run
-          : { ...run, color: resolveExportTextColor(run.color) }
-      )),
-      {
-        fontFamily: getBlockFont(key),
-        fontWeight: getBlockFontWeight(key, styleKey),
-        italic: isBlockItalic(key, styleKey),
-        styleKey,
-        color: getResolvedBlockTextColor(key),
-      },
-    )
-  )
-  const resolvedTextContent = {} as Record<BlockId, string>
-  const resolvedTrackingRunsByBlock = new Map<BlockId, TextTrackingRun[]>()
-  const resolvedFormatRunsByBlock = new Map<BlockId, TextFormatRun<TypographyStyleKey, FontFamily>[]>()
 
-  for (const key of blockOrder) {
-    const styleKey = styleAssignments[key] ?? "body"
-    const baseTrackingScale = getBlockTrackingScale(key)
-    const span = getBlockSpan(key)
-    const rowSpan = getBlockRows(key)
-    const heightBaselines = getBlockHeightBaselines(key)
+  const resolveBlockPlan = (key: BlockId): ResolvedBlockPlan => {
+    const styleKey = getStyleKeyForBlock(key)
+    const span = Math.max(1, Math.min(gridCols, blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)))
+    const heightMetrics = getHeightMetrics(blockRowSpans[key], blockHeightBaselines[key])
+    const rowSpan = heightMetrics.rows
+    const heightBaselines = heightMetrics.baselines
+    const snapToColumns = blockSnapToColumns[key] !== false
     const manualPosition = blockModulePositions[key]
+    const isManualPosition = Boolean(
+      manualPosition
+      && typeof manualPosition.col === "number"
+      && typeof manualPosition.row === "number",
+    )
     const startCol = (() => {
       if (!manualPosition || typeof manualPosition.col !== "number") return 0
       const { minCol } = resolveLayerColumnBounds({
         span,
         gridCols,
-        snapToColumns: isSnapToColumnsEnabled(key),
+        snapToColumns,
       })
-      const rawCol = isSnapToColumnsEnabled(key) ? manualPosition.col : Math.round(manualPosition.col)
+      const rawCol = snapToColumns ? manualPosition.col : Math.round(manualPosition.col)
       return Math.max(minCol, Math.min(Math.max(0, gridCols - 1), rawCol))
     })()
     const startRow = (
@@ -887,36 +913,54 @@ function buildPageExportPlanInternal({
       baselineStep,
     })
     const spanWidth = sumGridColumnSpan(moduleWidths, colStarts, startCol, span, gridMarginHorizontal)
-    const reflowEnabled = isTextReflowEnabled(key) && span >= 2
-    const reflowColumnWidth = Array.from({ length: Math.max(1, span) }, (_, columnIndex) => (
-      moduleWidths[startCol + columnIndex] ?? modW
-    )).reduce((smallest, width) => Math.min(smallest, width), Number.POSITIVE_INFINITY)
+    let reflowColumnWidth = Number.POSITIVE_INFINITY
+    for (let columnIndex = 0; columnIndex < Math.max(1, span); columnIndex += 1) {
+      const width = moduleWidths[startCol + columnIndex] ?? modW
+      if (width < reflowColumnWidth) reflowColumnWidth = width
+    }
+    const reflowEnabled = resolveTextReflowEnabled(key, styleKey, span, blockTextReflow) && span >= 2
     const wrapWidth = reflowEnabled
       ? (Number.isFinite(reflowColumnWidth) && reflowColumnWidth > 0 ? reflowColumnWidth : modW)
       : (Number.isFinite(spanWidth) && spanWidth > 0
           ? spanWidth
           : span * modW + Math.max(0, span - 1) * gridMarginHorizontal)
+    const fontFamily = blockFontFamilies[key] ?? baseFont
+    const weightOverride = blockFontWeights[key]
+    const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
+      ? weightOverride
+      : getStyleDefaultWeight(styleKey)
+    const italicOverride = blockItalic[key]
+    const requestedItalic = italicOverride === true || italicOverride === false
+      ? italicOverride
+      : getStyleDefaultItalic(styleKey)
+    const variant = resolveFontVariant(fontFamily, requestedWeight, requestedItalic)
+    const opticalKerning = normalizeOpticalKerning(blockOpticalKerning[key] ?? DEFAULT_OPTICAL_KERNING)
+    const trackingScale = normalizeTrackingScale(blockTrackingScales[key] ?? DEFAULT_TRACKING_SCALE)
+    const resolvedTextColor = resolveExportTextColor(blockTextColors[key] ?? defaultTextColor)
     const baseFormat = {
-      fontFamily: getBlockFont(key),
-      fontWeight: getBlockFontWeight(key, styleKey),
-      italic: isBlockItalic(key, styleKey),
+      fontFamily,
+      fontWeight: variant.weight,
+      italic: variant.italic,
       styleKey,
-      color: getResolvedBlockTextColor(key),
+      color: resolvedTextColor,
     }
     const rawText = textContent[key] ?? ""
-    const rawFormatRuns = getBlockTextFormatRuns(key, styleKey)
-    const rawTrackingRuns = getBlockTrackingRuns(key)
+    const rawTrackingRuns = normalizeTextTrackingRuns(
+      rawText,
+      blockTrackingRuns[key],
+      trackingScale,
+    )
+    const rawFormatRuns = normalizeTextFormatRuns(
+      rawText,
+      (blockTextFormatRuns[key] ?? []).map((run) => (
+        run.color === undefined
+          ? run
+          : { ...run, color: resolveExportTextColor(run.color) }
+      )),
+      baseFormat,
+    )
     const defaultFontSize = styleDefinitions[styleKey]?.size ?? 12
     const defaultBaselineMultiplier = styleDefinitions[styleKey]?.baselineMultiplier ?? 1
-    const resolvedBaselineMultiplier = styleKey !== "fx"
-      ? defaultBaselineMultiplier
-      : (() => {
-          const raw = blockCustomLeadings[key]
-          if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultBaselineMultiplier
-          return Math.max(0.01, clampFxLeading(raw) / gridUnit)
-        })()
-    const opticalKerning = isBlockOpticalKerningEnabled(key)
-    const lineStep = Math.max(0.01, resolvedBaselineMultiplier * baselineStep)
     const resolveFontSize = (segmentStyleKey: TypographyStyleKey) => {
       const styleDefaultSize = styleDefinitions[segmentStyleKey]?.size ?? defaultFontSize
       if (segmentStyleKey !== "fx") return styleDefaultSize
@@ -924,129 +968,180 @@ function buildPageExportPlanInternal({
       if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return styleDefaultSize
       return clampFxSize(raw)
     }
+    const resolvedBaselineMultiplier = styleKey !== "fx"
+      ? defaultBaselineMultiplier
+      : (() => {
+          const raw = blockCustomLeadings[key]
+          if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultBaselineMultiplier
+          return Math.max(0.01, clampFxLeading(raw) / gridUnit)
+        })()
+    const baseFontSize = resolveFontSize(styleKey)
     const baseCanvasFont = buildCanvasFont(
       baseFormat.fontFamily,
       baseFormat.fontWeight,
       baseFormat.italic,
-      resolveFontSize(styleKey),
+      baseFontSize,
     )
-    const baseFontSize = resolveFontSize(styleKey)
     const firstLineHeight = textMeasureContext
       ? textMetrics.getTextAscent(textMeasureContext, baseCanvasFont, baseFontSize)
         + textMetrics.getTextDescent(textMeasureContext, baseCanvasFont, baseFontSize)
       : baseFontSize
+    const lineStep = Math.max(0.01, resolvedBaselineMultiplier * baselineStep)
     const reflowCapacityHeight = blockHeight + (reflowEnabled && rowSpan > 0 ? gridMarginVertical : 0)
     const maxLinesPerColumn = Math.max(1, reflowEnabled
       ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
       : getTypographyLineCapacityForHeight(blockHeight, lineStep, firstLineHeight))
-    const maxLoremLines = reflowEnabled ? Math.max(1, maxLinesPerColumn * span) : maxLinesPerColumn
-    const blockDocumentVariableContext = resolveSpreadDocumentVariableContextForColumn(
+    const documentVariableContextForBlock = resolveSpreadDocumentVariableContextForColumn(
       documentVariableContext,
       startCol,
       gridCols,
       (result.grid.contentRects?.length ?? 0) > 1,
-    )
-    const shouldResolveDocumentVariables = blockDocumentVariableContext && key !== rawDocumentVariableBlockKey
-    const resolved = shouldResolveDocumentVariables
+    ) ?? null
+    const rotationRaw = blockRotations[key]
+    const rotation = typeof rotationRaw !== "number" || !Number.isFinite(rotationRaw)
+      ? 0
+      : clampRotation(rotationRaw)
+    return {
+      key,
+      styleKey,
+      span,
+      rowSpan,
+      heightBaselines,
+      snapToColumns,
+      startCol,
+      startRow,
+      blockHeight,
+      wrapWidth,
+      reflowEnabled,
+      hyphenate: resolveSyllableDivisionEnabled(key, styleKey, blockSyllableDivision),
+      fontFamily,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+      opticalKerning,
+      trackingScale,
+      resolvedTextColor,
+      baseFormat,
+      defaultFontSize,
+      defaultBaselineMultiplier,
+      resolvedBaselineMultiplier,
+      lineStep,
+      baseFontSize,
+      baseCanvasFont,
+      rawText,
+      rawTrackingRuns,
+      rawFormatRuns,
+      maxLoremLines: reflowEnabled ? Math.max(1, maxLinesPerColumn * span) : maxLinesPerColumn,
+      documentVariableContext: documentVariableContextForBlock,
+      isManualPosition,
+      manualRow: manualPosition && typeof manualPosition.row === "number" ? manualPosition.row : null,
+      resolveFontSize,
+      rotation,
+    }
+  }
+
+  const resolvedBlockPlans = new Map<BlockId, ResolvedBlockPlan>()
+  const resolvedTextContent = {} as Record<BlockId, string>
+  const resolvedTrackingRunsByBlock = new Map<BlockId, TextTrackingRun[]>()
+  const resolvedFormatRunsByBlock = new Map<BlockId, TextFormatRun<TypographyStyleKey, FontFamily>[]>()
+
+  for (const key of blockOrder) {
+    const resolveBlockStartedAt = phaseAccumulator ? getNowMs() : 0
+    const blockPlan = resolveBlockPlan(key)
+    if (phaseAccumulator) {
+      phaseAccumulator.resolveBlocksMs += getNowMs() - resolveBlockStartedAt
+    }
+    resolvedBlockPlans.set(key, blockPlan)
+    const blockDocumentVariableContext = blockPlan.documentVariableContext
+    const documentVariablesStartedAt = phaseAccumulator ? getNowMs() : 0
+    const resolved = blockDocumentVariableContext && key !== rawDocumentVariableBlockKey
       ? resolveDocumentVariableContent({
-          text: rawText,
+          text: blockPlan.rawText,
           context: blockDocumentVariableContext,
-          baseFormat,
-          formatRuns: rawFormatRuns,
-          baseTrackingScale,
-          trackingRuns: rawTrackingRuns,
+          baseFormat: blockPlan.baseFormat,
+          formatRuns: blockPlan.rawFormatRuns,
+          baseTrackingScale: blockPlan.trackingScale,
+          trackingRuns: blockPlan.rawTrackingRuns,
           resolveVariable: ({ name, rawText, rawStart, rawEnd, context }) => {
             if (name !== "lorem") return null
+            const rawPrefix = rawText.slice(0, rawStart)
+            const rawSuffix = rawText.slice(rawEnd)
+            const candidateLineCountCache = new Map<string, number>()
             return fitLoremTextToLineCapacity({
-              maxLines: maxLoremLines,
+              maxLines: blockPlan.maxLoremLines,
               countLinesForCandidate: (candidate) => {
-                const candidateRawText = `${rawText.slice(0, rawStart)}${candidate}${rawText.slice(rawEnd)}`
+                const cachedLineCount = candidateLineCountCache.get(candidate)
+                if (cachedLineCount !== undefined) return cachedLineCount
+                const candidateRawText = `${rawPrefix}${candidate}${rawSuffix}`
                 const candidateResolved = resolveDocumentVariableContent({
                   text: candidateRawText,
                   context,
-                  baseFormat,
-                  formatRuns: rawFormatRuns,
-                  baseTrackingScale,
-                  trackingRuns: rawTrackingRuns,
+                  baseFormat: blockPlan.baseFormat,
+                  formatRuns: blockPlan.rawFormatRuns,
+                  baseTrackingScale: blockPlan.trackingScale,
+                  trackingRuns: blockPlan.rawTrackingRuns,
                 })
                 if (!textMeasureContext) {
-                  return wrapTextDetailed(
+                  const lineCount = wrapTextDetailed(
                     candidateResolved.text,
-                    wrapWidth,
-                    isSyllableDivisionEnabled(key),
-                    (sample) => sample.length * resolveFontSize(styleKey) * 0.56,
+                    blockPlan.wrapWidth,
+                    blockPlan.hyphenate,
+                    (sample) => sample.length * blockPlan.baseFontSize * 0.56,
                   ).length
+                  candidateLineCountCache.set(candidate, lineCount)
+                  return lineCount
                 }
                 applyCanvasTextConfig(textMeasureContext, {
-                  font: buildCanvasFont(
-                    baseFormat.fontFamily,
-                    baseFormat.fontWeight,
-                    baseFormat.italic,
-                    resolveFontSize(styleKey),
-                  ),
-                  opticalKerning,
+                  font: blockPlan.baseCanvasFont,
+                  opticalKerning: blockPlan.opticalKerning,
                 })
-                return textMetrics.getWrappedText(
+                const lineCount = textMetrics.getWrappedText(
                   textMeasureContext,
                   candidateResolved.text,
-                  wrapWidth,
-                  isSyllableDivisionEnabled(key),
-                  baseTrackingScale,
-                  opticalKerning,
+                  blockPlan.wrapWidth,
+                  blockPlan.hyphenate,
+                  blockPlan.trackingScale,
+                  blockPlan.opticalKerning,
                   candidateResolved.trackingRuns,
-                  baseFormat,
+                  blockPlan.baseFormat,
                   candidateResolved.formatRuns,
-                  resolveFontSize,
+                  blockPlan.resolveFontSize,
                   undefined,
-                  baseCanvasFont,
+                  blockPlan.baseCanvasFont,
                 ).length
+                candidateLineCountCache.set(candidate, lineCount)
+                return lineCount
               },
             })
           },
         })
       : {
-          text: rawText,
-          formatRuns: rawFormatRuns,
-          trackingRuns: rawTrackingRuns,
+          text: blockPlan.rawText,
+          formatRuns: blockPlan.rawFormatRuns,
+          trackingRuns: blockPlan.rawTrackingRuns,
         }
+    if (phaseAccumulator) {
+      phaseAccumulator.documentVariablesMs += getNowMs() - documentVariablesStartedAt
+    }
 
     resolvedTextContent[key] = resolved.text
     resolvedTrackingRunsByBlock.set(key, resolved.trackingRuns)
     resolvedFormatRunsByBlock.set(key, resolved.formatRuns)
   }
-  const getBlockRotation = (key: BlockId) => {
-    const raw = blockRotations[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw)) return 0
-    return clampRotation(raw)
-  }
-  const getBlockFontSize = (key: BlockId, styleKey: TypographyStyleKey, defaultSize: number) => {
-    if (styleKey !== "fx") return defaultSize
-    const raw = blockCustomSizes[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultSize
-    return clampFxSize(raw)
-  }
-  const getBlockBaselineMultiplier = (
-    key: BlockId,
-    styleKey: TypographyStyleKey,
-    defaultMultiplier: number,
-  ) => {
-    if (styleKey !== "fx") return defaultMultiplier
-    const raw = blockCustomLeadings[key]
-    if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return defaultMultiplier
-    return Math.max(0.01, clampFxLeading(raw) / gridUnit)
-  }
+  const getResolvedBlockPlan = (key: BlockId): ResolvedBlockPlan => (
+    resolvedBlockPlans.get(key) ?? resolveBlockPlan(key)
+  )
   const getOriginForBlock = (key: BlockId, fallbackX: number, fallbackY: number) => {
-    const manual = blockModulePositions[key]
-    if (!manual || typeof manual.col !== "number" || typeof manual.row !== "number") {
+    const blockPlan = getResolvedBlockPlan(key)
+    if (!blockPlan.isManualPosition) {
       return { x: fallbackX, y: fallbackY }
     }
-    const span = getBlockSpan(key)
-    const col = clampLayerColumn(manual.col, {
-      span,
+    const manual = blockModulePositions[key]
+    const col = clampLayerColumn(manual?.col ?? 0, {
+      span: blockPlan.span,
       gridCols,
-      snapToColumns: isSnapToColumnsEnabled(key),
+      snapToColumns: blockPlan.snapToColumns,
     })
-    const row = clampFreePlacementRow(manual.row, maxBaselineRow)
+    const row = clampFreePlacementRow(blockPlan.manualRow ?? 0, maxBaselineRow)
     return {
       x: contentLeft + resolvePreviewColumnX(col, colStarts, firstColumnStep),
       y: baselineOriginTop + row * baselineStep,
@@ -1083,58 +1178,31 @@ function buildPageExportPlanInternal({
       captionKey: "caption",
       defaultBodyStyleKey: "body",
       defaultCaptionStyleKey: "caption",
-      getBlockSpan,
-      getBlockRows,
-      getBlockHeightBaselines,
-      getBlockFontSize: ({ key, styleKey, defaultSize }) => getBlockFontSize(key, styleKey, defaultSize),
-      getBlockBaselineMultiplier: ({ key, styleKey, defaultMultiplier }) => (
-        getBlockBaselineMultiplier(key, styleKey, defaultMultiplier)
-      ),
-      getBlockRotation,
-      isTextReflowEnabled,
-      isSyllableDivisionEnabled,
-      isBlockPositionManual: (key) => {
-        const manual = blockModulePositions[key]
-        return Boolean(manual && typeof manual.col === "number" && typeof manual.row === "number")
-      },
-      getBlockColumnStart: (key, span) => {
-        const manual = blockModulePositions[key]
-        if (!manual || typeof manual.col !== "number") return 0
-        const { minCol } = resolveLayerColumnBounds({
-          span,
-          gridCols,
-          snapToColumns: isSnapToColumnsEnabled(key),
-        })
-        const rawCol = isSnapToColumnsEnabled(key) ? manual.col : Math.round(manual.col)
-        return Math.max(minCol, Math.min(Math.max(0, gridCols - 1), rawCol))
-      },
-      getBlockRowStart: (key) => {
-        const manual = blockModulePositions[key]
-        if (!manual || typeof manual.row !== "number") return 0
-        return Math.max(
-          0,
-          Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(rowStartsInBaselines, manual.row)),
-        )
-      },
+      getBlockSpan: (key) => getResolvedBlockPlan(key).span,
+      getBlockRows: (key) => getResolvedBlockPlan(key).rowSpan,
+      getBlockHeightBaselines: (key) => getResolvedBlockPlan(key).heightBaselines,
+      getBlockFontSize: ({ key, styleKey }) => getResolvedBlockPlan(key).resolveFontSize(styleKey),
+      getBlockBaselineMultiplier: ({ key }) => getResolvedBlockPlan(key).resolvedBaselineMultiplier,
+      getBlockRotation: (key) => getResolvedBlockPlan(key).rotation,
+      isTextReflowEnabled: (key) => getResolvedBlockPlan(key).reflowEnabled,
+      isSyllableDivisionEnabled: (key) => getResolvedBlockPlan(key).hyphenate,
+      isBlockPositionManual: (key) => getResolvedBlockPlan(key).isManualPosition,
+      getBlockColumnStart: (key) => getResolvedBlockPlan(key).startCol,
+      getBlockRowStart: (key) => getResolvedBlockPlan(key).startRow,
       getOriginForBlock,
-      createTextContext: ({ key, styleKey, fontSize }) => {
-        const opticalKerning = isBlockOpticalKerningEnabled(key)
-        const trackingScale = getBlockTrackingScale(key)
+      createTextContext: ({ key, fontSize }) => {
+        const blockPlan = getResolvedBlockPlan(key)
+        const opticalKerning = blockPlan.opticalKerning
+        const trackingScale = blockPlan.trackingScale
         const trackingRuns = resolvedTrackingRunsByBlock.get(key) ?? []
         const sourceText = resolvedTextContent[key] ?? ""
-        const baseFormat = {
-          fontFamily: getBlockFont(key),
-          fontWeight: getBlockFontWeight(key, styleKey),
-          italic: isBlockItalic(key, styleKey),
-          styleKey,
-          color: getResolvedBlockTextColor(key),
-        }
+        const baseFormat = blockPlan.baseFormat
         const formatRuns = resolvedFormatRunsByBlock.get(key) ?? []
-        const resolveFontSize = (segmentStyleKey: TypographyStyleKey) => getBlockFontSize(key, segmentStyleKey, fontSize)
+        const resolveFontSize = blockPlan.resolveFontSize
         const canvasFont = buildCanvasFont(
-          baseFormat.fontFamily,
-          baseFormat.fontWeight,
-          baseFormat.italic,
+          blockPlan.fontFamily,
+          blockPlan.fontWeight,
+          blockPlan.italic,
           fontSize,
         )
         const measureWidth = (text: string, range?: { start: number; end: number }) => {
@@ -1143,7 +1211,8 @@ function buildPageExportPlanInternal({
               font: canvasFont,
               opticalKerning,
             })
-            return textMetrics.getMeasuredTextWidth(
+            const measureWidthStartedAt = phaseAccumulator ? getNowMs() : 0
+            const measuredWidth = textMetrics.getMeasuredTextWidth(
               textMeasureContext,
               text,
               trackingScale,
@@ -1156,6 +1225,10 @@ function buildPageExportPlanInternal({
               resolveFontSize,
               canvasFont,
             )
+            if (phaseAccumulator) {
+              phaseAccumulator.textMeasureWidthMs += getNowMs() - measureWidthStartedAt
+            }
+            return measuredWidth
           }
           return text.length * fontSize * 0.56
         }
@@ -1172,14 +1245,19 @@ function buildPageExportPlanInternal({
         }
       },
       wrapText: ({ context, key, styleKey, text, maxWidth, hyphenate }) => {
+        const wrapTextStartedAt = phaseAccumulator ? getNowMs() : 0
         if (!textMeasureContext) {
-          return wrapTextDetailed(text, maxWidth, hyphenate, context.measureWidth)
+          const wrapped = wrapTextDetailed(text, maxWidth, hyphenate, context.measureWidth)
+          if (phaseAccumulator) {
+            phaseAccumulator.wrapTextMs += getNowMs() - wrapTextStartedAt
+          }
+          return wrapped
         }
         applyCanvasTextConfig(textMeasureContext, {
           font: context.canvasFont,
           opticalKerning: context.opticalKerning,
         })
-        return textMetrics.getWrappedText(
+        const wrapped = textMetrics.getWrappedText(
           textMeasureContext,
           text,
           maxWidth,
@@ -1201,14 +1279,33 @@ function buildPageExportPlanInternal({
             : undefined,
           context.canvasFont,
         )
+        if (phaseAccumulator) {
+          phaseAccumulator.wrapTextMs += getNowMs() - wrapTextStartedAt
+        }
+        return wrapped
       },
-      textAscent: ({ context, fontSize }) =>
-        textMeasureContext ? textMetrics.getTextAscent(textMeasureContext, context.canvasFont, fontSize) : fontSize * 0.8,
-      textDescent: ({ context, fontSize }) =>
-        textMeasureContext ? textMetrics.getTextDescent(textMeasureContext, context.canvasFont, fontSize) : fontSize * 0.2,
-      opticalOffset: ({ context, styleKey, line, align, fontSize }) =>
-        textMeasureContext
-          ? textMetrics.getOpticalOffset(
+      textAscent: ({ context, fontSize }) => {
+        if (!textMeasureContext) return fontSize * 0.8
+        const textAscentStartedAt = phaseAccumulator ? getNowMs() : 0
+        const ascent = textMetrics.getTextAscent(textMeasureContext, context.canvasFont, fontSize)
+        if (phaseAccumulator) {
+          phaseAccumulator.textAscentMs += getNowMs() - textAscentStartedAt
+        }
+        return ascent
+      },
+      textDescent: ({ context, fontSize }) => {
+        if (!textMeasureContext) return fontSize * 0.2
+        const textDescentStartedAt = phaseAccumulator ? getNowMs() : 0
+        const descent = textMetrics.getTextDescent(textMeasureContext, context.canvasFont, fontSize)
+        if (phaseAccumulator) {
+          phaseAccumulator.textDescentMs += getNowMs() - textDescentStartedAt
+        }
+        return descent
+      },
+      opticalOffset: ({ context, styleKey, line, align, fontSize }) => {
+        if (!textMeasureContext) return 0
+        const opticalOffsetStartedAt = phaseAccumulator ? getNowMs() : 0
+        const offset = textMetrics.getOpticalOffset(
               textMeasureContext,
               styleKey,
               line,
@@ -1217,7 +1314,12 @@ function buildPageExportPlanInternal({
               context.opticalKerning,
               context.canvasFont,
             )
-          : 0,
+        if (phaseAccumulator) {
+          phaseAccumulator.opticalOffsetsMs += getNowMs() - opticalOffsetStartedAt
+        }
+        return offset
+      },
+      phaseAccumulator: phaseAccumulator ?? undefined,
     }),
         {
           blocks: blockOrder.length,
@@ -1225,79 +1327,89 @@ function buildPageExportPlanInternal({
       )
     : { plans: [] as TypographyLayoutPlan<BlockId, TypographyStyleKey>[], rects: {} as Record<BlockId, PageExportRect>, overflowByBlock: {} }
 
-  const textPlans: PageExportTextPlan[] = layoutOutput.plans.map((plan) => ({
-    ...plan,
-    fontFamily: getBlockFont(plan.key),
-    fontWeight: getBlockFontWeight(plan.key, plan.styleKey),
-    italic: isBlockItalic(plan.key, plan.styleKey),
-    leading: getBlockBaselineMultiplier(
-      plan.key,
-      plan.styleKey,
-      styleDefinitions[plan.styleKey]?.baselineMultiplier ?? 1,
-    ) * baselineStep,
-    trackingScale: getBlockTrackingScale(plan.key),
-    trackingRuns: resolvedTrackingRunsByBlock.get(plan.key) ?? [],
-    opticalKerning: isBlockOpticalKerningEnabled(plan.key),
-    textColor: parseHexColor(getResolvedBlockTextColor(plan.key)) ?? { r: 31, g: 41, b: 55 },
-    sourceText: resolvedTextContent[plan.key] ?? "",
-    segmentLines: [],
-    graphemeLines: [],
-  }))
+  const textPlans: PageExportTextPlan[] = layoutOutput.plans.map((plan) => {
+    const blockPlan = getResolvedBlockPlan(plan.key)
+    return {
+      ...plan,
+      fontFamily: blockPlan.fontFamily,
+      fontWeight: blockPlan.fontWeight,
+      italic: blockPlan.italic,
+      leading: blockPlan.resolvedBaselineMultiplier * baselineStep,
+      trackingScale: blockPlan.trackingScale,
+      trackingRuns: resolvedTrackingRunsByBlock.get(plan.key) ?? [],
+      opticalKerning: blockPlan.opticalKerning,
+      textColor: parseHexColor(blockPlan.resolvedTextColor) ?? { r: 31, g: 41, b: 55 },
+      sourceText: resolvedTextContent[plan.key] ?? "",
+      segmentLines: [],
+      graphemeLines: [],
+    }
+  })
 
   const positionTextGlyphs = () => {
     const measureResolvedGlyphBounds = createResolvedFontFileGlyphBoundsMeasure<TypographyStyleKey>()
     const measureResolvedPairAdvance = createResolvedFontFilePairAdvanceMeasure<TypographyStyleKey>()
-    for (const textPlan of textPlans) {
-      if (!textMeasureContext) continue
-      const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
-      const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []
-      const measureGlyphBounds = formatRuns.length === 0
-        ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
-        : undefined
-      applyCanvasTextConfig(textMeasureContext, {
-        font: canvasFont,
-        opticalKerning: textPlan.opticalKerning,
-      })
-      textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
-        sourceText: textPlan.sourceText,
-        command,
-        textAlign: textPlan.textAlign,
-        baseFormat: {
-          fontFamily: textPlan.fontFamily,
-          fontWeight: textPlan.fontWeight,
-          italic: textPlan.italic,
-          styleKey: textPlan.styleKey,
-          color: getResolvedBlockTextColor(textPlan.key),
-        },
-        formatRuns,
-        baseTrackingScale: textPlan.trackingScale,
-        trackingRuns: textPlan.trackingRuns,
-        resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
-        opticalKerning: textPlan.opticalKerning,
-        measureGlyphBounds,
-        measureResolvedGlyphBounds,
-        measureResolvedPairAdvance,
-      }))
-      textPlan.segmentLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingSegments(textMeasureContext, {
-        sourceText: textPlan.sourceText,
-        command,
-        textAlign: textPlan.textAlign,
-        baseFormat: {
-          fontFamily: textPlan.fontFamily,
-          fontWeight: textPlan.fontWeight,
-          italic: textPlan.italic,
-          styleKey: textPlan.styleKey,
-          color: getResolvedBlockTextColor(textPlan.key),
-        },
-        formatRuns,
-        baseTrackingScale: textPlan.trackingScale,
-        trackingRuns: textPlan.trackingRuns,
-        resolveFontSize: (styleKey) => getBlockFontSize(textPlan.key, styleKey, textPlan.fontSize),
-        opticalKerning: textPlan.opticalKerning,
-        measureGlyphBounds,
-        measureResolvedGlyphBounds,
-        measureResolvedPairAdvance,
-      }))
+    const textFormatAccumulator = phaseAccumulator
+      ? {
+          resolveFontTrackingGraphemesMs: 0,
+          measureFormattedTextRangeWidthMs: 0,
+          graphemeAdvanceMs: 0,
+          graphemeMetricsMs: 0,
+        }
+      : null
+    withTextFormatProfilingAccumulator(
+      textFormatAccumulator,
+      () => {
+        for (const textPlan of textPlans) {
+          if (!textMeasureContext) continue
+          const blockPlan = getResolvedBlockPlan(textPlan.key)
+          const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
+          const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []
+          const measureGlyphBounds = formatRuns.length === 0
+            ? createLoadedFontFileGlyphBoundsMeasureForCanvasFont(canvasFont) ?? undefined
+            : undefined
+          applyCanvasTextConfig(textMeasureContext, {
+            font: canvasFont,
+            opticalKerning: textPlan.opticalKerning,
+          })
+          const glyphGraphemesStartedAt = phaseAccumulator ? getNowMs() : 0
+          textPlan.graphemeLines = textPlan.commands.map((command) => buildPositionedTextFormatTrackingGraphemes(textMeasureContext, {
+            sourceText: textPlan.sourceText,
+            command,
+            textAlign: textPlan.textAlign,
+            baseFormat: {
+              fontFamily: textPlan.fontFamily,
+              fontWeight: textPlan.fontWeight,
+              italic: textPlan.italic,
+              styleKey: textPlan.styleKey,
+              color: blockPlan.resolvedTextColor,
+            },
+            formatRuns,
+            baseTrackingScale: textPlan.trackingScale,
+            trackingRuns: textPlan.trackingRuns,
+            resolveFontSize: blockPlan.resolveFontSize,
+            opticalKerning: textPlan.opticalKerning,
+            measureGlyphBounds,
+            measureResolvedGlyphBounds,
+            measureResolvedPairAdvance,
+          }))
+          if (phaseAccumulator) {
+            phaseAccumulator.glyphGraphemesMs += getNowMs() - glyphGraphemesStartedAt
+          }
+          const glyphSegmentsStartedAt = phaseAccumulator ? getNowMs() : 0
+          textPlan.segmentLines = textPlan.graphemeLines.map((graphemes) => (
+            buildPositionedTextFormatTrackingSegmentsFromGraphemes(graphemes)
+          ))
+          if (phaseAccumulator) {
+            phaseAccumulator.glyphSegmentsMs += getNowMs() - glyphSegmentsStartedAt
+          }
+        }
+      },
+    )
+    if (phaseAccumulator && textFormatAccumulator) {
+      phaseAccumulator.resolveFontTrackingGraphemesMs += textFormatAccumulator.resolveFontTrackingGraphemesMs
+      phaseAccumulator.measureFormattedTextRangeWidthMs += textFormatAccumulator.measureFormattedTextRangeWidthMs
+      phaseAccumulator.graphemeAdvanceMs += textFormatAccumulator.graphemeAdvanceMs
+      phaseAccumulator.graphemeMetricsMs += textFormatAccumulator.graphemeMetricsMs
     }
   }
   if (profilePhases) {
@@ -1312,6 +1424,7 @@ function buildPageExportPlanInternal({
     positionTextGlyphs()
   }
 
+  const layerOrderStartedAt = phaseAccumulator ? getNowMs() : 0
   const plannedImageKeys = new Set(imagePlans.map((plan) => plan.key))
   const plannedTextKeys = new Set(textPlans.map((plan) => plan.key))
   const resolvedOrderedLayerKeys = orderedLayerKeys.filter((key) => (
@@ -1329,6 +1442,65 @@ function buildPageExportPlanInternal({
       resolvedOrderedLayerKeys.push(key)
       resolvedLayerKeySet.add(key)
     }
+  }
+  if (phaseAccumulator) {
+    phaseAccumulator.layerOrderMs += getNowMs() - layerOrderStartedAt
+    recordLayoutPerformanceMetric("buildPageExportPlan.resolveBlocks", phaseAccumulator.resolveBlocksMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.documentVariables", phaseAccumulator.documentVariablesMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.wrapText", phaseAccumulator.wrapTextMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.textMeasureWidth", phaseAccumulator.textMeasureWidthMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.textAscent", phaseAccumulator.textAscentMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.textDescent", phaseAccumulator.textDescentMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.opticalOffsets", phaseAccumulator.opticalOffsetsMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.paragraphBoxes", phaseAccumulator.paragraphBoxesMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.lineCommands", phaseAccumulator.lineCommandsMs, {
+      blocks: blockOrder.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.glyphGraphemes", phaseAccumulator.glyphGraphemesMs, {
+      textPlans: textPlans.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.glyphSegments", phaseAccumulator.glyphSegmentsMs, {
+      textPlans: textPlans.length,
+    })
+    recordLayoutPerformanceMetric(
+      "buildPageExportPlan.resolveFontTrackingGraphemes",
+      phaseAccumulator.resolveFontTrackingGraphemesMs,
+      {
+        textPlans: textPlans.length,
+      },
+    )
+    recordLayoutPerformanceMetric(
+      "buildPageExportPlan.measureFormattedTextRangeWidth",
+      phaseAccumulator.measureFormattedTextRangeWidthMs,
+      {
+        textPlans: textPlans.length,
+      },
+    )
+    recordLayoutPerformanceMetric("buildPageExportPlan.graphemeAdvance", phaseAccumulator.graphemeAdvanceMs, {
+      textPlans: textPlans.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.graphemeMetrics", phaseAccumulator.graphemeMetricsMs, {
+      textPlans: textPlans.length,
+    })
+    recordLayoutPerformanceMetric("buildPageExportPlan.layerOrder", phaseAccumulator.layerOrderMs, {
+      layers: resolvedOrderedLayerKeys.length,
+    })
   }
 
   return {

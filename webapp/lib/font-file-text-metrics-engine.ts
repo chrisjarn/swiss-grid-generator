@@ -24,12 +24,34 @@ import {
 import {
   createDiagnosticBrowserCanvasTextMetricsEngine,
 } from "@/lib/diagnostic-browser-canvas-text-metrics-engine"
+import { isLayoutProfilingEnabled, recordLayoutPerformanceMetric } from "@/lib/layout-performance"
 import type {
   TextMeasureContext,
   TextMetricsEngine,
   TextWidthRequest,
   TextWrapRequest,
 } from "@/lib/text-metrics-engine"
+
+type FontFileWrapProfilingAccumulator = {
+  calls: number
+  boundaryCorrections: number
+  fallbackCalls: number
+  formattedRangeWidthMs: number
+  formattedRangeWidthCalls: number
+  trackedRangeWidthMs: number
+  trackedRangeWidthCalls: number
+  plainTextWidthMs: number
+  plainTextWidthCalls: number
+}
+
+type FormattedRangeWidthGrapheme = {
+  text: string
+  trackingScale: number
+  descriptor: FontFileCanvasFontDescriptor
+  styleKey?: string
+  sourceStart: number
+  sourceEnd: number
+}
 
 type RuntimeGlyph = {
   advanceWidth?: number
@@ -119,6 +141,12 @@ const loadedPairAdvanceMeasureCache = new Map<string, (previous: string, current
 const loadedCapAscentCache = new Map<string, number>()
 const loadedGlyphWidthCache = new Map<string, number | null>()
 const loadedPairAdvanceValueCache = new Map<string, number | null>()
+
+function getNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
+}
 
 function setBoundedCacheValue<Key, Value>(cache: Map<Key, Value>, key: Key, value: Value, limit: number): void {
   cache.set(key, value)
@@ -894,6 +922,128 @@ function measureFontFileGraphemeRunWidth(
   return width
 }
 
+function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family extends string>(
+  request: Pick<
+    TextWidthRequest<StyleKey, Family>,
+    "sourceText" | "trackingScale" | "trackingRuns" | "opticalKerning" | "baseFormat" | "formatRuns" | "resolveFontSize"
+  >,
+  options: FontFileRangeCalibrationOptions = {},
+): ((renderedText: string, range: { start: number; end: number }) => number | null) | null {
+  const { baseFormat, resolveFontSize } = request
+  if (!baseFormat || !resolveFontSize) return null
+
+  const resolved = resolveFontTrackingGraphemes({
+    sourceText: request.sourceText,
+    renderedText: request.sourceText,
+    range: {
+      start: 0,
+      end: request.sourceText.length,
+    },
+    baseFormat,
+    formatRuns: request.formatRuns,
+    baseTrackingScale: request.trackingScale,
+    trackingRuns: request.trackingRuns,
+    resolveFontSize,
+  })
+  const graphemes: FormattedRangeWidthGrapheme[] = []
+  for (const grapheme of resolved) {
+    const descriptor = resolveFontFileDescriptorFromGrapheme(grapheme)
+    if (!descriptor) return null
+    graphemes.push({
+      text: grapheme.text,
+      trackingScale: grapheme.trackingScale,
+      descriptor,
+      styleKey: grapheme.styleKey,
+      sourceStart: grapheme.start,
+      sourceEnd: grapheme.end,
+    })
+  }
+
+  if (graphemes.length === 0) {
+    return (renderedText, range) => (
+      renderedText.length === 0 && range.start === range.end ? 0 : null
+    )
+  }
+
+  const startIndexBySourceStart = new Map<number, number>()
+  const endExclusiveBySourceEnd = new Map<number, number>()
+  const glyphWidths = new Array<number>(graphemes.length)
+  const contributionPrefix = new Array<number>(graphemes.length).fill(0)
+  const kerningMode: FontFileKerningMode = request.opticalKerning ? "optical" : "font"
+
+  for (let index = 0; index < graphemes.length; index += 1) {
+    const grapheme = graphemes[index]!
+    startIndexBySourceStart.set(grapheme.sourceStart, index)
+    endExclusiveBySourceEnd.set(grapheme.sourceEnd, index + 1)
+    const glyphWidth = measureFontFileGlyphWidth(grapheme.text, grapheme.descriptor)
+    if (glyphWidth === null) return null
+    glyphWidths[index] = glyphWidth
+    if (index === 0) continue
+    const previous = graphemes[index - 1]!
+    const sameFontMetrics = previous.descriptor.fontFamily === grapheme.descriptor.fontFamily
+      && previous.descriptor.fontWeight === grapheme.descriptor.fontWeight
+      && previous.descriptor.italic === grapheme.descriptor.italic
+      && previous.descriptor.fontSize === grapheme.descriptor.fontSize
+    const pairAdvance = sameFontMetrics
+      ? measureFontFilePairAdvance({
+          previous: previous.text,
+          current: grapheme.text,
+          descriptor: previous.descriptor,
+          kerningMode,
+          styleKey: previous.styleKey,
+        })
+      : glyphWidths[index - 1]!
+    if (pairAdvance === null) return null
+    const classCorrection = options.classCorrection && sameFontMetrics
+      ? getRangeCalibrationClassCorrection({
+          previous: previous.text,
+          current: grapheme.text,
+          descriptor: previous.descriptor,
+          kerningMode,
+          styleKey: previous.styleKey,
+        })
+      : 0
+    contributionPrefix[index] = contributionPrefix[index - 1]!
+      + pairAdvance
+      + classCorrection
+      + getTrackingLetterSpacing(previous.descriptor.fontSize, previous.trackingScale)
+  }
+
+  const localCache = new Map<string, number | null>()
+  return (renderedText, range) => {
+    const cacheKey = `${range.start}:${range.end}:${renderedText}`
+    const cached = localCache.get(cacheKey)
+    if (cached !== undefined || localCache.has(cacheKey)) return cached ?? null
+
+    const sourceSliceText = request.sourceText.slice(range.start, range.end)
+    if (renderedText !== sourceSliceText) {
+      localCache.set(cacheKey, null)
+      return null
+    }
+    if (range.start === range.end) {
+      const width = renderedText.length === 0 ? 0 : null
+      localCache.set(cacheKey, width)
+      return width
+    }
+
+    const startIndex = startIndexBySourceStart.get(range.start)
+    const endExclusive = endExclusiveBySourceEnd.get(range.end)
+    if (startIndex === undefined || endExclusive === undefined || endExclusive <= startIndex) {
+      localCache.set(cacheKey, null)
+      return null
+    }
+
+    const lastIndex = endExclusive - 1
+    const width = (
+      contributionPrefix[lastIndex]!
+      - contributionPrefix[startIndex]!
+      + glyphWidths[lastIndex]!
+    )
+    localCache.set(cacheKey, width)
+    return width
+  }
+}
+
 export function measureFontFileTrackedRangeWidth<StyleKey extends string, Family extends string>(
   request: TextWidthRequest<StyleKey, Family>,
   descriptor: FontFileCanvasFontDescriptor,
@@ -1237,25 +1387,40 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
 ): TextMetricsEngine<StyleKey, Family> {
   const allowDiagnosticBrowserFallback = options.allowDiagnosticBrowserFallback !== false
   const fallbackEngine = createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey, Family>(context)
+  const profilingEnabled = isLayoutProfilingEnabled()
   const measureFontFileWidth = (
     request: TextWidthRequest<StyleKey, Family>,
     widthOptions: FontFileRangeCalibrationOptions = options,
+    accumulator?: FontFileWrapProfilingAccumulator | null,
   ): number | null => {
     const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
     const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
     if (!descriptor || !font) return null
 
     if (request.range && request.baseFormat && request.resolveFontSize) {
-      return measureFontFileFormattedRangeWidth(request, widthOptions)
+      const startedAt = accumulator ? getNowMs() : 0
+      const width = measureFontFileFormattedRangeWidth(request, widthOptions)
+      if (accumulator) {
+        accumulator.formattedRangeWidthCalls += 1
+        accumulator.formattedRangeWidthMs += getNowMs() - startedAt
+      }
+      return width
     }
 
     if (request.range && request.trackingRuns.length > 0) {
-      return measureFontFileTrackedRangeWidth(request, descriptor, widthOptions)
+      const startedAt = accumulator ? getNowMs() : 0
+      const width = measureFontFileTrackedRangeWidth(request, descriptor, widthOptions)
+      if (accumulator) {
+        accumulator.trackedRangeWidthCalls += 1
+        accumulator.trackedRangeWidthMs += getNowMs() - startedAt
+      }
+      return width
     }
 
     if (shouldDelegateWidth(request)) return null
 
-    return measureFontFilePlainTextWidth(
+    const startedAt = accumulator ? getNowMs() : 0
+    const width = measureFontFilePlainTextWidth(
       font,
       request.text,
       descriptor,
@@ -1263,6 +1428,11 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
       request.opticalKerning ? "optical" : "font",
       request.baseFormat?.styleKey,
     )
+    if (accumulator) {
+      accumulator.plainTextWidthCalls += 1
+      accumulator.plainTextWidthMs += getNowMs() - startedAt
+    }
+    return width
   }
   const measureWidth = (request: TextWidthRequest<StyleKey, Family>): number => {
     const width = measureFontFileWidth(request)
@@ -1282,36 +1452,112 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
       formatRuns,
       resolveFontSize,
       trace,
-    }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => wrapTextDetailed(
-      text,
-      maxWidth,
-      hyphenate,
-      (sample, range) => {
-        const request = {
-          text: sample,
-          canvasFont,
-          trackingScale,
-          opticalKerning,
+    }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => {
+      const accumulator: FontFileWrapProfilingAccumulator | null = profilingEnabled
+        ? {
+            calls: 0,
+            boundaryCorrections: 0,
+            fallbackCalls: 0,
+            formattedRangeWidthMs: 0,
+            formattedRangeWidthCalls: 0,
+            trackedRangeWidthMs: 0,
+            trackedRangeWidthCalls: 0,
+            plainTextWidthMs: 0,
+            plainTextWidthCalls: 0,
+          }
+        : null
+      const exactFormattedRangeWidth = createExactFormattedRangeWidthMeasurer(
+        {
           sourceText: text,
+          trackingScale,
           trackingRuns,
-          range,
+          opticalKerning,
           baseFormat,
           formatRuns,
           resolveFontSize,
-        }
-        const measuredWidth = measureFontFileWidth(request)
-        const width = allowDiagnosticBrowserFallback
-          ? measuredWidth ?? fallbackEngine.measureWidth(request)
-          : requireFontFileWidth(measuredWidth, request)
-        if (!options.boundaryClassCorrection) return width
-        if (!isTerminalPunctuationBoundaryCandidate(sample)) return width
+        },
+        options,
+      )
+      const startedAt = accumulator ? getNowMs() : 0
+      try {
+        return wrapTextDetailed(
+          text,
+          maxWidth,
+          hyphenate,
+          (sample, range) => {
+            if (accumulator) accumulator.calls += 1
+            const request = {
+              text: sample,
+              canvasFont,
+              trackingScale,
+              opticalKerning,
+              sourceText: text,
+              trackingRuns,
+              range,
+              baseFormat,
+              formatRuns,
+              resolveFontSize,
+            }
+            let measuredWidth: number | null = null
+            if (range && exactFormattedRangeWidth) {
+              const fastMeasureStartedAt = accumulator ? getNowMs() : 0
+              measuredWidth = exactFormattedRangeWidth(sample, range)
+              if (accumulator && measuredWidth !== null) {
+                accumulator.formattedRangeWidthCalls += 1
+                accumulator.formattedRangeWidthMs += getNowMs() - fastMeasureStartedAt
+              }
+            }
+            if (measuredWidth === null) {
+              measuredWidth = measureFontFileWidth(request, options, accumulator)
+            }
+            if (accumulator && measuredWidth === null && allowDiagnosticBrowserFallback) {
+              accumulator.fallbackCalls += 1
+            }
+            const width = allowDiagnosticBrowserFallback
+              ? measuredWidth ?? fallbackEngine.measureWidth(request)
+              : requireFontFileWidth(measuredWidth, request)
+            if (!options.boundaryClassCorrection) return width
+            if (!isTerminalPunctuationBoundaryCandidate(sample)) return width
 
-        const correctedWidth = measureFontFileWidth(request, { classCorrection: true })
-        if (correctedWidth === null || correctedWidth <= width) return width
-        return width <= maxWidth && correctedWidth > maxWidth ? correctedWidth : width
-      },
-      trace,
-    )
+            if (accumulator) accumulator.boundaryCorrections += 1
+            const correctedWidth = measureFontFileWidth(request, { classCorrection: true }, accumulator)
+            if (correctedWidth === null || correctedWidth <= width) return width
+            return width <= maxWidth && correctedWidth > maxWidth ? correctedWidth : width
+          },
+          trace,
+        )
+      } finally {
+        if (accumulator) {
+          recordLayoutPerformanceMetric("fontFile.wrapText", getNowMs() - startedAt, {
+            calls: accumulator.calls,
+            boundaryCorrections: accumulator.boundaryCorrections,
+            fallbackCalls: accumulator.fallbackCalls,
+            hyphenate,
+          })
+          recordLayoutPerformanceMetric(
+            "fontFile.wrapText.measureFormattedRangeWidth",
+            accumulator.formattedRangeWidthMs,
+            {
+              calls: accumulator.formattedRangeWidthCalls,
+            },
+          )
+          recordLayoutPerformanceMetric(
+            "fontFile.wrapText.measureTrackedRangeWidth",
+            accumulator.trackedRangeWidthMs,
+            {
+              calls: accumulator.trackedRangeWidthCalls,
+            },
+          )
+          recordLayoutPerformanceMetric(
+            "fontFile.wrapText.measurePlainTextWidth",
+            accumulator.plainTextWidthMs,
+            {
+              calls: accumulator.plainTextWidthCalls,
+            },
+          )
+        }
+      }
+    }
   const engine: TextMetricsEngine<StyleKey, Family> = {
     id: options.boundaryClassCorrection
       ? "font-file-range-calibration-boundary-class-correction-v1"

@@ -67,6 +67,17 @@ export function getTypographyReflowLineCapacityForHeight(
   return Math.max(1, Math.floor((availableHeight + 0.0001) / safeLineStep))
 }
 
+type TypographyLayoutPhaseAccumulator = {
+  paragraphBoxesMs: number
+  lineCommandsMs: number
+}
+
+function getNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
+}
+
 type BuildTypographyLayoutPlanArgs<BlockId extends string, StyleKey extends string, Context> = {
   blockOrder: BlockId[]
   textContent: Record<BlockId, string>
@@ -125,6 +136,7 @@ type BuildTypographyLayoutPlanArgs<BlockId extends string, StyleKey extends stri
     align: TextAlignMode
     fontSize: number
   }) => number
+  phaseAccumulator?: TypographyLayoutPhaseAccumulator
 }
 
 export function buildTypographyLayoutPlan<BlockId extends string, StyleKey extends string, Context>({
@@ -171,6 +183,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
   textAscent,
   textDescent,
   opticalOffset,
+  phaseAccumulator,
 }: BuildTypographyLayoutPlanArgs<BlockId, StyleKey, Context>): {
   plans: TypographyLayoutPlan<BlockId, StyleKey>[]
   rects: Record<BlockId, BlockRect>
@@ -392,6 +405,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     let maxUsedRows = 0
     const commands: TextDrawCommand[] = []
 
+    const paragraphBoxesStartedAt = phaseAccumulator ? getNowMs() : 0
     const rect: BlockRect = {
       x: origin.x,
       y: origin.y - hitTopPadding,
@@ -413,7 +427,11 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
         width: wrapWidth,
         height: moduleHeightForBlock,
       }]
+    if (phaseAccumulator) {
+      phaseAccumulator.paragraphBoxesMs += getNowMs() - paragraphBoxesStartedAt
+    }
 
+    const lineCommandsStartedAt = phaseAccumulator ? getNowMs() : 0
     if (!columnReflow) {
       const anchorX = getAnchorX(origin.x, wrapWidth, textAlign)
       for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
@@ -459,6 +477,9 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
           trailingBoundaryWhitespace: line.trailingBoundaryWhitespace,
         })
       }
+    }
+    if (phaseAccumulator) {
+      phaseAccumulator.lineCommandsMs += getNowMs() - lineCommandsStartedAt
     }
 
     const overflowLines = columnReflow ? Math.max(0, lines.length - commands.length) : 0
@@ -593,6 +614,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
   })
   const captionCommands: TextDrawCommand[] = []
 
+  const captionLineCommandsStartedAt = phaseAccumulator ? getNowMs() : 0
   if (!captionReflowEnabled) {
     const captionAnchorX = getAnchorX(captionOrigin.x, captionWidth, captionAlign)
     for (let lineIndex = 0; lineIndex < captionLines.length; lineIndex += 1) {
@@ -651,6 +673,9 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       })
     }
   }
+  if (phaseAccumulator) {
+    phaseAccumulator.lineCommandsMs += getNowMs() - captionLineCommandsStartedAt
+  }
 
   const captionOverflowLines = captionReflowEnabled ? Math.max(0, captionLines.length - captionCommands.length) : 0
   overflowByBlock[captionKey] = captionOverflowLines
@@ -661,6 +686,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     }
   }
 
+  const captionParagraphBoxesStartedAt = phaseAccumulator ? getNowMs() : 0
   const captionRect: BlockRect = {
     x: captionOrigin.x,
     y: captionOrigin.y - captionHitTopPadding,
@@ -682,6 +708,9 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       width: captionWidth,
       height: captionModuleHeight,
     }]
+  if (phaseAccumulator) {
+    phaseAccumulator.paragraphBoxesMs += getNowMs() - captionParagraphBoxesStartedAt
+  }
   rects[captionKey] = captionRect
   plans.push({
     key: captionKey,

@@ -111,6 +111,18 @@ function getTrackingIntervals(
   return intervals
 }
 
+export function getResolvedTrackingIntervals(
+  text: string,
+  baseTrackingScale: number,
+  runs: readonly TextTrackingRun[] | null | undefined,
+): Array<TextTrackingRun> {
+  return getTrackingIntervals(text, baseTrackingScale, runs).map((interval) => ({
+    start: interval.start,
+    end: interval.end,
+    trackingScale: interval.trackingScale,
+  }))
+}
+
 export function normalizeTextTrackingRuns(
   text: string,
   runs: readonly TextTrackingRun[] | null | undefined,

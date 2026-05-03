@@ -1,4 +1,4 @@
-import { useEffect } from "react"
+import { useEffect, useRef } from "react"
 import type { MutableRefObject, RefObject } from "react"
 
 import type { GridResult } from "@/lib/grid-calculator"
@@ -13,13 +13,17 @@ import {
   type CanvasImageRenderPlan,
 } from "@/lib/canvas-page-renderer"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
+import {
+  resolveLayoutTextMetricsEngineFactory,
+  type LayoutEngineContract,
+} from "@/lib/layout-engine-contract"
 import { measureLayoutPerformance } from "@/lib/layout-performance"
 import { buildPageExportPlan } from "@/lib/page-export-plan"
 import type { BlockRect, BlockRenderPlan } from "@/lib/preview-types"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
 import type { PreviewLayoutState } from "@/lib/types/preview-layout"
 import { toTextBlockPosition } from "@/lib/text-block-position"
+import { createTextMetricsService, type TextMetricsService } from "@/lib/text-metrics-service"
 
 type DragState<BlockId extends string> = {
   key: BlockId
@@ -169,6 +173,21 @@ export function useTypographyRenderer<BlockId extends string>({
   onPlansCommit,
   recordPerfMetric,
 }: Args<BlockId>) {
+  const textMetricsServiceRef = useRef<{
+    factory: ReturnType<typeof resolveLayoutTextMetricsEngineFactory>
+    service: TextMetricsService<keyof GridResult["typography"]["styles"], FontFamily>
+  } | null>(null)
+  const textMetricsEngineFactory = resolveLayoutTextMetricsEngineFactory(layoutEngine)
+  if (!textMetricsServiceRef.current || textMetricsServiceRef.current.factory !== textMetricsEngineFactory) {
+    textMetricsServiceRef.current = {
+      factory: textMetricsEngineFactory,
+      service: createTextMetricsService({
+        metricsEngineFactory: textMetricsEngineFactory,
+      }),
+    }
+  }
+  const textMetricsService = textMetricsServiceRef.current.service
+
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -238,6 +257,7 @@ export function useTypographyRenderer<BlockId extends string>({
         showTypography,
         layoutEngine,
         rawDocumentVariableBlockKey,
+        textMetricsService,
       })
       const canvasRenderPlans = measureLayoutPerformance(
         "canvas.buildRenderPlansFromPageExportPlan",
@@ -284,6 +304,7 @@ export function useTypographyRenderer<BlockId extends string>({
           showTypography,
           layoutEngine,
           rawDocumentVariableBlockKey,
+          textMetricsService,
         })
         const duplicateCanvasPlans = measureLayoutPerformance(
           "canvas.buildDragPreviewRenderPlansFromPageExportPlan",
@@ -393,6 +414,7 @@ export function useTypographyRenderer<BlockId extends string>({
     pixelRatio,
     showImagePlaceholders,
     showTypography,
+    textMetricsService,
     typographyBufferRef,
     typographyBufferTransformRef,
   ])
