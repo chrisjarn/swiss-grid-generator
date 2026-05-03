@@ -1,4 +1,5 @@
 import { hyphenateWordEnglish } from "./english-hyphenation.ts"
+import { isLayoutProfilingEnabled, recordLayoutPerformanceMetric } from "./layout-performance.ts"
 import { splitTextForTracking } from "./text-rendering.ts"
 import type { TextRange } from "./text-tracking-runs.ts"
 export { getDefaultColumnSpan } from "./default-column-span.ts"
@@ -64,6 +65,34 @@ type InlineSplitResult = {
   remainder: LineToken
 }
 
+type WrapProfilingAccumulator = {
+  tokenizeMs: number
+  tokenizeCalls: number
+  measureTokensMs: number
+  measureTokensCalls: number
+  hyphenationMs: number
+  hyphenationCalls: number
+  punctuationRebalanceMs: number
+  punctuationRebalanceCalls: number
+  oversizeWhitespaceMs: number
+  oversizeWhitespaceCalls: number
+}
+
+type WrapHyphenationCache = {
+  splitLines: Map<string, WrappedTextLine[]>
+  inlineSplits: Map<string, InlineSplitResult | null>
+}
+
+function getNowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
+}
+
+function getHyphenationTokenCacheKey(token: LineToken, maxWidth: number): string {
+  return `${token.start}:${token.end}:${maxWidth}`
+}
+
 function joinTokens(tokens: readonly LineToken[]): string {
   return tokens.map((token) => token.text).join("")
 }
@@ -98,7 +127,12 @@ function shouldEmitWrappedLine(tokens: readonly LineToken[]): boolean {
   return tokens.some((token) => !token.isWhitespace || token.suppressedAtLineStart !== true)
 }
 
-function measureTokens(tokens: readonly LineToken[], measureWidth: MeasureWidth): number {
+function measureTokens(
+  tokens: readonly LineToken[],
+  measureWidth: MeasureWidth,
+  accumulator?: WrapProfilingAccumulator,
+): number {
+  const startedAt = accumulator ? getNowMs() : 0
   if (!tokens.length) return 0
   const renderedText = getRenderedLineText(tokens)
   if (!renderedText) return 0
@@ -106,10 +140,15 @@ function measureTokens(tokens: readonly LineToken[], measureWidth: MeasureWidth)
   const trimEnd = getTrailingBoundaryWhitespace(tokens)
   const rangeStart = (tokens[0]?.start ?? 0) + trimStart
   const rangeEnd = Math.max(rangeStart, (tokens[tokens.length - 1]?.end ?? tokens[0]?.start ?? 0) - trimEnd)
-  return measureWidth(renderedText, {
+  const width = measureWidth(renderedText, {
     start: rangeStart,
     end: rangeEnd,
   })
+  if (accumulator) {
+    accumulator.measureTokensCalls += 1
+    accumulator.measureTokensMs += getNowMs() - startedAt
+  }
+  return width
 }
 
 function getMeasuredTokenRange(tokens: readonly LineToken[]): TextRange {
@@ -168,7 +207,19 @@ function hyphenateTokenToLines(
   token: LineToken,
   maxWidth: number,
   measureWidth: MeasureWidth,
+  hyphenationCache: WrapHyphenationCache,
+  accumulator?: WrapProfilingAccumulator,
 ): WrappedTextLine[] {
+  const startedAt = accumulator ? getNowMs() : 0
+  const cacheKey = getHyphenationTokenCacheKey(token, maxWidth)
+  const cached = hyphenationCache.splitLines.get(cacheKey)
+  if (cached) {
+    if (accumulator) {
+      accumulator.hyphenationCalls += 1
+      accumulator.hyphenationMs += getNowMs() - startedAt
+    }
+    return cached
+  }
   const parts = hyphenateWordEnglish(
     token.text,
     maxWidth,
@@ -179,7 +230,7 @@ function hyphenateTokenToLines(
   )
 
   let cursor = token.start
-  return parts.map((part) => {
+  const lines = parts.map((part) => {
     const sourceLength = part.replace(/-$/, "").length
     const line = {
       text: part,
@@ -189,6 +240,12 @@ function hyphenateTokenToLines(
     cursor += sourceLength
     return line
   })
+  if (accumulator) {
+    accumulator.hyphenationCalls += 1
+    accumulator.hyphenationMs += getNowMs() - startedAt
+  }
+  hyphenationCache.splitLines.set(cacheKey, lines)
+  return lines
 }
 
 function trySplitWordAtLineEnd(
@@ -196,14 +253,33 @@ function trySplitWordAtLineEnd(
   currentTokens: readonly LineToken[],
   maxWidth: number,
   measureWidth: MeasureWidth,
+  hyphenationCache: WrapHyphenationCache,
+  accumulator?: WrapProfilingAccumulator,
 ): InlineSplitResult | null {
+  const startedAt = accumulator ? getNowMs() : 0
   const linePrefixText = currentTokens.length ? joinTokens(currentTokens) : ""
   const linePrefixStart = currentTokens[0]?.start ?? word.start
   const linePrefixEnd = currentTokens.length ? (currentTokens[currentTokens.length - 1]?.end ?? word.start) : word.start
+  const cacheKey = `${linePrefixStart}:${linePrefixEnd}:${word.start}:${word.end}:${maxWidth}:${linePrefixText}`
+  if (hyphenationCache.inlineSplits.has(cacheKey)) {
+    const cached = hyphenationCache.inlineSplits.get(cacheKey) ?? null
+    if (accumulator) {
+      accumulator.hyphenationCalls += 1
+      accumulator.hyphenationMs += getNowMs() - startedAt
+    }
+    return cached
+  }
   const remainingWidth = maxWidth - (currentTokens.length
     ? measureWidth(linePrefixText, { start: linePrefixStart, end: linePrefixEnd })
     : 0)
-  if (remainingWidth <= 0) return null
+  if (remainingWidth <= 0) {
+    hyphenationCache.inlineSplits.set(cacheKey, null)
+    if (accumulator) {
+      accumulator.hyphenationCalls += 1
+      accumulator.hyphenationMs += getNowMs() - startedAt
+    }
+    return null
+  }
 
   const toSplitResult = (leading: string): InlineSplitResult | null => {
     const remainder = word.text.slice(leading.length)
@@ -236,7 +312,14 @@ function trySplitWordAtLineEnd(
   const first = parts[0]
   if (first && first.endsWith("-")) {
     const splitResult = toSplitResult(first.slice(0, -1))
-    if (splitResult) return splitResult
+    if (splitResult) {
+      hyphenationCache.inlineSplits.set(cacheKey, splitResult)
+      if (accumulator) {
+        accumulator.hyphenationCalls += 1
+        accumulator.hyphenationMs += getNowMs() - startedAt
+      }
+      return splitResult
+    }
   }
 
   for (
@@ -245,13 +328,26 @@ function trySplitWordAtLineEnd(
     splitAt -= 1
   ) {
     const splitResult = toSplitResult(word.text.slice(0, splitAt))
-    if (splitResult) return splitResult
+    if (splitResult) {
+      hyphenationCache.inlineSplits.set(cacheKey, splitResult)
+      if (accumulator) {
+        accumulator.hyphenationCalls += 1
+        accumulator.hyphenationMs += getNowMs() - startedAt
+      }
+      return splitResult
+    }
   }
 
+  hyphenationCache.inlineSplits.set(cacheKey, null)
+  if (accumulator) {
+    accumulator.hyphenationCalls += 1
+    accumulator.hyphenationMs += getNowMs() - startedAt
+  }
   return null
 }
 
-function toLineTokens(text: string, offset: number): LineToken[] {
+function toLineTokens(text: string, offset: number, accumulator?: WrapProfilingAccumulator): LineToken[] {
+  const startedAt = accumulator ? getNowMs() : 0
   const matches = text.matchAll(/\s+|\S+/g)
   const tokens: LineToken[] = []
   for (const match of matches) {
@@ -308,6 +404,10 @@ function toLineTokens(text: string, offset: number): LineToken[] {
       })
     }
   }
+  if (accumulator) {
+    accumulator.tokenizeCalls += 1
+    accumulator.tokenizeMs += getNowMs() - startedAt
+  }
   return tokens
 }
 
@@ -332,7 +432,9 @@ function tryRebalanceForLeadingPunctuation(
   token: LineToken,
   maxWidth: number,
   measureWidth: MeasureWidth,
+  accumulator?: WrapProfilingAccumulator,
 ): { lineTokens: LineToken[]; carryTokens: LineToken[] } | null {
+  const startedAt = accumulator ? getNowMs() : 0
   if (!isLineStartForbiddenPunctuationToken(token) || currentTokens.length === 0) return null
 
   for (let splitIndex = currentTokens.length; splitIndex > 0; splitIndex -= 1) {
@@ -341,7 +443,11 @@ function tryRebalanceForLeadingPunctuation(
     const carryTokens = suppressLeadingWhitespace(currentTokens.slice(splitIndex).concat(token))
     const firstVisible = carryTokens.find((candidate) => !candidate.isWhitespace || candidate.suppressedAtLineStart !== true)
     if (isLineStartForbiddenPunctuationToken(firstVisible)) continue
-    if (measureTokens(carryTokens, measureWidth) <= maxWidth) {
+    if (measureTokens(carryTokens, measureWidth, accumulator) <= maxWidth) {
+      if (accumulator) {
+        accumulator.punctuationRebalanceCalls += 1
+        accumulator.punctuationRebalanceMs += getNowMs() - startedAt
+      }
       return {
         lineTokens,
         carryTokens,
@@ -349,6 +455,10 @@ function tryRebalanceForLeadingPunctuation(
     }
   }
 
+  if (accumulator) {
+    accumulator.punctuationRebalanceCalls += 1
+    accumulator.punctuationRebalanceMs += getNowMs() - startedAt
+  }
   return null
 }
 
@@ -356,7 +466,9 @@ function splitOversizeWhitespaceToken(
   token: LineToken,
   maxWidth: number,
   measureWidth: MeasureWidth,
+  accumulator?: WrapProfilingAccumulator,
 ): WrappedTextLine[] {
+  const startedAt = accumulator ? getNowMs() : 0
   const graphemes = splitTextForTracking(token.text)
   const lines: WrappedTextLine[] = []
   let cursor = token.start
@@ -392,6 +504,10 @@ function splitOversizeWhitespaceToken(
     })
   }
 
+  if (accumulator) {
+    accumulator.oversizeWhitespaceCalls += 1
+    accumulator.oversizeWhitespaceMs += getNowMs() - startedAt
+  }
   return lines
 }
 
@@ -417,9 +533,11 @@ function wrapSingleLineDetailed(
   maxWidth: number,
   hyphenate: boolean,
   measureWidth: MeasureWidth,
+  hyphenationCache: WrapHyphenationCache,
   trace?: TextWrapTraceCollector,
+  accumulator?: WrapProfilingAccumulator,
 ): WrappedTextLine[] {
-  const tokens = toLineTokens(input, sourceOffset)
+  const tokens = toLineTokens(input, sourceOffset, accumulator)
   if (!tokens.length) {
     return [{
       text: "",
@@ -434,7 +552,7 @@ function wrapSingleLineDetailed(
   for (let index = 0; index < tokens.length; index += 1) {
     const token = tokens[index]!
     const testTokens = currentTokens.concat(token)
-    const testWidth = measureTokens(testTokens, measureWidth)
+    const testWidth = measureTokens(testTokens, measureWidth, accumulator)
     const accepted = testWidth <= maxWidth || currentTokens.length === 0
     traceFitDecision({
       trace,
@@ -453,7 +571,7 @@ function wrapSingleLineDetailed(
         && token.isWhitespace
         && measureWidth(token.text, { start: token.start, end: token.end }) > maxWidth
       ) {
-        const splitLines = splitOversizeWhitespaceToken(token, maxWidth, measureWidth)
+        const splitLines = splitOversizeWhitespaceToken(token, maxWidth, measureWidth, accumulator)
         if (splitLines.length > 1) {
           lines.push(...splitLines.slice(0, -1))
           const trailing = splitLines[splitLines.length - 1]
@@ -475,7 +593,7 @@ function wrapSingleLineDetailed(
         && !token.isWhitespace
         && measureWidth(token.text, { start: token.start, end: token.end }) > maxWidth
       ) {
-        const hyphenated = hyphenateTokenToLines(token, maxWidth, measureWidth)
+        const hyphenated = hyphenateTokenToLines(token, maxWidth, measureWidth, hyphenationCache, accumulator)
         if (hyphenated.length > 1) {
           lines.push(...hyphenated.slice(0, -1))
           const trailing = hyphenated[hyphenated.length - 1]
@@ -497,7 +615,7 @@ function wrapSingleLineDetailed(
     }
 
     if (!token.isWhitespace && hyphenate && currentTokens.length > 0) {
-      const split = trySplitWordAtLineEnd(token, currentTokens, maxWidth, measureWidth)
+      const split = trySplitWordAtLineEnd(token, currentTokens, maxWidth, measureWidth, hyphenationCache, accumulator)
       if (split) {
         lines.push({
           text: `${joinTokens(currentTokens)}${split.leadingWithHyphen}`,
@@ -510,7 +628,13 @@ function wrapSingleLineDetailed(
       }
     }
 
-    const punctuationRebalance = tryRebalanceForLeadingPunctuation(currentTokens, token, maxWidth, measureWidth)
+    const punctuationRebalance = tryRebalanceForLeadingPunctuation(
+      currentTokens,
+      token,
+      maxWidth,
+      measureWidth,
+      accumulator,
+    )
     if (punctuationRebalance) {
       lines.push(toWrappedLine(punctuationRebalance.lineTokens, sourceOffset))
       currentTokens = punctuationRebalance.carryTokens
@@ -525,7 +649,7 @@ function wrapSingleLineDetailed(
 
     if (token.isWhitespace) {
       if (measureWidth(token.text, { start: token.start, end: token.end }) > maxWidth) {
-        const splitLines = splitOversizeWhitespaceToken(token, maxWidth, measureWidth)
+        const splitLines = splitOversizeWhitespaceToken(token, maxWidth, measureWidth, accumulator)
         if (splitLines.length > 1) {
           lines.push(...splitLines.slice(0, -1))
         }
@@ -543,7 +667,7 @@ function wrapSingleLineDetailed(
         currentTokens = [{ ...token, suppressedAtLineStart: true }]
       }
     } else if (hyphenate && measureWidth(token.text, { start: token.start, end: token.end }) > maxWidth) {
-      const hyphenated = hyphenateTokenToLines(token, maxWidth, measureWidth)
+      const hyphenated = hyphenateTokenToLines(token, maxWidth, measureWidth, hyphenationCache, accumulator)
       if (hyphenated.length > 1) {
         lines.push(...hyphenated.slice(0, -1))
         const trailing = hyphenated[hyphenated.length - 1]
@@ -579,13 +703,59 @@ export function wrapTextDetailed(
   measureWidth: MeasureWidth,
   trace?: TextWrapTraceCollector,
 ): WrappedTextLine[] {
+  const profilingEnabled = isLayoutProfilingEnabled()
+  const accumulator: WrapProfilingAccumulator | null = profilingEnabled
+    ? {
+        tokenizeMs: 0,
+        tokenizeCalls: 0,
+        measureTokensMs: 0,
+        measureTokensCalls: 0,
+        hyphenationMs: 0,
+        hyphenationCalls: 0,
+        punctuationRebalanceMs: 0,
+        punctuationRebalanceCalls: 0,
+        oversizeWhitespaceMs: 0,
+        oversizeWhitespaceCalls: 0,
+      }
+    : null
+  const hyphenationCache: WrapHyphenationCache = {
+    splitLines: new Map(),
+    inlineSplits: new Map(),
+  }
+  const startedAt = accumulator ? getNowMs() : 0
   const hardBreakLines = text.replace(/\r\n/g, "\n").split("\n")
   const wrapped: WrappedTextLine[] = []
   let lineOffset = 0
 
   for (const line of hardBreakLines) {
-    wrapped.push(...wrapSingleLineDetailed(line, lineOffset, maxWidth, hyphenate, measureWidth, trace))
+    wrapped.push(...wrapSingleLineDetailed(line, lineOffset, maxWidth, hyphenate, (
+      sample,
+      range,
+    ) => measureWidth(sample, range), hyphenationCache, trace, accumulator ?? undefined))
     lineOffset += line.length + 1
+  }
+
+  if (accumulator) {
+    recordLayoutPerformanceMetric("wrapTextDetailed", getNowMs() - startedAt, {
+      lines: hardBreakLines.length,
+      chars: text.length,
+      hyphenate,
+    })
+    recordLayoutPerformanceMetric("wrapTextDetailed.tokenize", accumulator.tokenizeMs, {
+      calls: accumulator.tokenizeCalls,
+    })
+    recordLayoutPerformanceMetric("wrapTextDetailed.measureTokens", accumulator.measureTokensMs, {
+      calls: accumulator.measureTokensCalls,
+    })
+    recordLayoutPerformanceMetric("wrapTextDetailed.hyphenation", accumulator.hyphenationMs, {
+      calls: accumulator.hyphenationCalls,
+    })
+    recordLayoutPerformanceMetric("wrapTextDetailed.punctuationRebalance", accumulator.punctuationRebalanceMs, {
+      calls: accumulator.punctuationRebalanceCalls,
+    })
+    recordLayoutPerformanceMetric("wrapTextDetailed.oversizeWhitespace", accumulator.oversizeWhitespaceMs, {
+      calls: accumulator.oversizeWhitespaceCalls,
+    })
   }
 
   return wrapped

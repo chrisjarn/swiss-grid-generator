@@ -1,12 +1,27 @@
 import type { TextRange } from "@/lib/text-tracking-runs"
 
+const ENGLISH_SYLLABLE_CACHE_LIMIT = 2048
+const englishSyllableCache = new Map<string, string[]>()
+
+function cacheEnglishSyllables(word: string, syllables: string[]): string[] {
+  englishSyllableCache.set(word, syllables)
+  if (englishSyllableCache.size > ENGLISH_SYLLABLE_CACHE_LIMIT) {
+    englishSyllableCache.clear()
+    englishSyllableCache.set(word, syllables)
+  }
+  return syllables
+}
+
 function isVowel(char: string): boolean {
   return /[aeiouy]/i.test(char)
 }
 
 function splitIntoEnglishSyllables(word: string): string[] {
-  if (!/^[A-Za-z]+$/.test(word)) return [word]
-  if (word.length < 4) return [word]
+  const cached = englishSyllableCache.get(word)
+  if (cached) return cached
+
+  if (!/^[A-Za-z]+$/.test(word)) return cacheEnglishSyllables(word, [word])
+  if (word.length < 4) return cacheEnglishSyllables(word, [word])
 
   const parts: string[] = []
   const lower = word.toLowerCase()
@@ -47,7 +62,7 @@ function splitIntoEnglishSyllables(word: string): string[] {
     i = splitAt
   }
 
-  return parts.filter(Boolean)
+  return cacheEnglishSyllables(word, parts.filter(Boolean))
 }
 
 function hyphenateByChars(

@@ -1518,6 +1518,20 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
         },
         options,
       )
+      const exactCorrectedFormattedRangeWidth = options.boundaryClassCorrection
+        ? createExactFormattedRangeWidthMeasurer(
+            {
+              sourceText: text,
+              trackingScale,
+              trackingRuns,
+              opticalKerning,
+              baseFormat,
+              formatRuns,
+              resolveFontSize,
+            },
+            { classCorrection: true },
+          )
+        : null
       const startedAt = accumulator ? getNowMs() : 0
       try {
         return wrapTextDetailed(
@@ -1560,7 +1574,18 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
             if (!isTerminalPunctuationBoundaryCandidate(sample)) return width
 
             if (accumulator) accumulator.boundaryCorrections += 1
-            const correctedWidth = measureFontFileWidth(request, { classCorrection: true }, accumulator)
+            let correctedWidth: number | null = null
+            if (range && exactCorrectedFormattedRangeWidth) {
+              const correctedMeasureStartedAt = accumulator ? getNowMs() : 0
+              correctedWidth = exactCorrectedFormattedRangeWidth(sample, range)
+              if (accumulator && correctedWidth !== null) {
+                accumulator.formattedRangeWidthCalls += 1
+                accumulator.formattedRangeWidthMs += getNowMs() - correctedMeasureStartedAt
+              }
+            }
+            if (correctedWidth === null) {
+              correctedWidth = measureFontFileWidth(request, { classCorrection: true }, accumulator)
+            }
             if (correctedWidth === null || correctedWidth <= width) return width
             return width <= maxWidth && correctedWidth > maxWidth ? correctedWidth : width
           },
