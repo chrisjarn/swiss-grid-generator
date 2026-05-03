@@ -1,8 +1,10 @@
 import { useCallback, useRef } from "react"
 
+export const PREVIEW_PERF_UPDATED_EVENT = "sgg:preview-perf-updated"
+
 type PerfMetricName = "drawMs" | "reflowMs" | "autofitMs"
 
-type PerfSnapshot = {
+export type PerfSnapshot = {
   timestamp: number
   sampleCount: number
   p50: number
@@ -10,7 +12,7 @@ type PerfSnapshot = {
   avg: number
 }
 
-type PerfPayload = {
+export type PerfPayload = {
   draw: PerfSnapshot | null
   reflow: PerfSnapshot | null
   autofit: PerfSnapshot | null
@@ -51,6 +53,7 @@ function computePerfSnapshot(values: number[]): PerfSnapshot | null {
 
 function writePerfPayload(payload: PerfPayload) {
   window.__sggPerf = payload
+  window.dispatchEvent(new CustomEvent(PREVIEW_PERF_UPDATED_EVENT, { detail: payload }))
 }
 
 export function usePreviewPerf({ enabled, logIntervalMs, sampleLimit }: Args) {

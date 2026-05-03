@@ -52,6 +52,7 @@ import { resolveCustomStyleSeedMetrics } from "@/lib/preview-text-config"
 import { TEXT_SYMBOL_PALETTE_GROUPS } from "@/lib/text-symbol-palette"
 import { useAutoScrollOpenedSection } from "@/hooks/useAutoScrollOpenedSection"
 import { usePersistedSectionState } from "@/hooks/usePersistedSectionState"
+import { PREVIEW_PERF_UPDATED_EVENT, type PerfPayload } from "@/hooks/usePreviewPerf"
 import { useStateSnapshotSelectPreview } from "@/hooks/useStateSnapshotSelectPreview"
 import type { HelpSectionId } from "@/lib/help-registry"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
@@ -87,6 +88,19 @@ const TEXT_EDITOR_HELP_SECTION_BY_KEY: Record<SectionKey, HelpSectionId> = {
   info: "help-editor-info",
 }
 
+function readTotalRenderTimeMs(): number | null {
+  if (typeof window === "undefined") return null
+  return getTotalRenderTimeMs(window.__sggPerf as PerfPayload | undefined)
+}
+
+function getTotalRenderTimeMs(payload: PerfPayload | undefined): number | null {
+  if (!payload) return null
+  const values = [payload.draw?.avg, payload.reflow?.avg, payload.autofit?.avg]
+    .filter((value): value is number => typeof value === "number" && Number.isFinite(value))
+  if (values.length === 0) return null
+  return values.reduce((sum, value) => sum + value, 0)
+}
+
 export function TextEditorPanel<StyleKey extends string>({
   controls,
   showHelpIndicator = false,
@@ -106,6 +120,7 @@ export function TextEditorPanel<StyleKey extends string>({
   )
   const [recentSymbols, setRecentSymbols] = useState<string[]>([])
   const [hasLoadedRecentSymbols, setHasLoadedRecentSymbols] = useState(false)
+  const [totalRenderTimeMs, setTotalRenderTimeMs] = useState<number | null>(null)
 
   useEffect(() => {
     if (typeof window === "undefined") {
@@ -127,6 +142,30 @@ export function TextEditorPanel<StyleKey extends string>({
       setHasLoadedRecentSymbols(true)
     }
   }, [])
+
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    const update = (payload?: PerfPayload) => {
+      setTotalRenderTimeMs((previous) => {
+        const next = payload ? getTotalRenderTimeMs(payload) : readTotalRenderTimeMs()
+        if (previous === null && next === null) return previous
+        if (previous !== null && next !== null && Math.abs(previous - next) < 0.05) return previous
+        return next
+      })
+    }
+
+    const handlePerfUpdated = (event: Event) => {
+      update((event as CustomEvent<PerfPayload>).detail)
+    }
+
+    update()
+    window.addEventListener(PREVIEW_PERF_UPDATED_EVENT, handlePerfUpdated)
+    return () => {
+      window.removeEventListener(PREVIEW_PERF_UPDATED_EVENT, handlePerfUpdated)
+    }
+  }, [])
+
   const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed, {
     resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
     restoreKey: controls.editorState.target,
@@ -713,6 +752,7 @@ export function TextEditorPanel<StyleKey extends string>({
     ["Chars", String(characterCount)],
     ["Words", String(wordCount)],
     ["Max/Line", String(controls.maxCharsPerLine ?? 0)],
+    ["Render Time", totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
   ]
 
   return (
