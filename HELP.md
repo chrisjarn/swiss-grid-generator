@@ -250,6 +250,7 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 - A project can contain up to `1000` pages.
 - `Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.
 - Active-page layer cards mirror preview hover/guides.
+- Hovering an active-page layer card temporarily routes keyboard layer nudging to that layer; leaving the card restores keyboard nudging to the selected layer.
 - Drag unlocked layer cards to reorder z-index.
 - Layer cards include lock and delete controls.
 - Single-click a layer card to select it. Double-click an unlocked layer card to open or retarget its corresponding text or image editor.

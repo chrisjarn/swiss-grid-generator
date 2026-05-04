@@ -4,6 +4,11 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 import { type BlockEditorState } from "@/components/editor/block-editor-types"
 import { type ImageEditorState } from "@/components/dialogs/ImageEditorDialog"
 import { getBlockEditorLiveSignature } from "@/lib/block-editor-signature"
+import {
+  areFontFileMetricFacesLoaded,
+  collectFontFileMetricFacesFromBlocks,
+  preloadFontFileMetricFaces,
+} from "@/lib/font-file-text-metrics-engine"
 import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
 import { useBlockEditorActions } from "@/hooks/useBlockEditorActions"
 import { useCloseEditorsOnOutsidePointer } from "@/hooks/useCloseEditorsOnOutsidePointer"
@@ -16,6 +21,16 @@ type BlockEditorActionsArgs = Omit<
 
 type EditorState = BlockEditorState<string>
 type OpenEditorOptions = { recordHistory?: boolean }
+
+function collectEditorMetricFaces(editorState: EditorState) {
+  return collectFontFileMetricFacesFromBlocks([{
+    styleKey: editorState.draftStyle,
+    fontFamily: editorState.draftFont,
+    fontWeight: editorState.draftFontWeight,
+    italic: editorState.draftItalic,
+    textFormatRuns: editorState.draftTextFormatRuns,
+  }])
+}
 
 type Args = {
   blockEditorArgs: BlockEditorActionsArgs
@@ -136,8 +151,22 @@ export function usePreviewTextEditor({
       return
     }
     if (lastLiveEditorSignatureRef.current === signature) return
-    lastLiveEditorSignatureRef.current = signature
-    applyEditorDraftLive(editorState)
+    const metricFaces = collectEditorMetricFaces(editorState)
+    if (areFontFileMetricFacesLoaded(metricFaces)) {
+      lastLiveEditorSignatureRef.current = signature
+      applyEditorDraftLive(editorState)
+      return
+    }
+
+    let cancelled = false
+    void preloadFontFileMetricFaces(metricFaces).then(() => {
+      if (cancelled) return
+      lastLiveEditorSignatureRef.current = signature
+      applyEditorDraftLive(editorState)
+    })
+    return () => {
+      cancelled = true
+    }
   }, [applyEditorDraftLive, editorState])
 
   const openImageEditor = useCallback((key: string, options?: OpenEditorOptions) => {

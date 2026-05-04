@@ -112,6 +112,7 @@ Current capability inventory for Swiss Grid Generator.
 - Paragraph hover edit affordance is anchored at the paragraph's top-left origin so shallow frames remain reachable.
 - Preview rollover stays active while editing, so clicking another existing unlocked paragraph or image placeholder retargets the already open editor instead of leaving edit mode.
 - Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and split page-creation controls for clean-copy and full-duplicate insertion.
+- Hovering an active-page layer card in the Project panel temporarily makes it the keyboard nudge target without changing the committed selection.
 - Project panel includes a compact project-title row showing the real project title plus an edit/close button.
 - Double-clicking the compact project-title row toggles the metadata section; opening it focuses and selects the `Title` field immediately.
 - The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields storing on blur, and the `Subject` field can be vertically resized for the current session.

@@ -234,6 +234,7 @@ Default: `swiss`
 - Text cards display a single rendered text preview row in the paragraph font and text color.
 - Image cards display a full-width color rectangle instead of the `Image Placeholder` label.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
+- Hovering an active-page layer card temporarily routes keyboard layer nudging to that hovered layer; leaving the card restores keyboard nudging to the selected layer.
 - Hovered text paragraphs in preview expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.

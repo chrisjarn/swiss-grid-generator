@@ -607,7 +607,11 @@ export function PreviewWorkspace({
               requestedLayerLockValue={requestedLayerLockState?.locked ?? false}
               requestedLayerLockToken={requestedLayerLockState?.token ?? 0}
               selectedLayerKey={activeSidebarPanel === "layers" ? selectedLayerKey : null}
-              keyboardSelectedLayerKey={selectedLayerKey}
+              keyboardSelectedLayerKey={
+                activeSidebarPanel === "layers"
+                  ? (layerPanelHoveredLayerKey ?? selectedLayerKey)
+                  : selectedLayerKey
+              }
               hoveredLayerKey={layerPanelHoveredLayerKey}
               onHoverLayerChange={setPreviewHoveredLayerKey}
               onSelectLayer={onLayerSelect}
