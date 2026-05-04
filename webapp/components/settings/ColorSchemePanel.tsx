@@ -73,7 +73,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
 
   return (
     <PanelCard
-      title="VI. Color Scheme"
+      title="VI. Color"
       tooltip="Color scheme and page background for image placeholders; scheme and background lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={(

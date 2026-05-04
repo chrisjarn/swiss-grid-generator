@@ -15,11 +15,11 @@ Format:
 ## Quick Start
 
 ### Quick Start {#help-quick-start}
-- Set ratio, orientation, and rotation in `I. Canvas Ratio`.
+- Set ratio, orientation, and rotation in `I. Canvas`.
 - Set the baseline first. It drives everything.
 - Set margins in `III. Margins`.
-- Set columns, rows, gutter, and rhythm in `IV. Grid & Rhythms`.
-- Set the type scale and base font in `V. Typo & Rhythms`.
+- Set columns, rows, gutter, and rhythm in `IV. Grid`.
+- Set the type scale and base font in `V. Typo`.
 - Use the header toggles to inspect baselines, margins, modules, and type.
 
 ## General Guidance
@@ -276,13 +276,13 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 
 ### Grid Generator Settings {#help-grid-generator-settings-overview} [noindex]
 
-### I. Canvas Ratio & Rotation {#help-canvas-ratio}
+### I. Canvas {#help-canvas-ratio}
 - Choose a preset ratio or enter `Custom Ratio`.
 - `Custom Ratio` accepts fractional width/height values and also accepts decimal comma input.
 - `Ratio` and `Orientation` preview on dropdown hover before commit.
 - Rotation turns the full preview/export composition.
 
-### II. Baseline Grid {#help-baseline-grid}
+### II. Baseline {#help-baseline-grid}
 - The baseline controls vertical rhythm for the grid and type.
 - Available baseline options run from `6pt` to `72pt` and are filtered so the current page still keeps a usable number of lines.
 - Top and bottom margins stay baseline-aligned.
@@ -293,13 +293,13 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 - `Baseline Multiple` scales the margin system while keeping baseline alignment.
 - `Custom Margins` exposes top, left, right, and bottom baseline-multiplier controls.
 
-### IV. Grid & Rhythms {#help-gutter}
+### IV. Grid {#help-gutter}
 - Set columns, rows, gutter, and rhythm.
 - Rhythm options preview on dropdown hover before commit.
 - Non-repetitive rhythms can be enabled and directed independently for rows and columns.
 - Reducing rows or columns is blocked when existing content would fall outside the new grid.
 
-### V. Typo & Rhythms {#help-typo}
+### V. Typo {#help-typo}
 - Set the type scale and base font for the document.
 - `Rhythm` and `Base` preview on dropdown hover before commit.
 - In the settings sidebar, dropdowns open upward.
@@ -313,7 +313,7 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 
 {{AVAILABLE_FONTS}}
 
-### VII. Color Scheme {#help-color-scheme}
+### VII. Color {#help-color-scheme}
 - Sets the base scheme for new image placeholders.
 - `Background` applies `None` or a scheme color to the page.
 - The same scheme system is used in the image editor, where individual placeholders can still override swatch color and transparency.

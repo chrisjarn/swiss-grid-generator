@@ -24,7 +24,7 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
 }: Props) {
   return (
     <PanelCard
-      title="II. Baseline Grid"
+      title="II. Baseline"
       tooltip="Baseline unit for grid and typography"
       collapsed={collapsed}
       collapsedSummary={`${customBaseline} pt`}

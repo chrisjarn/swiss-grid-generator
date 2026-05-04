@@ -89,7 +89,7 @@ export const TypographyPanel = memo(function TypographyPanel({
 
   return (
     <PanelCard
-      title="V. Typo & Rhythms"
+      title="V. Typo"
       tooltip="Typography scale, hierarchy table, and base font; hierarchy and font lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${TYPOGRAPHY_SCALE_LABELS[typographyScale]}, ${baseFont}`}

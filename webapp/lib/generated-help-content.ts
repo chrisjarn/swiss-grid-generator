@@ -41,11 +41,11 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Set ratio, orientation, and rotation in `I. Canvas Ratio`.",
+              "Set ratio, orientation, and rotation in `I. Canvas`.",
               "Set the baseline first. It drives everything.",
               "Set margins in `III. Margins`.",
-              "Set columns, rows, gutter, and rhythm in `IV. Grid & Rhythms`.",
-              "Set the type scale and base font in `V. Typo & Rhythms`.",
+              "Set columns, rows, gutter, and rhythm in `IV. Grid`.",
+              "Set the type scale and base font in `V. Typo`.",
               "Use the header toggles to inspect baselines, margins, modules, and type."
             ]
           }
@@ -721,7 +721,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "I. Canvas Ratio & Rotation",
+        "title": "I. Canvas",
         "id": "help-canvas-ratio",
         "indexed": true,
         "blocks": [
@@ -738,7 +738,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "II. Baseline Grid",
+        "title": "II. Baseline",
         "id": "help-baseline-grid",
         "indexed": true,
         "blocks": [
@@ -771,7 +771,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "IV. Grid & Rhythms",
+        "title": "IV. Grid",
         "id": "help-gutter",
         "indexed": true,
         "blocks": [
@@ -788,7 +788,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "V. Typo & Rhythms",
+        "title": "V. Typo",
         "id": "help-typo",
         "indexed": true,
         "blocks": [
@@ -826,7 +826,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "VII. Color Scheme",
+        "title": "VII. Color",
         "id": "help-color-scheme",
         "indexed": true,
         "blocks": [
@@ -1004,11 +1004,11 @@ export const HELP_INDEX_GROUPS = [
     "items": [
       {
         "id": "help-canvas-ratio",
-        "label": "I. Canvas Ratio & Rotation"
+        "label": "I. Canvas"
       },
       {
         "id": "help-baseline-grid",
-        "label": "II. Baseline Grid"
+        "label": "II. Baseline"
       },
       {
         "id": "help-margins",
@@ -1016,11 +1016,11 @@ export const HELP_INDEX_GROUPS = [
       },
       {
         "id": "help-gutter",
-        "label": "IV. Grid & Rhythms"
+        "label": "IV. Grid"
       },
       {
         "id": "help-typo",
-        "label": "V. Typo & Rhythms"
+        "label": "V. Typo"
       },
       {
         "id": "help-available-fonts",
@@ -1028,7 +1028,7 @@ export const HELP_INDEX_GROUPS = [
       },
       {
         "id": "help-color-scheme",
-        "label": "VII. Color Scheme"
+        "label": "VII. Color"
       }
     ]
   },
@@ -1182,11 +1182,11 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-canvas-ratio",
-    "label": "I. Canvas Ratio & Rotation"
+    "label": "I. Canvas"
   },
   {
     "id": "help-baseline-grid",
-    "label": "II. Baseline Grid"
+    "label": "II. Baseline"
   },
   {
     "id": "help-margins",
@@ -1194,11 +1194,11 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-gutter",
-    "label": "IV. Grid & Rhythms"
+    "label": "IV. Grid"
   },
   {
     "id": "help-typo",
-    "label": "V. Typo & Rhythms"
+    "label": "V. Typo"
   },
   {
     "id": "help-available-fonts",
@@ -1206,7 +1206,7 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-color-scheme",
-    "label": "VII. Color Scheme"
+    "label": "VII. Color"
   },
   {
     "id": "help-app-version",

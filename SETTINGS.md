@@ -70,7 +70,7 @@ Default: `swiss`
 - step: `1`
 - default: `0`
 
-### II. Baseline Grid
+### II. Baseline
 
 - Grid unit options: `6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72`
 - Default baseline in UI: **A4 baseline (12pt)**
@@ -102,7 +102,7 @@ Default: `swiss`
 - actual custom margin = `sideMultiplier × baselineMultiple × gridUnit`
 - `Margin Method` dropdown items preview live on rollover before commit
 
-### IV. Grid & Rhythms
+### IV. Grid
 
 - Columns (`gridCols`): min `1`, max `13`, step `1`, default `3` (from `default_v001.json`)
 - Rows (`gridRows`): min `1`, max `13`, step `1`, default `6` (from `default_v001.json`)
@@ -116,7 +116,7 @@ Default: `swiss`
   - enabled (`rhythmColsEnabled`): `true|false` (default `true`)
   - direction (`rhythmColsDirection`): `ttb` (`Top to Bottom`) or `btt` (`Bottom to top`) (default `ttb`)
 
-### V. Typo & Rhythms
+### V. Typo
 
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
@@ -147,7 +147,7 @@ Default: `swiss`
   - Serif: [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [Besley](https://fonts.google.com/specimen/Besley)
   - Poster: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono)
 
-### VI. Color Scheme
+### VI. Color
 
 - Selects the global base scheme for image placeholders.
 - `Background`: applies a page background color using `None` or any color from the selected scheme; this setting is stored per page.

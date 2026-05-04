@@ -589,7 +589,7 @@ export function PagesPanel({
             setTransientExpandedPageId(null)
             setTransientExpandedReason(null)
           }}
-          className={`min-h-[50px] border-t px-4 py-2 text-xs leading-snug transition-colors md:px-6 ${tone.row} ${
+          className={`flex min-h-[50px] flex-col justify-center border-t px-4 py-2 text-xs leading-snug transition-colors md:px-6 ${tone.row} ${
             draggingPageId === page.id
               ? "opacity-45"
               : ""
@@ -748,7 +748,7 @@ export function PagesPanel({
   return (
     <div
       ref={rootRef}
-      className="flex flex-col pb-4 md:pb-6"
+      className="flex flex-col py-4 md:py-6"
       onDragOver={handleListDragOver}
       onDrop={handleListDrop}
     >

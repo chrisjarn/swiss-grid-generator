@@ -98,7 +98,7 @@ export const GutterPanel = memo(function GutterPanel({
   })
   return (
     <PanelCard
-      title="IV. Grid & Rhythms"
+      title="IV. Grid"
       tooltip="Grid columns, rows, gutter multiple, and rhythm controls; rhythm lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${gridCols} cols, ${gridRows} rows, ${gutterMultiple.toFixed(1)}x`}

@@ -88,7 +88,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
 
   return (
     <PanelCard
-      title="I. Canvas Ratio & Rotation"
+      title="I. Canvas"
       tooltip="Ratio preset or custom width:height, orientation, and preview rotation; ratio and orientation lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${ratioLabel}, ${orientation}, ${rotation}°`}
