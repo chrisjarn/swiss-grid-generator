@@ -3,6 +3,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 
 import { type BlockEditorState } from "@/components/editor/block-editor-types"
 import { type ImageEditorState } from "@/components/dialogs/ImageEditorDialog"
+import { getBlockEditorLiveSignature } from "@/lib/block-editor-signature"
 import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
 import { useBlockEditorActions } from "@/hooks/useBlockEditorActions"
 import { useCloseEditorsOnOutsidePointer } from "@/hooks/useCloseEditorsOnOutsidePointer"
@@ -66,6 +67,7 @@ export function usePreviewTextEditor({
   const [editorState, setEditorStateState] = useState<EditorState | null>(null)
   const editorStateRef = useRef<EditorState | null>(null)
   const lastLiveEditorSignatureRef = useRef("")
+  const lastLiveEditorTargetRef = useRef<string | null>(null)
 
   const setEditorState = useCallback((next: SetStateAction<EditorState | null>) => {
     const resolved = typeof next === "function"
@@ -124,34 +126,15 @@ export function usePreviewTextEditor({
   useEffect(() => {
     if (!editorState) {
       lastLiveEditorSignatureRef.current = ""
+      lastLiveEditorTargetRef.current = null
       return
     }
-    const signature = [
-      editorState.target,
-      editorState.draftStyle,
-      editorState.draftFont,
-      editorState.draftFontWeight,
-      editorState.draftColumns,
-      editorState.draftRows,
-      editorState.draftHeightBaselines,
-      editorState.draftAlign,
-      editorState.draftVerticalAlign,
-      editorState.draftColor,
-      editorState.draftReflow ? "1" : "0",
-      editorState.draftSyllableDivision ? "1" : "0",
-      editorState.draftSnapToColumns ? "1" : "0",
-      editorState.draftSnapToBaseline ? "1" : "0",
-      editorState.draftItalic ? "1" : "0",
-      editorState.draftOpticalKerning ? "1" : "0",
-      editorState.draftTrackingScale,
-      editorState.draftTrackingRuns.map((run) => `${run.start}:${run.end}:${run.trackingScale}`).join(","),
-      editorState.draftTextFormatRuns.map((run) => `${run.start}:${run.end}:${run.fontFamily ?? ""}:${run.fontWeight ?? ""}:${run.italic === true ? 1 : run.italic === false ? 0 : ""}:${run.styleKey ?? ""}:${run.color ?? ""}`).join(","),
-      editorState.draftRotation.toFixed(3),
-      editorState.draftFxSize,
-      editorState.draftFxLeading,
-      editorState.draftTextEdited ? "1" : "0",
-      editorState.draftText,
-    ].join("|")
+    const signature = getBlockEditorLiveSignature(editorState)
+    if (lastLiveEditorTargetRef.current !== editorState.target) {
+      lastLiveEditorTargetRef.current = editorState.target
+      lastLiveEditorSignatureRef.current = signature
+      return
+    }
     if (lastLiveEditorSignatureRef.current === signature) return
     lastLiveEditorSignatureRef.current = signature
     applyEditorDraftLive(editorState)

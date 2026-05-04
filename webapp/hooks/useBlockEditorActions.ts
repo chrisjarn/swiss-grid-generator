@@ -3,9 +3,11 @@ import type { Dispatch, RefObject, SetStateAction } from "react"
 
 import type { BlockEditorState } from "@/components/editor/block-editor-types"
 import { normalizeHeightMetrics } from "@/lib/block-height"
+import { getBlockEditorLiveSignature } from "@/lib/block-editor-signature"
 import type { FontFamily } from "@/lib/config/fonts"
 import { clampFxLeading } from "@/lib/block-constraints"
 import { removeTextLayerFromCollections } from "@/lib/preview-layer-state"
+import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
 import {
   applyEditorDraftLeadingOverride,
   applyEditorDraftSizeOverride,
@@ -258,8 +260,67 @@ export function useBlockEditorActions({
   const commitLiveEditorDraft = useCallback(() => {
     const draft = editorStateRef.current
     if (!draft) return
+    const persistedState = buildExistingBlockEditorState({
+      key: draft.target,
+      styleAssignments,
+      textContent,
+      blockCustomSizes,
+      blockCustomLeadings,
+      blockTextAlignments,
+      blockVerticalAlignments,
+      blockTextEdited,
+      getBlockFont,
+      getBlockRotation,
+      getBlockRows,
+      getBlockHeightBaselines,
+      getBlockSpan,
+      getBlockTextColor,
+      getBlockFontWeight,
+      getBlockTrackingScale,
+      getBlockTrackingRuns,
+      getBlockTextFormatRuns,
+      getStyleLeading,
+      getStyleSize,
+      isBlockItalic,
+      isBlockOpticalKerningEnabled,
+      isSnapToColumnsEnabled,
+      isSnapToBaselineEnabled,
+      isSyllableDivisionEnabled,
+      isTextReflowEnabled,
+      fallbackStyle: "body",
+      fxStyle: "fx",
+    })
+    if (getBlockEditorLiveSignature(persistedState) === getBlockEditorLiveSignature(draft)) return
     applyEditorDraftLive(draft)
-  }, [applyEditorDraftLive, editorStateRef])
+  }, [
+    applyEditorDraftLive,
+    blockCustomLeadings,
+    blockCustomSizes,
+    blockTextAlignments,
+    blockTextEdited,
+    blockVerticalAlignments,
+    editorStateRef,
+    getBlockFont,
+    getBlockFontWeight,
+    getBlockHeightBaselines,
+    getBlockRotation,
+    getBlockRows,
+    getBlockSpan,
+    getBlockTextColor,
+    getBlockTextFormatRuns,
+    getBlockTrackingRuns,
+    getBlockTrackingScale,
+    getStyleLeading,
+    getStyleSize,
+    isBlockItalic,
+    isBlockOpticalKerningEnabled,
+    isSnapToBaselineEnabled,
+    isSnapToColumnsEnabled,
+    isSyllableDivisionEnabled,
+    isTextReflowEnabled,
+    styleAssignments,
+    textContent,
+  ])
 
   const closeEditor = useCallback(() => {
     commitLiveEditorDraft()
