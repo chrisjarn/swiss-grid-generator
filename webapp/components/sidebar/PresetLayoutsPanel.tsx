@@ -52,6 +52,15 @@ function formatPresetGroupHeaderLabel(label: string): string {
     .join("  ")
 }
 
+function getPresetThumbnailDimensions(preset: LayoutPreset, compact: boolean): { width: number; height: number } {
+  const pageSize = preset.browserPage.result.pageSizePt
+  const safeHeight = Math.max(pageSize.height, 0.0001)
+  const aspectRatio = pageSize.width / safeHeight
+  const height = compact ? 164 : 224
+  const width = Math.max(120, Math.round(height * aspectRatio))
+  return { width, height }
+}
+
 function getPresetCloudStatusLabel(syncState: LayoutPreset["syncState"], isCloudSignedIn: boolean): string {
   if (!isCloudSignedIn) return "Not connected"
   if (syncState === "synced") return "Cloud synced"
@@ -149,6 +158,7 @@ function PresetCard({
   onCopyUserPreset,
   onDeleteUserPreset,
   isCloudSignedIn,
+  compact,
 }: {
   preset: LayoutPreset
   onLoadPreset: (preset: LayoutPreset) => void
@@ -160,6 +170,7 @@ function PresetCard({
   onCopyUserPreset: (preset: LayoutPreset) => void
   onDeleteUserPreset: (preset: LayoutPreset) => void
   isCloudSignedIn: boolean
+  compact: boolean
 }) {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const isUserPreset = preset.source === "user"
@@ -169,6 +180,7 @@ function PresetCard({
   const result = preset.browserPage.result
   const baselineGrid = result.typography.metadata.baselineGrid
   const cloudStatusLabel = getPresetCloudStatusLabel(preset.syncState, isCloudSignedIn)
+  const thumbnailDimensions = getPresetThumbnailDimensions(preset, compact)
 
   useEffect(() => {
     if (!menuOpen) return
@@ -232,7 +244,13 @@ function PresetCard({
         </div>
       )}
     >
-      <div className={`relative w-full ${preset.browserPage.uiSettings.orientation === "landscape" ? "aspect-[4/3]" : "aspect-[3/4]"}`}>
+      <div
+        className="relative max-w-full shrink-0"
+        style={{
+          width: `${thumbnailDimensions.width}px`,
+          height: `${thumbnailDimensions.height}px`,
+        }}
+      >
         <button
           type="button"
           className={`relative h-full w-full rounded-md border-2 transition-colors cursor-pointer overflow-hidden ${isDarkMode ? "border-gray-700 bg-gray-800 hover:border-blue-400 hover:bg-gray-700" : "border-gray-200 bg-gray-50 hover:border-blue-500 hover:bg-blue-50"}`}
@@ -457,7 +475,6 @@ export function PresetLayoutsPanel({
   }, [isCloudSignedIn, onDeleteUserPreset, onRequestNotice])
 
   const cardGapClass = compact ? "gap-2" : "gap-3"
-  const minCardWidth = compact ? 120 : 168
   const groupToggleClassName = isDarkMode
     ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
     : "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900"
@@ -515,8 +532,7 @@ export function PresetLayoutsPanel({
 
               {!isCollapsed && group.presets.length > 0 ? (
                 <div
-                  className={`grid items-end ${cardGapClass}`}
-                  style={{ gridTemplateColumns: `repeat(auto-fill, minmax(${minCardWidth}px, 1fr))` }}
+                  className={`flex flex-wrap items-end ${cardGapClass}`}
                 >
                   {group.presets.map((preset) => (
                     <PresetCard
@@ -533,6 +549,7 @@ export function PresetLayoutsPanel({
                       onCopyUserPreset={handleCopyUserPreset}
                       onDeleteUserPreset={handleDeleteUserPreset}
                       isCloudSignedIn={isCloudSignedIn}
+                      compact={compact}
                     />
                   ))}
                 </div>

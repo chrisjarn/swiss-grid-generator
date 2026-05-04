@@ -1,5 +1,6 @@
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import type { FontFamily } from "@/lib/config/fonts"
+import type { ProjectPageLayoutMode } from "@/lib/document-session"
 import type { GridResult, CanvasRatioKey } from "@/lib/grid-calculator"
 import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 
@@ -41,6 +42,7 @@ export type LayoutPresetSyncState = "local" | "idle" | "syncing" | "synced" | "o
 export type LayoutPresetBrowserPage = {
   id: string
   name: string
+  layoutMode: ProjectPageLayoutMode
   uiSettings: LayoutPresetUiSettings
   previewLayout: Record<string, unknown> | null
   result: GridResult

@@ -23,6 +23,7 @@ export function buildPresetBrowserPage(
   return {
     id: resolved.id,
     name: resolved.name,
+    layoutMode: page.layoutMode === "facing" ? "facing" : "single",
     uiSettings: resolved.uiSettings as LayoutPresetUiSettings,
     previewLayout: resolved.previewLayout,
     result: resolved.result,
