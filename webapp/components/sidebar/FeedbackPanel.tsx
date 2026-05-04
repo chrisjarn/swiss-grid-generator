@@ -4,8 +4,11 @@ import { Paperclip, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
-import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
-import { Label } from "@/components/ui/label"
+import {
+  getCompactActionButtonClassName,
+  getPopupInputClassName,
+  getPopupMutedTextClassName,
+} from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import {
   addCloudActivityLogEntry,
@@ -42,14 +45,16 @@ const INITIAL_FORM_STATE: FeedbackFormState = {
 
 function Section({
   title,
+  value,
   children,
 }: {
   title: string
+  value?: ReactNode
   children: ReactNode
 }) {
   return (
     <section className="space-y-2">
-      <SectionHeaderRow label={title} />
+      <SectionHeaderRow label={title} value={value} />
       {children}
     </section>
   )
@@ -218,29 +223,21 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
   const tone = isDarkMode
     ? {
         heading: "text-gray-100",
-        body: "text-[#A8B1BF]",
         caption: "text-[#8D98AA]",
-        divider: "border-gray-700",
         action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        button: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        field: "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#9AC99A]",
         error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-swiss-orange-soft",
       }
     : {
         heading: "text-gray-900",
-        body: "text-gray-600",
         caption: "text-gray-400",
-        divider: "border-gray-200",
         action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
-        button: "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
-        field: "border-gray-300 bg-white text-gray-900",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#2f7d32]",
         error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-[#c55a52]",
       }
-  const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
+  const fieldClassName = getPopupInputClassName(isDarkMode, "rounded-sm px-2 py-1 text-[12px]")
   const feedbackButtonClassName = getCompactActionButtonClassName({ isDarkMode })
-  const attachmentClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
+  const mutedTextClassName = getPopupMutedTextClassName(isDarkMode)
 
   const setField = <K extends keyof FeedbackFormState,>(key: K, value: FeedbackFormState[K]) => {
     setForm((current) => ({ ...current, [key]: value }))
@@ -397,28 +394,24 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         value={form.comment}
         onChange={(event) => setField("comment", event.target.value)}
         rows={7}
-        className={`w-full resize-none ${fieldClassName}`}
+        className={`min-h-20 w-full resize-none leading-[1.45] ${fieldClassName}`}
         placeholder="Describe the issue, idea, or workflow problem."
       />
-      <div className={`flex items-center justify-between gap-3 text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
-        <span>Required</span>
-        <span>{form.comment.trim().length}/4000</span>
-      </div>
       <FieldError message={errors.comment} />
     </div>
   )
 
   const renderSupportLogCheckbox = () => (
-    <label className={`flex min-h-9 items-center gap-2 ${attachmentClassName}`}>
+    <label className="flex items-center justify-between gap-3">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-swiss-orange-soft">
+        Attach Local Log
+      </span>
       <input
         type="checkbox"
         checked={attachSupportLog}
         onChange={(event) => setAttachSupportLog(event.target.checked)}
-        className="h-3.5 w-3.5 accent-[#fbae17]"
+        className="h-3.5 w-3.5 shrink-0"
       />
-      <span className={`text-[11px] font-semibold uppercase tracking-[0.08em] ${tone.heading}`}>
-        Attach Local Log
-      </span>
     </label>
   )
 
@@ -434,13 +427,6 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         />
       </div>
 
-      <section className="space-y-2">
-        <SectionHeaderRow label="Message" />
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Send a concise note with optional screenshots.
-        </p>
-      </section>
-
       {submitMessage ? (
         <div className={`rounded-md border px-3 py-2 text-xs ${tone.error}`}>
           {submitMessage}
@@ -454,18 +440,10 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
           </div>
         </div>
       ) : (
-        <form className={`space-y-4 ${tone.body}`} onSubmit={handleSubmit} noValidate>
+        <form className={`space-y-4 ${mutedTextClassName}`} onSubmit={handleSubmit} noValidate>
           <section className="space-y-2">
             <SectionHeaderRow
-              label="Contact"
-              value={(
-                <Label
-                  className={`text-right text-[11px] leading-none ${tone.caption}`}
-                  htmlFor="feedback-panel-email"
-                >
-                  Email
-                </Label>
-              )}
+              label="Your Email"
             />
             {renderInput({
               field: "email",
@@ -475,9 +453,17 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             })}
           </section>
 
-          <Section title="Comment">
+          <section className="space-y-2">
+            <SectionHeaderRow
+              label="Comment"
+              actions={(
+                <span className={`shrink-0 text-right text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
+                  {form.comment.trim().length}/4000
+                </span>
+              )}
+            />
             {renderTextarea()}
-          </Section>
+          </section>
 
           <Section title="Screenshots">
             <input
@@ -506,7 +492,14 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             {screenshotFiles.length > 0 ? (
               <div className="space-y-1.5">
                 {screenshotFiles.map((file, index) => (
-                  <div key={`${file.name}-${file.size}-${index}`} className={`flex min-h-9 items-center gap-2 ${attachmentClassName}`}>
+                  <div
+                    key={`${file.name}-${file.size}-${index}`}
+                    className={`flex min-h-9 items-center gap-2 rounded-sm border px-2 py-1 text-[12px] ${
+                      isDarkMode
+                        ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8]"
+                        : "border-gray-300 bg-white text-gray-900"
+                    }`}
+                  >
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[11px] font-medium leading-tight">{file.name}</p>
                       <p className={`text-[10px] leading-tight ${tone.caption}`}>{formatBytes(file.size)}</p>
@@ -526,9 +519,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             <FieldError message={errors.screenshots} />
           </Section>
 
-          <Section title="Support">
-            {renderSupportLogCheckbox()}
-          </Section>
+          {renderSupportLogCheckbox()}
 
           <div className="flex justify-end">
             <Button
@@ -539,6 +530,10 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             >
               {isSubmitting ? "Sending..." : "Send Feedback"}
             </Button>
+          </div>
+
+          <div className={`pt-1 text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
+            Version {appVersion}
           </div>
         </form>
       )}
