@@ -218,7 +218,7 @@ Default: `swiss`
 - Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
 - The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
-- `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed, and `Add Page` always creates a new single page.
+- `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed. `+` inserts a clean page copy after the active page, preserving page settings/layout mode without copied layer content; `++` inserts a full duplicate with content.
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.

@@ -675,6 +675,7 @@ export default function Home() {
     applyLoadedProject,
     selectPage,
     addPage,
+    addPageWithContent,
     setFacingPageEnabled,
     renamePage,
     deletePage,
@@ -1819,6 +1820,7 @@ export default function Home() {
       onSignOut={signOut}
       onPageSelect={selectPage}
       onPageAdd={addPage}
+      onPageAddWithContent={addPageWithContent}
       onPageFacingToggle={setFacingPageEnabled}
       onPageRename={renamePage}
       onPageDelete={deletePage}

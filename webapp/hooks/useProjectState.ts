@@ -41,6 +41,57 @@ function getNextPageName<Layout>(pages: readonly ProjectPage<Layout>[]): string 
   return `Page ${Math.max(maxPageNumber + 1, pages.length + 1)}`
 }
 
+function clearPreviewLayoutContent<Layout>(layout: Layout | null): Layout | null {
+  if (!layout || typeof layout !== "object") return layout
+  const candidate = layout as Record<string, unknown>
+  if (!Array.isArray(candidate.blockOrder) || !("textContent" in candidate)) {
+    return cloneSerializable(layout)
+  }
+
+  const cleared = {
+    ...candidate,
+    blockOrder: [],
+    textContent: {},
+    blockTextEdited: {},
+    styleAssignments: {},
+    blockFontFamilies: {},
+    blockFontWeights: {},
+    blockOpticalKerning: {},
+    blockTrackingScales: {},
+    blockTrackingRuns: {},
+    blockTextFormatRuns: {},
+    blockColumnSpans: {},
+    blockRowSpans: {},
+    blockHeightBaselines: {},
+    blockTextAlignments: {},
+    blockVerticalAlignments: {},
+    blockTextReflow: {},
+    blockSyllableDivision: {},
+    blockSnapToColumns: {},
+    blockSnapToBaseline: {},
+    blockItalic: {},
+    blockRotations: {},
+    blockCustomSizes: {},
+    blockCustomLeadings: {},
+    blockTextColors: {},
+    blockModulePositions: {},
+    lockedLayers: {},
+    layerOrder: [],
+    imageOrder: [],
+    imageModulePositions: {},
+    imageColumnSpans: {},
+    imageRowSpans: {},
+    imageHeightBaselines: {},
+    imageSnapToColumns: {},
+    imageSnapToBaseline: {},
+    imageRotations: {},
+    imageColors: {},
+    imageOpacities: {},
+  }
+
+  return cleared as Layout
+}
+
 function reconcilePageOrder<Layout>(
   currentPages: readonly ProjectPage<Layout>[],
   orderedIds: readonly string[],
@@ -182,17 +233,23 @@ export function useProjectState<Layout>({
     onApplyPage(nextActivePage)
   }, [getCurrentProjectSnapshot, onApplyPage])
 
-  const addPage = useCallback(() => {
+  const duplicateActivePage = useCallback((includeContent: boolean) => {
     const currentProject = getCurrentProjectSnapshot()
     if (currentProject.pages.length >= MAX_PROJECT_PAGE_COUNT) {
       onPageLimitReached?.(MAX_PROJECT_PAGE_COUNT)
       return
     }
+    const sourcePage = currentProject.pages.find((page) => page.id === currentProject.activePageId)
+      ?? currentProject.pages[0]
+      ?? null
+    if (!sourcePage) return
     const nextPage = createProjectPage({
       name: getNextPageName(currentProject.pages),
-      uiSettings: cloneSerializable(currentUiSettings),
-      previewLayout: cloneSerializable(getLivePreviewLayout() ?? defaultPreviewLayout),
-      layoutMode: "single",
+      uiSettings: cloneSerializable(sourcePage.uiSettings),
+      previewLayout: includeContent
+        ? cloneSerializable(sourcePage.previewLayout)
+        : clearPreviewLayoutContent(sourcePage.previewLayout ?? defaultPreviewLayout),
+      layoutMode: sourcePage.layoutMode,
     })
     const activePageIndex = currentProject.pages.findIndex((page) => page.id === currentProject.activePageId)
     const insertIndex = activePageIndex >= 0 ? activePageIndex + 1 : currentProject.pages.length
@@ -207,13 +264,19 @@ export function useProjectState<Layout>({
     activePageIdRef.current = nextPage.id
     onApplyPage(nextPage)
   }, [
-    currentUiSettings,
     defaultPreviewLayout,
     getCurrentProjectSnapshot,
-    getLivePreviewLayout,
     onApplyPage,
     onPageLimitReached,
   ])
+
+  const addPage = useCallback(() => {
+    duplicateActivePage(false)
+  }, [duplicateActivePage])
+
+  const addPageWithContent = useCallback(() => {
+    duplicateActivePage(true)
+  }, [duplicateActivePage])
 
   const setFacingPageEnabled = useCallback((pageId: string, enabled: boolean) => {
     if (!enabled) return
@@ -314,6 +377,7 @@ export function useProjectState<Layout>({
     applyLoadedProject,
     selectPage,
     addPage,
+    addPageWithContent,
     setFacingPageEnabled,
     renamePage,
     deletePage,

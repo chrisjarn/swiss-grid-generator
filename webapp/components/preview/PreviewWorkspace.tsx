@@ -143,6 +143,7 @@ type Props = {
   onSignOut: () => Promise<void>
   onPageSelect: (pageId: string) => void
   onPageAdd: () => void
+  onPageAddWithContent: () => void
   onPageFacingToggle: (pageId: string, enabled: boolean) => void
   onPageRename: (pageId: string, nextName: string) => void
   onPageDelete: (pageId: string) => void
@@ -304,6 +305,7 @@ export function PreviewWorkspace({
   onSignOut,
   onPageSelect,
   onPageAdd,
+  onPageAddWithContent,
   onPageFacingToggle,
   onPageRename,
   onPageDelete,
@@ -697,12 +699,34 @@ export function PreviewWorkspace({
                     <SectionHeaderRow
                       label="Pages"
                       labelClassName={uiTheme.sidebarHeading}
-                      actionIcon={<Plus className="h-2 w-2" />}
-                      actionLabel="Add page"
-                      actionClassName={isDarkUi
-                        ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                        : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"}
-                      onActionClick={onPageAdd}
+                      actions={(
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            aria-label="Add clean copy page"
+                            onClick={onPageAdd}
+                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
+                              isDarkUi
+                                ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
+                                : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+                            }`}
+                          >
+                            <Plus className="h-2 w-2" />
+                          </button>
+                          <button
+                            type="button"
+                            aria-label="Add page copy with content"
+                            onClick={onPageAddWithContent}
+                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 text-[9px] font-semibold leading-none transition-colors ${
+                              isDarkUi
+                                ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
+                                : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+                            }`}
+                          >
+                            ++
+                          </button>
+                        </div>
+                      )}
                     />
                   </div>
                 </div>
@@ -742,12 +766,34 @@ export function PreviewWorkspace({
                   <SectionHeaderRow
                     label="Add Page"
                     labelClassName={uiTheme.sidebarHeading}
-                    actionIcon={<Plus className="h-2 w-2" />}
-                    actionLabel="Add page"
-                    actionClassName={isDarkUi
-                      ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                      : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"}
-                    onActionClick={onPageAdd}
+                    actions={(
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          type="button"
+                          aria-label="Add clean copy page"
+                          onClick={onPageAdd}
+                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
+                            isDarkUi
+                              ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
+                              : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+                          }`}
+                        >
+                          <Plus className="h-2 w-2" />
+                        </button>
+                        <button
+                          type="button"
+                          aria-label="Add page copy with content"
+                          onClick={onPageAddWithContent}
+                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 text-[9px] font-semibold leading-none transition-colors ${
+                            isDarkUi
+                              ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
+                              : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+                          }`}
+                        >
+                          ++
+                        </button>
+                      </div>
+                    )}
                   />
                 </div>
               </div>

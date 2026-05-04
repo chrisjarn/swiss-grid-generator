@@ -245,7 +245,8 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 - Drag collapsed page rows to reorder the project.
 - Page rows include rename and delete controls. The last remaining page cannot be deleted.
 - `Facing pages` converts a page into a spread inside the same page record.
-- `Add Page` always creates a new single page, even if the active page is a facing spread.
+- `+` inserts a new single page after the active page, preserving its page settings and layout mode but starting without copied layer content.
+- `++` inserts a full duplicate of the active page with its content.
 - A project can contain up to `1000` pages.
 - `Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.
 - Active-page layer cards mirror preview hover/guides.
