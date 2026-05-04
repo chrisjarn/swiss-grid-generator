@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react"
 
 import { EditorSidebarSection } from "@/components/layout/EditorSidebarSection"
+import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScrollFrame"
 import { EditorColorSchemeControls } from "@/components/ui/editor-color-scheme-controls"
 import { Label } from "@/components/ui/label"
 import { DebouncedSlider } from "@/components/ui/slider"
@@ -97,7 +98,7 @@ export function ImageEditorDialog({
     IMAGE_EDITOR_COLLAPSED_DEFAULTS,
     { resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT },
   )
-  const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed, {
+  const { scrollRootRef, registerSectionRef, bottomSpacerHeight } = useAutoScrollOpenedSection(collapsed, {
     resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
     restoreKey: editorState?.target ?? null,
     scrollStorageKey: IMAGE_EDITOR_SCROLL_STORAGE_KEY,
@@ -278,32 +279,36 @@ export function ImageEditorDialog({
       data-editor-interactive-root="true"
       className={`min-h-0 flex h-full flex-col overflow-hidden ${tone.panel}`}
     >
-      <div ref={scrollRootRef} className={`min-h-0 flex-1 overflow-y-auto px-4 pb-[45vh] pt-4 md:px-6 md:pb-[45vh] md:pt-6 ${tone.surface}`}>
+      <SidebarSectionScrollFrame
+        bottomSpacerHeight={bottomSpacerHeight}
+        className={tone.surface}
+        scrollRootRef={scrollRootRef}
+      >
         <div ref={registerSectionRef("geometry")}>
-        <EditorSidebarSection
-          title={(
-            <span className="inline-flex items-center gap-2">
-              <span>I. Paragraph</span>
-              <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
-                <span>IMAGE</span>
-                <span
-                  className="h-2.5 w-2.5 shrink-0 rounded-sm border border-black/10"
-                  style={{ backgroundColor: editorState.draftColor }}
-                  aria-hidden="true"
-                />
+          <EditorSidebarSection
+            title={(
+              <span className="inline-flex items-center gap-2">
+                <span>I. Paragraph</span>
+                <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
+                  <span>IMAGE</span>
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-sm border border-black/10"
+                    style={{ backgroundColor: editorState.draftColor }}
+                    aria-hidden="true"
+                  />
+                </span>
               </span>
-            </span>
-          )}
-          tooltip="Rows, baselines, columns, axis snap, and rotation; geometry dropdowns preview on rollover"
-          collapsed={collapsed.geometry}
-          collapsedSummary={`${editorState.draftRows} rows, ${editorState.draftColumns} cols, ${Math.round(editorState.draftRotation)}deg`}
-          onHeaderClick={handleSectionHeaderClick("geometry")}
-          onHeaderDoubleClick={handleSectionHeaderDoubleClick}
-          isDarkMode={isDarkMode}
-          showHelpIndicator={showHelpIndicator}
-          showRolloverInfo={showRolloverInfo}
-          onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.geometry)}
-        >
+            )}
+            tooltip="Rows, baselines, columns, axis snap, and rotation; geometry dropdowns preview on rollover"
+            collapsed={collapsed.geometry}
+            collapsedSummary={`${editorState.draftRows} rows, ${editorState.draftColumns} cols, ${Math.round(editorState.draftRotation)}deg`}
+            onHeaderClick={handleSectionHeaderClick("geometry")}
+            onHeaderDoubleClick={handleSectionHeaderDoubleClick}
+            isDarkMode={isDarkMode}
+            showHelpIndicator={showHelpIndicator}
+            showRolloverInfo={showRolloverInfo}
+            onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.geometry)}
+          >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             <Label className={sectionLabelClassName}>Rows</Label>
             <Label className={`${sectionLabelClassName} text-right`}>Cols</Label>
@@ -430,22 +435,22 @@ export function ImageEditorDialog({
               />
             </div>
           </div>
-        </EditorSidebarSection>
+          </EditorSidebarSection>
         </div>
 
         <div ref={registerSectionRef("color")}>
-        <EditorSidebarSection
-          title="II. Color"
-          tooltip="Scheme, swatch color, and transparency; scheme dropdown previews on rollover"
-          collapsed={collapsed.color}
-          collapsedSummary={`${colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme}, ${transparencyPercent}%`}
-          onHeaderClick={handleSectionHeaderClick("color")}
-          onHeaderDoubleClick={handleSectionHeaderDoubleClick}
-          isDarkMode={isDarkMode}
-          showHelpIndicator={showHelpIndicator}
-          showRolloverInfo={showRolloverInfo}
-          onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.color)}
-        >
+          <EditorSidebarSection
+            title="II. Color"
+            tooltip="Scheme, swatch color, and transparency; scheme dropdown previews on rollover"
+            collapsed={collapsed.color}
+            collapsedSummary={`${colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme}, ${transparencyPercent}%`}
+            onHeaderClick={handleSectionHeaderClick("color")}
+            onHeaderDoubleClick={handleSectionHeaderDoubleClick}
+            isDarkMode={isDarkMode}
+            showHelpIndicator={showHelpIndicator}
+            showRolloverInfo={showRolloverInfo}
+            onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.color)}
+          >
           <EditorColorSchemeControls
             schemes={colorSchemes}
             schemeValue={editorColorScheme}
@@ -492,22 +497,22 @@ export function ImageEditorDialog({
             />
             </LabeledControlRow>
           </div>
-        </EditorSidebarSection>
+          </EditorSidebarSection>
         </div>
 
         <div ref={registerSectionRef("info")}>
-        <EditorSidebarSection
-          title="III. Info"
-          tooltip="Placeholder summary"
-          collapsed={collapsed.info}
-          collapsedSummary={`${editorState.draftColor}, ${transparencyPercent}%`}
-          onHeaderClick={handleSectionHeaderClick("info")}
-          onHeaderDoubleClick={handleSectionHeaderDoubleClick}
-          isDarkMode={isDarkMode}
-          showHelpIndicator={showHelpIndicator}
-          showRolloverInfo={showRolloverInfo}
-          onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.info)}
-        >
+          <EditorSidebarSection
+            title="III. Info"
+            tooltip="Placeholder summary"
+            collapsed={collapsed.info}
+            collapsedSummary={`${editorState.draftColor}, ${transparencyPercent}%`}
+            onHeaderClick={handleSectionHeaderClick("info")}
+            onHeaderDoubleClick={handleSectionHeaderDoubleClick}
+            isDarkMode={isDarkMode}
+            showHelpIndicator={showHelpIndicator}
+            showRolloverInfo={showRolloverInfo}
+            onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.info)}
+          >
           <div className={`border ${tone.infoFrame}`}>
             {infoRows.map(([label, value], index) => (
               <div
@@ -519,9 +524,9 @@ export function ImageEditorDialog({
               </div>
             ))}
           </div>
-        </EditorSidebarSection>
+          </EditorSidebarSection>
         </div>
-      </div>
+      </SidebarSectionScrollFrame>
     </div>
   )
 }

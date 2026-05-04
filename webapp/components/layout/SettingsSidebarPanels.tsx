@@ -8,6 +8,7 @@ import { ColorSchemePanel } from "@/components/settings/ColorSchemePanel"
 import { GutterPanel } from "@/components/settings/GutterPanel"
 import { MarginsPanel } from "@/components/settings/MarginsPanel"
 import { SettingsHelpNavigationProvider } from "@/components/settings/help-navigation-context"
+import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScrollFrame"
 import { TypographyPanel } from "@/components/settings/TypographyPanel"
 import { useAutoScrollOpenedSection } from "@/hooks/useAutoScrollOpenedSection"
 import type {
@@ -165,10 +166,10 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   onCanvasBackgroundPreviewChange,
   isDarkMode,
 }: Props) {
-  const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed)
+  const { scrollRootRef, registerSectionRef, bottomSpacerHeight } = useAutoScrollOpenedSection(collapsed)
 
   return (
-    <div ref={scrollRootRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-[45vh] pt-4 md:px-6 md:pb-[45vh] md:pt-6">
+    <SidebarSectionScrollFrame bottomSpacerHeight={bottomSpacerHeight} scrollRootRef={scrollRootRef}>
       <SettingsHelpNavigationProvider
         value={{
           showHelpIcons: showSectionHelpIcons,
@@ -289,7 +290,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
       </SettingsHelpNavigationProvider>
-    </div>
+    </SidebarSectionScrollFrame>
   )
 })
 

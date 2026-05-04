@@ -33,7 +33,7 @@ export function PanelCard({
 
   return (
     <section
-      className={`mb-3 border-b pb-3 last:mb-0 last:border-b-0 last:pb-0 ${
+      className={`mb-3 border-b pb-3 pt-4 last:mb-0 last:border-b-0 last:pb-0 ${
         isDarkMode
           ? "border-gray-700 text-gray-100"
           : "border-gray-200 text-gray-900"
@@ -46,8 +46,7 @@ export function PanelCard({
         tooltipClassName="border-gray-200 bg-white/95 text-gray-700 shadow-lg dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-200"
       >
         <header
-          data-section-scroll-anchor="true"
-          className={`select-none pt-3 ${interactionsDisabled ? "cursor-default" : "cursor-pointer"}`}
+          className={`select-none ${interactionsDisabled ? "cursor-default" : "cursor-pointer"}`}
           onClick={interactionsDisabled ? undefined : onHeaderClick}
           onDoubleClick={interactionsDisabled ? undefined : onHeaderDoubleClick}
           onMouseEnter={showHelpIcons ? () => onNavigate(helpSectionKey) : undefined}

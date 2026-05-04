@@ -17,6 +17,7 @@ const OVERFLOW_BADGE_RADIUS = 11
 const OVERFLOW_BADGE_PADDING = 6
 const OVERFLOW_BADGE_FILL = "rgba(255, 80, 80, 0.85)"
 const GUIDE_STROKE_COLOR = "#f54123"
+const PREVIEW_GUIDE_FILL = "rgba(253, 139, 123, 0.18)"
 const GUIDE_STROKE_WIDTH = 1
 const ACTIVE_GUIDE_STROKE_WIDTH = 2
 
@@ -160,6 +161,34 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         ctx.stroke()
       }
 
+      const drawPreviewGuideFill = (
+        x: number,
+        y: number,
+        widthPx: number,
+        heightPx: number,
+      ) => {
+        ctx.fillStyle = PREVIEW_GUIDE_FILL
+        ctx.fillRect(x, y, widthPx, heightPx)
+      }
+
+      const drawPreviewGuideEdges = (
+        x: number,
+        y: number,
+        widthPx: number,
+        heightPx: number,
+      ) => {
+        ctx.strokeStyle = GUIDE_STROKE_COLOR
+        ctx.lineWidth = GUIDE_STROKE_WIDTH
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.lineTo(x + widthPx, y)
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.lineTo(x, y + heightPx)
+        ctx.stroke()
+      }
+
       if (dragState) {
         const dragSpan = getPlacementSpan(dragState.key)
         const dragRows = getPlacementRows(dragState.key)
@@ -195,24 +224,39 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         drawPlacementGuide(snapX, snapX, snapY + baselineStep, snapWidth, snapHeight)
       } else if (hoveredTextGuideRect && hoveredTextGuidePlan) {
         const hoveredGuide = getPreviewTextGuideGeometry(hoveredTextGuidePlan, hoveredTextGuideRect)
-        drawPlacementGuide(
+        drawPreviewGuideFill(
           hoveredGuide.horizontalX,
-          hoveredGuide.verticalX,
+          hoveredGuide.y,
+          hoveredGuide.width,
+          hoveredGuide.height,
+        )
+        drawPreviewGuideEdges(
+          hoveredGuide.horizontalX,
           hoveredGuide.y,
           hoveredGuide.width,
           hoveredGuide.height,
         )
       } else if (hoveredImageRect) {
-        drawPlacementGuide(
+        drawPreviewGuideFill(
           hoveredImageRect.x,
+          hoveredImageRect.y,
+          hoveredImageRect.width,
+          hoveredImageRect.height,
+        )
+        drawPreviewGuideEdges(
           hoveredImageRect.x,
           hoveredImageRect.y,
           hoveredImageRect.width,
           hoveredImageRect.height,
         )
       } else if (selectedImageRect) {
-        drawPlacementGuide(
+        drawPreviewGuideFill(
           selectedImageRect.x,
+          selectedImageRect.y,
+          selectedImageRect.width,
+          selectedImageRect.height,
+        )
+        drawPreviewGuideEdges(
           selectedImageRect.x,
           selectedImageRect.y,
           selectedImageRect.width,
@@ -221,9 +265,14 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
       } else if (selectedTextPlan) {
         const guideRect = getPreviewTextGuideRect(selectedTextPlan)
         const guide = getPreviewTextGuideGeometry(selectedTextPlan, guideRect)
-        drawPlacementGuide(
+        drawPreviewGuideFill(
           guide.horizontalX,
-          guide.verticalX,
+          guide.y,
+          guide.width,
+          guide.height,
+        )
+        drawPreviewGuideEdges(
+          guide.horizontalX,
           guide.y,
           guide.width,
           guide.height,

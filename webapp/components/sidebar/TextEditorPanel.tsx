@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react"
 
 import { EditorSidebarSection } from "@/components/layout/EditorSidebarSection"
+import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScrollFrame"
 import { FontSelect } from "@/components/ui/font-select"
 import { EditorColorSchemeControls } from "@/components/ui/editor-color-scheme-controls"
 import { Label } from "@/components/ui/label"
@@ -166,7 +167,7 @@ export function TextEditorPanel<StyleKey extends string>({
     }
   }, [])
 
-  const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed, {
+  const { scrollRootRef, registerSectionRef, bottomSpacerHeight } = useAutoScrollOpenedSection(collapsed, {
     resetEventName: EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
     restoreKey: controls.editorState.target,
     scrollStorageKey: TEXT_EDITOR_SCROLL_STORAGE_KEY,
@@ -761,27 +762,31 @@ export function TextEditorPanel<StyleKey extends string>({
       data-editor-interactive-root="true"
       className={`min-h-0 flex h-full flex-col overflow-hidden ${tone.panel}`}
     >
-      <div ref={scrollRootRef} className={`min-h-0 flex-1 overflow-y-auto px-4 pb-[45vh] pt-4 md:px-6 md:pb-[45vh] md:pt-6 ${tone.surface}`}>
+      <SidebarSectionScrollFrame
+        bottomSpacerHeight={bottomSpacerHeight}
+        className={tone.surface}
+        scrollRootRef={scrollRootRef}
+      >
         <div ref={registerSectionRef("layout")}>
-        <EditorSidebarSection
-          title={(
-            <>
-              I. Paragraph{" "}
-              <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
-                {paragraphHeadingDisplayName}
-              </span>
-            </>
-          )}
-          tooltip="Rows, baselines, columns, alignment, flow, and rotation; geometry dropdowns preview on rollover"
-          collapsed={collapsed.layout}
-          collapsedSummary={`${controls.editorState.draftRows} rows, ${controls.editorState.draftColumns} cols`}
-          onHeaderClick={handleSectionHeaderClick("layout")}
-          onHeaderDoubleClick={handleSectionHeaderDoubleClick}
-          isDarkMode={isDarkMode}
-          showHelpIndicator={showHelpIndicator}
-          showRolloverInfo={showRolloverInfo}
-          onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.layout)}
-        >
+          <EditorSidebarSection
+            title={(
+              <>
+                I. Paragraph{" "}
+                <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
+                  {paragraphHeadingDisplayName}
+                </span>
+              </>
+            )}
+            tooltip="Rows, baselines, columns, alignment, flow, and rotation; geometry dropdowns preview on rollover"
+            collapsed={collapsed.layout}
+            collapsedSummary={`${controls.editorState.draftRows} rows, ${controls.editorState.draftColumns} cols`}
+            onHeaderClick={handleSectionHeaderClick("layout")}
+            onHeaderDoubleClick={handleSectionHeaderDoubleClick}
+            isDarkMode={isDarkMode}
+            showHelpIndicator={showHelpIndicator}
+            showRolloverInfo={showRolloverInfo}
+            onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.layout)}
+          >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
             <Label className={sectionLabelClassName}>Rows</Label>
             <Label className={`${sectionLabelClassName} text-right`}>Cols</Label>
@@ -983,7 +988,7 @@ export function TextEditorPanel<StyleKey extends string>({
               />
             </div>
           </div>
-        </EditorSidebarSection>
+          </EditorSidebarSection>
         </div>
 
         <div ref={registerSectionRef("type")}>
@@ -1311,7 +1316,7 @@ export function TextEditorPanel<StyleKey extends string>({
         </div>
 
         <div ref={registerSectionRef("info")}>
-        <EditorSidebarSection
+          <EditorSidebarSection
           title="V. Info"
           tooltip="Paragraph summary and live metrics"
           collapsed={collapsed.info}
@@ -1334,9 +1339,9 @@ export function TextEditorPanel<StyleKey extends string>({
               </div>
             ))}
           </div>
-        </EditorSidebarSection>
+          </EditorSidebarSection>
         </div>
-      </div>
+      </SidebarSectionScrollFrame>
     </div>
   )
 }

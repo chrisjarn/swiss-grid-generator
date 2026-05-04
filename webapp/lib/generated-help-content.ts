@@ -107,7 +107,7 @@ export const HELP_CONTENT_GROUPS = [
               "Retarget an open text editor by clicking another unlocked preview block or by double-clicking another unlocked text layer card in the Project panel.",
               "While editing, the left sidebar switches to `Paragraph`, `Typo`, `Symbols`, `Placeholders`, and `Info`.",
               "Those editor sections remember their last open/closed GUI state and panel scroll position across pages and paragraphs inside the current document. First use starts with all sections closed, and opening another document or preset resets the editor panels to the closed, top-aligned state.",
-              "Opening a settings or editor section keeps that section header on the panel's shared top anchor; opening lower sections moves them to the same header position, and closing all sections returns the panel to its default top-aligned view.",
+              "Opening a settings or editor section moves that whole section shell to the top of the panel. Closing a section while other open sections remain above it moves back to the nearest still-open section above, and closing all sections returns the panel to its default top-aligned view.",
               "The editor title uses the same layer label shown in the Project panel.",
               "`Esc` or outside click exits edit mode.",
               "Inside inline text edit: double-click selects a word, triple-click selects a sentence, `Alt+A` or `Cmd/Ctrl+A` selects all, and `Arrow` / `Home` / `End` follow the rendered line layout."
@@ -208,7 +208,7 @@ export const HELP_CONTENT_GROUPS = [
               "Open from the preview affordance or by double-clicking the corresponding unlocked image layer card in the Project panel.",
               "The left sidebar switches to `Geometry`, `Color`, and `Info`.",
               "Those editor sections remember their last open/closed GUI state and panel scroll position across pages and image placeholders inside the current document. First use starts with all sections closed, and opening another document or preset resets the editor panels to the closed, top-aligned state.",
-              "Opening a settings or editor section keeps that section header on the panel's shared top anchor; opening lower sections moves them to the same header position, and closing all sections returns the panel to its default top-aligned view.",
+              "Opening a settings or editor section moves that whole section shell to the top of the panel. Closing a section while other open sections remain above it moves back to the nearest still-open section above, and closing all sections returns the panel to its default top-aligned view.",
               "The editor title shows `IMAGE` plus the current placeholder swatch color.",
               "`Esc` or outside click exits edit mode.",
               "Double-clicking another unlocked active-page image layer card retargets the open image editor."

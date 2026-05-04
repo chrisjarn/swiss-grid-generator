@@ -243,7 +243,7 @@ Default: `swiss`
 - Deleting from the panel removes the layer from the active page and saved project JSON.
 - `Pages` section header single-clicks to collapse.
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
-- Left settings and editor panels use a shared header anchor: opening a section keeps its headline at the same top position, opening lower sections moves them to that same anchor, and double-click closing all sections returns the panel to the default top-aligned state.
+- Left settings and editor panels use one shared move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state.
 
 ### Left Footer (always visible)
 

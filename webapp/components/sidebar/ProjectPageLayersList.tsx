@@ -233,15 +233,13 @@ export function ProjectPageLayersList({
     ? {
         row: "border-[#313A47] text-[#F4F6F8]",
         rowMuted: "text-[#8D98AA]",
-        rowHover: "hover:bg-[#232A35]",
-        rowSelected: "bg-[#232A35]",
+        rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-[#8D98AA]",
       }
     : {
         row: "border-gray-200 text-gray-900",
         rowMuted: "text-gray-500",
-        rowHover: "hover:bg-gray-50",
-        rowSelected: "bg-gray-50",
+        rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-gray-500",
       }
 
@@ -354,6 +352,13 @@ export function ProjectPageLayersList({
         const stationaryIndex = stationaryIndexByKey.get(thumb.key) ?? null
         const allowLayerInteractions = isActivePage && !isLocked
         const showLayerActions = isActivePage
+        const showPreviewHighlight = isSelected || isHovered || isEditing
+        const previewHighlightClassName = showPreviewHighlight
+          ? "bg-swiss-orange-soft/20 shadow-[inset_1px_0_0_0_var(--swiss-orange-soft),inset_0_1px_0_0_var(--swiss-orange-soft)]"
+          : ""
+        const editingHighlightClassName = isEditing
+          ? "shadow-[inset_1px_0_0_0_var(--swiss-orange),inset_0_1px_0_0_var(--swiss-orange)]"
+          : ""
         return (
           <Fragment key={`${pageId}-${thumb.key}`}>
             {thumb.key !== draggingKey && stationaryIndex !== null && stationaryIndex > 0
@@ -403,16 +408,16 @@ export function ProjectPageLayersList({
                   ? `${tone.row} cursor-grabbing opacity-45`
                   : `${tone.row} ${tone.rowHover}`
               } ${index === 0 ? "border-t-0" : ""} ${
-                isSelected || isHovered ? tone.rowSelected : ""
+                previewHighlightClassName
               } ${
-                isEditing ? "shadow-[inset_1px_0_0_0_var(--swiss-orange-soft)]" : ""
+                editingHighlightClassName
               } ${
                 allowLayerInteractions ? "cursor-grab select-none" : "cursor-pointer"
               } ${
                 isLocked ? "opacity-80" : ""
               }`}
             >
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-3 pl-3">
                 <div className="pointer-events-none min-w-0 flex-1 select-none">
                   <div className="flex min-w-0 items-center gap-2">
                     {thumb.kind === "text" ? (
@@ -431,7 +436,7 @@ export function ProjectPageLayersList({
                     <div className="min-w-0 flex-1">
                       {thumb.kind === "text" ? (
                         <div
-                          className="truncate text-[12px]"
+                          className={`truncate text-[12px] ${isEditing ? "italic" : ""}`}
                           style={{
                             color: thumb.color,
                             fontFamily: getFontFamilyCss(isFontFamily(thumb.font) ? thumb.font : DEFAULT_BASE_FONT),
@@ -441,7 +446,7 @@ export function ProjectPageLayersList({
                         </div>
                       ) : (
                         <div
-                          className="h-2.5 w-full rounded-[2px] border border-black/10"
+                          className={`h-2.5 w-full rounded-[2px] border border-black/10 ${isEditing ? "ring-1 ring-swiss-orange/70" : ""}`}
                           style={{
                             backgroundColor: thumb.color,
                             opacity: thumb.opacity,
