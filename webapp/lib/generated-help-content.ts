@@ -110,7 +110,7 @@ export const HELP_CONTENT_GROUPS = [
               "Opening a settings or editor section moves that whole section shell to the top of the panel. Closing a section while other open sections remain above it moves back to the nearest still-open section above, and closing all sections returns the panel to its default top-aligned view.",
               "The editor title uses the same layer label shown in the Project panel.",
               "`Esc` or outside click exits edit mode.",
-              "Inside inline text edit: double-click selects a word, triple-click selects a sentence, `Alt+A` or `Cmd/Ctrl+A` selects all, and `Arrow` / `Home` / `End` follow the rendered line layout."
+              "Inside inline text edit: double-click selects a word, triple-click selects a sentence, four clicks select the whole paragraph text, `Alt+A` or `Cmd/Ctrl+A` selects all, and `Arrow` / `Home` / `End` follow the rendered line layout."
             ]
           }
         ],

@@ -928,6 +928,10 @@ export function InlineBlockTextarea<StyleKey extends string>({
               event.preventDefault()
               event.stopPropagation()
               const clickCount = event.pointerType === "mouse" ? event.detail : 1
+              if (clickCount >= 4) {
+                setTextareaSelection(0, displayText.length, true)
+                return
+              }
               if (clickCount >= 3) {
                 selectRangeForMultiClick(event.clientX, event.clientY, "sentence")
                 return

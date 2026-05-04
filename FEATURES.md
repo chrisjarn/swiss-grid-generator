@@ -89,6 +89,7 @@ Current capability inventory for Swiss Grid Generator.
 - In text edit mode, placeholders stay visible as raw tokens in the edited paragraph; outside edit mode they render to live values.
 - Double-click selects the clicked word in inline text edit mode.
 - Triple-click selects the containing sentence in inline text edit mode.
+- Four clicks select the whole paragraph text in inline text edit mode.
 - `Alt+A` and `Cmd/Ctrl+A` select the whole paragraph while inline text edit is active.
 - `Arrow`, `Home`, and `End` navigation in inline text edit follows the rendered line geometry rather than DOM textarea line boxes.
 - Preserves repeated spaces and blank lines in the source model.
