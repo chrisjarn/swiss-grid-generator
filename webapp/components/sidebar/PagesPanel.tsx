@@ -1,6 +1,6 @@
 "use client"
 
-import { BookOpen, Check, ChevronUp, File, Pencil, Square, Trash2 } from "lucide-react"
+import { BookOpen, Check, ChevronUp, File, LoaderCircle, Pencil, Square, Trash2 } from "lucide-react"
 import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import type { DragEvent } from "react"
 
@@ -207,6 +207,7 @@ export function PagesPanel({
       pendingScrollTargetRef.current = { pageId: scheduledKeyboardFocusRequest.pageId }
       setTransientExpandedPageId(scheduledKeyboardFocusRequest.pageId)
       setTransientExpandedReason("keyboard")
+      setScheduledKeyboardFocusRequest(null)
       keyboardExpandTimeoutRef.current = null
     }, KEYBOARD_PAGE_EXPAND_DELAY_MS)
   }, [scheduledKeyboardFocusRequest])
@@ -465,6 +466,7 @@ export function PagesPanel({
     const isActive = page.id === activePageId
     const isEditing = page.id === editingPageId
     const isExpanded = expandedPageId === page.id
+    const isWaitingForKeyboardExpand = scheduledKeyboardFocusRequest?.pageId === page.id && !isExpanded
     const isFacingPage = resolvedPage.layoutMode === "facing"
     const deleteDisabled = pages.length <= 1
     const stationaryIndex = stationaryIndexByPageId.get(page.id) ?? null
@@ -556,6 +558,12 @@ export function PagesPanel({
                     <File className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
                   )}
                   <div className="truncate text-[12px] font-medium leading-none">{page.name}</div>
+                  {isWaitingForKeyboardExpand ? (
+                    <LoaderCircle
+                      className={`h-3 w-3 shrink-0 animate-spin ${isActive ? "" : tone.rowMuted}`}
+                      strokeWidth={2}
+                    />
+                  ) : null}
                 </div>
               )}
             </div>
