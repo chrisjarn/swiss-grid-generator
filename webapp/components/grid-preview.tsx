@@ -579,6 +579,7 @@ export const GridPreview = memo(function GridPreview({
     undoNonce,
     redoNonce,
     buildSnapshot,
+    revisionKey: layoutRevisionKey,
     applySnapshot,
     onHistoryAvailabilityChange,
     onRecordHistory: onHistoryRecord,
@@ -792,7 +793,7 @@ export const GridPreview = memo(function GridPreview({
       }
     } else if (snapToBaseline && !shiftKey) {
       const rowStarts = metrics.rowStartBaselines
-      const currentIndex = findNearestAxisIndex(Array.from(rowStarts), currentPosition.row)
+      const currentIndex = findNearestAxisIndex(rowStarts, currentPosition.row)
       const nextIndex = Math.max(0, Math.min(rowStarts.length - 1, currentIndex + delta))
       nextPosition = {
         ...currentPosition,

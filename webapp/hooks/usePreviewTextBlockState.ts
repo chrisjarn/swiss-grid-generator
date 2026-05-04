@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, useRef } from "react"
 
 import type { BlockEditorTextAlign, BlockEditorVerticalAlign } from "@/components/editor/block-editor-types"
 import { normalizeHeightMetrics } from "@/lib/block-height"
@@ -39,6 +39,24 @@ type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamil
 
 export type PreviewTextBlockCollectionsState = PreviewTextLayerCollectionsState<BlockId, TypographyStyleKey>
 
+type TrackingRunsCacheEntry = {
+  text: string
+  runs: TextTrackingRun[] | undefined
+  trackingScale: number
+  result: TextTrackingRun[]
+}
+
+type TextFormatRunsCacheEntry = {
+  text: string
+  runs: TextFormatRun<TypographyStyleKey, FontFamily>[] | undefined
+  fontFamily: FontFamily
+  fontWeight: number
+  italic: boolean
+  styleKey: TypographyStyleKey
+  color: string
+  result: TextFormatRun<TypographyStyleKey, FontFamily>[]
+}
+
 type Args = {
   result: GridResult
   baseFont: FontFamily
@@ -78,6 +96,8 @@ export function usePreviewTextBlockState({
   result,
   baseFont,
 }: Args) {
+  const trackingRunsCacheRef = useRef(new Map<BlockId, TrackingRunsCacheEntry>())
+  const textFormatRunsCacheRef = useRef(new Map<BlockId, TextFormatRunsCacheEntry>())
   const {
     state: blockCollectionsState,
     merge: setBlockCollections,
@@ -214,11 +234,26 @@ export function usePreviewTextBlockState({
   }, [blockTrackingScales])
 
   const getBlockTrackingRuns = useCallback((key: BlockId): TextTrackingRun[] => {
-    return normalizeTextTrackingRuns(
-      textContent[key] ?? "",
-      blockTrackingRuns[key],
-      getBlockTrackingScale(key),
-    )
+    const text = textContent[key] ?? ""
+    const runs = blockTrackingRuns[key]
+    const trackingScale = getBlockTrackingScale(key)
+    const cached = trackingRunsCacheRef.current.get(key)
+    if (
+      cached
+      && cached.text === text
+      && cached.runs === runs
+      && cached.trackingScale === trackingScale
+    ) {
+      return cached.result
+    }
+    const resultRuns = normalizeTextTrackingRuns(text, runs, trackingScale)
+    trackingRunsCacheRef.current.set(key, {
+      text,
+      runs,
+      trackingScale,
+      result: resultRuns,
+    })
+    return resultRuns
   }, [blockTrackingRuns, getBlockTrackingScale, textContent])
 
   const getStyleSize = useCallback((styleKey: TypographyStyleKey): number => {
@@ -254,17 +289,39 @@ export function usePreviewTextBlockState({
     const fontFamily = getBlockFont(key)
     const fontWeight = getBlockFontWeight(key)
     const italic = isBlockItalic(key)
-    return normalizeTextFormatRuns(
-      textContent[key] ?? "",
-      blockTextFormatRuns[key],
-      {
-        fontFamily,
-        fontWeight,
-        italic,
-        styleKey,
-        color,
-      },
-    )
+    const text = textContent[key] ?? ""
+    const runs = blockTextFormatRuns[key]
+    const cached = textFormatRunsCacheRef.current.get(key)
+    if (
+      cached
+      && cached.text === text
+      && cached.runs === runs
+      && cached.fontFamily === fontFamily
+      && cached.fontWeight === fontWeight
+      && cached.italic === italic
+      && cached.styleKey === styleKey
+      && cached.color === color
+    ) {
+      return cached.result
+    }
+    const resultRuns = normalizeTextFormatRuns(text, runs, {
+      fontFamily,
+      fontWeight,
+      italic,
+      styleKey,
+      color,
+    })
+    textFormatRunsCacheRef.current.set(key, {
+      text,
+      runs,
+      fontFamily,
+      fontWeight,
+      italic,
+      styleKey,
+      color,
+      result: resultRuns,
+    })
+    return resultRuns
   }, [
     blockTextFormatRuns,
     getBlockFont,

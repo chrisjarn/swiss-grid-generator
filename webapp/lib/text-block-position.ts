@@ -34,7 +34,7 @@ function isTextBlockPosition(value: unknown): value is TextBlockPosition {
 
 function getAnchorRowIndex(row: number, rowStartBaselines: readonly number[]): number {
   if (rowStartBaselines.length === 0) return 0
-  return Math.max(0, findNearestAxisIndex(Array.from(rowStartBaselines), row))
+  return Math.max(0, findNearestAxisIndex(rowStartBaselines, row))
 }
 
 export function toTextBlockPosition(

@@ -122,3 +122,41 @@ Relevant commits from this pass:
 - `526127a` `Optimize hyphenated wrap width measurement`
 - `a9012f8` `Reuse text format intervals in glyph planning`
 - `91cf59f` `Optimize wrap profiling and boundary correction`
+
+## 2026-05-04 Optimization Summary
+
+Today's work stayed outside layout math and removed repeated preview/editor bookkeeping.
+
+### Kept Changes
+
+- Replaced full-snapshot `JSON.stringify(...)` change detection with a cheap revision key in the preview emission path.
+- Collapsed snapshot resolution and normalization builders into single-pass loops in `webapp/lib/preview-layout-snapshot.ts`.
+- Gated full-document `projectInfoStats` and `totalLayerCount` work behind the actual `showProjectInfo` state.
+- Cached `activeParagraphCount` instead of rescanning `blockOrder` on paragraph-limit checks.
+- Reused planner maps more directly and reduced render-plan allocation churn in `webapp/hooks/useTypographyRenderer.ts`.
+- Collapsed text-override and image-snapshot builders into single passes in:
+  - `webapp/hooks/usePreviewTextBlockOverrides.ts`
+  - `webapp/hooks/useImagePlaceholderState.ts`
+- Made preview history revision-aware in `webapp/hooks/usePreviewHistory.ts` so unchanged revisions do not rebuild and re-record identical snapshots.
+- Removed readonly-array `Array.from(...)` copies from interactive geometry helpers and keyboard nudge paths.
+- Added input-sensitive normalized tracking/format-run caches in `webapp/hooks/usePreviewTextBlockState.ts`.
+- Removed duplicate text-run normalization on editor-open and duplicate-layer snapshot paths in:
+  - `webapp/lib/preview-block-editor-state.ts`
+  - `webapp/lib/preview-text-layer-state.ts`
+
+### What This Improves
+
+- Large multi-page documents spend less time on project-shell bookkeeping while the visible page stays the same.
+- Undo/history boundaries avoid rebuilding full preview snapshots when the logical document revision has not changed.
+- Keyboard nudging and image/text placement helpers stop allocating throwaway arrays around row/column axis lookups.
+- Opening, re-targeting, duplicating, and reusing large text paragraphs avoids some repeated tracking/format-run normalization work.
+
+### Validation
+
+The kept checkpoints from this pass were validated with:
+
+- `npm run lint`
+- `npx tsc --noEmit`
+- `npm run test:snapshot`
+- `npm run test:preview-interactions`
+- `npm run test:editor-interactions`

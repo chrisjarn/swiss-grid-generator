@@ -6,7 +6,7 @@ export function resolveNearestPreviewColumn(
   firstColumnStep: number,
 ): number {
   if (relativeX >= 0) {
-    return findNearestAxisIndex(Array.from(colStarts), relativeX)
+    return findNearestAxisIndex(colStarts, relativeX)
   }
   if (!(firstColumnStep > 0)) return 0
   const snapped = Math.round(relativeX / firstColumnStep)

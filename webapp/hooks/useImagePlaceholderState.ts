@@ -170,45 +170,43 @@ export function useImagePlaceholderState<Key extends string>({
     || imageOrder.includes(key)
   ), [imageOrder])
 
-  const buildImageSnapshotState = useCallback((): ImageSnapshotState<Key> => ({
-    imageOrder: [...imageOrder],
-    imageModulePositions: { ...imageGridPositions },
-    imageColumnSpans: imageOrder.reduce((acc, key) => {
-      acc[key] = getImageSpan(key)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    imageRowSpans: imageOrder.reduce((acc, key) => {
-      acc[key] = getImageRows(key)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    imageHeightBaselines: imageOrder.reduce((acc, key) => {
-      acc[key] = getImageHeightBaselines(key)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    imageSnapToColumns: imageOrder.reduce((acc, key) => {
-      acc[key] = isImageSnapToColumnsEnabled(key)
-      return acc
-    }, {} as Partial<Record<Key, boolean>>),
-    imageSnapToBaseline: imageOrder.reduce((acc, key) => {
-      acc[key] = isImageSnapToBaselineEnabled(key)
-      return acc
-    }, {} as Partial<Record<Key, boolean>>),
-    imageRotations: imageOrder.reduce((acc, key) => {
+  const buildImageSnapshotState = useCallback((): ImageSnapshotState<Key> => {
+    const nextSpans = {} as Partial<Record<Key, number>>
+    const nextRows = {} as Partial<Record<Key, number>>
+    const nextHeightBaselines = {} as Partial<Record<Key, number>>
+    const nextSnapToColumns = {} as Partial<Record<Key, boolean>>
+    const nextSnapToBaseline = {} as Partial<Record<Key, boolean>>
+    const nextRotations = {} as Partial<Record<Key, number>>
+    const nextColors = {} as Partial<Record<Key, string>>
+    const nextOpacities = {} as Partial<Record<Key, number>>
+
+    for (const key of imageOrder) {
+      nextSpans[key] = getImageSpan(key)
+      nextRows[key] = getImageRows(key)
+      nextHeightBaselines[key] = getImageHeightBaselines(key)
+      nextSnapToColumns[key] = isImageSnapToColumnsEnabled(key)
+      nextSnapToBaseline[key] = isImageSnapToBaselineEnabled(key)
       const rotation = getImageRotation(key)
       if (hasSignificantRotation(rotation)) {
-        acc[key] = rotation
+        nextRotations[key] = rotation
       }
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    imageColors: imageOrder.reduce((acc, key) => {
-      acc[key] = getImageColorReference(key)
-      return acc
-    }, {} as Partial<Record<Key, string>>),
-    imageOpacities: imageOrder.reduce((acc, key) => {
-      acc[key] = getImageOpacity(key)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-  }), [
+      nextColors[key] = getImageColorReference(key)
+      nextOpacities[key] = getImageOpacity(key)
+    }
+
+    return {
+      imageOrder: [...imageOrder],
+      imageModulePositions: { ...imageGridPositions },
+      imageColumnSpans: nextSpans,
+      imageRowSpans: nextRows,
+      imageHeightBaselines: nextHeightBaselines,
+      imageSnapToColumns: nextSnapToColumns,
+      imageSnapToBaseline: nextSnapToBaseline,
+      imageRotations: nextRotations,
+      imageColors: nextColors,
+      imageOpacities: nextOpacities,
+    }
+  }, [
     getImageColorReference,
     getImageRotation,
     getImageOpacity,

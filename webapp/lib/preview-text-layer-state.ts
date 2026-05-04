@@ -119,6 +119,20 @@ type InsertTextLayerDuplicateSnapshotArgs<Key extends string, StyleKey extends s
   afterKey?: Key | null
 }
 
+function cloneTextTrackingRuns(runs: readonly TextTrackingRun[] | undefined): TextTrackingRun[] | undefined {
+  return Array.isArray(runs) && runs.length > 0
+    ? runs.map((run) => ({ ...run }))
+    : undefined
+}
+
+function cloneTextFormatRuns<StyleKey extends string>(
+  runs: readonly TextFormatRun<StyleKey, FontFamily>[] | undefined,
+): TextFormatRun<StyleKey, FontFamily>[] | undefined {
+  return Array.isArray(runs) && runs.length > 0
+    ? runs.map((run) => ({ ...run }))
+    : undefined
+}
+
 export function clampTextBlockPosition({
   position,
   span,
@@ -496,19 +510,16 @@ export function duplicateTextLayerInCollections<
   }
   const nextTrackingRuns = { ...current.blockTrackingRuns }
   const sourceTrackingRuns = current.blockTrackingRuns[sourceKey]
-  if (Array.isArray(sourceTrackingRuns) && sourceTrackingRuns.length > 0) {
-    nextTrackingRuns[newKey] = normalizeTextTrackingRuns(
-      current.textContent[sourceKey] ?? "",
-      sourceTrackingRuns,
-      current.blockTrackingScales[sourceKey] ?? DEFAULT_TRACKING_SCALE,
-    )
+  const duplicatedTrackingRuns = cloneTextTrackingRuns(sourceTrackingRuns)
+  if (duplicatedTrackingRuns) {
+    nextTrackingRuns[newKey] = duplicatedTrackingRuns
   } else {
     delete nextTrackingRuns[newKey]
   }
   const nextTextFormatRuns = { ...current.blockTextFormatRuns }
-  const sourceTextFormatRuns = current.blockTextFormatRuns[sourceKey]
-  if (Array.isArray(sourceTextFormatRuns) && sourceTextFormatRuns.length > 0) {
-    nextTextFormatRuns[newKey] = sourceTextFormatRuns.map((run) => ({ ...run }))
+  const duplicatedTextFormatRuns = cloneTextFormatRuns(current.blockTextFormatRuns[sourceKey])
+  if (duplicatedTextFormatRuns) {
+    nextTextFormatRuns[newKey] = duplicatedTextFormatRuns
   } else {
     delete nextTextFormatRuns[newKey]
   }
@@ -662,19 +673,17 @@ export function insertTextLayerDuplicateSnapshotInCollections<
   }
 
   const nextTrackingRuns = { ...current.blockTrackingRuns }
-  if (Array.isArray(snapshot.trackingRuns) && snapshot.trackingRuns.length > 0) {
-    nextTrackingRuns[newKey] = normalizeTextTrackingRuns(
-      snapshot.text,
-      snapshot.trackingRuns,
-      snapshot.trackingScale ?? DEFAULT_TRACKING_SCALE,
-    )
+  const duplicatedTrackingRuns = cloneTextTrackingRuns(snapshot.trackingRuns)
+  if (duplicatedTrackingRuns) {
+    nextTrackingRuns[newKey] = duplicatedTrackingRuns
   } else {
     delete nextTrackingRuns[newKey]
   }
 
   const nextTextFormatRuns = { ...current.blockTextFormatRuns }
-  if (Array.isArray(snapshot.textFormatRuns) && snapshot.textFormatRuns.length > 0) {
-    nextTextFormatRuns[newKey] = snapshot.textFormatRuns.map((run) => ({ ...run }))
+  const duplicatedTextFormatRuns = cloneTextFormatRuns(snapshot.textFormatRuns)
+  if (duplicatedTextFormatRuns) {
+    nextTextFormatRuns[newKey] = duplicatedTextFormatRuns
   } else {
     delete nextTextFormatRuns[newKey]
   }

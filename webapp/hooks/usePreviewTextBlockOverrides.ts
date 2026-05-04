@@ -55,30 +55,37 @@ export function usePreviewTextBlockOverrides<Key extends string, StyleKey extend
     return defaultTextColor
   }, [blockTextColors, defaultTextColor])
 
-  const buildTextOverridesSnapshot = useCallback(() => ({
-    blockCustomSizes: blockOrder.reduce((acc, key) => {
+  const buildTextOverridesSnapshot = useCallback(() => {
+    const nextSizes = {} as Partial<Record<Key, number>>
+    const nextLeadings = {} as Partial<Record<Key, number>>
+    const nextTextColors = {} as Partial<Record<Key, string>>
+
+    for (const key of blockOrder) {
       const styleKey = styleAssignments[key] ?? ("body" as StyleKey)
-      if (styleKey !== "fx") return acc
-      const raw = blockCustomSizes[key]
-      if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return acc
-      acc[key] = clampFxSize(raw)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    blockCustomLeadings: blockOrder.reduce((acc, key) => {
-      const styleKey = styleAssignments[key] ?? ("body" as StyleKey)
-      if (styleKey !== "fx") return acc
-      const raw = blockCustomLeadings[key]
-      if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return acc
-      acc[key] = clampFxLeading(raw)
-      return acc
-    }, {} as Partial<Record<Key, number>>),
-    blockTextColors: blockOrder.reduce((acc, key) => {
-      const raw = blockTextColors[key]
-      if (!isImagePlaceholderColor(raw)) return acc
-      acc[key] = raw
-      return acc
-    }, {} as Partial<Record<Key, string>>),
-  }), [
+      if (styleKey === "fx") {
+        const rawSize = blockCustomSizes[key]
+        if (typeof rawSize === "number" && Number.isFinite(rawSize) && rawSize > 0) {
+          nextSizes[key] = clampFxSize(rawSize)
+        }
+
+        const rawLeading = blockCustomLeadings[key]
+        if (typeof rawLeading === "number" && Number.isFinite(rawLeading) && rawLeading > 0) {
+          nextLeadings[key] = clampFxLeading(rawLeading)
+        }
+      }
+
+      const rawColor = blockTextColors[key]
+      if (isImagePlaceholderColor(rawColor)) {
+        nextTextColors[key] = rawColor
+      }
+    }
+
+    return {
+      blockCustomSizes: nextSizes,
+      blockCustomLeadings: nextLeadings,
+      blockTextColors: nextTextColors,
+    }
+  }, [
     blockCustomLeadings,
     blockCustomSizes,
     blockOrder,
@@ -89,28 +96,29 @@ export function usePreviewTextBlockOverrides<Key extends string, StyleKey extend
   const applyTextOverridesSnapshot = useCallback((snapshot: PreviewLayoutState<StyleKey, string, Key>) => {
     const normalizedOrder = (Array.isArray(snapshot.blockOrder) ? snapshot.blockOrder : [])
       .filter((key): key is Key => typeof key === "string" && key.length > 0)
-    const nextSizes = normalizedOrder.reduce((acc, key) => {
+    const nextSizes = {} as Partial<Record<Key, number>>
+    const nextLeadings = {} as Partial<Record<Key, number>>
+    const nextTextColors = {} as Partial<Record<Key, string>>
+
+    for (const key of normalizedOrder) {
       const styleKey = snapshot.styleAssignments?.[key] ?? ("body" as StyleKey)
-      if (styleKey !== "fx") return acc
-      const raw = snapshot.blockCustomSizes?.[key]
-      if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return acc
-      acc[key] = clampFxSize(raw)
-      return acc
-    }, {} as Partial<Record<Key, number>>)
-    const nextLeadings = normalizedOrder.reduce((acc, key) => {
-      const styleKey = snapshot.styleAssignments?.[key] ?? ("body" as StyleKey)
-      if (styleKey !== "fx") return acc
-      const raw = snapshot.blockCustomLeadings?.[key]
-      if (typeof raw !== "number" || !Number.isFinite(raw) || raw <= 0) return acc
-      acc[key] = clampFxLeading(raw)
-      return acc
-    }, {} as Partial<Record<Key, number>>)
-    const nextTextColors = normalizedOrder.reduce((acc, key) => {
-      const raw = snapshot.blockTextColors?.[key]
-      if (!isImagePlaceholderColor(raw)) return acc
-      acc[key] = raw
-      return acc
-    }, {} as Partial<Record<Key, string>>)
+      if (styleKey === "fx") {
+        const rawSize = snapshot.blockCustomSizes?.[key]
+        if (typeof rawSize === "number" && Number.isFinite(rawSize) && rawSize > 0) {
+          nextSizes[key] = clampFxSize(rawSize)
+        }
+
+        const rawLeading = snapshot.blockCustomLeadings?.[key]
+        if (typeof rawLeading === "number" && Number.isFinite(rawLeading) && rawLeading > 0) {
+          nextLeadings[key] = clampFxLeading(rawLeading)
+        }
+      }
+
+      const rawColor = snapshot.blockTextColors?.[key]
+      if (isImagePlaceholderColor(rawColor)) {
+        nextTextColors[key] = rawColor
+      }
+    }
     setBlockCustomSizes(nextSizes)
     setBlockCustomLeadings(nextLeadings)
     setBlockTextColors(nextTextColors)

@@ -118,11 +118,7 @@ export function buildExistingBlockEditorState<StyleKey extends string>({
     styleKey: assignedStyleKey,
     color: getBlockTextColor(key),
   }
-  const initialRuns = normalizeTextFormatRuns(
-    normalizedText,
-    getBlockTextFormatRuns(key, initialBaseFormat.color),
-    initialBaseFormat,
-  )
+  const initialRuns = getBlockTextFormatRuns(key, initialBaseFormat.color)
   const wholeTextRange = {
     start: 0,
     end: normalizedText.length,
@@ -188,11 +184,22 @@ export function buildExistingBlockEditorState<StyleKey extends string>({
   const draftFontWeight = collapsedBaseFormat.fontWeight
   const draftItalic = collapsedBaseFormat.italic
   const draftColor = collapsedBaseFormat.color
-  const draftTextFormatRuns = normalizeTextFormatRuns(
-    normalizedText,
-    initialRuns,
-    collapsedBaseFormat,
+  const usesInitialBaseFormat = (
+    collapsedBaseFormat.fontFamily === initialBaseFormat.fontFamily
+    && collapsedBaseFormat.fontWeight === initialBaseFormat.fontWeight
+    && collapsedBaseFormat.italic === initialBaseFormat.italic
+    && collapsedBaseFormat.styleKey === initialBaseFormat.styleKey
+    && collapsedBaseFormat.color === initialBaseFormat.color
   )
+  const draftTextFormatRuns = usesInitialBaseFormat
+    ? initialRuns
+    : normalizeTextFormatRuns(
+        normalizedText,
+        initialRuns,
+        collapsedBaseFormat,
+      )
+  const draftTrackingScale = getBlockTrackingScale(key)
+  const draftTrackingRuns = getBlockTrackingRuns(key)
 
   return {
     target: key,
@@ -218,12 +225,8 @@ export function buildExistingBlockEditorState<StyleKey extends string>({
     draftSnapToBaseline: isSnapToBaselineEnabled(key),
     draftItalic: draftItalic,
     draftOpticalKerning: isBlockOpticalKerningEnabled(key),
-    draftTrackingScale: getBlockTrackingScale(key),
-    draftTrackingRuns: normalizeTextTrackingRuns(
-      normalizedText,
-      getBlockTrackingRuns(key),
-      getBlockTrackingScale(key),
-    ),
+    draftTrackingScale,
+    draftTrackingRuns,
     draftTextFormatRuns,
     draftRotation: getBlockRotation(key),
     draftTextEdited: blockTextEdited[key] ?? true,

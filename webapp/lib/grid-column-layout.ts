@@ -55,8 +55,8 @@ export function resolveGridColumnOffset(
 }
 
 export function sumGridColumnSpan(
-  moduleWidths: number[],
-  columnStarts: number[],
+  moduleWidths: readonly number[],
+  columnStarts: readonly number[],
   startIndex: number,
   span: number,
   gutterX: number,

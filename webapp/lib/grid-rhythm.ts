@@ -111,7 +111,7 @@ export function sumAxisSpan(
   return total
 }
 
-export function findNearestAxisIndex(starts: number[], value: number): number {
+export function findNearestAxisIndex(starts: readonly number[], value: number): number {
   if (starts.length <= 1) return 0
   let bestIndex = 0
   let bestDistance = Math.abs(starts[0] - value)
@@ -126,8 +126,8 @@ export function findNearestAxisIndex(starts: number[], value: number): number {
 }
 
 export function findAxisIndexAtOffset(
-  starts: number[],
-  sizes: number[],
+  starts: readonly number[],
+  sizes: readonly number[],
   value: number,
 ): number {
   if (!starts.length || !sizes.length) return -1

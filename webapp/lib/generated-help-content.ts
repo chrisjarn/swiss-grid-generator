@@ -301,7 +301,7 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "Save stores project metadata, pages, page settings, layout state, and optional tours.",
               "`Save to Library` opens a metadata dialog for project title plus optional description and author, then stores the full project in the local `Users` library as a gzip-compressed archive.",
-              "`Import` restores the full project and active page from either a saved project JSON or a compressed `.swissgridgenerator` archive.",
+              "`Import` restores the full project from either a saved project JSON or a compressed `.swissgridgenerator` archive and always opens on the first page in the loaded `pages` array.",
               "Imported projects must use the 2.0 project schema with an explicit `pages` array.",
               "Positioned layers are stored with logical anchors so layouts stay stable across grid changes.",
               "Supabase email-code auth is optional and used only for cloud sync."
@@ -630,10 +630,12 @@ export const HELP_CONTENT_GROUPS = [
               "Opens the project title and page/layer management panel.",
               "The small `i` toggle in the Project header shows or hides the document info text.",
               "The compact project-title row always shows the real project title.",
-              "Double-click the compact project title to open or close the metadata section. Opening it focuses the `Title` field immediately.",
+              "Double-click the compact project title to open or close the metadata section. Opening it focuses and selects the `Title` field immediately.",
               "The expanded metadata section contains `Title`, `Description`, and `Author`.",
+              "The `Description` field is vertically resizable in the current session.",
               "The document info text summarizes pages, layers, fonts, cuts, words, characters, author, and creation date when metadata exists.",
               "Single-click a page row to activate it. Double-click it to open or close its inline layer list.",
+              "`Page Up` / `Page Down` move through project pages, `Shift` + `Page Up` / `Page Down` jump by `10`, and the active page row is brought into view before its inline layers open.",
               "Drag collapsed page rows to reorder the project.",
               "Page rows include rename and delete controls. The last remaining page cannot be deleted.",
               "`Facing pages` converts a page into a spread inside the same page record.",

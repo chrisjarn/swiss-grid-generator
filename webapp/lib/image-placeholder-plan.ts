@@ -83,7 +83,7 @@ export function buildImagePlaceholderGeometryPlan<Key extends string>({
   )
   const rowStartIndex = Math.max(
     0,
-    Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(Array.from(rowStartsInBaselines), row)),
+    Math.min(Math.max(0, gridRows - 1), findNearestAxisIndex(rowStartsInBaselines, row)),
   )
   const { minCol } = resolveLayerColumnBounds({ span, gridCols, snapToColumns })
   const snappedStartCol = Math.max(minCol, Math.min(Math.max(0, gridCols - 1), Math.round(col)))
@@ -95,8 +95,8 @@ export function buildImagePlaceholderGeometryPlan<Key extends string>({
     x,
     y,
     width: sumGridColumnSpan(
-      Array.from(moduleWidths),
-      Array.from(columnStarts),
+      moduleWidths,
+      columnStarts,
       snappedStartCol,
       span,
       gutterX,

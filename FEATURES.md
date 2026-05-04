@@ -112,11 +112,12 @@ Current capability inventory for Swiss Grid Generator.
 - Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and single-page creation.
 - Project panel includes a compact project-title row showing the real project title plus an edit/close button.
 - Double-clicking the compact project-title row toggles the metadata section; opening it focuses and selects the `Title` field immediately.
-- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields storing on blur.
+- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields storing on blur, and the `Description` field can be vertically resized for the current session.
 - Project panel includes a document-info toggle with project/page/layer/type summary text.
 - Opened page rows expose a `Facing pages` control above `Layers`, converting a page into a true facing spread with mirrored inner/outer margins, a zero-gap preview seam, and doubled effective columns across the spread.
 - The Project header includes an `i` toggle for document info text.
 - `Page Up` and `Page Down` step through project pages when multiple pages are present, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page.
+- Keyboard page navigation keeps the active page row in view, waits briefly before moving the row, and only opens inline layers after a longer pause so fast paging stays lightweight.
 - Facing spreads stay a single project page and keep the normal layer editing workflow inside one continuous spread space.
 - `Add Page` always creates a new single page, even from a facing spread.
 - Projects are capped at `1000` pages.
@@ -166,6 +167,7 @@ Current capability inventory for Swiss Grid Generator.
 
 - Preset browser in the preview area.
 - Rendered page-1 thumbnails for bundled presets.
+- Loading a preset, imported project, or saved user layout always opens the first page in its `pages` array.
 - Preset rollover tooltip with title, description, author, and creation date metadata when rollover info is enabled.
 - User-library layouts are listed after bundled `Presets` and `Examples` when any local or synced user layouts are available.
 - The Users section header includes an info rollover describing local browser storage, data-clearing risk, and signed-in cloud sync.
