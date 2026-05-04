@@ -239,7 +239,7 @@ function renderSubsection(subsection: HelpSubsection, tone: Tone, appVersion: st
 
 function renderSection(section: HelpSection, tone: Tone, appVersion: string) {
   return (
-    <section key={section.id} id={section.id} className="space-y-2">
+    <section key={section.id} id={section.id} className={`space-y-2 border-t pt-3 ${tone.divider}`}>
       <SectionHeading
         className="text-[11px] font-semibold uppercase tracking-[0.08em]"
         jumpButtonClassName={tone.jumpButton}
@@ -311,7 +311,7 @@ export function HelpPanel({ isDarkMode = false, onClose, activeSectionId, appVer
         />
       </div>
 
-      <div id="help-index" className="space-y-2">
+      <div id="help-index" className={`space-y-2 border-t pt-3 ${tone.divider}`}>
         <SectionHeaderRow label="Index" />
         {HELP_INDEX_GROUPS.map((group, groupIndex) => (
           <div key={group.title} className={groupIndex > 0 ? "mt-2" : ""}>

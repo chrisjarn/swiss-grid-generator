@@ -141,7 +141,7 @@ export function ExportDialog({
             </p>
           </div>
           <div className="space-y-2">
-            <SectionHeaderRow label="Display" />
+            <SectionHeaderRow label="Active Layers Rendered" />
             <div className="grid grid-cols-5 gap-2">
               <Button
                 type="button"
