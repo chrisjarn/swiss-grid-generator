@@ -245,13 +245,13 @@ export function ExportDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Description (optional)</Label>
+              <Label>Subject (optional)</Label>
               <textarea
                 value={jsonDescriptionDraft}
                 onChange={(event) => onJsonDescriptionChange(event.target.value)}
                 disabled={isExporting}
                 className={`${inputClassName} min-h-20`}
-                placeholder="Short description"
+                placeholder="Short subject"
               />
             </div>
             <div className="space-y-2">

@@ -60,12 +60,12 @@ export function SaveLibraryDialog({
           />
         </div>
         <div className="space-y-2">
-          <Label>Description (optional)</Label>
+          <Label>Subject (optional)</Label>
           <textarea
             value={description}
             onChange={(event) => onDescriptionChange(event.target.value)}
             className={getPopupInputClassName(isDarkUi, "min-h-20")}
-            placeholder="Short description"
+            placeholder="Short subject"
           />
         </div>
         <div className="space-y-2">

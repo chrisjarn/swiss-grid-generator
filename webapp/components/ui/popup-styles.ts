@@ -11,9 +11,12 @@ export function getCompactActionButtonClassName({
   active = false,
   danger = false,
 }: ToneArgs = {}): string {
+  const baseButtonClassName =
+    "h-[24px] min-h-0 rounded-[5px] border px-2.5 text-[11px] leading-[1] transition-colors active:translate-y-px"
+
   if (danger) {
     return cn(
-      "h-[22px] min-h-0 rounded-[5px] border px-2 py-0 text-[11px] leading-none transition-colors active:translate-y-px",
+      baseButtonClassName,
       isDarkMode
         ? "border-[#6f3d45] bg-[#2B2028] text-swiss-orange-soft hover:bg-[#36262F] hover:text-[#ffd2ce]"
         : "border-swiss-orange-soft bg-[#fff6f5] text-[#c55a52] hover:bg-[#ffecea] hover:text-[#9d4039]",
@@ -22,7 +25,7 @@ export function getCompactActionButtonClassName({
 
   if (active) {
     return cn(
-      "h-[22px] min-h-0 rounded-[5px] border px-2 py-0 text-[11px] leading-none transition-colors active:translate-y-px",
+      baseButtonClassName,
       isDarkMode
         ? "border-[#A8B1BF] bg-[#F4F6F8] text-[#1D232D] hover:bg-white"
         : "border-gray-900 bg-gray-900 text-white hover:bg-gray-800",
@@ -30,7 +33,7 @@ export function getCompactActionButtonClassName({
   }
 
   return cn(
-    "h-[22px] min-h-0 rounded-[5px] border px-2 py-0 text-[11px] leading-none transition-colors active:translate-y-px",
+    baseButtonClassName,
     isDarkMode
       ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]"
       : "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",

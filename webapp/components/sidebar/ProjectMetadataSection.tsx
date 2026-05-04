@@ -134,7 +134,7 @@ export function ProjectMetadataSection({
         />
       </div>
       <div className="space-y-1.5">
-        <SectionHeaderRow label="Description" />
+        <SectionHeaderRow label="Subject" />
         <textarea
           rows={5}
           value={descriptionDraft}
@@ -148,7 +148,7 @@ export function ProjectMetadataSection({
             }
           }}
           className={`w-full resize-y rounded-sm border px-2 py-1.5 text-[12px] leading-[1.45] outline-none ${tone.input}`}
-          placeholder="Short description"
+          placeholder="Short subject"
         />
       </div>
       <div className="space-y-1.5">

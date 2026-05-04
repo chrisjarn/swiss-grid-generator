@@ -5,7 +5,7 @@ Current capability inventory for Swiss Grid Generator.
 ## Document Model
 
 - Multi-page projects with project metadata (`title`, `description`, `author`, `createdAt`).
-- Save to Library dialog for project title plus optional description and author metadata, with a header status dot for unsaved, locally saved, and cloud-synced state.
+- Save to Library dialog for project title plus optional subject and author metadata, with a header status dot for unsaved, locally saved, and cloud-synced state.
 - Independent page settings and layout state per page.
 - Mixed page layer stack with text paragraphs and image placeholders.
 - Save/load as plain project JSON or gzip-compressed `.swissgridgenerator` archives.
@@ -114,7 +114,7 @@ Current capability inventory for Swiss Grid Generator.
 - Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and single-page creation.
 - Project panel includes a compact project-title row showing the real project title plus an edit/close button.
 - Double-clicking the compact project-title row toggles the metadata section; opening it focuses and selects the `Title` field immediately.
-- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields storing on blur, and the `Description` field can be vertically resized for the current session.
+- The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields storing on blur, and the `Subject` field can be vertically resized for the current session.
 - Project panel includes a document-info toggle with project/page/layer/type summary text.
 - Opened page rows expose a `Facing pages` control above `Layers`, converting a page into a true facing spread with mirrored inner/outer margins, a zero-gap preview seam, and doubled effective columns across the spread.
 - The Project header includes an `i` toggle for document info text.
@@ -172,7 +172,7 @@ Current capability inventory for Swiss Grid Generator.
 - Rendered page-1 thumbnails for bundled presets.
 - Loading a preset, imported project, or saved user layout always opens the first page in its `pages` array.
 - Loaded pages are revealed only after the full page snapshot and first final preview plan are ready, so fast paging does not expose intermediate image or layer placement.
-- Preset rollover tooltip with title, description, author, and creation date metadata when rollover info is enabled.
+- Preset rollover tooltip with title, subject, author, and creation date metadata when rollover info is enabled.
 - User-library layouts are listed after bundled `Presets` and `Examples` when any local or synced user layouts are available.
 - The Users section header includes an info rollover describing local browser storage, data-clearing risk, and signed-in cloud sync.
 - User-library thumbnails show a green status dot only while signed in and synced; signed-out, pending, or local-only states stay orange.
@@ -182,7 +182,7 @@ Current capability inventory for Swiss Grid Generator.
 
 ## Export
 
-- Save dialog stores the current project into the local `Users` library with editable title, description, and author metadata.
+- Save dialog stores the current project into the local `Users` library with editable title, subject, and author metadata.
 - Local `Users` library records are stored as gzip-compressed project archives in IndexedDB.
 - `PDF` selected-range export.
 - `JSON` full-project export, optionally gzip-compressed as `.swissgridgenerator`.

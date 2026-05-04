@@ -216,7 +216,7 @@ Default: `swiss`
 - `Title`: editable project title; also drives the default project JSON filename stem.
 - The compact project-title row shows the real project title plus an edit/close button.
 - Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
-- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields together.
+- The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
 - `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed, and `Add Page` always creates a new single page.
 - Page creation is capped at `1000` pages per project.
@@ -283,7 +283,7 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 ### Save to Library dialog
 
 - Project Title input
-- Description input
+- Subject input
 - Author input
 - Stores the project in the local Users library as a gzip-compressed archive
 - Confirm/Cancel

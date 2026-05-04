@@ -303,7 +303,7 @@ export const HELP_CONTENT_GROUPS = [
             "type": "list",
             "items": [
               "Save stores project metadata, pages, page settings, layout state, and optional tours.",
-              "`Save to Library` opens a metadata dialog for project title plus optional description and author, then stores the full project in the local `Users` library as a gzip-compressed archive.",
+              "`Save to Library` opens a metadata dialog for project title plus optional subject and author, then stores the full project in the local `Users` library as a gzip-compressed archive.",
               "`Import` restores the full project from either a saved project JSON or a compressed `.swissgridgenerator` archive and always opens on the first page in the loaded `pages` array.",
               "Imported projects must use the 2.0 project schema with an explicit `pages` array.",
               "Positioned layers are stored with logical anchors so layouts stay stable across grid changes.",
@@ -443,7 +443,7 @@ export const HELP_CONTENT_GROUPS = [
               "Bundled files are grouped into `Presets` and `Examples`. `Users` is reserved for user files.",
               "When user layouts exist locally or through cloud sync, the `Users` section is listed after bundled `Presets` and `Examples`.",
               "The `Users` header info marker explains that local layouts are browser/device-local and can be lost when browser data is cleared; signed-in cloud sync stores saved layouts in Supabase.",
-              "Hovering a preset thumbnail shows title, description, author, date, format, grid, baseline, margin, and rhythm metadata.",
+              "Hovering a preset thumbnail shows title, subject, author, date, format, grid, baseline, margin, and rhythm metadata.",
               "User thumbnails in `Users` also show cloud status in the rollover; the thumbnail status dot is green only while signed in and synced, orange when signed out or pending, and red on signed-in sync error.",
               "Deleting a user thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary.",
               "Double-click a thumbnail to load it.",
@@ -473,7 +473,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Opens the `Save to Library` dialog for project title, description, and author, then stores the current project in the local `Users` library as a gzip-compressed archive. The Save icon status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced. Shortcut: `Cmd/Ctrl+S`."
+            "text": "Opens the `Save to Library` dialog for project title, subject, and author, then stores the current project in the local `Users` library as a gzip-compressed archive. The Save icon status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced. Shortcut: `Cmd/Ctrl+S`."
           }
         ],
         "subsections": []
@@ -634,8 +634,8 @@ export const HELP_CONTENT_GROUPS = [
               "The small `i` toggle in the Project header shows or hides the document info text.",
               "The compact project-title row always shows the real project title.",
               "Double-click the compact project title to open or close the metadata section. Opening it focuses and selects the `Title` field immediately.",
-              "The expanded metadata section contains `Title`, `Description`, and `Author`.",
-              "The `Description` field is vertically resizable in the current session.",
+              "The expanded metadata section contains `Title`, `Subject`, and `Author`.",
+              "The `Subject` field is vertically resizable in the current session.",
               "The document info text summarizes pages, layers, fonts, cuts, words, characters, author, and creation date when metadata exists.",
               "Single-click a page row to activate it. Double-click it to open or close its inline layer list.",
               "`Page Up` / `Page Down` move through project pages, `Shift` + `Page Up` / `Page Down` jump by `10`, and the active page row is brought into view before its inline layers open.",

@@ -205,7 +205,7 @@ function PresetCard({
       label={(
         <div className="space-y-1">
           <PresetTooltipRow label="Title" value={preset.title ?? preset.label} />
-          <PresetTooltipRow label="Description" value={preset.description || "—"} />
+          <PresetTooltipRow label="Subject" value={preset.description || "—"} />
           <PresetTooltipRow label="Author" value={preset.author || "—"} />
           <PresetTooltipRow label="Created" value={formatPresetCreatedAt(preset.createdAt)} />
           <PresetTooltipRow label="Format" value={`${result.format} / ${result.settings.orientation}`} />

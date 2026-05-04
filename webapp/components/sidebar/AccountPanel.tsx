@@ -135,6 +135,7 @@ export function AccountPanel({
       }
   const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
   const authButtonClassName = getCompactActionButtonClassName({ isDarkMode })
+  const accountActionButtonClassName = `${authButtonClassName} inline-flex justify-center gap-1.5`
   const pairedHeaderValueClassName = tone.caption
   const hasPendingCode = !userEmail && Boolean(pendingEmail)
 
@@ -250,11 +251,11 @@ export function AccountPanel({
               )}
             </div>
             <div className="space-y-2">
-              <div className="flex flex-wrap justify-start gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 {userEmail && onSyncNow ? (
                   <Button
                     size="sm"
-                    className={`${authButtonClassName} inline-flex items-center gap-1.5`}
+                    className={`${accountActionButtonClassName} w-full`}
                     disabled={isSubmitting}
                     onClick={async () => {
                       setIsSubmitting(true)
@@ -271,7 +272,7 @@ export function AccountPanel({
                 ) : null}
                 <Button
                   size="sm"
-                  className={`${authButtonClassName} inline-flex items-center gap-1.5`}
+                  className={`${accountActionButtonClassName} w-full`}
                   onClick={async () => {
                     try {
                       const entries = await listCloudActivityLogEntries()
@@ -283,7 +284,7 @@ export function AccountPanel({
                   }}
                 >
                   <Download className="h-2.5 w-2.5" />
-                  {downloadState === "downloaded" ? "Log File Saved" : downloadState === "error" ? "Log File Failed" : "Download Log File"}
+                  {downloadState === "downloaded" ? "Log Saved" : downloadState === "error" ? "Log Failed" : "Download Log"}
                 </Button>
               </div>
             </div>
@@ -386,10 +387,10 @@ export function AccountPanel({
               value={userEmail}
               valueClassName={`text-right ${pairedHeaderValueClassName}`}
             />
-            <div className="flex justify-start pt-1">
+            <div className="pt-1">
               <Button
                 size="sm"
-                className={authButtonClassName}
+                className={`${accountActionButtonClassName} w-full`}
                 disabled={isSubmitting}
                 onClick={async () => {
                   setIsSubmitting(true)
