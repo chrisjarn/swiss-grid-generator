@@ -1099,7 +1099,7 @@ function buildPageExportPlanInternal({
         + textMetrics.getTextDescent(textMeasureContext, baseCanvasFont, baseFontSize)
       : baseFontSize
     const lineStep = Math.max(0.01, resolvedBaselineMultiplier * baselineStep)
-    const reflowCapacityHeight = blockHeight + (reflowEnabled && rowSpan > 0 ? gridMarginVertical : 0)
+    const reflowCapacityHeight = blockHeight
     const maxLinesPerColumn = Math.max(1, reflowEnabled
       ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
       : getTypographyLineCapacityForHeight(blockHeight, lineStep, firstLineHeight))

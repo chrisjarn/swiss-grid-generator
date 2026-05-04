@@ -502,7 +502,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
     })
     const firstLineHeight = getTextAscent(ctx, baseCanvasFont, scaledBlockFontSize)
       + getTextDescent(ctx, baseCanvasFont, scaledBlockFontSize)
-    const reflowCapacityHeight = blockHeight + (reflowEnabled && rowSpan > 0 ? gutterY : 0)
+    const reflowCapacityHeight = blockHeight
     const maxLinesPerColumn = Math.max(1, reflowEnabled
       ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
       : getTypographyLineCapacityForHeight(blockHeight, lineStep, firstLineHeight))

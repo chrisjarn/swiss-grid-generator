@@ -390,7 +390,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       : pageHeight - marginsBottom
     const moduleHeightForBlock = getRowSpanHeight(startRow, rowSpan, heightBaselines)
     const reflowRowLayouts = buildReflowRowLayouts(startRow, rowSpan, heightBaselines, lineStep)
-    const reflowCapacityHeight = moduleHeightForBlock + (columnReflow && rowSpan > 0 ? gutterY : 0)
+    const reflowCapacityHeight = moduleHeightForBlock
     const maxLinesPerColumn = Math.max(1, columnReflow
       ? getReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
       : getLineCapacityForHeight(moduleHeightForBlock, lineStep, firstLineHeight))
@@ -462,7 +462,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
         const lineTopY = origin.y + baselineStep + verticalStartOffset + lineIndexWithinColumn * lineStep
         const y = lineTopY + ascent
         const lineSlotBottomY = lineTopY + lineStep
-        const moduleBottomY = origin.y + baselineStep + reflowCapacityHeight + 0.0001
+        const moduleBottomY = origin.y + baselineStep + moduleHeightForBlock + 0.0001
         const bottomLineLimit = Math.min(pageBottomY + 0.0001, moduleBottomY)
         if (lineSlotBottomY > bottomLineLimit) continue
         maxUsedRows = Math.max(maxUsedRows, lineIndexWithinColumn + 1)
@@ -598,7 +598,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     captionHeightBaselines,
     captionLineStep,
   )
-  const captionReflowCapacityHeight = captionModuleHeight + (captionReflowEnabled && captionRowSpan > 0 ? gutterY : 0)
+  const captionReflowCapacityHeight = captionModuleHeight
   const captionMaxLinesPerColumn = Math.max(1, captionReflowEnabled
     ? getReflowLineCapacityForHeight(captionReflowCapacityHeight, captionLineStep)
     : getLineCapacityForHeight(captionModuleHeight, captionLineStep, captionFirstLineHeight))
@@ -651,7 +651,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       const lineTopY = captionOrigin.y + baselineStep + captionVerticalStartOffset + lineIndexWithinColumn * captionLineStep
       const y = lineTopY + captionAscent
       const lineSlotBottomY = lineTopY + captionLineStep
-      const captionModuleBottomY = captionOrigin.y + baselineStep + captionReflowCapacityHeight + 0.0001
+      const captionModuleBottomY = captionOrigin.y + baselineStep + captionModuleHeight + 0.0001
       const captionBottomLineLimit = Math.min(captionPageBottomY + 0.0001, captionModuleBottomY)
       if (lineSlotBottomY > captionBottomLineLimit) continue
       const offsetX = opticalOffset({

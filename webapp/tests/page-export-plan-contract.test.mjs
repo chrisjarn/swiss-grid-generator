@@ -8,7 +8,7 @@ import { buildPageExportPlan } from "../lib/page-export-plan.ts"
 import { createStressPagePlanArgs } from "./helpers/page-export-plan-fixtures.mjs"
 
 const ROOT = process.cwd()
-const EXPECTED_STRESS_PLAN_HASH = "a9cc1cab1b4f463ee82ab4f842b6ff297a6ffb7fcc43be04c56c15d38bc84526"
+const EXPECTED_STRESS_PLAN_HASH = "1195fda31ed0bff16c3e3b65fcc981bdd901b108c498c31096ac596e6d2cd166"
 
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
