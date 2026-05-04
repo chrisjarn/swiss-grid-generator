@@ -114,6 +114,7 @@ type Props = {
   uiTheme: UiTheme
   result: GridResult
   onLoadPreset: (preset: LayoutPreset) => void
+  onExportPreset?: (preset: LayoutPreset) => void
   onDeleteUserPreset: (preset: LayoutPreset) => Promise<void>
   onHeaderHelpNavigate: (actionKey: string) => void
   onOpenHelpSection: (sectionId: HelpSectionId) => void
@@ -133,6 +134,7 @@ type Props = {
   onProjectAuthorChange: (nextAuthor: string) => void
   onPreviewPlansCommit?: () => void
   onClearAuthFeedback: () => void
+  onSyncNow?: () => Promise<void>
   onKeepLocalCloudConflict?: () => Promise<void>
   onUseCloudConflict?: () => Promise<void>
   onDeleteCloudConflict?: () => Promise<void>
@@ -273,6 +275,7 @@ export function PreviewWorkspace({
   uiTheme,
   result,
   onLoadPreset,
+  onExportPreset,
   onDeleteUserPreset,
   onHeaderHelpNavigate,
   onOpenHelpSection,
@@ -292,6 +295,7 @@ export function PreviewWorkspace({
   onProjectAuthorChange,
   onPreviewPlansCommit,
   onClearAuthFeedback,
+  onSyncNow,
   onKeepLocalCloudConflict,
   onUseCloudConflict,
   onDeleteCloudConflict,
@@ -547,6 +551,7 @@ export function PreviewWorkspace({
               <PresetLayoutsPanel
                 isDarkMode={isDarkUi}
                 onLoadPreset={onLoadPreset}
+                onExportPreset={onExportPreset}
                 onDeleteUserPreset={onDeleteUserPreset}
                 isCloudSignedIn={isCloudSignedIn}
                 onRequestNotice={onRequestNotice}
@@ -768,6 +773,7 @@ export function PreviewWorkspace({
                 authError={authError}
                 authMessage={authMessage}
                 onClearFeedback={onClearAuthFeedback}
+                onSyncNow={onSyncNow}
                 onKeepLocalConflict={onKeepLocalCloudConflict}
                 onUseCloudConflict={onUseCloudConflict}
                 onDeleteConflict={onDeleteCloudConflict}

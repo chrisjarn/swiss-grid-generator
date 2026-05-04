@@ -257,6 +257,7 @@ export function useExportActions(ctx: ExportActionsContext) {
   const [saveDescriptionDraft, setSaveDescriptionDraft] = useState("")
   const [saveAuthorDraft, setSaveAuthorDraft] = useState("")
   const [jsonCompressionEnabledDraft, setJsonCompressionEnabledDraft] = useState(false)
+  const [exportProjectOverride, setExportProjectOverride] = useState<LoadedProject<Record<string, unknown>> | null>(null)
 
   const getCurrentProjectWithMetadata = useCallback(() => ({
     ...getCurrentProjectSnapshot(),
@@ -275,8 +276,13 @@ export function useExportActions(ctx: ExportActionsContext) {
   ])
 
   const currentProject = useMemo(() => getCurrentProjectWithMetadata(), [getCurrentProjectWithMetadata])
+  const activeProject = useMemo(
+    () => exportProjectOverride ?? currentProject,
+    [currentProject, exportProjectOverride],
+  )
+  const activeProjectMetadata = activeProject.metadata
 
-  const projectPageCount = currentProject.pages.length
+  const projectPageCount = activeProject.pages.length
 
   const normalizedRange = useMemo(() => normalizeProjectExportPageRange(
     projectPageCount,
@@ -285,16 +291,16 @@ export function useExportActions(ctx: ExportActionsContext) {
   ), [exportRangeEndDraft, exportRangeStartDraft, projectPageCount])
 
   const selectedProjectPages = useMemo(
-    () => currentProject.pages.slice(normalizedRange.startIndex, normalizedRange.endIndex + 1),
-    [currentProject.pages, normalizedRange.endIndex, normalizedRange.startIndex],
+    () => activeProject.pages.slice(normalizedRange.startIndex, normalizedRange.endIndex + 1),
+    [activeProject.pages, normalizedRange.endIndex, normalizedRange.startIndex],
   )
   const selectedPageCount = selectedProjectPages.length
   const selectedSinglePage = selectedPageCount === 1 ? selectedProjectPages[0] ?? null : null
 
-  const pageRangeOptions = useMemo(() => currentProject.pages.map((page, index) => ({
+  const pageRangeOptions = useMemo(() => activeProject.pages.map((page, index) => ({
     value: String(index + 1),
     label: `${index + 1}. ${page.name || `Page ${index + 1}`}`,
-  })), [currentProject.pages])
+  })), [activeProject.pages])
 
   const getDefaultExportFilename = useCallback((format: ExportFormat, selectedPages: number, compressedJson = jsonCompressionEnabledDraft) => {
     const base = format === "svg"
@@ -308,14 +314,14 @@ export function useExportActions(ctx: ExportActionsContext) {
       ? PROJECT_ARCHIVE_EXTENSION
       : resolveExportDownloadExtension(format, selectedPages)
     const fallbackStem = base.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
-    return toProjectFilename(projectMetadata.title, fallbackStem, extension)
+    return toProjectFilename(activeProjectMetadata.title, fallbackStem, extension)
   }, [
+    activeProjectMetadata.title,
     ctx.defaultSvgFilename,
     defaultIdmlFilename,
     defaultJsonFilename,
     defaultPdfFilename,
     jsonCompressionEnabledDraft,
-    projectMetadata.title,
   ])
 
   const updateFilenameForFormat = useCallback((
@@ -330,12 +336,12 @@ export function useExportActions(ctx: ExportActionsContext) {
   const saveJSON = useCallback(
     (
       filename: string,
+      projectSnapshot: LoadedProject<Record<string, unknown>>,
       metadata: { title: string; description: string; author: string; createdAt: string },
       compressed: boolean,
     ) => {
       const trimmed = filename.trim()
       if (!trimmed) return
-      const projectSnapshot = getCurrentProjectSnapshot()
       const payload = buildProjectTransferPayload({
         ...projectSnapshot,
         pages: projectSnapshot.pages,
@@ -358,7 +364,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       a.click()
       URL.revokeObjectURL(url)
     },
-    [getCurrentProjectSnapshot, getDefaultExportFilename],
+    [getDefaultExportFilename],
   )
 
   const openSaveLibraryDialog = useCallback(() => {
@@ -368,36 +374,61 @@ export function useExportActions(ctx: ExportActionsContext) {
     setIsSaveLibraryDialogOpen(true)
   }, [projectMetadata.author, projectMetadata.description, projectMetadata.title])
 
-  const openExportDialog = useCallback(() => {
-    const defaultRange = { fromPage: 1, toPage: projectPageCount }
+  const closeExportDialog = useCallback(() => {
+    setIsExportDialogOpen(false)
+    setExportProjectOverride(null)
+  }, [])
 
+  const openExportDialog = useCallback(() => {
+    setExportProjectOverride(null)
+    const defaultRange = { fromPage: 1, toPage: projectPageCount }
+    const basePdfStem = defaultPdfFilename.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
+
+    setExportFormatDraft("pdf")
     setExportRangeStartDraft(defaultRange.fromPage)
     setExportRangeEndDraft(defaultRange.toPage)
     setPrintPresetEnabledDraft(persistedPrintPresetEnabled)
     setExportBleedMmDraft(String(exportBleedMm))
     setExportRegistrationMarksDraft(exportRegistrationMarks)
     setJsonCompressionEnabledDraft(false)
-    setExportFilenameDraft(updateFilenameForExport(
-      "",
-      exportFormatDraft,
-      defaultRange.toPage - defaultRange.fromPage + 1,
-      getDefaultExportFilename,
-      false,
-    ))
-    setSaveTitleDraft(projectMetadata.title ?? "")
-    setSaveDescriptionDraft(projectMetadata.description ?? "")
-    setSaveAuthorDraft(projectMetadata.author ?? "")
+    setExportFilenameDraft(toProjectFilename(currentProject.metadata.title, basePdfStem, ".pdf"))
+    setSaveTitleDraft(currentProject.metadata.title ?? "")
+    setSaveDescriptionDraft(currentProject.metadata.description ?? "")
+    setSaveAuthorDraft(currentProject.metadata.author ?? "")
     setIsExportDialogOpen(true)
   }, [
+    currentProject.metadata.author,
+    currentProject.metadata.description,
+    currentProject.metadata.title,
+    defaultPdfFilename,
     exportBleedMm,
-    exportFormatDraft,
     exportRegistrationMarks,
-    getDefaultExportFilename,
     persistedPrintPresetEnabled,
-    projectMetadata.author,
-    projectMetadata.description,
-    projectMetadata.title,
     projectPageCount,
+  ])
+
+  const openExportDialogForProject = useCallback((project: LoadedProject<Record<string, unknown>>) => {
+    setExportProjectOverride(project)
+    const defaultRange = { fromPage: 1, toPage: project.pages.length }
+
+    setExportFormatDraft("pdf")
+    setExportRangeStartDraft(defaultRange.fromPage)
+    setExportRangeEndDraft(defaultRange.toPage)
+    setPrintPresetEnabledDraft(persistedPrintPresetEnabled)
+    setExportBleedMmDraft(String(exportBleedMm))
+    setExportRegistrationMarksDraft(exportRegistrationMarks)
+    setJsonCompressionEnabledDraft(false)
+    const basePdfStem = defaultPdfFilename.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
+    setExportFilenameDraft(toProjectFilename(project.metadata.title, basePdfStem, ".pdf"))
+    setSaveTitleDraft(project.metadata.title ?? "")
+    setSaveDescriptionDraft(project.metadata.description ?? "")
+    setSaveAuthorDraft(project.metadata.author ?? "")
+    setIsExportDialogOpen(true)
+  }, [
+    defaultPdfFilename,
+    exportBleedMm,
+    exportRegistrationMarks,
+    persistedPrintPresetEnabled,
   ])
 
   const handleSaveTitleChange = useCallback((value: string) => {
@@ -499,10 +530,10 @@ export function useExportActions(ctx: ExportActionsContext) {
       floatPrecision: "smart",
       userUnit: 1,
     })
-    const trimmedTitle = projectMetadata.title.trim()
-    const trimmedDescription = projectMetadata.description.trim()
-    const trimmedAuthor = projectMetadata.author.trim()
-    const parsedCreatedAt = projectMetadata.createdAt ? Date.parse(projectMetadata.createdAt) : Number.NaN
+    const trimmedTitle = activeProjectMetadata.title.trim()
+    const trimmedDescription = activeProjectMetadata.description.trim()
+    const trimmedAuthor = activeProjectMetadata.author.trim()
+    const parsedCreatedAt = activeProjectMetadata.createdAt ? Date.parse(activeProjectMetadata.createdAt) : Number.NaN
     pdf.setDocumentProperties({
       title: trimmedTitle || filename,
       author: trimmedAuthor || "Generated by Swiss Grid Generator",
@@ -584,10 +615,10 @@ export function useExportActions(ctx: ExportActionsContext) {
     pdf.save(filename)
   }, [
     createProgressPublisher,
-    projectMetadata.author,
-    projectMetadata.createdAt,
-    projectMetadata.description,
-    projectMetadata.title,
+    activeProjectMetadata.author,
+    activeProjectMetadata.createdAt,
+    activeProjectMetadata.description,
+    activeProjectMetadata.title,
     throwIfExportCancelled,
   ])
 
@@ -599,10 +630,10 @@ export function useExportActions(ctx: ExportActionsContext) {
   ) => {
     if (pages.length === 0) return
 
-    const trimmedTitle = projectMetadata.title.trim()
-    const trimmedDescription = projectMetadata.description.trim()
-    const trimmedAuthor = projectMetadata.author.trim()
-    const parsedCreatedAt = projectMetadata.createdAt ? Date.parse(projectMetadata.createdAt) : Number.NaN
+    const trimmedTitle = activeProjectMetadata.title.trim()
+    const trimmedDescription = activeProjectMetadata.description.trim()
+    const trimmedAuthor = activeProjectMetadata.author.trim()
+    const parsedCreatedAt = activeProjectMetadata.createdAt ? Date.parse(activeProjectMetadata.createdAt) : Number.NaN
     const normalizedCreatedAt = Number.isNaN(parsedCreatedAt)
       ? ""
       : new Date(parsedCreatedAt).toISOString()
@@ -717,10 +748,10 @@ export function useExportActions(ctx: ExportActionsContext) {
   }, [
     createProgressPublisher,
     downloadBlob,
-    projectMetadata.author,
-    projectMetadata.createdAt,
-    projectMetadata.description,
-    projectMetadata.title,
+    activeProjectMetadata.author,
+    activeProjectMetadata.createdAt,
+    activeProjectMetadata.description,
+    activeProjectMetadata.title,
     throwIfExportCancelled,
   ])
 
@@ -770,8 +801,8 @@ export function useExportActions(ctx: ExportActionsContext) {
 
   const handleJsonCompressionEnabledChange = useCallback((enabled: boolean) => {
     setJsonCompressionEnabledDraft(enabled)
-    setExportFilenameDraft((current) => updateFilenameForFormat(current, "json", currentProject.pages.length, enabled))
-  }, [currentProject.pages.length, updateFilenameForFormat])
+    setExportFilenameDraft((current) => updateFilenameForFormat(current, "json", activeProject.pages.length, enabled))
+  }, [activeProject.pages.length, updateFilenameForFormat])
 
   const applyExportRange = useCallback((nextRange: ProjectExportPageRange) => {
     const normalized = normalizeProjectExportPageRange(projectPageCount, nextRange.fromPage, nextRange.toPage)
@@ -818,8 +849,8 @@ export function useExportActions(ctx: ExportActionsContext) {
     if (exportFormatDraft !== "json" && selectedPageCount === 0) return
 
     if (exportFormatDraft === "json") {
-      const nextCreatedAt = projectMetadata.createdAt && !Number.isNaN(Date.parse(projectMetadata.createdAt))
-        ? new Date(projectMetadata.createdAt).toISOString()
+      const nextCreatedAt = activeProjectMetadata.createdAt && !Number.isNaN(Date.parse(activeProjectMetadata.createdAt))
+        ? new Date(activeProjectMetadata.createdAt).toISOString()
         : new Date().toISOString()
       const normalizedMetadata = {
         title: saveTitleDraft.trim(),
@@ -830,13 +861,15 @@ export function useExportActions(ctx: ExportActionsContext) {
       const filename = updateFilenameForExport(
         trimmedName,
         exportFormatDraft,
-        currentProject.pages.length,
+        activeProject.pages.length,
         getDefaultExportFilename,
         jsonCompressionEnabledDraft,
       )
-      saveJSON(filename, normalizedMetadata, jsonCompressionEnabledDraft)
-      onProjectMetadataChange(normalizedMetadata)
-      setIsExportDialogOpen(false)
+      saveJSON(filename, activeProject, normalizedMetadata, jsonCompressionEnabledDraft)
+      if (!exportProjectOverride) {
+        onProjectMetadataChange(normalizedMetadata)
+      }
+      closeExportDialog()
       return
     }
 
@@ -860,7 +893,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       selectedPageCount,
       getDefaultExportFilename,
     )
-    const currentProjectSnapshot = getCurrentProjectWithMetadata()
+    const currentProjectSnapshot = activeProject
     const selectedRange = {
       fromPage: normalizedRange.fromPage,
       toPage: normalizedRange.toPage,
@@ -868,7 +901,8 @@ export function useExportActions(ctx: ExportActionsContext) {
     const parsedBleed = Number(exportBleedMmDraft)
     const bleedMm = Number.isFinite(parsedBleed) && parsedBleed >= 0 ? parsedBleed : exportBleedMm
     const shouldPersistActivePageExportSettings = (
-      selectedPageCount === 1
+      !exportProjectOverride
+      && selectedPageCount === 1
       && selectedSinglePage?.id === currentProjectSnapshot.activePageId
     )
 
@@ -882,7 +916,7 @@ export function useExportActions(ctx: ExportActionsContext) {
           currentLabel: selectedProject.pages[0]?.name || "Preparing IDML",
         } : current)
         await exportIDML(selectedProject, filename)
-        setIsExportDialogOpen(false)
+        closeExportDialog()
         return
       }
 
@@ -911,7 +945,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         await exportSVG(resolvedPages, filename, normalizedRange.fromPage, currentProjectSnapshot.layoutEngine)
       }
 
-      setIsExportDialogOpen(false)
+      closeExportDialog()
     } catch (error) {
       if (!isExportCancelledError(error)) {
         throw error
@@ -921,23 +955,25 @@ export function useExportActions(ctx: ExportActionsContext) {
       setExportProgress(null)
     }
   }, [
+    activeProject,
+    activeProject.pages.length,
+    activeProjectMetadata.createdAt,
     exportBleedMm,
     exportBleedMmDraft,
     exportFormatDraft,
     exportFilenameDraft,
     exportRegistrationMarksDraft,
+    closeExportDialog,
+    exportProjectOverride,
     exportIDML,
     exportPDF,
     exportSVG,
     exportViewSettings,
-    getCurrentProjectWithMetadata,
     getDefaultExportFilename,
-    currentProject.pages.length,
     normalizedRange.fromPage,
     normalizedRange.toPage,
     onProjectMetadataChange,
     printPresetEnabledDraft,
-    projectMetadata.createdAt,
     jsonCompressionEnabledDraft,
     saveAuthorDraft,
     saveDescriptionDraft,
@@ -977,12 +1013,12 @@ export function useExportActions(ctx: ExportActionsContext) {
           cancelExport()
           return
         }
-        setIsExportDialogOpen(false)
+        closeExportDialog()
       }
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
-  }, [cancelExport, exportProgress, isExportDialogOpen])
+  }, [cancelExport, closeExportDialog, exportProgress, isExportDialogOpen])
 
   return {
     // Save to Library dialog
@@ -1001,6 +1037,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     // Export dialog
     isExportDialogOpen,
     setIsExportDialogOpen,
+    closeExportDialog,
     exportFormatDraft,
     setExportFormatDraft: handleExportFormatChange,
     exportFilenameDraft,
@@ -1019,6 +1056,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     setExportRegistrationMarksDraft,
     exportProgress,
     openExportDialog,
+    openExportDialogForProject,
     applyPrintPreset,
     confirmExport,
     defaultExportFilename: getDefaultExportFilename(exportFormatDraft, selectedPageCount),

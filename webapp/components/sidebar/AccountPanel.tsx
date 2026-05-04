@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronUp, Download, Trash2, X } from "lucide-react"
+import { ChevronUp, Download, RefreshCw, Trash2, X } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -34,6 +34,7 @@ type Props = {
   authError: string | null
   authMessage: string | null
   onClearFeedback: () => void
+  onSyncNow?: () => Promise<void>
   onKeepLocalConflict?: () => Promise<void>
   onUseCloudConflict?: () => Promise<void>
   onDeleteConflict?: () => Promise<void>
@@ -101,6 +102,7 @@ export function AccountPanel({
   authError,
   authMessage,
   onClearFeedback,
+  onSyncNow,
   onKeepLocalConflict,
   onUseCloudConflict,
   onDeleteConflict,
@@ -249,6 +251,24 @@ export function AccountPanel({
             </div>
             <div className="space-y-2">
               <div className="flex flex-wrap justify-start gap-2">
+                {userEmail && onSyncNow ? (
+                  <Button
+                    size="sm"
+                    className={`${authButtonClassName} inline-flex items-center gap-1.5`}
+                    disabled={isSubmitting}
+                    onClick={async () => {
+                      setIsSubmitting(true)
+                      try {
+                        await onSyncNow()
+                      } finally {
+                        setIsSubmitting(false)
+                      }
+                    }}
+                  >
+                    <RefreshCw className="h-2.5 w-2.5" />
+                    Sync Now
+                  </Button>
+                ) : null}
                 <Button
                   size="sm"
                   className={`${authButtonClassName} inline-flex items-center gap-1.5`}

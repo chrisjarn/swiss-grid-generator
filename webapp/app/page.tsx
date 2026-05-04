@@ -263,6 +263,7 @@ export default function Home() {
     queueProjectSyncByLocalId,
     requestCloudSync,
     resolveConflictByLocalId,
+    syncAllProjects,
     syncProjectByLocalId,
   } = useCloudProjectSync({
     supabase,
@@ -1358,6 +1359,20 @@ export default function Home() {
   )
 
   const exportActions = useExportActions(exportActionsContext)
+  const handleExportBrowserPreset = useCallback((preset: LayoutPreset) => {
+    try {
+      const parsedProject = parseLoadedProject<Record<string, unknown>>(
+        JSON.parse(preset.projectSourceJson) as Record<string, unknown>,
+      )
+      exportActions.openExportDialogForProject(parsedProject)
+    } catch (error) {
+      console.error(error)
+      handleRequestNotice({
+        title: "Export Failed",
+        message: "Could not open export for the selected preset.",
+      })
+    }
+  }, [exportActions, handleRequestNotice])
   const hasPreviewLayout = previewLayout !== null
   const persistActiveUserProjectPromiseRef = useRef<Promise<void> | null>(null)
 
@@ -1775,6 +1790,7 @@ export default function Home() {
       }}
       result={previewResult}
       onLoadPreset={handleLoadBrowserPreset}
+      onExportPreset={handleExportBrowserPreset}
       onDeleteUserPreset={handleDeleteBrowserPreset}
       onHeaderHelpNavigate={handleHeaderHelpNavigate}
       onOpenHelpSection={openHelpSection}
@@ -1794,6 +1810,7 @@ export default function Home() {
       onProjectAuthorChange={handleProjectAuthorChange}
       onPreviewPlansCommit={completeProjectLoadTiming}
       onClearAuthFeedback={clearAuthFeedback}
+      onSyncNow={() => syncAllProjects("manual")}
       onKeepLocalCloudConflict={handleKeepLocalCloudConflict}
       onUseCloudConflict={handleUseCloudConflict}
       onDeleteCloudConflict={handleDeleteCloudConflict}
@@ -2024,7 +2041,7 @@ export default function Home() {
           isDarkUi={isDarkUi}
           exportDialog={{
             isOpen: exportActions.isExportDialogOpen,
-            onClose: () => exportActions.setIsExportDialogOpen(false),
+            onClose: exportActions.closeExportDialog,
             selectedPageCount: exportActions.selectedPageCount,
             pageRangeOptions: exportActions.pageRangeOptions,
             rangeStart: exportActions.exportRangeStartDraft,
