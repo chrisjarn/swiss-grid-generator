@@ -218,6 +218,7 @@ export default function Home() {
   const projectUndoHandlerRef = useRef<() => void>(() => {})
   const projectRedoHandlerRef = useRef<() => void>(() => {})
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
+  const layoutOpenTooltipDismissedForSessionRef = useRef(false)
   const [gridUi, dispatchGrid] = useReducer(gridUiReducer, INITIAL_GRID_UI_STATE)
   const [exportUi, dispatchExport] = useReducer(exportUiReducer, INITIAL_EXPORT_UI_STATE)
 
@@ -286,7 +287,10 @@ export default function Home() {
     user,
     onRequestNotice: handleRequestNotice,
   })
-  const dismissLayoutOpenTooltip = useCallback(() => {
+  const dismissLayoutOpenTooltip = useCallback((mode: "dismiss" | "session" = "dismiss") => {
+    if (mode === "session") {
+      layoutOpenTooltipDismissedForSessionRef.current = true
+    }
     setActiveLayoutOpenTooltip(null)
   }, [])
   const setLayoutOpenTooltipByIndex = useCallback((index: number) => {
@@ -317,6 +321,7 @@ export default function Home() {
     if (typeof window === "undefined") {
       return
     }
+    if (layoutOpenTooltipDismissedForSessionRef.current) return
 
     const cursor = readStoredNonNegativeInteger(LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY)
     setLayoutOpenTooltipByIndex(cursor)

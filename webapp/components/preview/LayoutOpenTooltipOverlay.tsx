@@ -16,7 +16,7 @@ type Props = {
   isDarkMode: boolean
   showHelpIndicator: boolean
   bottomClassName?: string
-  onClose: () => void
+  onClose: (mode?: "dismiss" | "session") => void
   onNext: () => void
   onHelpHover?: () => void
 }
@@ -47,7 +47,15 @@ export function LayoutOpenTooltipOverlay({
     clearTimers()
     setIsVisible(false)
     closeTimeoutRef.current = window.setTimeout(() => {
-      onClose()
+      onClose("dismiss")
+    }, FADE_DURATION_MS)
+  }, [clearTimers, onClose])
+
+  const closeForSessionWithFade = useCallback(() => {
+    clearTimers()
+    setIsVisible(false)
+    closeTimeoutRef.current = window.setTimeout(() => {
+      onClose("session")
     }, FADE_DURATION_MS)
   }, [clearTimers, onClose])
 
@@ -104,7 +112,7 @@ export function LayoutOpenTooltipOverlay({
                 <button
                   type="button"
                   aria-label="Close tooltip"
-                  onClick={closeWithFade}
+                  onClick={closeForSessionWithFade}
                   className={`shrink-0 transition-colors ${
                     isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
                   }`}
