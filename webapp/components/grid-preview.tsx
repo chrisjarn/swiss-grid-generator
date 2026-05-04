@@ -1859,10 +1859,14 @@ export const GridPreview = memo(function GridPreview({
     setLayerOrder,
   ])
 
+  const isEditorOpen = Boolean(editorState || imageEditorState)
+
   usePreviewLayoutEmission({
     buildSnapshot,
     debounceMs: PREVIEW_LAYOUT_CHANGE_DEBOUNCE_MS,
     enabled: layoutEmissionEnabled,
+    paused: isEditorOpen,
+    flushOnResume: true,
     revisionKey: layoutRevisionKey,
     onLayoutChange,
   })
