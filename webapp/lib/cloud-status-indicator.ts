@@ -4,7 +4,7 @@ export type SaveStatusIndicatorStatus = "unsaved" | "local" | "synced"
 
 export const CLOUD_STATUS_GREEN_CLASSNAME = "bg-[#4CAF50]"
 export const CLOUD_STATUS_ORANGE_CLASSNAME = "bg-[#fbae17]"
-export const CLOUD_STATUS_RED_CLASSNAME = "bg-[#fe9f97]"
+export const CLOUD_STATUS_RED_CLASSNAME = "bg-swiss-orange-soft"
 
 export function getCloudSyncStatusIndicatorClassName({
   status,

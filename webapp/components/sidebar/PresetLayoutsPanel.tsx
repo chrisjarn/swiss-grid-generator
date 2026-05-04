@@ -101,7 +101,7 @@ function PresetGroupHeaderLabel({
       >
         <span
           aria-label="User library storage info"
-          className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-[#fe9f97]/70 text-[9px] font-semibold normal-case leading-none tracking-normal text-[#fe9f97]"
+          className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-swiss-orange-soft/70 text-[9px] font-semibold normal-case leading-none tracking-normal text-swiss-orange-soft"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >

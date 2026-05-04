@@ -168,7 +168,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   const { scrollRootRef, registerSectionRef } = useAutoScrollOpenedSection(collapsed)
 
   return (
-    <div ref={scrollRootRef} className="min-h-0 flex-1 overflow-y-auto p-4 md:p-6">
+    <div ref={scrollRootRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-[45vh] pt-4 md:px-6 md:pb-[45vh] md:pt-6">
       <SettingsHelpNavigationProvider
         value={{
           showHelpIcons: showSectionHelpIcons,

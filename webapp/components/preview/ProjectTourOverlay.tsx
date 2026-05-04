@@ -99,7 +99,7 @@ export function ProjectTourOverlay({
             </div>
           ) : null}
           {waitingForLayerClick ? (
-            <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#fe9f97]" : "text-[#c55a52]"}`}>
+            <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
               Click the highlighted layer to continue
             </div>
           ) : null}
@@ -131,7 +131,7 @@ export function ProjectTourOverlay({
                 ? isDarkMode
                   ? "cursor-not-allowed bg-[#313A47] text-[#596273]"
                   : "cursor-not-allowed bg-gray-200 text-gray-400"
-                : "bg-[#fe9f97] text-black hover:brightness-95"
+                : "bg-swiss-orange text-black hover:brightness-95"
             }`}
           >
             {canGoNext ? "Next" : "Done"}

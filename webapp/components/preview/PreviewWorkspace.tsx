@@ -647,8 +647,8 @@ export function PreviewWorkspace({
                             className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors ${
                               showProjectInfo
                                 ? isDarkUi
-                                  ? "border-[#f54123] bg-[#f54123] text-[#F4F6F8]"
-                                  : "border-[#f54123] bg-[#f54123] text-white"
+                                  ? "border-swiss-orange bg-swiss-orange text-[#F4F6F8]"
+                                  : "border-swiss-orange bg-swiss-orange text-white"
                                 : isDarkUi
                                   ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
                                   : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"

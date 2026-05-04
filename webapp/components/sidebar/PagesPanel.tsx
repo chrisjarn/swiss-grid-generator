@@ -351,14 +351,14 @@ export function PagesPanel({
         rowMuted: "text-[#8D98AA]",
         close: "text-[#A8B1BF] hover:bg-[#232A35] hover:text-[#F4F6F8]",
         input: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA]",
-        accent: "text-[#fe9f97]",
+        accent: "text-swiss-orange-soft",
       }
     : {
         row: "border-gray-200 text-gray-900 hover:bg-gray-100",
         rowMuted: "text-gray-500",
         close: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
         input: "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
-        accent: "text-[#f54123]",
+        accent: "text-swiss-orange",
       }
 
   const stationaryPages = useMemo(

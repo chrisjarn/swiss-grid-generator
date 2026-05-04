@@ -49,7 +49,7 @@ export function HeaderIconButton({
             aria-hidden="true"
             className={cn(
               "absolute right-1 top-1 h-1.5 w-1.5 rounded-full ring-1 ring-white dark:ring-[#1D232D]",
-              statusDotClassName ?? "bg-[#fe9f97]",
+              statusDotClassName ?? "bg-swiss-orange-soft",
             )}
           />
         ) : null}

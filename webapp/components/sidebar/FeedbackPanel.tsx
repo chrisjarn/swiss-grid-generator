@@ -225,7 +225,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         button: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         field: "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#9AC99A]",
-        error: "border-[#fe9f97] bg-[#fe9f97]/10 text-[#fe9f97]",
+        error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-swiss-orange-soft",
       }
     : {
         heading: "text-gray-900",
@@ -236,7 +236,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         button: "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
         field: "border-gray-300 bg-white text-gray-900",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#2f7d32]",
-        error: "border-[#fe9f97] bg-[#fe9f97]/10 text-[#c55a52]",
+        error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-[#c55a52]",
       }
   const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
   const feedbackButtonClassName = getCompactActionButtonClassName({ isDarkMode })

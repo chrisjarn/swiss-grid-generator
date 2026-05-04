@@ -60,6 +60,7 @@ Current capability inventory for Swiss Grid Generator.
 - Inline editor overlay on the page surface.
 - Left-sidebar text editor with `Paragraph`, `Typo`, `Symbols`, `Placeholders`, and `Info` sections.
 - Text-editor section open/closed state and panel scroll position are remembered across pages and paragraphs inside the current document, with an all-closed first-use default. Opening a different document or preset resets the editor panels to the closed, top-aligned state.
+- Settings and editor sections use one shared top anchor: opening any section aligns its header to the same panel position, and closing all sections restores the default top-aligned view.
 - The text editor header uses the same user-facing layer label shown in the Project panel instead of the internal block id.
 - Paragraph section: rows, baselines, cols, horizontal alignment, vertical alignment, reflow, hyphenation, `Snap to Columns (X)`, `Snap to Baseline (Y)`, rotation.
 - Paragraph height resolves as `rows + baselines`, with `rows = 0` allowed when `baselines > 0`.
@@ -153,6 +154,7 @@ Current capability inventory for Swiss Grid Generator.
 - Stable logical positioning across grid changes.
 - Separate left-sidebar editor with `Geometry`, `Color`, and `Info` sections.
 - Image-editor section open/closed state and panel scroll position are remembered across pages and placeholders inside the current document, with an all-closed first-use default. Opening a different document or preset resets the editor panels to the closed, top-aligned state.
+- Settings and editor sections use one shared top anchor: opening any section aligns its header to the same panel position, and closing all sections restores the default top-aligned view.
 - The image editor header shows `IMAGE` plus the current placeholder swatch color.
 - Image editor can be opened from the preview affordance or by double-clicking the corresponding unlocked image layer card in the Project panel.
 - When an image editor is already open, double-clicking another unlocked active-page image layer card retargets the editor.

@@ -33,7 +33,7 @@ export function PanelCard({
 
   return (
     <section
-      className={`mb-3 border-b pb-3 ${
+      className={`mb-3 border-b pb-3 last:mb-0 last:border-b-0 last:pb-0 ${
         isDarkMode
           ? "border-gray-700 text-gray-100"
           : "border-gray-200 text-gray-900"
@@ -46,6 +46,7 @@ export function PanelCard({
         tooltipClassName="border-gray-200 bg-white/95 text-gray-700 shadow-lg dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-200"
       >
         <header
+          data-section-scroll-anchor="true"
           className={`select-none pt-3 ${interactionsDisabled ? "cursor-default" : "cursor-pointer"}`}
           onClick={interactionsDisabled ? undefined : onHeaderClick}
           onDoubleClick={interactionsDisabled ? undefined : onHeaderDoubleClick}
@@ -60,6 +61,7 @@ export function PanelCard({
             <h3 className={`leading-tight ${interactionsDisabled ? "opacity-50" : ""}`}>
               <SectionHeaderRow
                 label={title}
+                labelClassName={collapsed || interactionsDisabled ? "" : "!text-swiss-orange"}
                 actionIcon={(
                   <ChevronUp
                     className={`h-2 w-2 transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}

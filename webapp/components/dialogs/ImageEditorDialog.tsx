@@ -278,7 +278,7 @@ export function ImageEditorDialog({
       data-editor-interactive-root="true"
       className={`min-h-0 flex h-full flex-col overflow-hidden ${tone.panel}`}
     >
-      <div ref={scrollRootRef} className={`min-h-0 flex-1 overflow-y-auto p-4 pt-4 md:p-6 md:pt-6 ${tone.surface}`}>
+      <div ref={scrollRootRef} className={`min-h-0 flex-1 overflow-y-auto px-4 pb-[45vh] pt-4 md:px-6 md:pb-[45vh] md:pt-6 ${tone.surface}`}>
         <div ref={registerSectionRef("geometry")}>
         <EditorSidebarSection
           title={(

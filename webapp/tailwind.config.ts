@@ -11,7 +11,7 @@ const config: Config = {
   safelist: [
     "bg-[#4CAF50]",
     "bg-[#fbae17]",
-    "bg-[#fe9f97]",
+    "bg-[#fd8b7b]",
   ],
   theme: {
     container: {
@@ -55,6 +55,10 @@ const config: Config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+        },
+        "swiss-orange": {
+          DEFAULT: "#f54123",
+          soft: "#fd8b7b",
         },
       },
       borderRadius: {

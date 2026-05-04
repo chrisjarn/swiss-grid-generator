@@ -150,8 +150,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
     }
     if (copyAffordanceIntent === "paragraph") {
       return isDarkMode
-        ? "border-orange-400 bg-orange-500 text-white hover:border-orange-300 hover:bg-orange-400"
-        : "border-orange-500 bg-orange-500 text-white hover:border-orange-600 hover:bg-orange-600"
+        ? "border-swiss-orange-soft bg-swiss-orange text-white hover:brightness-110"
+        : "border-swiss-orange bg-swiss-orange text-white hover:brightness-95"
     }
     if (copyAffordanceIntent === "typo") {
       return isDarkMode
@@ -159,8 +159,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
         : "border-gray-500 bg-gray-600 text-white hover:border-gray-600 hover:bg-gray-700"
     }
     return isDarkMode
-      ? "border-orange-400 bg-orange-500 text-gray-900 ring-1 ring-gray-400 hover:border-orange-300 hover:bg-orange-400"
-      : "border-orange-500 bg-orange-500 text-gray-900 ring-1 ring-gray-600 hover:border-orange-600 hover:bg-orange-600"
+      ? "border-swiss-orange-soft bg-swiss-orange text-gray-900 ring-1 ring-gray-400 hover:brightness-110"
+      : "border-swiss-orange bg-swiss-orange text-gray-900 ring-1 ring-gray-600 hover:brightness-95"
   })()
 
   useEffect(() => {
@@ -242,8 +242,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
               data-preview-edit-affordance="true"
               className={`pointer-events-auto absolute flex items-center justify-center rounded-sm border shadow-md transition-colors ${
                 isDarkMode
-                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-orange-400 hover:bg-gray-800 hover:text-orange-300"
-                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-orange-300 hover:bg-white hover:text-orange-600"
+                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-swiss-orange-soft hover:bg-gray-800 hover:text-swiss-orange-soft"
+                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-swiss-orange-soft hover:bg-white hover:text-swiss-orange"
               }`}
               style={{
                 left: leftActionGroupLeft,

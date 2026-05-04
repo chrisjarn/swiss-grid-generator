@@ -2,13 +2,18 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef } from "react"
 
-const SECTION_TOP_OFFSET_PX = 12
 const SCROLL_RESTORE_FRAME_COUNT = 2
 
 type AutoScrollOpenedSectionOptions = {
   resetEventName?: string
   scrollStorageKey?: string
   restoreKey?: string | number | null
+}
+
+function resolveSectionAnchorElement(node: HTMLElement | null): HTMLElement | null {
+  if (!node) return null
+  if (node.matches("[data-section-scroll-anchor='true']")) return node
+  return node.querySelector<HTMLElement>("[data-section-scroll-anchor='true']")
 }
 
 function readStoredScrollTop(storageKey: string): number {
@@ -38,9 +43,25 @@ export function useAutoScrollOpenedSection<SectionKey extends string>(
   const scrollRootRef = useRef<HTMLDivElement | null>(null)
   const sectionRefs = useRef<Partial<Record<SectionKey, HTMLDivElement | null>>>({})
   const previousCollapsedRef = useRef(collapsed)
+  const topAnchorOffsetRef = useRef(0)
   const scrollPersistFrameRef = useRef<number | null>(null)
   const restoreFrameRef = useRef<number | null>(null)
   const { resetEventName, restoreKey = null, scrollStorageKey } = options
+
+  useLayoutEffect(() => {
+    const scrollRoot = scrollRootRef.current
+    if (!scrollRoot) return
+    const firstSectionKey = (Object.keys(collapsed) as SectionKey[])[0]
+    if (!firstSectionKey) return
+    const firstSectionNode = sectionRefs.current[firstSectionKey]
+    if (!firstSectionNode) return
+    const firstSectionAnchor = resolveSectionAnchorElement(firstSectionNode)
+    if (!firstSectionAnchor) return
+
+    const rootRect = scrollRoot.getBoundingClientRect()
+    const firstSectionRect = firstSectionAnchor.getBoundingClientRect()
+    topAnchorOffsetRef.current = Math.max(0, firstSectionRect.top - rootRect.top)
+  }, [collapsed, restoreKey])
 
   useLayoutEffect(() => {
     if (!scrollStorageKey) return
@@ -122,6 +143,20 @@ export function useAutoScrollOpenedSection<SectionKey extends string>(
   }, [resetEventName, scrollStorageKey])
 
   useEffect(() => {
+    const allClosed = (Object.keys(collapsed) as SectionKey[]).every((key) => collapsed[key])
+    if (allClosed) {
+      previousCollapsedRef.current = collapsed
+      const scrollRoot = scrollRootRef.current
+      if (!scrollRoot) return
+      const frame = window.requestAnimationFrame(() => {
+        scrollRoot.scrollTo({
+          top: 0,
+          behavior: "auto",
+        })
+      })
+      return () => window.cancelAnimationFrame(frame)
+    }
+
     const openedSection = (Object.keys(collapsed) as SectionKey[]).find((key) => (
       previousCollapsedRef.current[key] && !collapsed[key]
     ))
@@ -131,18 +166,20 @@ export function useAutoScrollOpenedSection<SectionKey extends string>(
     const scrollRoot = scrollRootRef.current
     const sectionNode = sectionRefs.current[openedSection]
     if (!scrollRoot || !sectionNode) return
+    const sectionAnchor = resolveSectionAnchorElement(sectionNode)
+    if (!sectionAnchor) return
 
     const frame = window.requestAnimationFrame(() => {
       const rootRect = scrollRoot.getBoundingClientRect()
-      const sectionRect = sectionNode.getBoundingClientRect()
+      const sectionRect = sectionAnchor.getBoundingClientRect()
       const nextTop = Math.max(
         0,
-        scrollRoot.scrollTop + (sectionRect.top - rootRect.top) - SECTION_TOP_OFFSET_PX,
+        scrollRoot.scrollTop + (sectionRect.top - rootRect.top) - topAnchorOffsetRef.current,
       )
 
       scrollRoot.scrollTo({
         top: nextTop,
-        behavior: "smooth",
+        behavior: "auto",
       })
     })
 

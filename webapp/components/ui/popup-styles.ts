@@ -15,8 +15,8 @@ export function getCompactActionButtonClassName({
     return cn(
       "h-[22px] min-h-0 rounded-[5px] border px-2 py-0 text-[11px] leading-none transition-colors active:translate-y-px",
       isDarkMode
-        ? "border-[#6f3d45] bg-[#2B2028] text-[#fe9f97] hover:bg-[#36262F] hover:text-[#ffd2ce]"
-        : "border-[#fe9f97] bg-[#fff6f5] text-[#c55a52] hover:bg-[#ffecea] hover:text-[#9d4039]",
+        ? "border-[#6f3d45] bg-[#2B2028] text-swiss-orange-soft hover:bg-[#36262F] hover:text-[#ffd2ce]"
+        : "border-swiss-orange-soft bg-[#fff6f5] text-[#c55a52] hover:bg-[#ffecea] hover:text-[#9d4039]",
     )
   }
 

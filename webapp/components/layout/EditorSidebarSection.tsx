@@ -36,7 +36,7 @@ export function EditorSidebarSection({
 }: Props) {
   return (
     <section
-      className={`mb-3 border-b pb-3 ${
+      className={`mb-3 border-b pb-3 last:mb-0 last:border-b-0 last:pb-0 ${
         isDarkMode
           ? "border-[#313A47] text-[#F4F6F8]"
           : "border-gray-200 text-gray-900"
@@ -49,6 +49,7 @@ export function EditorSidebarSection({
         tooltipClassName="border-gray-200 bg-white/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
       >
         <header
+          data-section-scroll-anchor="true"
           className="cursor-pointer select-none pt-3"
           onClick={onHeaderClick}
           onDoubleClick={onHeaderDoubleClick}
@@ -59,6 +60,7 @@ export function EditorSidebarSection({
             <h3 className="leading-tight">
               <SectionHeaderRow
                 label={title}
+                labelClassName={collapsed ? "" : "!text-swiss-orange"}
                 actionIcon={(
                   <ChevronUp
                     className={`h-2 w-2 transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}

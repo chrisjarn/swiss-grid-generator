@@ -405,7 +405,7 @@ export function ProjectPageLayersList({
               } ${index === 0 ? "border-t-0" : ""} ${
                 isSelected || isHovered ? tone.rowSelected : ""
               } ${
-                isEditing ? "shadow-[inset_1px_0_0_0_#fe9f97]" : ""
+                isEditing ? "shadow-[inset_1px_0_0_0_var(--swiss-orange-soft)]" : ""
               } ${
                 allowLayerInteractions ? "cursor-grab select-none" : "cursor-pointer"
               } ${
@@ -461,9 +461,9 @@ export function ProjectPageLayersList({
                       aria-pressed={isLocked}
                       className={`rounded-sm p-1 transition-colors ${
                         isLocked
-                          ? (isDarkMode ? "bg-[#313A47] text-[#fe9f97]" : "bg-gray-200 text-[#f54123]")
+                          ? (isDarkMode ? "bg-[#313A47] text-swiss-orange-soft" : "bg-gray-200 text-swiss-orange")
                           : tone.rowMuted
-                      } ${isLocked ? "" : "hover:text-[#fe9f97]"}`}
+                      } ${isLocked ? "" : "hover:text-swiss-orange-soft"}`}
                       onClick={(event) => {
                         event.stopPropagation()
                         if (lockButtonClickTimeoutRef.current !== null) {

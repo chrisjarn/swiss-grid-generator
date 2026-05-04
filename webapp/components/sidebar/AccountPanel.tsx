@@ -63,7 +63,7 @@ function formatActivityTimestamp(value: string | null | undefined, mode: "full" 
 function getActivityLevelClassName(level: CloudActivityLogEntry["level"], isDarkMode: boolean): string {
   if (level === "success") return isDarkMode ? "text-[#9AC99A]" : "text-[#2f7d32]"
   if (level === "warning") return isDarkMode ? "text-[#f2c182]" : "text-[#9a621f]"
-  if (level === "error") return isDarkMode ? "text-[#fe9f97]" : "text-[#c55a52]"
+  if (level === "error") return isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"
   return isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"
 }
 
@@ -172,7 +172,7 @@ export function AccountPanel({
   const feedbackSection = authError ? (
     <section className="space-y-2">
       <SectionHeaderRow label="Message" />
-      <div className="rounded-md border border-[#fe9f97] bg-[#fe9f97]/10 px-3 py-2 text-xs text-[#c55a52] dark:text-[#fe9f97]">
+      <div className="rounded-md border border-swiss-orange-soft bg-swiss-orange-soft/10 px-3 py-2 text-xs text-[#c55a52] dark:text-swiss-orange-soft">
         {authError}
       </div>
     </section>
@@ -282,12 +282,12 @@ export function AccountPanel({
               </div>
             ) : null}
             {userEmail && hasActiveConflict && onKeepLocalConflict && onUseCloudConflict ? (
-              <div className={`space-y-2 rounded-md border px-3 py-2 ${isDarkMode ? "border-[#5a3840] bg-[#fe9f97]/10" : "border-[#fe9f97] bg-[#fe9f97]/10"}`}>
-                <div className={`text-[11px] leading-snug ${isDarkMode ? "text-[#fe9f97]" : "text-[#c55a52]"}`}>
+              <div className={`space-y-2 rounded-md border px-3 py-2 ${isDarkMode ? "border-[#5a3840] bg-swiss-orange-soft/10" : "border-swiss-orange-soft bg-swiss-orange-soft/10"}`}>
+                <div className={`text-[11px] leading-snug ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
                   The active project changed locally and in the cloud. Choose which copy should win.
                 </div>
                 {activeConflictDetails ? (
-                  <div className={`grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border px-2 py-2 text-[11px] leading-tight ${isDarkMode ? "border-[#5a3840]" : "border-[#fe9f97]/40"}`}>
+                  <div className={`grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border px-2 py-2 text-[11px] leading-tight ${isDarkMode ? "border-[#5a3840]" : "border-swiss-orange-soft/40"}`}>
                     <div className={tone.caption}>Project</div>
                     <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || "Untitled Project"}</div>
                     <div className={tone.caption}>Local edit</div>
