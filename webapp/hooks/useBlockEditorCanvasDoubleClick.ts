@@ -61,6 +61,7 @@ type Args = {
   resultGridRows: number
   blockOrder: string[]
   textContent: Record<string, string>
+  activeParagraphCount: number
   blockTextEdited: Record<string, boolean>
   styleAssignments: Record<string, string>
   blockCustomSizes: Partial<Record<string, number>>
@@ -110,6 +111,7 @@ export function useBlockEditorCanvasDoubleClick({
   resultGridRows,
   blockOrder,
   textContent,
+  activeParagraphCount,
   blockTextEdited,
   styleAssignments,
   blockCustomSizes,
@@ -235,7 +237,6 @@ export function useBlockEditorCanvasDoubleClick({
     }
 
     const maxParagraphCount = resultGridCols * resultGridRows
-    const activeParagraphCount = blockOrder.filter((blockKey) => (textContent[blockKey] ?? "").trim().length > 0).length
     if (activeParagraphCount >= maxParagraphCount) {
       onRequestNotice?.({
         title: "Paragraph Limit Reached",
@@ -272,6 +273,7 @@ export function useBlockEditorCanvasDoubleClick({
     promoteLayerToTop(newKey)
     onParagraphCreated?.(newKey, pagePoint)
   }, [
+    activeParagraphCount,
     blockCustomLeadings,
     blockCustomSizes,
     blockOrder,

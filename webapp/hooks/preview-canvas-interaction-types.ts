@@ -73,6 +73,7 @@ export type PreviewCanvasInteractionArgs<Key extends string, StyleKey extends st
   isLayerLocked: (key: Key) => boolean
   blockOrder: Key[]
   textContent: Record<Key, string>
+  activeParagraphCount: number
   blockCustomSizes: Partial<Record<Key, number>>
   blockCustomLeadings: Partial<Record<Key, number>>
   blockTextColors: Partial<Record<Key, string>>

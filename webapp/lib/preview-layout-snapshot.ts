@@ -72,72 +72,49 @@ export function buildResolvedSnapshotState<
     defaultTextAlign: TextAlignMode
   },
 ): ResolvedSnapshotState<Key, StyleKey, FontFamily, TextAlignMode, Position> {
-  const resolvedSpans = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
-    acc[key] = Math.max(1, Math.min(gridCols, raw))
-    return acc
-  }, {} as Record<Key, number>)
-  const resolvedAlignments = state.blockOrder.reduce((acc, key) => {
-    acc[key] = state.blockTextAlignments?.[key] ?? defaultTextAlign
-    return acc
-  }, {} as Record<Key, TextAlignMode>)
-  const resolvedVerticalAlignments = state.blockOrder.reduce((acc, key) => {
-    acc[key] = state.blockVerticalAlignments?.[key] ?? "top"
-    return acc
-  }, {} as Record<Key, TextVerticalAlignMode>)
-  const resolvedRows = state.blockOrder.reduce((acc, key) => {
-    acc[key] = getBlockRows(key)
-    return acc
-  }, {} as Record<Key, number>)
-  const resolvedHeightBaselines = state.blockOrder.reduce((acc, key) => {
-    acc[key] = getBlockHeightBaselines(key)
-    return acc
-  }, {} as Record<Key, number>)
-  const resolvedReflow = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isTextReflowEnabled(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedSyllableDivision = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isSyllableDivisionEnabled(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedSnapToColumns = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isSnapToColumnsEnabled(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedSnapToBaseline = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isSnapToBaselineEnabled(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedFontWeights = state.blockOrder.reduce((acc, key) => {
-    acc[key] = getBlockFontWeight(key)
-    return acc
-  }, {} as Record<Key, number>)
-  const resolvedOpticalKerning = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isBlockOpticalKerningEnabled(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedTrackingScales = state.blockOrder.reduce((acc, key) => {
-    acc[key] = getBlockTrackingScale(key)
-    return acc
-  }, {} as Record<Key, number>)
-  const resolvedTrackingRuns = state.blockOrder.reduce((acc, key) => {
+  const resolvedSpans = {} as Record<Key, number>
+  const resolvedAlignments = {} as Record<Key, TextAlignMode>
+  const resolvedVerticalAlignments = {} as Record<Key, TextVerticalAlignMode>
+  const resolvedRows = {} as Record<Key, number>
+  const resolvedHeightBaselines = {} as Record<Key, number>
+  const resolvedReflow = {} as Record<Key, boolean>
+  const resolvedSyllableDivision = {} as Record<Key, boolean>
+  const resolvedSnapToColumns = {} as Record<Key, boolean>
+  const resolvedSnapToBaseline = {} as Record<Key, boolean>
+  const resolvedFontWeights = {} as Record<Key, number>
+  const resolvedOpticalKerning = {} as Record<Key, boolean>
+  const resolvedTrackingScales = {} as Record<Key, number>
+  const resolvedTrackingRuns = {} as Partial<Record<Key, ReturnType<typeof normalizeTextTrackingRuns>>>
+  const resolvedItalic = {} as Record<Key, boolean>
+  const resolvedRotations = {} as Record<Key, number>
+
+  for (const key of state.blockOrder) {
+    const rawSpan = state.blockColumnSpans[key] ?? getDefaultColumnSpan(key, gridCols)
+    const resolvedTrackingScale = getBlockTrackingScale(key)
     const nextRuns = normalizeTextTrackingRuns(
       state.textContent[key] ?? "",
       state.blockTrackingRuns?.[key],
-      resolvedTrackingScales[key] ?? 0,
+      resolvedTrackingScale,
     )
-    if (nextRuns.length > 0) acc[key] = nextRuns
-    return acc
-  }, {} as Partial<Record<Key, ReturnType<typeof normalizeTextTrackingRuns>>>)
-  const resolvedItalic = state.blockOrder.reduce((acc, key) => {
-    acc[key] = isBlockItalic(key)
-    return acc
-  }, {} as Record<Key, boolean>)
-  const resolvedRotations = state.blockOrder.reduce((acc, key) => {
-    acc[key] = getBlockRotation(key)
-    return acc
-  }, {} as Record<Key, number>)
+
+    resolvedSpans[key] = Math.max(1, Math.min(gridCols, rawSpan))
+    resolvedAlignments[key] = state.blockTextAlignments?.[key] ?? defaultTextAlign
+    resolvedVerticalAlignments[key] = state.blockVerticalAlignments?.[key] ?? "top"
+    resolvedRows[key] = getBlockRows(key)
+    resolvedHeightBaselines[key] = getBlockHeightBaselines(key)
+    resolvedReflow[key] = isTextReflowEnabled(key)
+    resolvedSyllableDivision[key] = isSyllableDivisionEnabled(key)
+    resolvedSnapToColumns[key] = isSnapToColumnsEnabled(key)
+    resolvedSnapToBaseline[key] = isSnapToBaselineEnabled(key)
+    resolvedFontWeights[key] = getBlockFontWeight(key)
+    resolvedOpticalKerning[key] = isBlockOpticalKerningEnabled(key)
+    resolvedTrackingScales[key] = resolvedTrackingScale
+    if (nextRuns.length > 0) {
+      resolvedTrackingRuns[key] = nextRuns
+    }
+    resolvedItalic[key] = isBlockItalic(key)
+    resolvedRotations[key] = getBlockRotation(key)
+  }
 
   return {
     ...state,
@@ -182,49 +159,57 @@ export function normalizeSnapshotStateForApply<
     isFontFamily: (value: unknown) => value is FontFamily
   },
 ) {
-  const nextFonts = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockFontFamilies?.[key]
-    if (isFontFamily(raw) && raw !== baseFont) acc[key] = raw
-    return acc
-  }, {} as Partial<Record<Key, FontFamily>>)
-  const nextFontWeights = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockFontWeights?.[key]
-    if (typeof raw === "number" && Number.isFinite(raw) && raw > 0) acc[key] = raw
-    return acc
-  }, {} as Partial<Record<Key, number>>)
-  const nextOpticalKerning = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockOpticalKerning?.[key]
-    if (raw === true || raw === false) acc[key] = normalizeOpticalKerning(raw)
-    return acc
-  }, {} as Partial<Record<Key, boolean>>)
-  const nextTrackingScales = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockTrackingScales?.[key]
-    if (typeof raw === "number" && Number.isFinite(raw) && raw !== 0) {
-      acc[key] = normalizeTrackingScale(raw)
+  const nextFonts = {} as Partial<Record<Key, FontFamily>>
+  const nextFontWeights = {} as Partial<Record<Key, number>>
+  const nextOpticalKerning = {} as Partial<Record<Key, boolean>>
+  const nextTrackingScales = {} as Partial<Record<Key, number>>
+  const nextTrackingRuns = {} as Partial<Record<Key, ReturnType<typeof normalizeTextTrackingRuns>>>
+  const nextItalic = {} as Partial<Record<Key, boolean>>
+  const nextRotations = {} as Partial<Record<Key, number>>
+
+  for (const key of state.blockOrder) {
+    const rawFont = state.blockFontFamilies?.[key]
+    if (isFontFamily(rawFont) && rawFont !== baseFont) {
+      nextFonts[key] = rawFont
     }
-    return acc
-  }, {} as Partial<Record<Key, number>>)
-  const nextTrackingRuns = state.blockOrder.reduce((acc, key) => {
+
+    const rawWeight = state.blockFontWeights?.[key]
+    if (typeof rawWeight === "number" && Number.isFinite(rawWeight) && rawWeight > 0) {
+      nextFontWeights[key] = rawWeight
+    }
+
+    const rawOpticalKerning = state.blockOpticalKerning?.[key]
+    if (rawOpticalKerning === true || rawOpticalKerning === false) {
+      nextOpticalKerning[key] = normalizeOpticalKerning(rawOpticalKerning)
+    }
+
+    const rawTrackingScale = state.blockTrackingScales?.[key]
+    const normalizedTrackingScale = typeof rawTrackingScale === "number" && Number.isFinite(rawTrackingScale) && rawTrackingScale !== 0
+      ? normalizeTrackingScale(rawTrackingScale)
+      : 0
+    if (normalizedTrackingScale !== 0) {
+      nextTrackingScales[key] = normalizedTrackingScale
+    }
+
     const runs = normalizeTextTrackingRuns(
       state.textContent[key] ?? "",
       state.blockTrackingRuns?.[key],
-      nextTrackingScales[key] ?? 0,
+      normalizedTrackingScale,
     )
-    if (runs.length > 0) acc[key] = runs
-    return acc
-  }, {} as Partial<Record<Key, ReturnType<typeof normalizeTextTrackingRuns>>>)
-  const nextItalic = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockItalic?.[key]
-    if (raw === true || raw === false) acc[key] = raw
-    return acc
-  }, {} as Partial<Record<Key, boolean>>)
-  const nextRotations = state.blockOrder.reduce((acc, key) => {
-    const raw = state.blockRotations?.[key]
-    if (typeof raw === "number" && Number.isFinite(raw) && hasSignificantRotation(raw)) {
-      acc[key] = clampRotation(raw)
+    if (runs.length > 0) {
+      nextTrackingRuns[key] = runs
     }
-    return acc
-  }, {} as Partial<Record<Key, number>>)
+
+    const rawItalic = state.blockItalic?.[key]
+    if (rawItalic === true || rawItalic === false) {
+      nextItalic[key] = rawItalic
+    }
+
+    const rawRotation = state.blockRotations?.[key]
+    if (typeof rawRotation === "number" && Number.isFinite(rawRotation) && hasSignificantRotation(rawRotation)) {
+      nextRotations[key] = clampRotation(rawRotation)
+    }
+  }
 
   return {
     ...state,

@@ -15,6 +15,7 @@ type Args<Key extends string, StyleKey extends string> = Pick<
   PreviewCanvasInteractionArgs<Key, StyleKey>,
   | "blockOrder"
   | "textContent"
+  | "activeParagraphCount"
   | "getBlockRows"
   | "getBlockHeightBaselines"
   | "getBlockSpan"
@@ -47,6 +48,7 @@ type Args<Key extends string, StyleKey extends string> = Pick<
 export function usePreviewTextLayerInteractions<Key extends string, StyleKey extends string>({
   blockOrder,
   textContent,
+  activeParagraphCount,
   getBlockRows,
   getBlockHeightBaselines,
   getBlockSpan,
@@ -79,7 +81,6 @@ export function usePreviewTextLayerInteractions<Key extends string, StyleKey ext
     if (copyOnDrop) {
       const sourceText = textContent[drag.key] ?? ""
       const maxParagraphCount = gridCols * gridRows
-      const activeParagraphCount = blockOrder.filter((key) => (textContent[key] ?? "").trim().length > 0).length
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
           title: "Paragraph Limit Reached",
@@ -171,10 +172,10 @@ export function usePreviewTextLayerInteractions<Key extends string, StyleKey ext
       }),
     }))
   }, [
+    activeParagraphCount,
     baseFont,
     blockCustomLeadings,
     blockCustomSizes,
-    blockOrder,
     blockTextColors,
     getBlockRows,
     getBlockHeightBaselines,

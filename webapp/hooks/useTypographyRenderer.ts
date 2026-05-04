@@ -269,24 +269,31 @@ export function useTypographyRenderer<BlockId extends string>({
           imagePlans: exportPlan.imagePlans.length,
         },
       )
-      imagePlans = new Map(Array.from(canvasRenderPlans.imagePlans.entries()).map(([key, plan]) => [
-        key as BlockId,
-        plan,
-      ]))
-      draftPlans = new Map(Array.from(canvasRenderPlans.textPlans.entries()).map(([key, plan]) => [
-        key as BlockId,
-        plan as BlockRenderPlan<BlockId>,
-      ]))
-      committedTextPlans = new Map(Array.from(draftPlans.entries()).map(([key, plan]) => [
-        key,
-        scaleTextRenderPlan(plan, scale),
-      ]))
-      imageRectsRef.current = Object.fromEntries(
-        Array.from(imagePlans.entries()).map(([key, plan]) => [key, scaleRect(plan.rect, scale)]),
-      ) as Record<BlockId, BlockRect>
-      blockRectsRef.current = Object.fromEntries(
-        Array.from(committedTextPlans.entries()).map(([key, plan]) => [key, plan.rect]),
-      ) as Record<BlockId, BlockRect>
+      imagePlans = canvasRenderPlans.imagePlans as Map<BlockId, CanvasImageRenderPlan>
+      draftPlans = canvasRenderPlans.textPlans as Map<BlockId, BlockRenderPlan<BlockId>>
+      const nextImageRects = {} as Record<BlockId, BlockRect>
+      const nextBlockRects = {} as Record<BlockId, BlockRect>
+      if (Math.abs(scale - 1) <= 0.000001) {
+        committedTextPlans = draftPlans
+        for (const [key, plan] of imagePlans) {
+          nextImageRects[key] = plan.rect
+        }
+        for (const [key, plan] of committedTextPlans) {
+          nextBlockRects[key] = plan.rect
+        }
+      } else {
+        committedTextPlans = new Map<BlockId, BlockRenderPlan<BlockId>>()
+        for (const [key, plan] of imagePlans) {
+          nextImageRects[key] = scaleRect(plan.rect, scale)
+        }
+        for (const [key, plan] of draftPlans) {
+          const scaledPlan = scaleTextRenderPlan(plan, scale)
+          committedTextPlans.set(key, scaledPlan)
+          nextBlockRects[key] = scaledPlan.rect
+        }
+      }
+      imageRectsRef.current = nextImageRects
+      blockRectsRef.current = nextBlockRects
       Object.assign(overflowByBlock, exportPlan.overflowByBlock)
 
       if (dragState?.copyOnDrop) {

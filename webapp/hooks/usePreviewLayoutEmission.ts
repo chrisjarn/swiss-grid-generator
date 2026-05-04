@@ -4,6 +4,7 @@ type Args<Snapshot> = {
   buildSnapshot: () => Snapshot
   debounceMs: number
   enabled?: boolean
+  revisionKey?: string | number | null
   onLayoutChange?: ((layout: Snapshot) => void) | undefined
 }
 
@@ -11,9 +12,11 @@ export function usePreviewLayoutEmission<Snapshot>({
   buildSnapshot,
   debounceMs,
   enabled = true,
+  revisionKey = null,
   onLayoutChange,
 }: Args<Snapshot>) {
   const timeoutRef = useRef<number | null>(null)
+  const lastEmittedRevisionRef = useRef<string | number | null>(null)
   const lastEmittedSignatureRef = useRef<string | null>(null)
 
   const getSnapshotSignature = (snapshot: Snapshot): string | null => {
@@ -40,6 +43,12 @@ export function usePreviewLayoutEmission<Snapshot>({
     timeoutRef.current = window.setTimeout(() => {
       timeoutRef.current = null
       const snapshot = buildSnapshot()
+      if (revisionKey !== null) {
+        if (revisionKey === lastEmittedRevisionRef.current) return
+        lastEmittedRevisionRef.current = revisionKey
+        onLayoutChange(snapshot)
+        return
+      }
       const signature = getSnapshotSignature(snapshot)
       if (signature !== null && signature === lastEmittedSignatureRef.current) return
       lastEmittedSignatureRef.current = signature
@@ -52,5 +61,5 @@ export function usePreviewLayoutEmission<Snapshot>({
         timeoutRef.current = null
       }
     }
-  }, [buildSnapshot, debounceMs, enabled, onLayoutChange])
+  }, [buildSnapshot, debounceMs, enabled, onLayoutChange, revisionKey])
 }

@@ -13,6 +13,7 @@ import {
 import { type FontFamily } from "@/lib/config/fonts"
 import type { GridResult } from "@/lib/grid-calculator"
 import { reconcileLayerOrder } from "@/lib/preview-layer-order"
+import { getReferenceIdentityToken } from "@/lib/reference-identity"
 import {
   mapAbsolutePositionsToTextBlockPositions,
   mapTextBlockPositionsToAbsolute,
@@ -162,8 +163,11 @@ export function useGridPreviewDocumentState({
     imageGridPositions,
     imageModulePositions,
     setImageModulePositions,
+    imageColumnSpans,
     setImageColumnSpans,
+    imageRowSpans,
     setImageRowSpans,
+    imageHeightBaselines,
     setImageHeightBaselines,
     imageSnapToColumns,
     setImageSnapToColumns,
@@ -225,6 +229,12 @@ export function useGridPreviewDocumentState({
     lockedLayers[key] === true
   ), [lockedLayers])
 
+  const activeParagraphCount = useMemo(() => (
+    blockOrder.reduce((count, key) => (
+      (textContent[key] ?? "").trim().length > 0 ? count + 1 : count
+    ), 0)
+  ), [blockOrder, textContent])
+
   const buildSnapshot = useCallback((): PreviewLayoutState => ({
     ...buildTextSnapshot(),
     ...buildTextOverridesSnapshot(),
@@ -237,6 +247,52 @@ export function useGridPreviewDocumentState({
     buildTextSnapshot,
     lockedLayers,
     resolvedLayerOrder,
+  ])
+
+  const layoutRevisionKey = useMemo(() => ([
+    getReferenceIdentityToken(blockCollectionsState),
+    getReferenceIdentityToken(blockCustomSizes),
+    getReferenceIdentityToken(blockCustomLeadings),
+    getReferenceIdentityToken(blockTextColors),
+    getReferenceIdentityToken(lockedLayers),
+    getReferenceIdentityToken(resolvedLayerOrder),
+    getReferenceIdentityToken(imageOrder),
+    getReferenceIdentityToken(imageGridPositions),
+    getReferenceIdentityToken(imageColumnSpans),
+    getReferenceIdentityToken(imageRowSpans),
+    getReferenceIdentityToken(imageHeightBaselines),
+    getReferenceIdentityToken(imageSnapToColumns),
+    getReferenceIdentityToken(imageSnapToBaseline),
+    getReferenceIdentityToken(imageRotations),
+    getReferenceIdentityToken(imageColors),
+    getReferenceIdentityToken(imageOpacities),
+    result.settings.gridCols,
+    result.settings.gridRows,
+    baseFont,
+    imageColorScheme,
+    getReferenceIdentityToken(result.typography.styles),
+  ].join(":")), [
+    baseFont,
+    blockCollectionsState,
+    blockCustomLeadings,
+    blockCustomSizes,
+    blockTextColors,
+    imageColorScheme,
+    imageColors,
+    imageColumnSpans,
+    imageGridPositions,
+    imageHeightBaselines,
+    imageOpacities,
+    imageOrder,
+    imageRotations,
+    imageRowSpans,
+    imageSnapToBaseline,
+    imageSnapToColumns,
+    lockedLayers,
+    resolvedLayerOrder,
+    result.settings.gridCols,
+    result.settings.gridRows,
+    result.typography.styles,
   ])
 
   const applyLayerOrderSnapshot = useCallback((snapshot: PreviewLayoutState) => {
@@ -385,6 +441,8 @@ export function useGridPreviewDocumentState({
     isBlockItalic,
     getBlockRotation,
     buildSnapshot,
+    activeParagraphCount,
+    layoutRevisionKey,
     applyLayerOrderSnapshot,
     applyCustomSizeSnapshot: applyTextOverridesSnapshot,
     applyLockedLayerSnapshot,

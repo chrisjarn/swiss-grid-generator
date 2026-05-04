@@ -506,6 +506,8 @@ export const GridPreview = memo(function GridPreview({
     isBlockOpticalKerningEnabled,
     getBlockRotation,
     buildSnapshot,
+    activeParagraphCount,
+    layoutRevisionKey,
     applyLayerOrderSnapshot,
     applyCustomSizeSnapshot,
     applyLockedLayerSnapshot,
@@ -889,6 +891,7 @@ export const GridPreview = memo(function GridPreview({
       resultTypographyStyles: result.typography.styles,
       blockOrder,
       textContent,
+      activeParagraphCount,
       blockTextEdited,
       styleAssignments,
       blockCustomSizes,
@@ -1081,7 +1084,6 @@ export const GridPreview = memo(function GridPreview({
 
       const sourceText = pendingLayerDuplicate.snapshot.text
       const maxParagraphCount = result.settings.gridCols * result.settings.gridRows
-      const activeParagraphCount = blockOrder.filter((key) => (textContent[key] ?? "").trim().length > 0).length
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
           title: "Paragraph Limit Reached",
@@ -1168,6 +1170,7 @@ export const GridPreview = memo(function GridPreview({
     clearHover()
     return true
   }, [
+    activeParagraphCount,
     baseFont,
     blockOrder,
     clearHover,
@@ -1186,7 +1189,6 @@ export const GridPreview = memo(function GridPreview({
     setBlockCustomLeadings,
     setBlockCustomSizes,
     setBlockTextColors,
-    textContent,
     imageOrder,
   ])
 
@@ -1284,6 +1286,7 @@ export const GridPreview = memo(function GridPreview({
     isLayerLocked,
     blockOrder,
     textContent,
+    activeParagraphCount,
     blockCustomSizes,
     blockCustomLeadings,
     blockTextColors,
@@ -1856,6 +1859,7 @@ export const GridPreview = memo(function GridPreview({
     buildSnapshot,
     debounceMs: PREVIEW_LAYOUT_CHANGE_DEBOUNCE_MS,
     enabled: layoutEmissionEnabled,
+    revisionKey: layoutRevisionKey,
     onLayoutChange,
   })
 

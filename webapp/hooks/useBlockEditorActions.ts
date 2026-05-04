@@ -62,6 +62,7 @@ type Args = {
   resultTypographyStyles: Record<string, { weight?: string; blockItalic?: boolean }>
   blockOrder: string[]
   textContent: Record<string, string>
+  activeParagraphCount: number
   blockTextEdited: Record<string, boolean>
   styleAssignments: Record<string, string>
   blockCustomSizes: Partial<Record<string, number>>
@@ -139,6 +140,7 @@ export function useBlockEditorActions({
   resultTypographyStyles,
   blockOrder,
   textContent,
+  activeParagraphCount,
   blockTextEdited,
   styleAssignments,
   blockCustomSizes,
@@ -371,6 +373,7 @@ export function useBlockEditorActions({
     resultGridRows,
     blockOrder,
     textContent,
+    activeParagraphCount,
     blockTextEdited,
     styleAssignments,
     blockCustomLeadings,
