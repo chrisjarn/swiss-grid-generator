@@ -1,6 +1,6 @@
 "use client"
 
-import { Lock, LockOpen, Trash2 } from "lucide-react"
+import { Image as ImageIcon, Lock, LockOpen, Type, Trash2 } from "lucide-react"
 import { Fragment, useEffect, useMemo, useRef, useState } from "react"
 import type { DragEvent } from "react"
 
@@ -228,15 +228,17 @@ export function ProjectPageLayersList({
 
   const tone = isDarkMode
     ? {
-        card: "border-[#313A47] bg-[#232A35] text-[#F4F6F8]",
-        cardMuted: "text-[#8D98AA]",
-        stripeBg: "bg-[#161A22]",
+        row: "border-[#313A47] text-[#F4F6F8]",
+        rowMuted: "text-[#8D98AA]",
+        rowHover: "hover:bg-[#232A35]",
+        rowSelected: "bg-[#232A35]",
         empty: "text-[#8D98AA]",
       }
     : {
-        card: "border-gray-200 bg-gray-50 text-gray-900",
-        cardMuted: "text-gray-500",
-        stripeBg: "bg-white",
+        row: "border-gray-200 text-gray-900",
+        rowMuted: "text-gray-500",
+        rowHover: "hover:bg-gray-50",
+        rowSelected: "bg-gray-50",
         empty: "text-gray-500",
       }
 
@@ -393,52 +395,59 @@ export function ProjectPageLayersList({
                 if (!allowLayerInteractions) return
                 onToggleEditor(thumb.key)
               }}
-              className={`${index > 0 ? "mt-2" : ""} relative rounded-md border px-3 py-2 text-xs leading-snug transition-colors ${
+              className={`relative border-t px-0 py-2 text-xs leading-snug transition-colors ${
                 draggingKey === thumb.key
-                  ? `${tone.card} cursor-grabbing opacity-45`
-                  : tone.card
-              } ${isSelected || isHovered ? "border-l-[#fe9f97] border-t-[#fe9f97]" : ""} ${
-                isEditing ? "shadow-[inset_1px_0_0_0_#fe9f97,inset_0_1px_0_0_#fe9f97]" : ""
+                  ? `${tone.row} cursor-grabbing opacity-45`
+                  : `${tone.row} ${tone.rowHover}`
+              } ${index === 0 ? "border-t-0" : ""} ${
+                isSelected || isHovered ? tone.rowSelected : ""
+              } ${
+                isEditing ? "shadow-[inset_1px_0_0_0_#fe9f97]" : ""
               } ${
                 allowLayerInteractions ? "cursor-grab select-none" : "cursor-pointer"
               } ${
                 isLocked ? "opacity-80" : ""
               }`}
             >
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center justify-between gap-3">
                 <div className="pointer-events-none min-w-0 flex-1 select-none">
-                  <div className={`truncate text-[11px] ${tone.cardMuted}`}>
-                    {thumb.kind === "image" ? thumb.hierarchy : `${thumb.hierarchy} Font: ${thumb.font}`}
-                  </div>
-                  {thumb.kind === "text" ? (
-                    <div className="mt-0.5 flex min-w-0 items-center gap-2">
-                      <div
-                        className="h-2.5 w-2.5 shrink-0 rounded-full border border-black/10"
-                        style={{ backgroundColor: thumb.color }}
+                  <div className="flex min-w-0 items-center gap-2">
+                    {thumb.kind === "text" ? (
+                      <Type
+                        className={`h-3.5 w-3.5 shrink-0 ${tone.rowMuted}`}
+                        strokeWidth={1.8}
                         aria-hidden="true"
                       />
-                      <div
-                        className={`truncate text-[12px] ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}
-                        style={{
-                          fontFamily: getFontFamilyCss(isFontFamily(thumb.font) ? thumb.font : DEFAULT_BASE_FONT),
-                        }}
-                      >
-                        {thumb.textPreview}
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      className={`mt-1 h-4 overflow-hidden rounded-sm border border-black/10 ${tone.stripeBg}`}
-                    >
-                      <div
-                        className="h-full w-full"
-                        style={{
-                          backgroundColor: thumb.color,
-                          opacity: thumb.opacity,
-                        }}
+                    ) : (
+                      <ImageIcon
+                        className={`h-3.5 w-3.5 shrink-0 ${tone.rowMuted}`}
+                        strokeWidth={1.8}
+                        aria-hidden="true"
                       />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      {thumb.kind === "text" ? (
+                        <div
+                          className="truncate text-[12px]"
+                          style={{
+                            color: thumb.color,
+                            fontFamily: getFontFamilyCss(isFontFamily(thumb.font) ? thumb.font : DEFAULT_BASE_FONT),
+                          }}
+                        >
+                          {thumb.textPreview}
+                        </div>
+                      ) : (
+                        <div
+                          className="h-2.5 w-full rounded-[2px] border border-black/10"
+                          style={{
+                            backgroundColor: thumb.color,
+                            opacity: thumb.opacity,
+                          }}
+                          aria-label="Image placeholder color"
+                        />
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
                 {showLayerActions ? (
                   <div className="flex items-center gap-1">
@@ -450,7 +459,7 @@ export function ProjectPageLayersList({
                       className={`rounded-sm p-1 transition-colors ${
                         isLocked
                           ? (isDarkMode ? "bg-[#313A47] text-[#fe9f97]" : "bg-gray-200 text-[#f54123]")
-                          : tone.cardMuted
+                          : tone.rowMuted
                       } ${isLocked ? "" : "hover:text-[#fe9f97]"}`}
                       onClick={(event) => {
                         event.stopPropagation()
@@ -479,7 +488,7 @@ export function ProjectPageLayersList({
                       type="button"
                       data-card-drag-ignore="true"
                       aria-label={`Delete ${thumb.kind === "image" ? "image placeholder" : "paragraph"}`}
-                      className={`rounded-sm p-1 ${tone.cardMuted} hover:text-red-500`}
+                      className={`rounded-sm p-1 ${tone.rowMuted} hover:text-red-500`}
                       onClick={(event) => {
                         event.stopPropagation()
                         onDeleteLayer(thumb.key, thumb.kind)

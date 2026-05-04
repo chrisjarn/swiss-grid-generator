@@ -18,12 +18,6 @@ function getPresetValidationError(payload) {
   if (!isObjectRecord(payload)) return "expected a top-level object"
   if (!Array.isArray(payload.pages)) return "missing canonical pages[]"
   if (payload.pages.length === 0) return "pages[] must include at least one page"
-  if (typeof payload.activePageId !== "string" || payload.activePageId.trim().length === 0) {
-    return "missing activePageId"
-  }
-  if (!payload.pages.some((page) => isObjectRecord(page) && page.id === payload.activePageId)) {
-    return "activePageId does not reference an existing page"
-  }
   return null
 }
 

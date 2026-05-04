@@ -20,7 +20,11 @@ import {
 } from "@/lib/config/ui-defaults"
 import { type GridResult } from "@/lib/grid-calculator"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import { buildGridResultFromUiSettings, resolveUiSettingsSnapshot } from "@/lib/ui-settings-resolver"
+import {
+  buildGridResultFromUiSettings,
+  resolveUiSettingsSnapshot,
+  stripSessionUiSettings,
+} from "@/lib/ui-settings-resolver"
 import type { UiSettingsSnapshot } from "@/lib/workspace-ui-schema"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import {
@@ -40,6 +44,10 @@ type CustomMarginMultipliers = {
 }
 
 export type ResolvedProjectPageUiSettings = Record<string, unknown> & UiSettingsSnapshot
+export type ProjectPageVisibilitySettings = Pick<
+  UiSettingsSnapshot,
+  "showBaselines" | "showModules" | "showMargins" | "showImagePlaceholders" | "showTypography"
+>
 
 export type ResolvedProjectPageExportSource = {
   id: string
@@ -101,10 +109,6 @@ function resolveCustomMarginMultipliers(
     right: right as number,
     bottom: bottom as number,
   }
-}
-
-function resolveBooleanSetting(value: unknown, fallback: boolean): boolean {
-  return typeof value === "boolean" ? value : fallback
 }
 
 function resolveNonNegativeNumber(value: unknown, fallback: number): number {
@@ -176,6 +180,13 @@ export function filterProjectByExportRange<Layout>(
 export function resolveProjectPageUiSettings(
   source: Record<string, unknown>,
   sourcePath: string,
+  visibilitySettings: ProjectPageVisibilitySettings = {
+    showBaselines: DEFAULT_UI.showBaselines,
+    showModules: DEFAULT_UI.showModules,
+    showMargins: DEFAULT_UI.showMargins,
+    showImagePlaceholders: DEFAULT_UI.showImagePlaceholders,
+    showTypography: DEFAULT_UI.showTypography,
+  },
 ): ResolvedProjectPageUiSettings {
   const gridCols = source.gridCols
   const gridRows = source.gridRows
@@ -240,11 +251,18 @@ export function resolveProjectPageUiSettings(
   const customMarginMultipliers = useCustomMargins
     ? resolveCustomMarginMultipliers(source.customMarginMultipliers, sourcePath)
     : undefined
-  const resolved = resolveUiSettingsSnapshot(source)
+  const resolved = resolveUiSettingsSnapshot(source, {
+    showBaselinesFallback: visibilitySettings.showBaselines,
+    showModulesFallback: visibilitySettings.showModules,
+    showMarginsFallback: visibilitySettings.showMargins,
+    showImagePlaceholdersFallback: visibilitySettings.showImagePlaceholders,
+    showTypographyFallback: visibilitySettings.showTypography,
+  })
+  const serializableSource = stripSessionUiSettings(source)
 
   return {
     ...resolved,
-    ...source,
+    ...serializableSource,
     gridCols,
     gridRows,
     canvasRatio: resolved.canvasRatio,
@@ -277,11 +295,11 @@ export function resolveProjectPageUiSettings(
     rhythmColsDirection: isGridRhythmColsDirection(rhythmColsDirectionSource)
       ? rhythmColsDirectionSource
       : resolved.rhythmColsDirection,
-    showBaselines: resolveBooleanSetting(source.showBaselines, DEFAULT_UI.showBaselines),
-    showModules: resolveBooleanSetting(source.showModules, DEFAULT_UI.showModules),
-    showMargins: resolveBooleanSetting(source.showMargins, DEFAULT_UI.showMargins),
-    showImagePlaceholders: resolveBooleanSetting(source.showImagePlaceholders, DEFAULT_UI.showImagePlaceholders),
-    showTypography: resolveBooleanSetting(source.showTypography, DEFAULT_UI.showTypography),
+    showBaselines: visibilitySettings.showBaselines,
+    showModules: visibilitySettings.showModules,
+    showMargins: visibilitySettings.showMargins,
+    showImagePlaceholders: visibilitySettings.showImagePlaceholders,
+    showTypography: visibilitySettings.showTypography,
     exportBleedMm: resolveNonNegativeNumber(source.exportBleedMm, DEFAULT_UI.exportBleedMm),
   }
 }
@@ -290,12 +308,13 @@ export function buildResolvedProjectPageExportSource(
   page: ProjectPage<Record<string, unknown>>,
   sourcePath: string,
   variableContext?: Partial<DocumentVariableContext>,
+  visibilitySettings?: ProjectPageVisibilitySettings,
 ): ResolvedProjectPageExportSource {
   if (!isObjectRecord(page.uiSettings)) {
     throw new Error(`Invalid project page "${sourcePath}": missing uiSettings`)
   }
 
-  const uiSettings = resolveProjectPageUiSettings(page.uiSettings, sourcePath)
+  const uiSettings = resolveProjectPageUiSettings(page.uiSettings, sourcePath, visibilitySettings)
   const result = buildGridResultFromUiSettings(uiSettings, {
     layoutMode: page.layoutMode ?? "single",
   })
@@ -325,6 +344,7 @@ export function buildResolvedProjectPageExportSource(
 export function buildResolvedProjectPageExportSources(
   project: LoadedProject<Record<string, unknown>>,
   range: ProjectExportPageRange,
+  visibilitySettings?: ProjectPageVisibilitySettings,
 ): ResolvedProjectPageExportSource[] {
   const normalizedRange = normalizeProjectExportPageRange(project.pages.length, range.fromPage, range.toPage)
   const now = new Date()
@@ -333,12 +353,17 @@ export function buildResolvedProjectPageExportSources(
     const projectPageIndex = normalizedRange.startIndex + index
     const pageNumber = getProjectPagePhysicalPageNumberAtIndex(project.pages, projectPageIndex)
     const sourcePath = `${page.name || `Page ${pageNumber}`} (${page.id})`
-    return buildResolvedProjectPageExportSource(page, sourcePath, {
-      projectTitle: project.metadata.title,
-      pageTitle: page.name || `Page ${pageNumber}`,
-      pageNumber,
-      pageCount,
-      now,
-    })
+    return buildResolvedProjectPageExportSource(
+      page,
+      sourcePath,
+      {
+        projectTitle: project.metadata.title,
+        pageTitle: page.name || `Page ${pageNumber}`,
+        pageNumber,
+        pageCount,
+        now,
+      },
+      visibilitySettings,
+    )
   })
 }

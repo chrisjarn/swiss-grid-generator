@@ -24,11 +24,7 @@ function isIncludedInManifest(fileName, manifestSource) {
 function getCanonicalPresetIssue(payload) {
   if (typeof payload !== "object" || payload === null) return "expected an object payload"
   if (!Array.isArray(payload.pages)) return "should include pages[]"
-  if (typeof payload.activePageId !== "string") return "should include activePageId"
   if (payload.pages.length === 0) return "should include at least one page"
-  if (!payload.pages.some((page) => page?.id === payload.activePageId)) {
-    return "activePageId should reference an existing page"
-  }
   return null
 }
 

@@ -33,6 +33,7 @@ import {
 import { buildAxisStarts, resolveAxisSizes } from "@/lib/grid-rhythm"
 import {
   buildCollapsedSectionState,
+  SESSION_UI_SETTING_KEYS,
   type SectionKey,
   type UiSettingsSnapshot,
 } from "@/lib/workspace-ui-schema"
@@ -125,7 +126,13 @@ function resolveCustomMarginMultipliers(value: unknown): UiSettingsSnapshot["cus
 export function resolveUiSettingsSnapshot(
   source: UiSettingsSource,
   options: {
+    showBaselinesFallback?: boolean
+    showModulesFallback?: boolean
+    showMarginsFallback?: boolean
+    showImagePlaceholdersFallback?: boolean
+    showTypographyFallback?: boolean
     collapsedFallback?: Record<SectionKey, boolean>
+    showLayersFallback?: boolean
   } = {},
 ): UiSettingsSnapshot {
   const canvasRatio = resolveCanvasRatio(source)
@@ -186,19 +193,34 @@ export function resolveUiSettingsSnapshot(
     customBaseline: clampPositive(source.customBaseline, FORMAT_BASELINES[previewFormat] ?? DEFAULT_UI.customBaseline),
     useCustomMargins: resolveBoolean(source.useCustomMargins, DEFAULT_UI.useCustomMargins),
     customMarginMultipliers: resolveCustomMarginMultipliers(source.customMarginMultipliers),
-    showBaselines: resolveBoolean(source.showBaselines, DEFAULT_UI.showBaselines),
-    showModules: resolveBoolean(source.showModules, DEFAULT_UI.showModules),
-    showMargins: resolveBoolean(source.showMargins, DEFAULT_UI.showMargins),
-    showImagePlaceholders: resolveBoolean(source.showImagePlaceholders, DEFAULT_UI.showImagePlaceholders),
-    showTypography: resolveBoolean(source.showTypography, DEFAULT_UI.showTypography),
-    showLayers: resolveBoolean(source.showLayers, DEFAULT_UI.showLayers),
+    showBaselines: resolveBoolean(source.showBaselines, options.showBaselinesFallback ?? DEFAULT_UI.showBaselines),
+    showModules: resolveBoolean(source.showModules, options.showModulesFallback ?? DEFAULT_UI.showModules),
+    showMargins: resolveBoolean(source.showMargins, options.showMarginsFallback ?? DEFAULT_UI.showMargins),
+    showImagePlaceholders: resolveBoolean(
+      source.showImagePlaceholders,
+      options.showImagePlaceholdersFallback ?? DEFAULT_UI.showImagePlaceholders,
+    ),
+    showTypography: resolveBoolean(source.showTypography, options.showTypographyFallback ?? DEFAULT_UI.showTypography),
+    showLayers: resolveBoolean(source.showLayers, options.showLayersFallback ?? DEFAULT_UI.showLayers),
     collapsed: buildCollapsedSectionState(resolvedCollapsedSource, options.collapsedFallback ?? DEFAULT_UI.collapsed),
   }
 }
 
+export function stripSessionUiSettings(source: Record<string, unknown>): Record<string, unknown> {
+  const serializableSnapshot = { ...source }
+
+  SESSION_UI_SETTING_KEYS.forEach((key) => {
+    delete serializableSnapshot[key]
+  })
+
+  return serializableSnapshot
+}
+
 export function buildSerializableUiSettingsSnapshot(snapshot: UiSettingsSnapshot): Record<string, unknown> {
+  const serializableSnapshot = stripSessionUiSettings(snapshot)
+
   return {
-    ...snapshot,
+    ...serializableSnapshot,
     format: resolvePreviewFormat(snapshot.canvasRatio),
   }
 }

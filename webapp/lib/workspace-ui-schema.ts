@@ -5,6 +5,16 @@ import type { CanvasRatioKey } from "@/lib/grid-calculator"
 
 export const SECTION_KEYS = ["format", "baseline", "margins", "gutter", "typo", "color", "summary"] as const
 export type SectionKey = typeof SECTION_KEYS[number]
+export const SESSION_UI_SETTING_KEYS = [
+  "showBaselines",
+  "showModules",
+  "showMargins",
+  "showImagePlaceholders",
+  "showTypography",
+  "showLayers",
+  "collapsed",
+] as const
+export type SessionUiSettingKey = typeof SESSION_UI_SETTING_KEYS[number]
 
 export type CustomMarginMultipliers = {
   top: number

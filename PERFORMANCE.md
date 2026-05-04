@@ -64,7 +64,7 @@ Today's work stayed within the planner-first contract and focused on the preview
   - `wrapTextDetailed.oversizeWhitespace`
 - Kept lightweight hyphenation caching:
   - syllable cache in `webapp/lib/english-hyphenation.ts`
-  - per-wrap hyphenation result caches in `webapp/lib/text-layout.ts`
+  - shared plain-wrap hyphenation result caches in `webapp/lib/text-layout.ts` keyed through `webapp/lib/text-metrics-service.ts`
 
 ### Measured Improvements
 
@@ -77,6 +77,7 @@ Today's work stayed within the planner-first contract and focused on the preview
 
 - Cold `fontFile.wrapText`: from about `114-117ms` to about `87-100ms`
 - Cold `fontFile.wrapText.measureFormattedRangeWidth`: from about `89-92ms` to about `53-64ms`
+- Repeated identical hyphenated wraps: about `11.78ms` down to about `4.48ms` over `500` identical wraps in the targeted cache microbench
 
 ### What Profiling Revealed
 

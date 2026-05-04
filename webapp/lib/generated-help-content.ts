@@ -629,7 +629,9 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "Opens the project title and page/layer management panel.",
               "The small `i` toggle in the Project header shows or hides the document info text.",
-              "The `TITLE` section keeps the compact title row visible by default and can be expanded to show `Description` and `Author`.",
+              "The compact project-title row always shows the real project title.",
+              "Double-click the compact project title to open or close the metadata section. Opening it focuses the `Title` field immediately.",
+              "The expanded metadata section contains `Title`, `Description`, and `Author`.",
               "The document info text summarizes pages, layers, fonts, cuts, words, characters, author, and creation date when metadata exists.",
               "Single-click a page row to activate it. Double-click it to open or close its inline layer list.",
               "Drag collapsed page rows to reorder the project.",
@@ -637,6 +639,7 @@ export const HELP_CONTENT_GROUPS = [
               "`Facing pages` converts a page into a spread inside the same page record.",
               "`Add Page` always creates a new single page, even if the active page is a facing spread.",
               "A project can contain up to `1000` pages.",
+              "`Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.",
               "Active-page layer cards mirror preview hover/guides.",
               "Drag unlocked layer cards to reorder z-index.",
               "Layer cards include lock and delete controls.",

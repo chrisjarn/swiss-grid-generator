@@ -97,7 +97,12 @@ type Props = {
   authError: string | null
   authMessage: string | null
   projectPages: PreviewProjectPage[]
+  activeProjectPage: PreviewProjectPage | null
   activePageId: string
+  activePageFocusRequest?: {
+    token: number
+    pageId: string | null
+  }
   loadedPreviewLayout: { token: number; layout: PreviewLayoutState } | null
   layoutEngine: LayoutEngineContract
   requestedLayerOrderState: { token: number; order: string[] } | null
@@ -252,7 +257,9 @@ export function PreviewWorkspace({
   authError,
   authMessage,
   projectPages,
+  activeProjectPage,
   activePageId,
+  activePageFocusRequest = { token: 0, pageId: null },
   loadedPreviewLayout,
   layoutEngine,
   requestedLayerOrderState,
@@ -341,9 +348,8 @@ export function PreviewWorkspace({
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
   }, [activePageId, projectPages])
   const activePageTitle = useMemo(() => {
-    const activePage = projectPages.find((page) => page.id === activePageId)
-    return activePage?.name?.trim() || `Page ${activePageNumber}`
-  }, [activePageId, activePageNumber, projectPages])
+    return activeProjectPage?.name?.trim() || `Page ${activePageNumber}`
+  }, [activePageNumber, activeProjectPage])
   const documentVariablePageCount = useMemo(
     () => getProjectPhysicalPageCount(projectPages),
     [projectPages],
@@ -669,7 +675,9 @@ export function PreviewWorkspace({
                 >
                   <PagesPanel
                     pages={projectPages}
+                    activePage={activeProjectPage}
                     activePageId={activePageId}
+                    activePageFocusRequest={activePageFocusRequest}
                     onSelectPage={onPageSelect}
                     onFacingPageToggle={onPageFacingToggle}
                     onRenamePage={onPageRename}

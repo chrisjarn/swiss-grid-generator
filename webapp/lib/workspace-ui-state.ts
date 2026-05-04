@@ -302,9 +302,23 @@ export function exportUiReducer(state: ExportUiState, action: UiAction): ExportU
 
 export function buildUiSnapshotFromLoadedSettings(
   loaded: Record<string, unknown>,
-  currentCollapsed: Record<SectionKey, boolean>,
+  sessionState: {
+    showBaselines: boolean
+    showModules: boolean
+    showMargins: boolean
+    showImagePlaceholders: boolean
+    showTypography: boolean
+    collapsed: Record<SectionKey, boolean>
+    showLayers: boolean
+  },
 ): UiSettingsSnapshot {
   return resolveUiSettingsSnapshot(loaded, {
-    collapsedFallback: currentCollapsed,
+    showBaselinesFallback: sessionState.showBaselines,
+    showModulesFallback: sessionState.showModules,
+    showMarginsFallback: sessionState.showMargins,
+    showImagePlaceholdersFallback: sessionState.showImagePlaceholders,
+    showTypographyFallback: sessionState.showTypography,
+    collapsedFallback: sessionState.collapsed,
+    showLayersFallback: sessionState.showLayers,
   })
 }

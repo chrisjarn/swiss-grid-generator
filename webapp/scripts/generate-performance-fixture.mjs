@@ -149,7 +149,6 @@ async function main() {
     exportedAt: new Date().toISOString(),
     title: "Performance 1000 Pages",
     description: "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, and systematic baseline + grid-rhythm variation across the document.",
-    activePageId: pages[0]?.id ?? source.activePageId,
     pages,
   }
 

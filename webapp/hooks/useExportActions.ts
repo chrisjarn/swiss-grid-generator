@@ -25,6 +25,7 @@ import {
   buildResolvedProjectPageExportSources,
   filterProjectByExportRange,
   normalizeProjectExportPageRange,
+  type ProjectPageVisibilitySettings,
   type ProjectExportPageRange,
   type ResolvedProjectPageExportSource,
 } from "@/lib/project-page-export-source"
@@ -221,6 +222,7 @@ export type ExportActionsContext = {
     author: string
     createdAt?: string
   }) => void
+  exportViewSettings: ProjectPageVisibilitySettings
   getCurrentProjectSnapshot: () => LoadedProject<Record<string, unknown>>
 }
 
@@ -237,6 +239,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     defaultJsonFilename,
     projectMetadata,
     onProjectMetadataChange,
+    exportViewSettings,
     getCurrentProjectSnapshot,
   } = ctx
   const [isSaveLibraryDialogOpen, setIsSaveLibraryDialogOpen] = useState(false)
@@ -335,7 +338,6 @@ export function useExportActions(ctx: ExportActionsContext) {
       const projectSnapshot = getCurrentProjectSnapshot()
       const payload = buildProjectTransferPayload({
         ...projectSnapshot,
-        activePageId: projectSnapshot.activePageId,
         pages: projectSnapshot.pages,
         metadata,
         tour: projectSnapshot.tour ?? null,
@@ -727,18 +729,24 @@ export function useExportActions(ctx: ExportActionsContext) {
     filename: string,
   ) => {
     const publishProgress = createProgressPublisher()
-    const bytes = await renderSwissGridIdmlProject(project, project.layoutEngine, async (progress) => {
-      throwIfExportCancelled()
-      const isPackagingStep = progress.pageName === "Packaging IDML"
-      await publishProgress({
-        format: "idml",
-        completedSteps: progress.completedSteps,
-        totalSteps: progress.totalSteps,
-        currentPageNumber: progress.pageNumber,
-        currentLabel: progress.pageName,
-        phase: isPackagingStep ? "packaging" : "rendering",
-      }, isPackagingStep || progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps)
-    }, throwIfExportCancelled)
+    const bytes = await renderSwissGridIdmlProject(
+      project,
+      project.layoutEngine,
+      async (progress) => {
+        throwIfExportCancelled()
+        const isPackagingStep = progress.pageName === "Packaging IDML"
+        await publishProgress({
+          format: "idml",
+          completedSteps: progress.completedSteps,
+          totalSteps: progress.totalSteps,
+          currentPageNumber: progress.pageNumber,
+          currentLabel: progress.pageName,
+          phase: isPackagingStep ? "packaging" : "rendering",
+        }, isPackagingStep || progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps)
+      },
+      throwIfExportCancelled,
+      exportViewSettings,
+    )
     throwIfExportCancelled()
     setExportProgress({
       format: "idml",
@@ -753,7 +761,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     downloadBlob(new Blob([buffer], {
       type: "application/vnd.adobe.indesign-idml-package",
     }), filename)
-  }, [createProgressPublisher, downloadBlob, throwIfExportCancelled])
+  }, [createProgressPublisher, downloadBlob, exportViewSettings, throwIfExportCancelled])
 
   const handleExportFormatChange = useCallback((format: ExportFormat) => {
     setExportFormatDraft(format)
@@ -879,7 +887,11 @@ export function useExportActions(ctx: ExportActionsContext) {
       }
 
       if (exportFormatDraft === "pdf") {
-        const resolvedPages = buildResolvedProjectPageExportSources(currentProjectSnapshot, selectedRange)
+        const resolvedPages = buildResolvedProjectPageExportSources(
+          currentProjectSnapshot,
+          selectedRange,
+          exportViewSettings,
+        )
         if (shouldPersistActivePageExportSettings) {
           setPersistedPrintPresetEnabled(printPresetEnabledDraft)
           setExportBleedMm(bleedMm)
@@ -891,7 +903,11 @@ export function useExportActions(ctx: ExportActionsContext) {
           registrationMarks: exportRegistrationMarksDraft,
         }, currentProjectSnapshot.layoutEngine)
       } else {
-        const resolvedPages = buildResolvedProjectPageExportSources(currentProjectSnapshot, selectedRange)
+        const resolvedPages = buildResolvedProjectPageExportSources(
+          currentProjectSnapshot,
+          selectedRange,
+          exportViewSettings,
+        )
         await exportSVG(resolvedPages, filename, normalizedRange.fromPage, currentProjectSnapshot.layoutEngine)
       }
 
@@ -913,6 +929,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     exportIDML,
     exportPDF,
     exportSVG,
+    exportViewSettings,
     getCurrentProjectWithMetadata,
     getDefaultExportFilename,
     currentProject.pages.length,

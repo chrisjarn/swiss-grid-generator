@@ -71,6 +71,7 @@ import {
   type BrowserTextMetricsDiagnostics,
 } from "@/lib/text-metrics-browser-diagnostics"
 import { createTextMetricsService } from "@/lib/text-metrics-service"
+import { resolveUiSettingsSnapshot } from "@/lib/ui-settings-resolver"
 import {
   normalizeTextTrackingRuns,
   type TextTrackingRun,
@@ -1970,6 +1971,7 @@ function buildExportPlanParityReport({
       if (pageCount >= exportPageLimit) break
       pageCount += 1
       const page = samplePage.page
+      const viewSettings = resolveUiSettingsSnapshot(page.uiSettings)
       const commonArgs = {
         result: page.result,
         layout: page.previewLayout as ExportPreviewLayoutState | null,
@@ -1977,11 +1979,11 @@ function buildExportPlanParityReport({
         imageColorScheme: page.imageColorScheme,
         canvasBackground: page.resolvedCanvasBackground,
         rotation: typeof page.uiSettings.rotation === "number" ? page.uiSettings.rotation : 0,
-        showBaselines: page.uiSettings.showBaselines !== false,
-        showModules: page.uiSettings.showModules !== false,
-        showMargins: page.uiSettings.showMargins === true,
-        showImagePlaceholders: page.uiSettings.showImagePlaceholders !== false,
-        showTypography: page.uiSettings.showTypography !== false,
+        showBaselines: viewSettings.showBaselines,
+        showModules: viewSettings.showModules,
+        showMargins: viewSettings.showMargins,
+        showImagePlaceholders: viewSettings.showImagePlaceholders,
+        showTypography: viewSettings.showTypography,
         layoutEngine: page.layoutEngine,
       }
       const activeWrapTraces: PageExportTextWrapTrace[] = []
@@ -2706,6 +2708,7 @@ function buildProductionExportPlanSignatures(
   const addSignature = (samplePage: ReturnType<typeof collectTextMetricsPresetPages>[number]) => {
     if (signatureLabels.has(samplePage.label)) return
     const page = samplePage.page
+    const viewSettings = resolveUiSettingsSnapshot(page.uiSettings)
     const plan = buildPageExportPlan({
       result: page.result,
       layout: page.previewLayout as ExportPreviewLayoutState | null,
@@ -2713,11 +2716,11 @@ function buildProductionExportPlanSignatures(
       imageColorScheme: page.imageColorScheme,
       canvasBackground: page.resolvedCanvasBackground,
       rotation: typeof page.uiSettings.rotation === "number" ? page.uiSettings.rotation : 0,
-      showBaselines: page.uiSettings.showBaselines !== false,
-      showModules: page.uiSettings.showModules !== false,
-      showMargins: page.uiSettings.showMargins === true,
-      showImagePlaceholders: page.uiSettings.showImagePlaceholders !== false,
-      showTypography: page.uiSettings.showTypography !== false,
+      showBaselines: viewSettings.showBaselines,
+      showModules: viewSettings.showModules,
+      showMargins: viewSettings.showMargins,
+      showImagePlaceholders: viewSettings.showImagePlaceholders,
+      showTypography: viewSettings.showTypography,
       layoutEngine: page.layoutEngine,
       textMetricsEngineFactory,
     })

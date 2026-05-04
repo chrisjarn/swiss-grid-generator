@@ -106,39 +106,17 @@ type GridReductionWarningToastState = {
   message: string
 } | null
 
-type ProjectWideVisibilitySettingKey =
-  | "showBaselines"
-  | "showModules"
-  | "showMargins"
-  | "showImagePlaceholders"
-  | "showTypography"
-
-type ProjectVisibilityHistoryEntry = {
-  type: "visibility"
-  key: ProjectWideVisibilitySettingKey
-  nextValue: boolean
-  previousValues: Record<string, boolean>
-}
-
 type ProjectMetadataHistoryEntry = {
   type: "metadata"
   previousMetadata: ProjectMetadata
   nextMetadata: ProjectMetadata
 }
 
-type ProjectHistoryEntry = ProjectVisibilityHistoryEntry | ProjectMetadataHistoryEntry
+type ProjectHistoryEntry = ProjectMetadataHistoryEntry
 
 type EditableProjectMetadataField = "title" | "description" | "author"
 
 const PROJECT_HISTORY_LIMIT = 100
-
-function resolveProjectWideVisibilitySettingValue(
-  source: Record<string, unknown>,
-  key: ProjectWideVisibilitySettingKey,
-): boolean {
-  const raw = source[key]
-  return typeof raw === "boolean" ? raw : DEFAULT_UI[key]
-}
 
 function readStoredNonNegativeInteger(key: string): number {
   if (typeof window === "undefined") return 0
@@ -167,6 +145,41 @@ function applyLayerLockStateToKeys(
   return targets.reduce((acc, key) => omitOptionalRecordKey(acc, key), source ?? {})
 }
 
+function cloneCollapsedSectionState(source: Record<SectionKey, boolean>): Record<SectionKey, boolean> {
+  return SECTION_KEYS.reduce(
+    (acc, key) => {
+      acc[key] = source[key]
+      return acc
+    },
+    {} as Record<SectionKey, boolean>,
+  )
+}
+
+function applySessionUiState(
+  snapshot: UiSettingsSnapshot,
+  sessionState: Pick<
+    UiSettingsSnapshot,
+    | "showBaselines"
+    | "showModules"
+    | "showMargins"
+    | "showImagePlaceholders"
+    | "showTypography"
+    | "showLayers"
+    | "collapsed"
+  >,
+): UiSettingsSnapshot {
+  return {
+    ...snapshot,
+    showBaselines: sessionState.showBaselines,
+    showModules: sessionState.showModules,
+    showMargins: sessionState.showMargins,
+    showImagePlaceholders: sessionState.showImagePlaceholders,
+    showTypography: sessionState.showTypography,
+    showLayers: sessionState.showLayers,
+    collapsed: cloneCollapsedSectionState(sessionState.collapsed),
+  }
+}
+
 export default function Home() {
   const loadFileInputRef = useRef<HTMLInputElement | null>(null)
   const livePreviewSnapshotGetterRef = useRef<(() => PreviewLayoutState) | null>(null)
@@ -182,6 +195,10 @@ export default function Home() {
   } | null>(null)
   const [noticeState, setNoticeState] = useState<NoticeState>(null)
   const [gridReductionWarningToast, setGridReductionWarningToast] = useState<GridReductionWarningToastState>(null)
+  const [activePageFocusRequest, setActivePageFocusRequest] = useState<{
+    token: number
+    pageId: string | null
+  }>({ token: 0, pageId: null })
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
@@ -506,7 +523,83 @@ export default function Home() {
 
   // ─── Settings snapshot (for undo/redo) ───────────────────────────────────
 
-  const buildUiSnapshot = useCallback((): UiSettingsSnapshot => ui, [ui])
+  const sessionUiState = useMemo(
+    () => ({
+      showBaselines,
+      showModules,
+      showMargins,
+      showImagePlaceholders,
+      showTypography,
+      showLayers,
+      collapsed: cloneCollapsedSectionState(collapsed),
+    }),
+    [collapsed, showBaselines, showImagePlaceholders, showLayers, showMargins, showModules, showTypography],
+  )
+  const currentDocumentUiSnapshot = useMemo<UiSettingsSnapshot>(() => ({
+    canvasRatio,
+    customRatioWidth,
+    customRatioHeight,
+    exportPrintPro,
+    exportBleedMm,
+    exportRegistrationMarks,
+    orientation,
+    rotation,
+    marginMethod,
+    gridCols,
+    gridRows,
+    baselineMultiple,
+    gutterMultiple,
+    rhythm,
+    rhythmRowsEnabled,
+    rhythmRowsDirection,
+    rhythmColsEnabled,
+    rhythmColsDirection,
+    typographyScale,
+    baseFont,
+    imageColorScheme,
+    canvasBackground,
+    customBaseline,
+    useCustomMargins,
+    customMarginMultipliers,
+    showBaselines: DEFAULT_UI.showBaselines,
+    showModules: DEFAULT_UI.showModules,
+    showMargins: DEFAULT_UI.showMargins,
+    showImagePlaceholders: DEFAULT_UI.showImagePlaceholders,
+    showTypography: DEFAULT_UI.showTypography,
+    showLayers: DEFAULT_UI.showLayers,
+    collapsed: cloneCollapsedSectionState(DEFAULT_UI.collapsed),
+  }), [
+    canvasRatio,
+    customRatioWidth,
+    customRatioHeight,
+    exportPrintPro,
+    exportBleedMm,
+    exportRegistrationMarks,
+    orientation,
+    rotation,
+    marginMethod,
+    gridCols,
+    gridRows,
+    baselineMultiple,
+    gutterMultiple,
+    rhythm,
+    rhythmRowsEnabled,
+    rhythmRowsDirection,
+    rhythmColsEnabled,
+    rhythmColsDirection,
+    typographyScale,
+    baseFont,
+    imageColorScheme,
+    canvasBackground,
+    customBaseline,
+    useCustomMargins,
+    customMarginMultipliers,
+  ])
+  const buildUiSnapshot = useCallback((): UiSettingsSnapshot => currentDocumentUiSnapshot, [currentDocumentUiSnapshot])
+  const hydrateUiSnapshot = useCallback(
+    (snapshot: UiSettingsSnapshot): UiSettingsSnapshot => applySessionUiState(snapshot, sessionUiState),
+    [sessionUiState],
+  )
   const {
     suppressNextSettingsHistory,
     resetSettingsHistory,
@@ -522,7 +615,7 @@ export default function Home() {
   } = useWorkspaceHistory({
     buildUiSnapshot,
     onApplyUiSnapshot: (snapshot) => {
-      dispatch({ type: "APPLY_SNAPSHOT", snapshot })
+      dispatch({ type: "APPLY_SNAPSHOT", snapshot: hydrateUiSnapshot(snapshot) })
     },
     requestPreviewUndo,
     requestPreviewRedo,
@@ -531,15 +624,16 @@ export default function Home() {
   })
 
   const applyLoadedUiSnapshot = useCallback((snapshot: UiSettingsSnapshot) => {
-    resetSettingsHistory(snapshot)
+    const hydratedSnapshot = hydrateUiSnapshot(snapshot)
+    resetSettingsHistory(hydratedSnapshot)
     resetHistoryDomains()
     suppressNextSettingsHistory()
-    dispatch({ type: "APPLY_SNAPSHOT", snapshot })
-  }, [dispatch, resetHistoryDomains, resetSettingsHistory, suppressNextSettingsHistory])
+    dispatch({ type: "APPLY_SNAPSHOT", snapshot: hydratedSnapshot })
+  }, [dispatch, hydrateUiSnapshot, resetHistoryDomains, resetSettingsHistory, suppressNextSettingsHistory])
 
   const currentUiSettingsPayload = useMemo(
-    () => buildSerializableUiSettingsSnapshot(ui),
-    [ui],
+    () => buildSerializableUiSettingsSnapshot(currentDocumentUiSnapshot),
+    [currentDocumentUiSnapshot],
   )
 
   const getCurrentPreviewLayout = useCallback(
@@ -556,12 +650,12 @@ export default function Home() {
   }, [])
 
   const handleApplyProjectPage = useCallback((page: ProjectPage<PreviewLayoutState>) => {
-    const snapshot = buildUiSnapshotFromLoadedSettings(page.uiSettings, collapsed)
+    const snapshot = buildUiSnapshotFromLoadedSettings(page.uiSettings, sessionUiState)
     applyLoadedUiSnapshot(snapshot)
     preferCommittedPreviewLayoutRef.current = true
     applyLoadedPreviewLayout(page.previewLayout)
     setShowPresetsBrowser(false)
-  }, [applyLoadedPreviewLayout, applyLoadedUiSnapshot, collapsed, setShowPresetsBrowser])
+  }, [applyLoadedPreviewLayout, applyLoadedUiSnapshot, sessionUiState, setShowPresetsBrowser])
 
   const {
     project,
@@ -721,97 +815,18 @@ export default function Home() {
     },
   })
 
-  const applyVisibilitySettingToProject = useCallback((
-    key: ProjectWideVisibilitySettingKey,
-    nextValue: boolean,
-  ) => {
-    const currentProject = getCurrentProjectSnapshot()
-    const previousValues: Record<string, boolean> = {}
-
-    const nextPages = currentProject.pages.map((page) => {
-      const currentValue = resolveProjectWideVisibilitySettingValue(page.uiSettings, key)
-      if (currentValue === nextValue) return page
-      previousValues[page.id] = currentValue
-      return {
-        ...page,
-        uiSettings: {
-          ...page.uiSettings,
-          [key]: nextValue,
-        },
-      }
-    })
-
-    if (Object.keys(previousValues).length === 0) return null
-
-    const nextProject: LoadedProject<PreviewLayoutState> = {
-      ...currentProject,
-      pages: nextPages,
-    }
-
-    replaceProjectSnapshot(nextProject)
-    const activePage = nextProject.pages.find((page) => page.id === nextProject.activePageId) ?? null
-    if (activePage) {
-      suppressNextSettingsHistory()
-      dispatch({
-        type: "SET",
-        key,
-        value: resolveProjectWideVisibilitySettingValue(activePage.uiSettings, key),
-      })
-    }
-
-    return {
-      type: "visibility",
-      key,
-      nextValue,
-      previousValues,
-    } satisfies ProjectVisibilityHistoryEntry
-  }, [dispatch, getCurrentProjectSnapshot, replaceProjectSnapshot, suppressNextSettingsHistory])
-
   const applyProjectHistoryEntry = useCallback((
     entry: ProjectHistoryEntry,
     mode: "undo" | "redo",
   ) => {
-    if (entry.type === "metadata") {
-      const nextMetadata = mode === "undo" ? entry.previousMetadata : entry.nextMetadata
-      const currentProject = getCurrentProjectSnapshot()
-      replaceProjectSnapshot({
-        ...currentProject,
-        metadata: nextMetadata,
-      })
-      setProjectMetadata(nextMetadata)
-      return
-    }
-
+    const nextMetadata = mode === "undo" ? entry.previousMetadata : entry.nextMetadata
     const currentProject = getCurrentProjectSnapshot()
-    const nextPages = currentProject.pages.map((page) => {
-      if (!Object.prototype.hasOwnProperty.call(entry.previousValues, page.id)) {
-        return page
-      }
-      return {
-        ...page,
-        uiSettings: {
-          ...page.uiSettings,
-          [entry.key]: mode === "undo" ? entry.previousValues[page.id] : entry.nextValue,
-        },
-      }
-    })
-
-    const nextProject: LoadedProject<PreviewLayoutState> = {
+    replaceProjectSnapshot({
       ...currentProject,
-      pages: nextPages,
-    }
-
-    replaceProjectSnapshot(nextProject)
-    const activePage = nextProject.pages.find((page) => page.id === nextProject.activePageId) ?? null
-    if (activePage) {
-      suppressNextSettingsHistory()
-      dispatch({
-        type: "SET",
-        key: entry.key,
-        value: resolveProjectWideVisibilitySettingValue(activePage.uiSettings, entry.key),
-      })
-    }
-  }, [dispatch, getCurrentProjectSnapshot, replaceProjectSnapshot, setProjectMetadata, suppressNextSettingsHistory])
+      metadata: nextMetadata,
+    })
+    setProjectMetadata(nextMetadata)
+  }, [getCurrentProjectSnapshot, replaceProjectSnapshot, setProjectMetadata])
 
   const handleProjectUndo = useCallback(() => {
     const entry = projectHistoryPast[projectHistoryPast.length - 1]
@@ -847,34 +862,15 @@ export default function Home() {
     handleProjectHistoryRecord()
   }, [handleProjectHistoryRecord])
 
-  const currentProjectWideVisibilityValues = useMemo(() => ({
-    showBaselines,
-    showModules,
-    showMargins,
-    showImagePlaceholders,
-    showTypography,
-  }), [
-    showBaselines,
-    showModules,
-    showMargins,
-    showImagePlaceholders,
-    showTypography,
-  ])
-
   const handleHeaderVisibilityToggle = useCallback((
-    key: ProjectWideVisibilitySettingKey,
+    key: "showBaselines" | "showModules" | "showMargins" | "showImagePlaceholders" | "showTypography",
     event?: ReactMouseEvent<HTMLButtonElement>,
   ) => {
-    const nextValue = !currentProjectWideVisibilityValues[key]
-    if (!event?.shiftKey) {
-      dispatch({ type: "SET", key, value: nextValue })
-      return
+    if (event) {
+      event.preventDefault()
     }
-
-    const entry = applyVisibilitySettingToProject(key, nextValue)
-    if (!entry) return
-    recordProjectHistory(entry)
-  }, [applyVisibilitySettingToProject, currentProjectWideVisibilityValues, dispatch, recordProjectHistory])
+    dispatch({ type: "TOGGLE", key })
+  }, [dispatch])
 
   const applyProjectMetadata = useCallback((nextMetadata: ProjectMetadata) => {
     if (
@@ -1083,6 +1079,10 @@ export default function Home() {
       "previous",
     )
     if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
     selectPage(nextPageId)
   }, [activePageId, projectPages, selectPage])
 
@@ -1093,6 +1093,40 @@ export default function Home() {
       "next",
     )
     if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
+
+  const handleSelectPreviousProjectPageJump = useCallback(() => {
+    const nextPageId = resolveAdjacentProjectPageId(
+      projectPages.map((page) => page.id),
+      activePageId,
+      "previous",
+      10,
+    )
+    if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
+    selectPage(nextPageId)
+  }, [activePageId, projectPages, selectPage])
+
+  const handleSelectNextProjectPageJump = useCallback(() => {
+    const nextPageId = resolveAdjacentProjectPageId(
+      projectPages.map((page) => page.id),
+      activePageId,
+      "next",
+      10,
+    )
+    if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
     selectPage(nextPageId)
   }, [activePageId, projectPages, selectPage])
 
@@ -1103,6 +1137,10 @@ export default function Home() {
       "first",
     )
     if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
     selectPage(nextPageId)
   }, [activePageId, projectPages, selectPage])
 
@@ -1113,6 +1151,10 @@ export default function Home() {
       "last",
     )
     if (!nextPageId) return
+    setActivePageFocusRequest((current) => ({
+      token: current.token + 1,
+      pageId: nextPageId,
+    }))
     selectPage(nextPageId)
   }, [activePageId, projectPages, selectPage])
 
@@ -1247,6 +1289,13 @@ export default function Home() {
       defaultJsonFilename,
       projectMetadata: effectiveProjectMetadata,
       onProjectMetadataChange: applyProjectMetadata,
+      exportViewSettings: {
+        showBaselines,
+        showModules,
+        showMargins,
+        showImagePlaceholders,
+        showTypography,
+      },
       getCurrentProjectSnapshot,
     }),
     [
@@ -1262,6 +1311,11 @@ export default function Home() {
       defaultJsonFilename,
       effectiveProjectMetadata,
       applyProjectMetadata,
+      showBaselines,
+      showModules,
+      showMargins,
+      showImagePlaceholders,
+      showTypography,
       getCurrentProjectSnapshot,
     ],
   )
@@ -1566,6 +1620,8 @@ export default function Home() {
     onSelectLastPage: handleSelectLastProjectPage,
     onSelectPreviousPage: handleSelectPreviousProjectPage,
     onSelectNextPage: handleSelectNextProjectPage,
+    onSelectPreviousPageJump: handleSelectPreviousProjectPageJump,
+    onSelectNextPageJump: handleSelectNextProjectPageJump,
   })
 
   const cloudStatusIndicatorClassName = getCloudSyncStatusIndicatorClassName({
@@ -1658,7 +1714,9 @@ export default function Home() {
       authError={authError}
       authMessage={authMessage}
       projectPages={projectPages}
+      activeProjectPage={activePage}
       activePageId={activePageId}
+      activePageFocusRequest={activePageFocusRequest}
       loadedPreviewLayout={loadedPreviewLayout}
       layoutEngine={project.layoutEngine}
       requestedLayerOrderState={requestedLayerOrderState}

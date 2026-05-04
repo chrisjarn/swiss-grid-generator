@@ -28,6 +28,8 @@ type Args = {
   onSelectLastPage: () => void
   onSelectPreviousPage: () => void
   onSelectNextPage: () => void
+  onSelectPreviousPageJump: () => void
+  onSelectNextPageJump: () => void
 }
 
 export function useShellKeyboardShortcuts({
@@ -56,6 +58,8 @@ export function useShellKeyboardShortcuts({
   onSelectLastPage,
   onSelectPreviousPage,
   onSelectNextPage,
+  onSelectPreviousPageJump,
+  onSelectNextPageJump,
 }: Args) {
   useEffect(() => {
     const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -70,12 +74,20 @@ export function useShellKeyboardShortcuts({
       if (!showPresetsBrowser && hasMultipleProjectPages && !event.metaKey && !event.ctrlKey && !event.altKey) {
         if (event.key === "PageUp") {
           event.preventDefault()
-          onSelectPreviousPage()
+          if (event.shiftKey) {
+            onSelectPreviousPageJump()
+          } else {
+            onSelectPreviousPage()
+          }
           return
         }
         if (event.key === "PageDown") {
           event.preventDefault()
-          onSelectNextPage()
+          if (event.shiftKey) {
+            onSelectNextPageJump()
+          } else {
+            onSelectNextPage()
+          }
           return
         }
         if (event.key === "Home") {
@@ -167,6 +179,8 @@ export function useShellKeyboardShortcuts({
     onSelectFirstPage,
     onSelectLastPage,
     onSelectNextPage,
+    onSelectNextPageJump,
+    onSelectPreviousPageJump,
     onSelectPreviousPage,
     onOpenPresets,
     onRedo,

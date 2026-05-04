@@ -23,7 +23,6 @@ export function useSidebarPanels({ showLayers, onShowLayersChange }: Args) {
       if (!isPanelAllowedWhilePresetsOpen(activeSidebarPanel)) {
         setActiveSidebarPanel(null)
       }
-      onShowLayersChange(false)
       return
     }
     if (showLayers && activeSidebarPanel !== "layers") {

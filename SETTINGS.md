@@ -214,12 +214,14 @@ Default: `swiss`
 ### Project Panel
 
 - `Title`: editable project title; also drives the default project JSON filename stem.
-- `Title` section can be expanded or collapsed; when collapsed the compact title row remains visible, and when expanded it also shows `Description` and `Author` inputs.
+- The compact project-title row shows the real project title plus an edit/close button.
+- Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
+- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields together.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
 - `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed, and `Add Page` always creates a new single page.
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
-- `Page Up` selects the previous project page, `Page Down` selects the next one, and `Home` / `End` jump to the first or last page when multiple pages exist.
+- `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
 - Single-clicking a page row selects that page.
 - Double-clicking a page row toggles its inline layer list and aligns opened pages to the top of the panel.
@@ -228,8 +230,8 @@ Default: `swiss`
 - Every page stores its own settings payload plus preview layout state.
 - Project JSON can also carry an optional `tour` block for guided onboarding that steps through pages, layers, help, and editor targets.
 - Expanded page rows show the mixed text/image stack for that page using current `layerOrder`.
-- Text cards display hierarchy, font, and a short text preview rendered in the selected paragraph color and font.
-- Image cards display `Image Placeholder` and a single color swatch.
+- Text cards display a single rendered text preview row in the paragraph font and text color.
+- Image cards display a full-width color rectangle instead of the `Image Placeholder` label.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
 - Hovered text paragraphs in preview expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
@@ -501,12 +503,14 @@ Behavior:
 - SVG: single-page trim-size vector output with typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
 - IDML: selected-range export with one InDesign page per app page and separate `Guides`, `Typography`, and `Placeholders` layers; exported text is frozen as geometry rather than live text.
 
-## JSON UI Fields (current)
+## JSON UI Fields (serialized)
 
-`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `exportPrintPro`, `exportBleedMm`, `exportRegistrationMarks`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`, `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, `showTypography`, `collapsed`
+`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `exportPrintPro`, `exportBleedMm`, `exportRegistrationMarks`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
 
 Notes:
 - `exportPrintPro` is retained as the persisted legacy backing field for the PDF print-preset mode.
+- Session-only GUI state is not serialized into layout JSON. That includes `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, `showTypography`, `showLayers`, and settings-panel `collapsed` state.
+- Saved layout JSON no longer stores `activePageId`; loaded projects always open on `pages[0]`.
 
 ## JSON Preview Layout Fields (current)
 

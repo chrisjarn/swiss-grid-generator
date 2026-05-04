@@ -33,6 +33,7 @@ export type WrappedTextLine = {
 
 const MIN_INLINE_HYPHEN_PREFIX_CHARS = 3
 const MIN_INLINE_HYPHEN_SUFFIX_CHARS = 2
+const GLOBAL_HYPHENATION_CACHE_LIMIT = 4096
 
 type LineToken = {
   text: string
@@ -81,7 +82,11 @@ type WrapProfilingAccumulator = {
 type WrapHyphenationCache = {
   splitParts: Map<string, readonly string[]>
   inlineSplits: Map<string, InlineSplitResult | null>
+  globalCacheKeyPrefix?: string
 }
+
+const globalSplitPartsCache = new Map<string, readonly string[]>()
+const globalInlineSplitCache = new Map<string, InlineSplitResult | null>()
 
 function getNowMs(): number {
   return typeof performance !== "undefined" && typeof performance.now === "function"
@@ -89,8 +94,24 @@ function getNowMs(): number {
     : Date.now()
 }
 
-function getHyphenationTokenCacheKey(token: LineToken, maxWidth: number): string {
+function getHyphenationTokenCacheKey(
+  token: LineToken,
+  maxWidth: number,
+  globalCacheKeyPrefix?: string,
+): string {
+  if (globalCacheKeyPrefix) {
+    return `${globalCacheKeyPrefix}::token::${token.text}::${maxWidth}`
+  }
   return `${token.start}:${token.end}:${maxWidth}`
+}
+
+function cacheHyphenationValue<T>(cache: Map<string, T>, key: string, value: T): T {
+  cache.set(key, value)
+  if (cache.size > GLOBAL_HYPHENATION_CACHE_LIMIT) {
+    cache.clear()
+    cache.set(key, value)
+  }
+  return value
 }
 
 function joinTokens(tokens: readonly LineToken[]): string {
@@ -211,7 +232,7 @@ function hyphenateTokenToLines(
   accumulator?: WrapProfilingAccumulator,
 ): WrappedTextLine[] {
   const startedAt = accumulator ? getNowMs() : 0
-  const cacheKey = getHyphenationTokenCacheKey(token, maxWidth)
+  const cacheKey = getHyphenationTokenCacheKey(token, maxWidth, hyphenationCache.globalCacheKeyPrefix)
   let parts = hyphenationCache.splitParts.get(cacheKey)
   if (parts) {
     if (accumulator) {
@@ -227,7 +248,7 @@ function hyphenateTokenToLines(
         end: token.start + sample.replace(/-$/, "").length,
       }),
     )
-    hyphenationCache.splitParts.set(cacheKey, parts)
+    cacheHyphenationValue(hyphenationCache.splitParts, cacheKey, parts)
     if (accumulator) {
       accumulator.hyphenationCalls += 1
       accumulator.hyphenationMs += getNowMs() - startedAt
@@ -259,7 +280,9 @@ function trySplitWordAtLineEnd(
   const linePrefixText = currentTokens.length ? joinTokens(currentTokens) : ""
   const linePrefixStart = currentTokens[0]?.start ?? word.start
   const linePrefixEnd = currentTokens.length ? (currentTokens[currentTokens.length - 1]?.end ?? word.start) : word.start
-  const cacheKey = `${linePrefixStart}:${linePrefixEnd}:${word.start}:${word.end}:${maxWidth}:${linePrefixText}`
+  const cacheKey = hyphenationCache.globalCacheKeyPrefix
+    ? `${hyphenationCache.globalCacheKeyPrefix}::inline::${linePrefixText}::${word.text}::${maxWidth}`
+    : `${linePrefixStart}:${linePrefixEnd}:${word.start}:${word.end}:${maxWidth}:${linePrefixText}`
   if (hyphenationCache.inlineSplits.has(cacheKey)) {
     const cached = hyphenationCache.inlineSplits.get(cacheKey) ?? null
     if (accumulator) {
@@ -272,7 +295,7 @@ function trySplitWordAtLineEnd(
     ? measureWidth(linePrefixText, { start: linePrefixStart, end: linePrefixEnd })
     : 0)
   if (remainingWidth <= 0) {
-    hyphenationCache.inlineSplits.set(cacheKey, null)
+    cacheHyphenationValue(hyphenationCache.inlineSplits, cacheKey, null)
     if (accumulator) {
       accumulator.hyphenationCalls += 1
       accumulator.hyphenationMs += getNowMs() - startedAt
@@ -312,7 +335,7 @@ function trySplitWordAtLineEnd(
   if (first && first.endsWith("-")) {
     const splitResult = toSplitResult(first.slice(0, -1))
     if (splitResult) {
-      hyphenationCache.inlineSplits.set(cacheKey, splitResult)
+      cacheHyphenationValue(hyphenationCache.inlineSplits, cacheKey, splitResult)
       if (accumulator) {
         accumulator.hyphenationCalls += 1
         accumulator.hyphenationMs += getNowMs() - startedAt
@@ -328,7 +351,7 @@ function trySplitWordAtLineEnd(
   ) {
     const splitResult = toSplitResult(word.text.slice(0, splitAt))
     if (splitResult) {
-      hyphenationCache.inlineSplits.set(cacheKey, splitResult)
+      cacheHyphenationValue(hyphenationCache.inlineSplits, cacheKey, splitResult)
       if (accumulator) {
         accumulator.hyphenationCalls += 1
         accumulator.hyphenationMs += getNowMs() - startedAt
@@ -337,7 +360,7 @@ function trySplitWordAtLineEnd(
     }
   }
 
-  hyphenationCache.inlineSplits.set(cacheKey, null)
+  cacheHyphenationValue(hyphenationCache.inlineSplits, cacheKey, null)
   if (accumulator) {
     accumulator.hyphenationCalls += 1
     accumulator.hyphenationMs += getNowMs() - startedAt
@@ -701,6 +724,7 @@ export function wrapTextDetailed(
   hyphenate: boolean,
   measureWidth: MeasureWidth,
   trace?: TextWrapTraceCollector,
+  hyphenationCacheKeyPrefix?: string,
 ): WrappedTextLine[] {
   const profilingEnabled = isLayoutProfilingEnabled()
   const accumulator: WrapProfilingAccumulator | null = profilingEnabled
@@ -718,8 +742,9 @@ export function wrapTextDetailed(
       }
     : null
   const hyphenationCache: WrapHyphenationCache = {
-    splitParts: new Map(),
-    inlineSplits: new Map(),
+    splitParts: hyphenationCacheKeyPrefix ? globalSplitPartsCache : new Map(),
+    inlineSplits: hyphenationCacheKeyPrefix ? globalInlineSplitCache : new Map(),
+    globalCacheKeyPrefix: hyphenationCacheKeyPrefix,
   }
   const startedAt = accumulator ? getNowMs() : 0
   const hardBreakLines = text.replace(/\r\n/g, "\n").split("\n")

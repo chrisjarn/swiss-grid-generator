@@ -300,6 +300,9 @@ export function createTextMetricsService<StyleKey extends string, Family extends
     const resolvedFontSizesKey = getResolvedFontSizesKey(baseFormat, formatRuns, resolveFontSize)
     const engine = getEngine(context)
     const key = `${engine.id}::${canvasFont}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${runsKey}::${formatBaseKey}::${formatRunsKey}::${resolvedFontSizesKey}::${maxWidth.toFixed(4)}::${hyphenate ? 1 : 0}::${text}`
+    const hyphenationCacheKeyPrefix = normalizedRuns.length === 0 && (!formatRuns || formatRuns.length === 0)
+      ? `${engine.id}::${canvasFont}::${opticalKerning ? 1 : 0}::${normalizedTrackingScale}::${formatBaseKey}::${maxWidth.toFixed(4)}`
+      : undefined
     const computeWrapped = () => engine.wrapText({
       text,
       canvasFont,
@@ -312,6 +315,7 @@ export function createTextMetricsService<StyleKey extends string, Family extends
       formatRuns,
       resolveFontSize,
       trace,
+      hyphenationCacheKeyPrefix,
     })
     const wrapped = trace ? computeWrapped() : makeCachedValue(wrapTextCache, key, computeWrapped)
 

@@ -103,6 +103,7 @@ export function createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey extends 
       formatRuns,
       resolveFontSize,
       trace,
+      hyphenationCacheKeyPrefix,
     }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => wrapTextDetailed(
       text,
       maxWidth,
@@ -120,6 +121,7 @@ export function createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey extends 
         resolveFontSize,
       }),
       trace,
+      hyphenationCacheKeyPrefix,
     ),
     textAscent: (canvasFont, fallbackFontSize) => measureDiagnosticCanvasTextAscent(
       context as CanvasRenderingContext2D,

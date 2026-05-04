@@ -5,7 +5,6 @@
   "description": "Book Starter incl. Cover and Content templates with pagination.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
-  "activePageId": "page-91be039f-3601-486e-ba90-1bdc8d78833e",
   "pages": [
     {
       "id": "page-91be039f-3601-486e-ba90-1bdc8d78833e",
@@ -37,21 +36,6 @@
           "left": 2,
           "right": 2,
           "bottom": 3
-        },
-        "showBaselines": true,
-        "showModules": true,
-        "showMargins": true,
-        "showImagePlaceholders": true,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,
@@ -174,21 +158,6 @@
           "right": 3,
           "bottom": 6
         },
-        "showBaselines": true,
-        "showModules": true,
-        "showMargins": true,
-        "showImagePlaceholders": true,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
-        },
         "exportPrintPro": false,
         "exportBleedMm": 0,
         "exportRegistrationMarks": false,
@@ -309,21 +278,6 @@
           "left": 4,
           "right": 3,
           "bottom": 6
-        },
-        "showBaselines": true,
-        "showModules": true,
-        "showMargins": true,
-        "showImagePlaceholders": true,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,

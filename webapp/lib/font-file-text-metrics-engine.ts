@@ -1385,6 +1385,7 @@ export function createFontFileTextMetricsEngine<StyleKey extends string, Family 
       formatRuns,
       resolveFontSize,
       trace,
+      hyphenationCacheKeyPrefix,
     }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => wrapTextDetailed(
       text,
       maxWidth,
@@ -1402,6 +1403,7 @@ export function createFontFileTextMetricsEngine<StyleKey extends string, Family 
         resolveFontSize,
       }),
       trace,
+      hyphenationCacheKeyPrefix,
     )
   const engine: TextMetricsEngine<StyleKey, Family> = {
     id: "font-file-v2",
@@ -1492,6 +1494,7 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
       formatRuns,
       resolveFontSize,
       trace,
+      hyphenationCacheKeyPrefix,
     }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => {
       const accumulator: FontFileWrapProfilingAccumulator | null = profilingEnabled
         ? {
@@ -1590,6 +1593,7 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
             return width <= maxWidth && correctedWidth > maxWidth ? correctedWidth : width
           },
           trace,
+          hyphenationCacheKeyPrefix,
         )
       } finally {
         if (accumulator) {

@@ -40,7 +40,7 @@ This order matters because the tool is system-driven. If a document needs many l
 
 Use single pages when each page should stand on its own. Use `Facing Pages` when a spread should behave as one editorial field. A facing spread is one project page, but it represents two physical pages. That matters for page numbering and for document variables such as `%page%` and `%pages%`.
 
-In the Project panel, activate pages directly from the page rows and open a page row when you need to inspect or edit its layers. Use the small `i` toggle only when you need the document info text. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition.
+In the Project panel, activate pages directly from the page rows and open a page row when you need to inspect or edit its layers. The compact project-title row can be double-clicked to open the metadata fields, and the small `i` toggle is only for document info text. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition.
 
 ## 5. Grid, Margins, and Rhythm
 

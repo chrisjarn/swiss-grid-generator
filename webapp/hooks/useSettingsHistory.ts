@@ -35,19 +35,6 @@ function areSnapshotsEqual(a: UiSettingsSnapshot, b: UiSettingsSnapshot): boolea
     && a.customMarginMultipliers.left === b.customMarginMultipliers.left
     && a.customMarginMultipliers.right === b.customMarginMultipliers.right
     && a.customMarginMultipliers.bottom === b.customMarginMultipliers.bottom
-    && a.showBaselines === b.showBaselines
-    && a.showModules === b.showModules
-    && a.showMargins === b.showMargins
-    && a.showImagePlaceholders === b.showImagePlaceholders
-    && a.showTypography === b.showTypography
-    && a.showLayers === b.showLayers
-    && a.collapsed.format === b.collapsed.format
-    && a.collapsed.baseline === b.collapsed.baseline
-    && a.collapsed.margins === b.collapsed.margins
-    && a.collapsed.gutter === b.collapsed.gutter
-    && a.collapsed.typo === b.collapsed.typo
-    && a.collapsed.color === b.collapsed.color
-    && a.collapsed.summary === b.collapsed.summary
   )
 }
 

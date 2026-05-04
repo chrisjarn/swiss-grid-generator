@@ -5,7 +5,6 @@
   "description": "Example onboarding project using the optional project-level tour block.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-23T12:00:00.000Z",
-  "activePageId": "page-quick-start-cover",
   "tour": {
     "id": "tour-example",
     "title": "Quick Onboarding Tour",
@@ -87,21 +86,6 @@
           "left": 4,
           "right": 4,
           "bottom": 2
-        },
-        "showBaselines": false,
-        "showModules": false,
-        "showMargins": false,
-        "showImagePlaceholders": false,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,
@@ -335,21 +319,6 @@
           "left": 4,
           "right": 4,
           "bottom": 2
-        },
-        "showBaselines": false,
-        "showModules": false,
-        "showMargins": false,
-        "showImagePlaceholders": false,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,
@@ -613,21 +582,6 @@
           "left": 4,
           "right": 4,
           "bottom": 2
-        },
-        "showBaselines": false,
-        "showModules": false,
-        "showMargins": false,
-        "showImagePlaceholders": false,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,

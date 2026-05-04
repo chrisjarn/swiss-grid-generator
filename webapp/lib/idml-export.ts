@@ -9,6 +9,7 @@ import { buildSwissGridIdmlPackage } from "@/lib/idml/builder"
 import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
 import type { SwissGridIdmlDocument } from "@/lib/idml/types"
 import { buildResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
+import type { ProjectPageVisibilitySettings } from "@/lib/project-page-export-source"
 import {
   getProjectPagePhysicalPageNumberAtIndex,
   getProjectPhysicalPageCount,
@@ -54,6 +55,7 @@ async function renderSwissGridIdmlProjectInternal(
   layoutEngine: LayoutEngineContract = project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
   onProgress?: (progress: IdmlExportProgress) => void | Promise<void>,
   assertNotCancelled?: () => void,
+  visibilitySettings?: ProjectPageVisibilitySettings,
 ): Promise<Uint8Array> {
   const now = new Date()
   const pageCount = getProjectPhysicalPageCount(project.pages)
@@ -70,7 +72,7 @@ async function renderSwissGridIdmlProjectInternal(
       pageNumber,
       pageCount,
       now,
-    })
+    }, visibilitySettings)
     const plannedPage = {
       ...resolved,
       exportPlan: buildPageExportPlan({
@@ -118,10 +120,11 @@ export async function renderSwissGridIdmlProject(
   layoutEngine: LayoutEngineContract = project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
   onProgress?: (progress: IdmlExportProgress) => void | Promise<void>,
   assertNotCancelled?: () => void,
+  visibilitySettings?: ProjectPageVisibilitySettings,
 ): Promise<Uint8Array> {
   return measureLayoutPerformanceAsync(
     "idml.renderSwissGridIdmlProject",
-    () => renderSwissGridIdmlProjectInternal(project, layoutEngine, onProgress, assertNotCancelled),
+    () => renderSwissGridIdmlProjectInternal(project, layoutEngine, onProgress, assertNotCancelled, visibilitySettings),
     {
       pages: project.pages.length,
     },

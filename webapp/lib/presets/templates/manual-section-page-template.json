@@ -29,21 +29,6 @@
       "right": 3,
       "bottom": 2
     },
-    "showBaselines": true,
-    "showModules": true,
-    "showMargins": false,
-    "showImagePlaceholders": true,
-    "showTypography": true,
-    "showLayers": true,
-    "collapsed": {
-      "format": true,
-      "baseline": true,
-      "margins": true,
-      "gutter": true,
-      "typo": true,
-      "color": true,
-      "summary": true
-    },
     "exportPrintPro": false,
     "exportBleedMm": 0,
     "exportRegistrationMarks": false,

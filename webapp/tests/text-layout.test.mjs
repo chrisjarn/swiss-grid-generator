@@ -21,6 +21,23 @@ test("long words still hyphenate even without a current line prefix", () => {
   assert.ok(lines.slice(0, -1).every((line) => line.endsWith("-")))
 })
 
+test("wrapTextDetailed can reuse cached plain-text hyphenation splits across calls", () => {
+  let calls = 0
+  const countingMeasure = (text) => {
+    calls += 1
+    return text.length
+  }
+
+  wrapTextDetailed("hypercommunication", 8, true, countingMeasure, undefined, "plain-hyphen-cache")
+  const firstCallCount = calls
+
+  calls = 0
+  wrapTextDetailed("hypercommunication", 8, true, countingMeasure, undefined, "plain-hyphen-cache")
+  const secondCallCount = calls
+
+  assert.ok(firstCallCount > secondCallCount)
+})
+
 test("wrapText preserves multiple spaces inside a line", () => {
   const lines = wrapText("A   B", 10, false, monoMeasure)
   assert.deepEqual(lines, ["A   B"])

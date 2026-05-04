@@ -171,7 +171,6 @@ async function main() {
     description: "Swiss Grid Generator Software Manual",
     author: "Swiss Grid Generator",
     createdAt: "2026-04-07T12:00:00.000Z",
-    activePageId: pages[0]?.id ?? makePageId(0),
     pages,
   }
 

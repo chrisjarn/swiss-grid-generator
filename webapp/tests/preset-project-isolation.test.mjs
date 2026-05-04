@@ -3,7 +3,6 @@ import assert from "node:assert/strict"
 
 test("preset project source json parses into isolated instances", () => {
   const source = {
-    activePageId: "page-1",
     pages: [
       {
         id: "page-1",

@@ -1,28 +1,50 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 
 type Props = {
+  projectTitle: string
   projectDescription: string
   projectAuthor: string
+  onProjectTitleChange: (nextTitle: string) => void
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
+  autoFocusTitle?: boolean
   isDarkMode?: boolean
 }
 
 export function ProjectMetadataSection({
+  projectTitle,
   projectDescription,
   projectAuthor,
+  onProjectTitleChange,
   onProjectDescriptionChange,
   onProjectAuthorChange,
+  autoFocusTitle = false,
   isDarkMode = false,
 }: Props) {
+  const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isEditingAuthor, setIsEditingAuthor] = useState(false)
+  const [titleDraft, setTitleDraft] = useState(projectTitle)
   const [descriptionDraft, setDescriptionDraft] = useState(projectDescription)
   const [authorDraft, setAuthorDraft] = useState(projectAuthor)
+  const titleInputRef = useRef<HTMLInputElement | null>(null)
+
+  useEffect(() => {
+    if (!isEditingTitle) return
+    window.requestAnimationFrame(() => {
+      titleInputRef.current?.focus()
+      titleInputRef.current?.select()
+    })
+  }, [isEditingTitle])
+
+  useEffect(() => {
+    if (isEditingTitle) return
+    setTitleDraft(projectTitle)
+  }, [isEditingTitle, projectTitle])
 
   useEffect(() => {
     if (isEditingDescription) return
@@ -33,6 +55,11 @@ export function ProjectMetadataSection({
     if (isEditingAuthor) return
     setAuthorDraft(projectAuthor)
   }, [isEditingAuthor, projectAuthor])
+
+  useEffect(() => {
+    if (!autoFocusTitle) return
+    setIsEditingTitle(true)
+  }, [autoFocusTitle])
 
   const tone = isDarkMode
     ? {
@@ -50,6 +77,14 @@ export function ProjectMetadataSection({
     setIsEditingDescription(false)
   }
 
+  const commitTitle = () => {
+    const trimmedTitle = titleDraft.trim()
+    if (trimmedTitle.length > 0 && trimmedTitle !== projectTitle.trim()) {
+      onProjectTitleChange(trimmedTitle)
+    }
+    setIsEditingTitle(false)
+  }
+
   const commitAuthor = () => {
     const trimmedAuthor = authorDraft.trim()
     if (trimmedAuthor !== projectAuthor.trim()) {
@@ -63,6 +98,11 @@ export function ProjectMetadataSection({
     setIsEditingDescription(false)
   }
 
+  const resetTitle = () => {
+    setTitleDraft(projectTitle)
+    setIsEditingTitle(false)
+  }
+
   const resetAuthor = () => {
     setAuthorDraft(projectAuthor)
     setIsEditingAuthor(false)
@@ -71,8 +111,32 @@ export function ProjectMetadataSection({
   return (
     <div className="mt-3 space-y-3">
       <div className="space-y-1.5">
+        <SectionHeaderRow label="Title" />
+        <input
+          ref={titleInputRef}
+          type="text"
+          value={titleDraft}
+          onChange={(event) => setTitleDraft(event.target.value)}
+          onFocus={() => setIsEditingTitle(true)}
+          onBlur={commitTitle}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault()
+              commitTitle()
+            }
+            if (event.key === "Escape") {
+              event.preventDefault()
+              resetTitle()
+            }
+          }}
+          className={`w-full rounded-sm border px-2 py-1 text-[12px] outline-none ${tone.input}`}
+          placeholder="Project title"
+        />
+      </div>
+      <div className="space-y-1.5">
         <SectionHeaderRow label="Description" />
         <textarea
+          rows={5}
           value={descriptionDraft}
           onChange={(event) => setDescriptionDraft(event.target.value)}
           onFocus={() => setIsEditingDescription(true)}
@@ -83,7 +147,7 @@ export function ProjectMetadataSection({
               resetDescription()
             }
           }}
-          className={`min-h-[72px] w-full resize-none rounded-sm border px-2 py-1.5 text-[12px] leading-[1.45] outline-none ${tone.input}`}
+          className={`w-full resize-y rounded-sm border px-2 py-1.5 text-[12px] leading-[1.45] outline-none ${tone.input}`}
           placeholder="Short description"
         />
       </div>

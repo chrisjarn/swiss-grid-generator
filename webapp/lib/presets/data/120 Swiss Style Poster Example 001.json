@@ -5,7 +5,6 @@
   "description": "Swiss-style A0 poster preset with a contrasting multi-block poster layout.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-03-16T14:40:58.992Z",
-  "activePageId": "page-b28b5ad2-6c39-4e4e-9a95-a79cfdefe8ce",
   "pages": [
     {
       "id": "page-b28b5ad2-6c39-4e4e-9a95-a79cfdefe8ce",
@@ -37,21 +36,6 @@
           "left": 4,
           "right": 4,
           "bottom": 2
-        },
-        "showBaselines": true,
-        "showModules": true,
-        "showMargins": false,
-        "showImagePlaceholders": true,
-        "showTypography": true,
-        "showLayers": true,
-        "collapsed": {
-          "format": true,
-          "baseline": true,
-          "margins": true,
-          "gutter": true,
-          "typo": true,
-          "color": true,
-          "summary": true
         },
         "exportPrintPro": false,
         "exportBleedMm": 0,

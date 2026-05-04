@@ -5,6 +5,7 @@ import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
+import { stripSessionUiSettings } from "@/lib/ui-settings-resolver"
 
 export const PROJECT_JSON_EXTENSION = ".json"
 export const PROJECT_ARCHIVE_EXTENSION = ".swissgridgenerator"
@@ -22,7 +23,6 @@ export type ProjectTransferPayload = Record<string, unknown> & {
   author: string
   createdAt?: string
   layoutEngine: LayoutEngineContract
-  activePageId: string
   pages: Array<Record<string, unknown>>
   tour?: Record<string, unknown>
 }
@@ -60,6 +60,11 @@ export function buildProjectTransferPayload<Layout>(
   project: LoadedProject<Layout>,
   exportedAt = new Date().toISOString(),
 ): ProjectTransferPayload {
+  const pages = project.pages.map((page) => ({
+    ...page,
+    uiSettings: stripSessionUiSettings(page.uiSettings),
+  })) as Array<Record<string, unknown>>
+
   return {
     schemaVersion: 2,
     exportedAt,
@@ -68,8 +73,7 @@ export function buildProjectTransferPayload<Layout>(
     author: project.metadata.author,
     createdAt: project.metadata.createdAt,
     layoutEngine: project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
-    activePageId: project.activePageId,
-    pages: project.pages as Array<Record<string, unknown>>,
+    pages,
     tour: project.tour ? project.tour as Record<string, unknown> : undefined,
   }
 }

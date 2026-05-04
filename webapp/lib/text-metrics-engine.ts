@@ -32,6 +32,7 @@ export type TextWrapRequest<StyleKey extends string, Family extends string> = {
   formatRuns?: readonly import("@/lib/text-format-runs").TextFormatRun<StyleKey, Family>[]
   resolveFontSize?: (styleKey: StyleKey) => number
   trace?: TextWrapTraceCollector
+  hyphenationCacheKeyPrefix?: string
 }
 
 export type OpticalOffsetRequest<StyleKey extends string> = {

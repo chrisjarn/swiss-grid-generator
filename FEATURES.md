@@ -110,11 +110,13 @@ Current capability inventory for Swiss Grid Generator.
 - Paragraph hover edit affordance is anchored at the paragraph's top-left origin so shallow frames remain reachable.
 - Preview rollover stays active while editing, so clicking another existing unlocked paragraph or image placeholder retargets the already open editor instead of leaving edit mode.
 - Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and single-page creation.
-- Project panel includes an editable `TITLE` section that expands to reveal inline `description` and `author` metadata fields storing on blur.
+- Project panel includes a compact project-title row showing the real project title plus an edit/close button.
+- Double-clicking the compact project-title row toggles the metadata section; opening it focuses and selects the `Title` field immediately.
+- The expanded metadata section contains editable `Title`, `Description`, and `Author` fields storing on blur.
 - Project panel includes a document-info toggle with project/page/layer/type summary text.
 - Opened page rows expose a `Facing pages` control above `Layers`, converting a page into a true facing spread with mirrored inner/outer margins, a zero-gap preview seam, and doubled effective columns across the spread.
 - The Project header includes an `i` toggle for document info text.
-- `Page Up` and `Page Down` step through project pages when multiple pages are present, and `Home` / `End` jump to the first or last page.
+- `Page Up` and `Page Down` step through project pages when multiple pages are present, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page.
 - Facing spreads stay a single project page and keep the normal layer editing workflow inside one continuous spread space.
 - `Add Page` always creates a new single page, even from a facing spread.
 - Projects are capped at `1000` pages.
@@ -127,6 +129,8 @@ Current capability inventory for Swiss Grid Generator.
 - Active-page layer cards now use single-click for selection and double-click for editor open/retarget, so keyboard nudging stays reachable from the Project panel without immediately entering edit mode.
 - Double-clicking a layer-card lock toggle applies the same lock or unlock state to every layer on that page.
 - Locked layers stay visible and still participate in preview rollover for guides and unlocking, but drag, edit, duplicate, delete, and editor retarget/open behavior remain disabled until unlocked.
+- Text layer rows use a single rendered preview line in the paragraph font and color.
+- Image layer rows use a full-width placeholder color rectangle instead of an `Image Placeholder` text label.
 - `Custom Ratio` accepts fractional width/height units, including decimal comma input for formats such as `2:1,414`.
 - Text paragraphs and image placeholders use logical grid anchors:
   - `column`
