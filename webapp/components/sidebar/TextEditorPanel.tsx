@@ -18,6 +18,7 @@ import {
 import { Switch } from "@/components/ui/switch"
 import {
   FONT_OPTIONS,
+  getFontFamilyCss,
   getFontVariantById,
   getFontVariants,
   resolveFontVariant,
@@ -239,6 +240,7 @@ export function TextEditorPanel<StyleKey extends string>({
   const selectedStyleLabelForSelection = selectionStyleKey
     ? controls.styleOptions.find((option) => option.value === selectionStyleKey)?.label ?? selectionStyleKey
     : "Mixed"
+  const resolvedFontFamilyForSelection = selectionFontFamily ?? controls.editorState.draftFont
   const paragraphDisplayName = getTextLayerDisplayName(controls.editorState.draftText)
   const paragraphHeadingDisplayName = paragraphDisplayName.length > 10
     ? `${paragraphDisplayName.slice(0, 10)}...`
@@ -755,6 +757,18 @@ export function TextEditorPanel<StyleKey extends string>({
     ["Max/Line", String(controls.maxCharsPerLine ?? 0)],
     ["Render Time", totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
   ]
+  const selectedFontTriggerLabel = selectionFontFamily ?? "Mixed"
+  const selectedFontTriggerStyle = selectionFontFamily
+    ? { fontFamily: getFontFamilyCss(selectionFontFamily) }
+    : undefined
+  const selectedCutTriggerLabel = selectedFontVariantForSelection?.label ?? "Mixed"
+  const selectedCutTriggerStyle = selectedFontVariantForSelection
+    ? {
+        fontFamily: getFontFamilyCss(resolvedFontFamilyForSelection),
+        fontWeight: selectedFontVariantForSelection.weight,
+        fontStyle: selectedFontVariantForSelection.italic ? "italic" as const : "normal" as const,
+      }
+    : undefined
 
   return (
     <div
@@ -1110,10 +1124,13 @@ export function TextEditorPanel<StyleKey extends string>({
               options={FONT_OPTIONS}
               triggerClassName={triggerClassName}
               triggerStyle={{ width: "100%" }}
+              renderTriggerValue={selectedFontTriggerLabel}
+              triggerValueStyle={selectedFontTriggerStyle}
               contentClassName={tone.selectContent}
               placeholder="Mixed"
               onOpenChange={fontSelectPreview.handleOpenChange}
               onContentPointerLeave={fontSelectPreview.handleContentPointerLeave}
+              getItemStyle={(option) => ({ fontFamily: getFontFamilyCss(option.value as FontFamily) })}
               getItemPreviewProps={fontSelectPreview.getItemPreviewProps}
             />
             </LabeledControlRow>
@@ -1127,11 +1144,22 @@ export function TextEditorPanel<StyleKey extends string>({
               onValueChange={cutSelectPreview.handleValueChange}
             >
               <SelectTrigger className={triggerClassName}>
-                <SelectValue placeholder="Mixed" />
+                <span className="block min-w-0 truncate text-left" style={selectedCutTriggerStyle}>
+                  {selectedCutTriggerLabel}
+                </span>
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={cutSelectPreview.handleContentPointerLeave}>
                 {getFontVariants(selectionFontFamily ?? controls.editorState.draftFont).map((variant) => (
-                  <SelectItem key={variant.id} value={variant.id} {...cutSelectPreview.getItemPreviewProps(variant.id)}>
+                  <SelectItem
+                    key={variant.id}
+                    value={variant.id}
+                    style={{
+                      fontFamily: getFontFamilyCss(resolvedFontFamilyForSelection),
+                      fontWeight: variant.weight,
+                      fontStyle: variant.italic ? "italic" : "normal",
+                    }}
+                    {...cutSelectPreview.getItemPreviewProps(variant.id)}
+                  >
                     {variant.label}
                   </SelectItem>
                 ))}

@@ -8,7 +8,7 @@ import {
   SelectValue,
   TopSelectContent,
 } from "@/components/ui/select"
-import type { CSSProperties } from "react"
+import type { CSSProperties, ReactNode } from "react"
 
 export type FontOption = {
   value: string
@@ -27,6 +27,9 @@ type Props = {
   placeholder?: string
   onOpenChange?: (open: boolean) => void
   onContentPointerLeave?: () => void
+  renderTriggerValue?: ReactNode
+  triggerValueStyle?: CSSProperties
+  getItemStyle?: (option: FontOption) => CSSProperties | undefined
   getItemPreviewProps?: (value: string) => {
     onFocus?: () => void
     onMouseEnter?: () => void
@@ -53,6 +56,9 @@ export function FontSelect({
   placeholder,
   onOpenChange,
   onContentPointerLeave,
+  renderTriggerValue,
+  triggerValueStyle,
+  getItemStyle,
   getItemPreviewProps,
 }: Props) {
   const resolvedTriggerStyle: CSSProperties | undefined = fitToLongestOption
@@ -65,7 +71,13 @@ export function FontSelect({
   return (
     <Select value={value} onOpenChange={onOpenChange} onValueChange={onValueChange}>
       <SelectTrigger className={triggerClassName} style={resolvedTriggerStyle}>
-        <SelectValue placeholder={placeholder} />
+        {renderTriggerValue ? (
+          <span className="block min-w-0 truncate text-left" style={triggerValueStyle}>
+            {renderTriggerValue}
+          </span>
+        ) : (
+          <SelectValue placeholder={placeholder} />
+        )}
       </SelectTrigger>
       <TopSelectContent
         className={contentClassName}
@@ -78,7 +90,12 @@ export function FontSelect({
             <SelectGroup key={group.key}>
               <SelectLabel>{group.label}</SelectLabel>
               {groupOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value} {...getItemPreviewProps?.(option.value)}>
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                  style={getItemStyle?.(option)}
+                  {...getItemPreviewProps?.(option.value)}
+                >
                   {option.label}
                 </SelectItem>
               ))}
