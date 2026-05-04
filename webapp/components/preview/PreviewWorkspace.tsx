@@ -78,6 +78,7 @@ type Props = {
   projectDescription: string
   projectAuthor: string
   projectCreatedAt?: string
+  projectLoadTimeMs?: number | null
   userId: string | null
   userEmail: string | null
   isCloudSignedIn: boolean
@@ -130,6 +131,7 @@ type Props = {
   onProjectTitleChange: (nextTitle: string) => void
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
+  onPreviewPlansCommit?: () => void
   onClearAuthFeedback: () => void
   onKeepLocalCloudConflict?: () => Promise<void>
   onUseCloudConflict?: () => Promise<void>
@@ -244,6 +246,7 @@ export function PreviewWorkspace({
   projectDescription,
   projectAuthor,
   projectCreatedAt,
+  projectLoadTimeMs = null,
   userId,
   userEmail,
   isCloudSignedIn,
@@ -287,6 +290,7 @@ export function PreviewWorkspace({
   onProjectTitleChange,
   onProjectDescriptionChange,
   onProjectAuthorChange,
+  onPreviewPlansCommit,
   onClearAuthFeedback,
   onKeepLocalCloudConflict,
   onUseCloudConflict,
@@ -430,6 +434,12 @@ export function PreviewWorkspace({
     }).format(new Date(timestamp))
   }, [projectCreatedAt])
 
+  const formattedProjectLoadTime = useMemo(() => {
+    if (projectLoadTimeMs === null || !Number.isFinite(projectLoadTimeMs)) return null
+    if (projectLoadTimeMs < 1000) return `${Math.round(projectLoadTimeMs)} ms`
+    return `${(projectLoadTimeMs / 1000).toFixed(2)} s`
+  }, [projectLoadTimeMs])
+
   const projectInfoSentence = useMemo(() => {
     if (!showProjectInfo) return ""
     const authorText = projectAuthor.trim()
@@ -438,8 +448,11 @@ export function PreviewWorkspace({
     const createdAtText = formattedProjectCreatedAt
       ? ` on ${formattedProjectCreatedAt}.`
       : "."
-    return `This document consists of ${documentVariablePageCount} ${documentVariablePageCount === 1 ? "page" : "pages"} with ${totalLayerCount} ${totalLayerCount === 1 ? "layer" : "layers"}, uses ${projectInfoStats.fontCount} ${projectInfoStats.fontCount === 1 ? "font" : "fonts"} and ${projectInfoStats.cutCount} ${projectInfoStats.cutCount === 1 ? "cut" : "cuts"}, and contains ${projectInfoStats.wordCount} ${projectInfoStats.wordCount === 1 ? "word" : "words"} and ${projectInfoStats.characterCount} ${projectInfoStats.characterCount === 1 ? "character" : "characters"}.${authorText}${createdAtText}`
-  }, [documentVariablePageCount, formattedProjectCreatedAt, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, totalLayerCount])
+    const loadTimeText = formattedProjectLoadTime
+      ? ` Last load: ${formattedProjectLoadTime}.`
+      : ""
+    return `This document consists of ${documentVariablePageCount} ${documentVariablePageCount === 1 ? "page" : "pages"} with ${totalLayerCount} ${totalLayerCount === 1 ? "layer" : "layers"}, uses ${projectInfoStats.fontCount} ${projectInfoStats.fontCount === 1 ? "font" : "fonts"} and ${projectInfoStats.cutCount} ${projectInfoStats.cutCount === 1 ? "cut" : "cuts"}, and contains ${projectInfoStats.wordCount} ${projectInfoStats.wordCount === 1 ? "word" : "words"} and ${projectInfoStats.characterCount} ${projectInfoStats.characterCount === 1 ? "character" : "characters"}.${authorText}${createdAtText}${loadTimeText}`
+  }, [documentVariablePageCount, formattedProjectCreatedAt, formattedProjectLoadTime, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, totalLayerCount])
 
   const documentVariableContext = useMemo(() => ({
     projectTitle,
@@ -549,6 +562,7 @@ export function PreviewWorkspace({
               canvasBackground={resolvedCanvasBackground}
               onImageColorSchemeChange={onImageColorSchemeChange}
               onShowImagePlaceholdersChange={onShowImagePlaceholdersChange}
+              onPreviewPlansCommit={onPreviewPlansCommit}
               initialLayout={loadedPreviewLayout?.layout ?? null}
               initialLayoutToken={loadedPreviewLayout?.token ?? 0}
               rotation={rotation}

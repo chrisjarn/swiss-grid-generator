@@ -332,7 +332,6 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
   const textBlocks = blockOrder.filter((key) => key !== captionKey)
   for (const key of textBlocks) {
     const blockText = textContent[key] ?? ""
-    if (!blockText.trim()) continue
 
     const styleKey = styleAssignments[key] ?? defaultBodyStyleKey
     const style = styles[styleKey]
@@ -528,7 +527,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
   const captionText = textContent[captionKey] ?? ""
   const captionStyleKey = styleAssignments[captionKey] ?? defaultCaptionStyleKey
   const captionStyle = styles[captionStyleKey]
-  if (!hasCaptionBlock || !captionStyle || !captionText.trim()) {
+  if (!hasCaptionBlock || !captionStyle) {
     return { plans, rects, overflowByBlock }
   }
 

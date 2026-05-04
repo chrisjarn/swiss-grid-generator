@@ -324,15 +324,37 @@ export function useBlockEditorActions({
     textContent,
   ])
 
-  const closeEditor = useCallback(() => {
+  const removeCustomEditorTarget = useCallback((target: string) => {
+    setBlockCollections((prev) => removeTextLayerFromCollections(prev, target))
+    setBlockCustomSizes((prev) => removeEditorOverrideKey(prev, target))
+    setBlockCustomLeadings((prev) => removeEditorOverrideKey(prev, target))
+    setBlockTextColors((prev) => removeEditorOverrideKey(prev, target))
+  }, [setBlockCollections, setBlockCustomLeadings, setBlockCustomSizes, setBlockTextColors])
+
+  const finalizeEditorExit = useCallback(() => {
+    const draft = editorStateRef.current
+    if (!draft) {
+      setEditorState(null)
+      return
+    }
+
+    if (!isBaseBlockId(draft.target) && draft.draftText.trim().length === 0) {
+      removeCustomEditorTarget(draft.target)
+      setEditorState(null)
+      return
+    }
+
     commitLiveEditorDraft()
     setEditorState(null)
-  }, [commitLiveEditorDraft, setEditorState])
+  }, [commitLiveEditorDraft, editorStateRef, isBaseBlockId, removeCustomEditorTarget, setEditorState])
+
+  const closeEditor = useCallback(() => {
+    finalizeEditorExit()
+  }, [finalizeEditorExit])
 
   const saveEditor = useCallback(() => {
-    commitLiveEditorDraft()
-    setEditorState(null)
-  }, [commitLiveEditorDraft, setEditorState])
+    finalizeEditorExit()
+  }, [finalizeEditorExit])
 
   const deleteEditorBlock = useCallback(() => {
     if (!editorState) return
@@ -354,15 +376,13 @@ export function useBlockEditorActions({
           })(),
         }
       }
-      return removeTextLayerFromCollections(prev, target)
+      return prev
     })
     if (!isBaseBlockId(target)) {
-      setBlockCustomSizes((prev) => removeEditorOverrideKey(prev, target))
-      setBlockCustomLeadings((prev) => removeEditorOverrideKey(prev, target))
-      setBlockTextColors((prev) => removeEditorOverrideKey(prev, target))
+      removeCustomEditorTarget(target)
     }
     setEditorState(null)
-  }, [editorState, isBaseBlockId, recordHistoryBeforeChange, setBlockCollections, setBlockCustomLeadings, setBlockCustomSizes, setBlockTextColors, setEditorState])
+  }, [editorState, isBaseBlockId, recordHistoryBeforeChange, removeCustomEditorTarget, setBlockCollections, setEditorState])
 
   const handleCanvasDoubleClick = useBlockEditorCanvasDoubleClick({
     showTypography,

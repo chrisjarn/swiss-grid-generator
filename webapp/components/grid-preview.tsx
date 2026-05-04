@@ -215,6 +215,7 @@ interface GridPreviewProps {
   onShowImagePlaceholdersChange?: (value: boolean) => void
   editorSidebarHost?: HTMLDivElement | null
   onEditorModeChange?: (mode: "text" | "image" | null) => void
+  onPreviewPlansCommit?: () => void
   onPreviewEditorOpen?: () => void
   onPreviewParagraphCreate?: (key?: BlockId, point?: PagePoint) => void
   isDarkMode?: boolean
@@ -275,6 +276,7 @@ export const GridPreview = memo(function GridPreview({
   onShowImagePlaceholdersChange,
   editorSidebarHost = null,
   onEditorModeChange,
+  onPreviewPlansCommit,
   onPreviewEditorOpen,
   onPreviewParagraphCreate,
   isDarkMode = false,
@@ -1648,7 +1650,8 @@ export const GridPreview = memo(function GridPreview({
   const [typographyPlanVersion, setTypographyPlanVersion] = useState(0)
   const handleTypographyPlanCommit = useCallback(() => {
     setTypographyPlanVersion((version) => version + 1)
-  }, [])
+    onPreviewPlansCommit?.()
+  }, [onPreviewPlansCommit])
 
   useEffect(() => {
     if (!smartTextEditZoomEnabled || !editorState?.target) {

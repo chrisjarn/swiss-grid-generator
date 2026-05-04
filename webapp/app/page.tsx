@@ -118,6 +118,10 @@ type EditableProjectMetadataField = "title" | "description" | "author"
 
 const PROJECT_HISTORY_LIMIT = 100
 
+type ProjectLoadTimingState = {
+  elapsedMs: number | null
+}
+
 function readStoredNonNegativeInteger(key: string): number {
   if (typeof window === "undefined") return 0
   try {
@@ -185,6 +189,7 @@ export default function Home() {
   const livePreviewSnapshotGetterRef = useRef<(() => PreviewLayoutState) | null>(null)
   const preferCommittedPreviewLayoutRef = useRef(false)
   const headerClickTimeoutRef = useRef<number | null>(null)
+  const pendingProjectLoadTimingRef = useRef<{ startedAt: number } | null>(null)
   const [editorSidebarMode, setEditorSidebarMode] = useState<"text" | "image" | null>(null)
   const [editorSidebarHost, setEditorSidebarHost] = useState<HTMLDivElement | null>(null)
   const [smartTextZoomEnabled, setSmartTextZoomEnabled] = useState(true)
@@ -202,6 +207,7 @@ export default function Home() {
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
+  const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
   const [projectHistoryPast, setProjectHistoryPast] = useState<ProjectHistoryEntry[]>([])
   const [projectHistoryFuture, setProjectHistoryFuture] = useState<ProjectHistoryEntry[]>([])
   const projectUndoHandlerRef = useRef<() => void>(() => {})
@@ -778,14 +784,35 @@ export default function Home() {
     setPreviewPatch({ canvasBackground: value === "__none__" ? null : value })
   }, [clearPreviewKeys, setPreviewPatch])
 
+  const beginProjectLoadTiming = useCallback(() => {
+    const startedAt = typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now()
+    pendingProjectLoadTimingRef.current = { startedAt }
+    setProjectLoadTiming({ elapsedMs: null })
+  }, [])
+
+  const completeProjectLoadTiming = useCallback(() => {
+    const pending = pendingProjectLoadTimingRef.current
+    if (!pending) return
+    const finishedAt = typeof performance !== "undefined" && typeof performance.now === "function"
+      ? performance.now()
+      : Date.now()
+    pendingProjectLoadTimingRef.current = null
+    setProjectLoadTiming({
+      elapsedMs: Math.max(0, finishedAt - pending.startedAt),
+    })
+  }, [])
+
   const handleApplyLoadedProject = useCallback((project: LoadedProject<PreviewLayoutState>) => {
+    beginProjectLoadTiming()
     resetEditorPanelPersistence()
     applyLoadedProject(project)
     setProjectHistoryPast([])
     setProjectHistoryFuture([])
     setShowPresetsBrowser(false)
     markClean()
-  }, [applyLoadedProject, markClean, setShowPresetsBrowser])
+  }, [applyLoadedProject, beginProjectLoadTiming, markClean, setShowPresetsBrowser])
   const handleToggleFeedbackPanel = useCallback(() => {
     openSidebarPanel(activeSidebarPanel === "feedback" ? null : "feedback")
   }, [activeSidebarPanel, openSidebarPanel])
@@ -895,6 +922,7 @@ export default function Home() {
   }, [getCurrentProjectSnapshot, projectMetadata, recordProjectHistory, replaceProjectSnapshot, setProjectMetadata])
 
   const handleLoadBrowserPreset = useCallback((preset: LayoutPreset) => {
+    beginProjectLoadTiming()
     setActiveUserProjectId(preset.source === "user" ? (preset.userProjectId ?? preset.id) : null)
     setActiveOriginPresetId(
       preset.source === "user"
@@ -902,7 +930,7 @@ export default function Home() {
         : preset.id,
     )
     handleLoadPresetProject(preset)
-  }, [handleLoadPresetProject])
+  }, [beginProjectLoadTiming, handleLoadPresetProject])
 
   const handleDeleteBrowserPreset = useCallback(async (preset: LayoutPreset) => {
     const targetId = preset.userProjectId ?? preset.id
@@ -1701,6 +1729,7 @@ export default function Home() {
       projectDescription={projectMetadata.description}
       projectAuthor={effectiveProjectMetadata.author}
       projectCreatedAt={projectMetadata.createdAt}
+      projectLoadTimeMs={projectLoadTiming.elapsedMs}
       userId={user?.id ?? null}
       userEmail={user?.email ?? null}
       isCloudSignedIn={Boolean(user)}
@@ -1754,6 +1783,7 @@ export default function Home() {
       onProjectTitleChange={handleProjectTitleChange}
       onProjectDescriptionChange={handleProjectDescriptionChange}
       onProjectAuthorChange={handleProjectAuthorChange}
+      onPreviewPlansCommit={completeProjectLoadTiming}
       onClearAuthFeedback={clearAuthFeedback}
       onKeepLocalCloudConflict={handleKeepLocalCloudConflict}
       onUseCloudConflict={handleUseCloudConflict}

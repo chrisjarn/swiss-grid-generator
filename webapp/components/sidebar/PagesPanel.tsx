@@ -467,6 +467,11 @@ export function PagesPanel({
     const isEditing = page.id === editingPageId
     const isExpanded = expandedPageId === page.id
     const isWaitingForKeyboardExpand = scheduledKeyboardFocusRequest?.pageId === page.id && !isExpanded
+    const pageTitleToneClassName = isWaitingForKeyboardExpand
+      ? tone.rowMuted
+      : isActive
+        ? tone.accent
+        : ""
     const isFacingPage = resolvedPage.layoutMode === "facing"
     const deleteDisabled = pages.length <= 1
     const stationaryIndex = stationaryIndexByPageId.get(page.id) ?? null
@@ -551,7 +556,7 @@ export function PagesPanel({
                   className={`h-6 w-full rounded-sm border px-2 text-[12px] leading-none outline-none ${tone.input}`}
                 />
               ) : (
-                <div className={`flex items-center gap-1.5 ${isActive ? tone.accent : ""}`}>
+                <div className={`flex items-center gap-1.5 ${pageTitleToneClassName}`}>
                   {isFacingPage ? (
                     <BookOpen className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
                   ) : (
@@ -560,7 +565,7 @@ export function PagesPanel({
                   <div className="truncate text-[12px] font-medium leading-none">{page.name}</div>
                   {isWaitingForKeyboardExpand ? (
                     <LoaderCircle
-                      className={`h-3 w-3 shrink-0 animate-spin ${isActive ? "" : tone.rowMuted}`}
+                      className={`h-3 w-3 shrink-0 animate-spin ${tone.rowMuted}`}
                       strokeWidth={2}
                     />
                   ) : null}
