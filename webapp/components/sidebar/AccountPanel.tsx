@@ -311,7 +311,7 @@ export function AccountPanel({
             )}
           </div>
           {userEmail && onSyncNow ? (
-            <div className="space-y-2">
+            <div className="space-y-2 pt-1">
               <Button
                 size="sm"
                 className={`${accountActionButtonClassName} w-full`}
@@ -365,7 +365,7 @@ export function AccountPanel({
                   </div>
                 </div>
               ) : null}
-              <div className={`grid gap-2 ${onDeleteConflict ? "grid-cols-3" : "grid-cols-2"}`}>
+              <div className={`grid gap-2 pt-1 ${onDeleteConflict ? "grid-cols-3" : "grid-cols-2"}`}>
                 {onDeleteConflict ? (
                   <Button
                     size="sm"
