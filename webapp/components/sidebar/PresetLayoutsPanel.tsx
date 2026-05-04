@@ -29,7 +29,14 @@ type Props = {
   isDarkMode?: boolean
   compact?: boolean
   showRolloverInfo?: boolean
-  onRequestNotice?: (notice: { title: string; message: string }) => void
+  onRequestNotice?: (notice: {
+    title: string
+    message: string
+    confirmLabel?: string
+    cancelLabel?: string
+    onConfirm?: () => void
+    onCancel?: () => void
+  }) => void
 }
 
 function formatPresetCreatedAt(value?: string): string {
@@ -450,28 +457,36 @@ export function PresetLayoutsPanel({
     const cloudText = isCloudSignedIn
       ? "The cloud copy will be soft-deleted if it is already synced."
       : "If this layout has a cloud copy, deletion will be queued until cloud sync is available."
-    if (!window.confirm(`Delete "${presetLabel}" from Users?\n\n${cloudText}`)) return
+    onRequestNotice?.({
+      title: "Delete from Users",
+      message: `Delete "${presetLabel}" from Users?\n\n${cloudText}`,
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+      onConfirm: () => {
+        void (async () => {
+          try {
+            if (onDeleteUserPreset) {
+              await onDeleteUserPreset(preset)
+              return
+            }
 
-    try {
-      if (onDeleteUserPreset) {
-        await onDeleteUserPreset(preset)
-        return
-      }
-
-      await deleteUserProjectFromLibrary(targetId)
-      onRequestNotice?.({
-        title: "Deleted from Users",
-        message: isCloudSignedIn
-          ? "The selected user layout was removed from the local library. Cloud status: no remote delete handler was available."
-          : "The selected user layout was removed from the local library. Cloud status: not connected.",
-      })
-    } catch (error) {
-      console.error(error)
-      onRequestNotice?.({
-        title: "Delete Failed",
-        message: "Could not remove the selected user layout.",
-      })
-    }
+            await deleteUserProjectFromLibrary(targetId)
+            onRequestNotice?.({
+              title: "Deleted from Users",
+              message: isCloudSignedIn
+                ? "The selected user layout was removed from the local library. Cloud status: no remote delete handler was available."
+                : "The selected user layout was removed from the local library. Cloud status: not connected.",
+            })
+          } catch (error) {
+            console.error(error)
+            onRequestNotice?.({
+              title: "Delete Failed",
+              message: "Could not remove the selected user layout.",
+            })
+          }
+        })()
+      },
+    })
   }, [isCloudSignedIn, onDeleteUserPreset, onRequestNotice])
 
   const cardGapClass = compact ? "gap-2" : "gap-3"

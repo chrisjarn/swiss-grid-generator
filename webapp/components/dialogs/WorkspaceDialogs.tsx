@@ -8,6 +8,10 @@ import type { ExportFormat, ExportProgressState, PrintPresetKey } from "@/hooks/
 type NoticeState = {
   title: string
   message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  onConfirm?: () => void
+  onCancel?: () => void
 } | null
 
 type DialogOption = {
@@ -62,6 +66,7 @@ type Props = {
   }
   noticeState: NoticeState
   onCloseNotice: () => void
+  onConfirmNotice: () => void
 }
 
 export function WorkspaceDialogs({
@@ -70,6 +75,7 @@ export function WorkspaceDialogs({
   saveLibraryDialog,
   noticeState,
   onCloseNotice,
+  onConfirmNotice,
 }: Props) {
   return (
     <>
@@ -125,6 +131,9 @@ export function WorkspaceDialogs({
         isDarkUi={isDarkUi}
         title={noticeState?.title ?? ""}
         message={noticeState?.message ?? ""}
+        confirmLabel={noticeState?.confirmLabel}
+        cancelLabel={noticeState?.cancelLabel}
+        onConfirm={noticeState?.onConfirm ? onConfirmNotice : undefined}
         onClose={onCloseNotice}
       />
     </>

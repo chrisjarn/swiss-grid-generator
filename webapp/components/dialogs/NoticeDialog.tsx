@@ -11,6 +11,9 @@ type Props = {
   isDarkUi: boolean
   title: string
   message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  onConfirm?: () => void
   onClose: () => void
 }
 
@@ -19,6 +22,9 @@ export function NoticeDialog({
   isDarkUi,
   title,
   message,
+  confirmLabel,
+  cancelLabel = "Cancel",
+  onConfirm,
   onClose,
 }: Props) {
   if (!isOpen) return null
@@ -48,11 +54,31 @@ export function NoticeDialog({
         </div>
         <div className="shrink-0 space-y-2 pt-4">
           <SectionHeaderRow label="Actions" />
-          <div className="grid grid-cols-1 gap-2">
-            <Button size="sm" className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`} onClick={onClose}>
-              OK
-            </Button>
-          </div>
+          {onConfirm ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
+                onClick={onClose}
+              >
+                {cancelLabel}
+              </Button>
+              <Button
+                size="sm"
+                className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
+                onClick={onConfirm}
+              >
+                {confirmLabel ?? "Confirm"}
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-2">
+              <Button size="sm" className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`} onClick={onClose}>
+                OK
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

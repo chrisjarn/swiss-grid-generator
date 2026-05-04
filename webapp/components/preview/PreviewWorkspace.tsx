@@ -746,6 +746,7 @@ export function PreviewWorkspace({
                     onFacingPageToggle={onPageFacingToggle}
                     onRenamePage={onPageRename}
                     onDeletePage={onPageDelete}
+                    onRequestNotice={onRequestNotice}
                     onPageOrderChange={onPageOrderChange}
                     baseFont={baseFont}
                     imageColorScheme={imageColorScheme}

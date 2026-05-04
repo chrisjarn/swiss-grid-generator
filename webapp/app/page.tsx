@@ -88,6 +88,10 @@ const DEFAULT_PAGE_PREVIEW_LAYOUT: PreviewLayoutState | null = null
 type NoticeState = {
   title: string
   message: string
+  confirmLabel?: string
+  cancelLabel?: string
+  onConfirm?: () => void
+  onCancel?: () => void
 } | null
 
 type TextMetricsParityRunner = (options?: {
@@ -243,6 +247,18 @@ export default function Home() {
   const [accountLogFocusNonce, setAccountLogFocusNonce] = useState(0)
   const handleRequestNotice = useCallback((notice: NonNullable<NoticeState>) => {
     setNoticeState(notice)
+  }, [])
+  const handleCloseNotice = useCallback(() => {
+    setNoticeState((current) => {
+      current?.onCancel?.()
+      return null
+    })
+  }, [])
+  const handleConfirmNotice = useCallback(() => {
+    setNoticeState((current) => {
+      current?.onConfirm?.()
+      return null
+    })
   }, [])
   const {
     supabase,
@@ -2085,7 +2101,8 @@ export default function Home() {
             onConfirm: handleSaveToLibrary,
           }}
           noticeState={noticeState}
-          onCloseNotice={() => setNoticeState(null)}
+          onCloseNotice={handleCloseNotice}
+          onConfirmNotice={handleConfirmNotice}
         />
       </div>
     </>

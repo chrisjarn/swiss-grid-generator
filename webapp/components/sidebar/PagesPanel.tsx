@@ -38,6 +38,14 @@ type Props = {
   onFacingPageToggle: (pageId: string, enabled: boolean) => void
   onRenamePage: (pageId: string, nextName: string) => void
   onDeletePage: (pageId: string) => void
+  onRequestNotice?: (notice: {
+    title: string
+    message: string
+    confirmLabel?: string
+    cancelLabel?: string
+    onConfirm?: () => void
+    onCancel?: () => void
+  }) => void
   onPageOrderChange: (orderedIds: string[]) => void
   baseFont: string
   imageColorScheme: ImageColorSchemeId
@@ -66,6 +74,7 @@ export function PagesPanel({
   onFacingPageToggle,
   onRenamePage,
   onDeletePage,
+  onRequestNotice,
   onPageOrderChange,
   baseFont,
   imageColorScheme,
@@ -683,9 +692,16 @@ export function PagesPanel({
                 onClick={(event) => {
                   event.stopPropagation()
                   if (deleteDisabled) return
-                  if (!window.confirm(`Delete ${page.name}?`)) return
-                  cancelRename()
-                  onDeletePage(page.id)
+                  onRequestNotice?.({
+                    title: "Delete Page",
+                    message: `Delete ${page.name}?`,
+                    confirmLabel: "Delete",
+                    cancelLabel: "Cancel",
+                    onConfirm: () => {
+                      cancelRename()
+                      onDeletePage(page.id)
+                    },
+                  })
                 }}
               >
                 <Trash2 className="h-3.5 w-3.5" />
