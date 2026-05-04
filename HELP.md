@@ -126,10 +126,11 @@ Core editing and layout workflows.
 ### Export {#help-export}
 - Export supports JSON, vector PDF, SVG, and IDML.
 - Multi-page projects can export a page range.
-- The dialog includes format switcher, page-range selectors, filename field, and export progress.
+- The dialog includes a fixed header/footer, format switcher, page-range selectors, filename field, export progress, and a collapsible metadata section.
 - Exports are WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
 - PDF, SVG, and IDML exports are 100% vector based.
-- JSON exports the full editable project document with metadata, pages, and current layout state, with an optional gzip-compressed `.swissgridgenerator` variant.
+- JSON exports the selected page range as an editable project document with metadata and current layout state, with an optional gzip-compressed `.swissgridgenerator` variant.
+- Project Title, Subject, and Author can be adjusted in the export dialog for all formats without changing the live project until a JSON export is saved.
 - PDF exports store available project metadata in the PDF document info dictionary.
 - SVG exports embed available project metadata in the SVG metadata block.
 - IDML exports carry project metadata into the package XMP metadata.
@@ -137,6 +138,7 @@ Core editing and layout workflows.
 - Multi-page SVG exports a ZIP with one outlined SVG per selected page.
 - IDML exports separate guides, typography, and placeholder layers with frozen text geometry.
 - `Esc` closes the dialog when no export is running and cancels an in-progress export at the next safe checkpoint.
+- Clicking outside the popup follows the same close/cancel behavior.
 
 ### Project Tours {#help-project-tours}
 - A loaded project may include an optional guided tour overlay.

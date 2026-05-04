@@ -291,7 +291,14 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 ### Export dialog
 
 - Format buttons: `JSON`, `PDF`, `SVG`, `IDML`
-- `JSON` export includes an optional gzip-compression checkbox
+- Sticky dialog header keeps `Export` and `Format` visible
+- Sticky dialog footer keeps `Actions` visible
+- Metadata section is collapsible and closed by default
+- Metadata fields are available for all formats:
+  - Project Title
+  - Subject
+  - Author
+- `JSON` export includes an optional `GZIP-Compression` toggle
 - Uncompressed JSON exports use `.json`; compressed exports use `.swissgridgenerator`
 - `Pages` range controls (`From`, `To`) appear for multipage projects
   - default selection is the full project page range
@@ -299,8 +306,8 @@ When `i` is active, header icons show rollover tooltips with a second line for k
   - no paper-size override controls
   - no custom width override controls
 - All export formats stay vector-based
-- `JSON` exports the full editable project document with metadata, pages, and current layout state
-- `PDF`, `SVG`, and `IDML` preserve available project metadata where the format supports it
+- `JSON` exports the selected page range as an editable project document with metadata and current layout state
+- `PDF`, `SVG`, and `IDML` preserve available project metadata in their format-specific metadata containers
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry
 - `IDML`:
   - exports the selected page range
@@ -316,6 +323,7 @@ When `i` is active, header icons show rollover tooltips with a second line for k
   - converts typography to exact glyph outlines, so exported text is not live-editable
 - Confirm/Cancel
 - `Esc` closes the popup when idle and cancels a running export at the next safe checkpoint
+- Clicking outside the popup follows the same rule as `Esc`
 
 ### Feedback panel
 

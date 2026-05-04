@@ -185,14 +185,15 @@ Current capability inventory for Swiss Grid Generator.
 - Save dialog stores the current project into the local `Users` library with editable title, subject, and author metadata.
 - Local `Users` library records are stored as gzip-compressed project archives in IndexedDB.
 - `PDF` selected-range export.
-- `JSON` full-project export, optionally gzip-compressed as `.swissgridgenerator`.
+- `JSON` selected-range export, optionally gzip-compressed as `.swissgridgenerator`.
 - `SVG v1` selected-range export.
 - `IDML v1` selected-range export.
 - Export defaults to the full project page range.
-- Export dialog includes JSON/PDF/SVG/IDML format switching, page-range controls for non-JSON exports, filename field, and progress state.
+- Export dialog includes JSON/PDF/SVG/IDML format switching, page-range controls for multipage projects, filename field, export progress, a collapsible metadata section, and a fixed header/footer layout.
 - Export is WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.
+- Export metadata fields (`Project Title`, `Subject`, `Author`) are editable in the dialog for all formats.
 - `PDF` print presets:
   - `Digital Print`
   - `Press Proof`
@@ -210,6 +211,7 @@ Current capability inventory for Swiss Grid Generator.
 - IDML exports separate `Guides`, `Typography`, and `Placeholders` layers with frozen text-frame geometry, so downstream text is not live-editable.
 - IDML exports preserve available project metadata in the package XMP metadata.
 - `Esc` closes idle export UI and cancels a running export at the next safe checkpoint.
+- Clicking the backdrop follows the same close/cancel behavior as `Esc`.
 
 ## UI and Workflow
 

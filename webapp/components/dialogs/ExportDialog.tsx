@@ -385,7 +385,7 @@ export function ExportDialog({
           </div>
         </div>
 
-        <div className={cn("shrink-0 space-y-2 border-t pt-4", isDarkUi ? "border-[#313A47]" : "border-gray-200")}>
+        <div className="shrink-0 space-y-2 pt-4">
           <SectionHeaderRow label="Actions" />
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className={`${actionButtonClassName} w-full`} onClick={onClose} disabled={isExporting}>
