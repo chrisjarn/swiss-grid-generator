@@ -84,7 +84,6 @@ type Props = {
   isCloudSignedIn: boolean
   cloudStatusLabel: string
   cloudStatusIndicatorClassName: string
-  accountLogFocusNonce?: number
   pendingCloudQueueCount?: number
   cloudConflictCount?: number
   hasActiveCloudConflict?: boolean
@@ -255,7 +254,6 @@ export function PreviewWorkspace({
   isCloudSignedIn,
   cloudStatusLabel,
   cloudStatusIndicatorClassName,
-  accountLogFocusNonce,
   pendingCloudQueueCount,
   cloudConflictCount,
   hasActiveCloudConflict,
@@ -822,7 +820,6 @@ export function PreviewWorkspace({
                 userEmail={userEmail}
                 cloudStatusLabel={cloudStatusLabel}
                 cloudStatusIndicatorClassName={cloudStatusIndicatorClassName}
-                logFocusNonce={accountLogFocusNonce}
                 pendingQueueCount={pendingCloudQueueCount}
                 conflictQueueCount={cloudConflictCount}
                 hasActiveConflict={hasActiveCloudConflict}

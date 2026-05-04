@@ -1,4 +1,4 @@
-import { ChevronUp } from "lucide-react"
+import { ChevronUp, Image as ImageIcon, LayoutGrid, Rows3, SquareDashed, Type } from "lucide-react"
 import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -21,6 +21,16 @@ type Props = {
   onClose: () => void
   isDarkUi: boolean
   selectedPageCount: number
+  showBaselines: boolean
+  onToggleBaselines: () => void
+  showMargins: boolean
+  onToggleMargins: () => void
+  showModules: boolean
+  onToggleModules: () => void
+  showTypography: boolean
+  onToggleTypography: () => void
+  showImagePlaceholders: boolean
+  onToggleImagePlaceholders: () => void
   pageRangeOptions: Array<{ value: string; label: string }>
   exportRangeStartDraft: number
   onExportRangeStartChange: (value: string) => void
@@ -55,6 +65,16 @@ export function ExportDialog({
   onClose,
   isDarkUi,
   selectedPageCount,
+  showBaselines,
+  onToggleBaselines,
+  showMargins,
+  onToggleMargins,
+  showModules,
+  onToggleModules,
+  showTypography,
+  onToggleTypography,
+  showImagePlaceholders,
+  onToggleImagePlaceholders,
   pageRangeOptions,
   exportRangeStartDraft,
   onExportRangeStartChange,
@@ -120,6 +140,67 @@ export function ExportDialog({
               Vector exports follow the current preview exactly, including guides, typography, and placeholders. JSON exports preserve the editable project document.
             </p>
           </div>
+          <div className="space-y-2">
+            <SectionHeaderRow label="Display" />
+            <div className="grid grid-cols-5 gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showBaselines })}
+                disabled={isExporting}
+                onClick={onToggleBaselines}
+                aria-label="Toggle baselines in export"
+              >
+                <Rows3 className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showMargins })}
+                disabled={isExporting}
+                onClick={onToggleMargins}
+                aria-label="Toggle margins in export"
+              >
+                <SquareDashed className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showModules })}
+                disabled={isExporting}
+                onClick={onToggleModules}
+                aria-label="Toggle modules in export"
+              >
+                <LayoutGrid className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showTypography })}
+                disabled={isExporting}
+                onClick={onToggleTypography}
+                aria-label="Toggle typography in export"
+              >
+                <Type className="h-3.5 w-3.5" />
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showImagePlaceholders })}
+                disabled={isExporting}
+                onClick={onToggleImagePlaceholders}
+                aria-label="Toggle image placeholders in export"
+              >
+                <ImageIcon className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <SectionHeaderRow label="Format" />
             <div className="grid grid-cols-4 gap-2">

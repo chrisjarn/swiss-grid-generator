@@ -191,7 +191,7 @@ Current capability inventory for Swiss Grid Generator.
 - `SVG v1` selected-range export.
 - `IDML v1` selected-range export.
 - Export defaults to the full project page range.
-- Export dialog includes JSON/PDF/SVG/IDML format switching, page-range controls for multipage projects, filename field, export progress, a collapsible metadata section, and a fixed header/footer layout.
+- Export dialog includes header display toggles for baselines, margins, modules, typography, and image placeholders, plus JSON/PDF/SVG/IDML format switching, page-range controls for multipage projects, filename field, export progress, a collapsible metadata section, and a fixed header/footer layout.
 - Export is WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.
@@ -245,4 +245,5 @@ Current capability inventory for Swiss Grid Generator.
 - Revision mismatches are marked as `conflict` instead of overwriting local work silently.
 - Remote deletions are applied locally on sync when the local copy has no newer unsynced changes; otherwise the project is marked as `conflict`.
 - Account and sync events are recorded locally as capped support diagnostics with `info`, `success`, `warning`, or `error` severity.
+- The local cloud activity log can be attached to feedback submissions for support.
 - Remote-backed deletions are soft-deleted in Supabase via `deleted_at`, while local-only deletions purge the local cache record immediately.

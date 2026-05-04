@@ -323,7 +323,7 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "Export supports JSON, vector PDF, SVG, and IDML.",
               "Multi-page projects can export a page range.",
-              "The dialog includes a fixed header/footer, format switcher, page-range selectors, filename field, export progress, and a collapsible metadata section.",
+              "The dialog includes a fixed header/footer, five display toggles, a format switcher, page-range selectors, a filename field, export progress, and a collapsible metadata section.",
               "Exports are WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.",
               "PDF, SVG, and IDML exports are 100% vector based.",
               "JSON exports the selected page range as an editable project document with metadata and current layout state, with an optional gzip-compressed `.swissgridgenerator` variant.",
@@ -492,7 +492,8 @@ export const HELP_CONTENT_GROUPS = [
               "The account icon shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise it stays orange.",
               "While signed out, the `STATUS` row reads `Not connected`.",
               "Email-code sign-in uses Supabase browser auth.",
-              "The `STATUS` row expands to show recent local cloud/account events and a `Download` support action.",
+              "The `STATUS` row expands to show recent local cloud/account events.",
+              "Signed-in users can trigger `Sync Now` from the account panel.",
               "Signed-in projects continue to use the local offline cache while syncing to Supabase in the background.",
               "Signed-in sessions request throttled background sync when the app regains focus, becomes visible, or opens the preset browser.",
               "Existing saved user-library projects auto-save locally and sync debounced to the cloud while you edit.",

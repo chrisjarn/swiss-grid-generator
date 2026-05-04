@@ -291,8 +291,9 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 
 ### Export dialog
 
+- Sticky dialog header keeps the display toggles and `Format` visible
 - Format buttons: `JSON`, `PDF`, `SVG`, `IDML`
-- Sticky dialog header keeps `Export` and `Format` visible
+- Display toggles: baselines, margins, modules, typography, image placeholders
 - Sticky dialog footer keeps `Actions` visible
 - Metadata section is collapsible and closed by default
 - Metadata fields are available for all formats:
@@ -339,7 +340,8 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 - Cloud sync status line
 - `STATUS` shows `Not connected` while signed out
 - `STATUS` expands/collapses the local cloud activity log
-- Expanded status shows the latest event timestamp, recent local events, and `Download`
+- Expanded status shows the latest event timestamp and recent local events
+- Signed-in users get a `Sync Now` action in the expanded status section
 - Email input for email-code sign-in while signed out
 - Six-digit code input after a sign-in code is sent
 - Signed-in email display while authenticated

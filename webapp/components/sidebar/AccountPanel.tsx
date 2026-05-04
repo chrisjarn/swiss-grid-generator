@@ -1,7 +1,7 @@
 "use client"
 
-import { ChevronUp, Download, RefreshCw, Trash2, X } from "lucide-react"
-import { useEffect, useRef, useState } from "react"
+import { ChevronUp, RefreshCw, Trash2, X } from "lucide-react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -9,8 +9,6 @@ import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import {
   cloudActivityLogQuery,
-  formatCloudActivityLogForSupport,
-  listCloudActivityLogEntries,
   type CloudActivityLogEntry,
 } from "@/lib/user-layout-library"
 
@@ -20,7 +18,6 @@ type Props = {
   userEmail: string | null
   cloudStatusLabel: string
   cloudStatusIndicatorClassName: string
-  logFocusNonce?: number
   pendingQueueCount?: number
   conflictQueueCount?: number
   hasActiveConflict?: boolean
@@ -68,33 +65,12 @@ function getActivityLevelClassName(level: CloudActivityLogEntry["level"], isDark
   return isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"
 }
 
-function formatLogDownloadFilename(): string {
-  const timestamp = new Date().toISOString().replace(/[:.]/g, "-")
-  return `swiss-grid-generator-cloud-log-${timestamp}.txt`
-}
-
-function downloadTextFile(text: string, filename: string): void {
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" })
-  const url = URL.createObjectURL(blob)
-  const anchor = document.createElement("a")
-  anchor.href = url
-  anchor.download = filename
-  anchor.rel = "noopener"
-  anchor.style.display = "none"
-
-  document.body.appendChild(anchor)
-  anchor.click()
-  document.body.removeChild(anchor)
-  window.setTimeout(() => URL.revokeObjectURL(url), 1000)
-}
-
 export function AccountPanel({
   isDarkMode = false,
   onClose,
   userEmail,
   cloudStatusLabel,
   cloudStatusIndicatorClassName,
-  logFocusNonce = 0,
   pendingQueueCount = 0,
   conflictQueueCount = 0,
   hasActiveConflict = false,
@@ -115,9 +91,7 @@ export function AccountPanel({
   const [codeDraft, setCodeDraft] = useState("")
   const [isStatusOpen, setIsStatusOpen] = useState(false)
   const [activityEntries, setActivityEntries] = useState<CloudActivityLogEntry[]>([])
-  const [downloadState, setDownloadState] = useState<"idle" | "downloaded" | "error">("idle")
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const logScrollAreaRef = useRef<HTMLDivElement | null>(null)
   const tone = isDarkMode
     ? {
         body: "text-[#A8B1BF]",
@@ -155,22 +129,9 @@ export function AccountPanel({
   }, [])
 
   useEffect(() => {
-    if (downloadState === "idle") return
-    const timeout = window.setTimeout(() => setDownloadState("idle"), 1800)
-    return () => window.clearTimeout(timeout)
-  }, [downloadState])
-
-  useEffect(() => {
-    if (logFocusNonce <= 0) return
+    if (!hasActiveConflict) return
     setIsStatusOpen(true)
-    const frame = window.requestAnimationFrame(() => {
-      logScrollAreaRef.current?.scrollIntoView({
-        block: "start",
-        behavior: "smooth",
-      })
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [logFocusNonce])
+  }, [hasActiveConflict])
 
   const feedbackSection = authError ? (
     <section className="space-y-2">
@@ -225,7 +186,7 @@ export function AccountPanel({
         />
         {isStatusOpen ? (
           <div className="space-y-2 pt-1 text-xs">
-            <div ref={logScrollAreaRef} className="max-h-[190px] overflow-y-auto py-1">
+            <div className="max-h-[190px] overflow-y-auto py-1">
               {activityEntries.length > 0 ? (
                 <div className="space-y-1">
                   {activityEntries.slice(0, 12).map((entry) => (
@@ -250,44 +211,26 @@ export function AccountPanel({
                 <div className={`py-2 text-[11px] ${tone.caption}`}>No local cloud activity yet.</div>
               )}
             </div>
-            <div className="space-y-2">
-              <div className="grid grid-cols-2 gap-2">
-                {userEmail && onSyncNow ? (
-                  <Button
-                    size="sm"
-                    className={`${accountActionButtonClassName} w-full`}
-                    disabled={isSubmitting}
-                    onClick={async () => {
-                      setIsSubmitting(true)
-                      try {
-                        await onSyncNow()
-                      } finally {
-                        setIsSubmitting(false)
-                      }
-                    }}
-                  >
-                    <RefreshCw className="h-2.5 w-2.5" />
-                    Sync Now
-                  </Button>
-                ) : null}
+            {userEmail && onSyncNow ? (
+              <div className="space-y-2">
                 <Button
                   size="sm"
                   className={`${accountActionButtonClassName} w-full`}
+                  disabled={isSubmitting}
                   onClick={async () => {
+                    setIsSubmitting(true)
                     try {
-                      const entries = await listCloudActivityLogEntries()
-                      downloadTextFile(formatCloudActivityLogForSupport(entries), formatLogDownloadFilename())
-                      setDownloadState("downloaded")
-                    } catch {
-                      setDownloadState("error")
+                      await onSyncNow()
+                    } finally {
+                      setIsSubmitting(false)
                     }
                   }}
                 >
-                  <Download className="h-2.5 w-2.5" />
-                  {downloadState === "downloaded" ? "Log Saved" : downloadState === "error" ? "Log Failed" : "Download Log"}
+                  <RefreshCw className="h-2.5 w-2.5" />
+                  Sync Now
                 </Button>
               </div>
-            </div>
+            ) : null}
             {userEmail && (pendingQueueCount > 0 || conflictQueueCount > 0) ? (
               <div className={`rounded-md border px-3 py-2 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
                 <div className="grid grid-cols-2 gap-2 text-[11px] leading-tight">

@@ -245,7 +245,6 @@ export default function Home() {
     dispatchExport(action)
   }, [dispatchExport, dispatchGrid])
   const ui = useMemo(() => ({ ...gridUi, ...exportUi }), [gridUi, exportUi])
-  const [accountLogFocusNonce, setAccountLogFocusNonce] = useState(0)
   const handleRequestNotice = useCallback((notice: NonNullable<NoticeState>) => {
     setNoticeState(notice)
   }, [])
@@ -429,7 +428,6 @@ export default function Home() {
   useEffect(() => {
     if (noticeState?.title !== "Cloud Sync Conflict") return
     openSidebarPanel("account")
-    setAccountLogFocusNonce((nonce) => nonce + 1)
   }, [noticeState, openSidebarPanel])
 
   useEffect(() => {
@@ -1781,7 +1779,6 @@ export default function Home() {
       isCloudSignedIn={Boolean(user)}
       cloudStatusLabel={cloudStatusLabel}
       cloudStatusIndicatorClassName={cloudStatusIndicatorClassName}
-      accountLogFocusNonce={accountLogFocusNonce}
       pendingCloudQueueCount={pendingQueueCount}
       cloudConflictCount={conflictQueueCount}
       hasActiveCloudConflict={activeUserProjectRecord?.syncState === "conflict"}
@@ -2066,6 +2063,16 @@ export default function Home() {
             isOpen: exportActions.isExportDialogOpen,
             onClose: exportActions.requestCloseExportDialog,
             selectedPageCount: exportActions.selectedPageCount,
+            showBaselines,
+            onToggleBaselines: () => handleHeaderVisibilityToggle("showBaselines"),
+            showMargins,
+            onToggleMargins: () => handleHeaderVisibilityToggle("showMargins"),
+            showModules,
+            onToggleModules: () => handleHeaderVisibilityToggle("showModules"),
+            showTypography,
+            onToggleTypography: () => handleHeaderVisibilityToggle("showTypography"),
+            showImagePlaceholders,
+            onToggleImagePlaceholders: () => handleHeaderVisibilityToggle("showImagePlaceholders"),
             pageRangeOptions: exportActions.pageRangeOptions,
             rangeStart: exportActions.exportRangeStartDraft,
             onRangeStartChange: exportActions.setExportRangeStartDraft,

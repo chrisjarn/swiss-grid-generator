@@ -25,6 +25,16 @@ type Props = {
     isOpen: boolean
     onClose: () => void
     selectedPageCount: number
+    showBaselines: boolean
+    onToggleBaselines: () => void
+    showMargins: boolean
+    onToggleMargins: () => void
+    showModules: boolean
+    onToggleModules: () => void
+    showTypography: boolean
+    onToggleTypography: () => void
+    showImagePlaceholders: boolean
+    onToggleImagePlaceholders: () => void
     pageRangeOptions: DialogOption[]
     rangeStart: number
     onRangeStartChange: (value: string) => void
@@ -84,6 +94,16 @@ export function WorkspaceDialogs({
         onClose={exportDialog.onClose}
         isDarkUi={isDarkUi}
         selectedPageCount={exportDialog.selectedPageCount}
+        showBaselines={exportDialog.showBaselines}
+        onToggleBaselines={exportDialog.onToggleBaselines}
+        showMargins={exportDialog.showMargins}
+        onToggleMargins={exportDialog.onToggleMargins}
+        showModules={exportDialog.showModules}
+        onToggleModules={exportDialog.onToggleModules}
+        showTypography={exportDialog.showTypography}
+        onToggleTypography={exportDialog.onToggleTypography}
+        showImagePlaceholders={exportDialog.showImagePlaceholders}
+        onToggleImagePlaceholders={exportDialog.onToggleImagePlaceholders}
         pageRangeOptions={exportDialog.pageRangeOptions}
         exportRangeStartDraft={exportDialog.rangeStart}
         onExportRangeStartChange={exportDialog.onRangeStartChange}
