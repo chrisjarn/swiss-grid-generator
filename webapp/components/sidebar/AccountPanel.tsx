@@ -95,7 +95,6 @@ export function AccountPanel({
     ? {
         body: "text-[#A8B1BF]",
         caption: "text-[#8D98AA]",
-        divider: "border-[#313A47]",
         action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         button: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         field: "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]",
@@ -103,7 +102,6 @@ export function AccountPanel({
     : {
         body: "text-gray-600",
         caption: "text-gray-400",
-        divider: "border-gray-200",
         action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
         button: "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
         field: "border-gray-300 bg-white text-gray-900",
@@ -157,7 +155,7 @@ export function AccountPanel({
       </div>
       {userEmail ? (
         <>
-          <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+          <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
               label="Signed In As"
               value={userEmail}
@@ -185,7 +183,7 @@ export function AccountPanel({
           {feedbackSection}
         </>
       ) : (
-        <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+        <section className="space-y-2 pt-[13px]">
           <SectionHeaderRow
             label="Sign In"
             value={(
@@ -278,7 +276,7 @@ export function AccountPanel({
         </section>
       )}
 
-      <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+      <section className="space-y-2 pt-[13px]">
         <SectionHeaderRow label="Cloud Status" />
         <div className="flex items-center gap-2 text-[11px]">
           <span className={`${cloudStatusIndicatorClassName} h-2.5 w-2.5 shrink-0 rounded-[2px]`} aria-hidden="true" />

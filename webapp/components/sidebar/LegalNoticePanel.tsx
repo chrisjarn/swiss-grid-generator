@@ -11,12 +11,11 @@ type Props = {
 type LegalSectionProps = {
   title: string
   children: ReactNode
-  dividerClassName: string
 }
 
-function LegalSection({ title, children, dividerClassName }: LegalSectionProps) {
+function LegalSection({ title, children }: LegalSectionProps) {
   return (
-    <section className={`space-y-2 border-t pt-3 ${dividerClassName}`}>
+    <section className="space-y-2 pt-[13px]">
       <SectionHeaderRow label={title} />
       {children}
     </section>
@@ -61,7 +60,7 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         </p>
       </section>
 
-      <LegalSection title="Provider" dividerClassName={tone.divider}>
+      <LegalSection title="Provider">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           <span className={`font-medium ${tone.emphasis}`}>Ingo Wörner</span>
           <br />
@@ -73,7 +72,7 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         </p>
       </LegalSection>
 
-      <LegalSection title="Contact" dividerClassName={tone.divider}>
+      <LegalSection title="Contact">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           <a href="mailto:hello@swiss-grid-generator.com" className={tone.link}>
             hello@swiss-grid-generator.com
@@ -81,7 +80,7 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         </p>
       </LegalSection>
 
-      <LegalSection title="Responsible for Own Content" dividerClassName={tone.divider}>
+      <LegalSection title="Responsible for Own Content">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           Ingo Wörner
           <br />
@@ -93,7 +92,7 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         </p>
       </LegalSection>
 
-      <LegalSection title="Privacy" dividerClassName={tone.divider}>
+      <LegalSection title="Privacy">
         <div className={`space-y-2 text-xs leading-relaxed ${tone.body}`}>
           <p>
             The controller for personal data processed by Swiss Grid Generator is Ingo Wörner, contactable at the email address above.
@@ -107,43 +106,43 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         </div>
       </LegalSection>
 
-      <LegalSection title="Cloud Storage" dividerClassName={tone.divider}>
+      <LegalSection title="Cloud Storage">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           Signed-in users can store projects in Supabase. User projects and uploaded project content remain the responsibility of the respective user.
         </p>
       </LegalSection>
 
-      <LegalSection title="Local Storage" dividerClassName={tone.divider}>
+      <LegalSection title="Local Storage">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           The app uses local storage and IndexedDB for editor preferences, offline cache, recent local activity logs, and project synchronization. These are required for the requested editor and cloud-sync features. The app does not use advertising or analytics cookies.
         </p>
       </LegalSection>
 
-      <LegalSection title="Feedback" dividerClassName={tone.divider}>
+      <LegalSection title="Feedback">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           Feedback submissions are stored in Supabase and may include email, comment, screenshots, app version, and optional local support logs. They are used only to handle support, bug reports, and product feedback.
         </p>
       </LegalSection>
 
-      <LegalSection title="User Rights" dividerClassName={tone.divider}>
+      <LegalSection title="User Rights">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           Users may request access, correction, deletion, restriction, portability, or objection by email. Users may also lodge a complaint with a competent data protection supervisory authority.
         </p>
       </LegalSection>
 
-      <LegalSection title="Terms of Use" dividerClassName={tone.divider}>
+      <LegalSection title="Terms of Use">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           Swiss Grid Generator is provided as a professional design tool without a guarantee of uninterrupted availability. Users are responsible for their own documents, exports, backups, and lawful use of uploaded or stored content.
         </p>
       </LegalSection>
 
-      <LegalSection title="Consumer Dispute Resolution" dividerClassName={tone.divider}>
+      <LegalSection title="Consumer Dispute Resolution">
         <p className={`text-xs leading-relaxed ${tone.body}`}>
           We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.
         </p>
       </LegalSection>
 
-      <section className={`border-t pt-3 ${tone.divider}`}>
+      <section className="pt-[13px]">
         <p className={`text-[11px] leading-relaxed ${tone.caption}`}>
           This compact legal notice is provided in English because the app interface is English only.
         </p>

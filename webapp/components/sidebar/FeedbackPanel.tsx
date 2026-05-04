@@ -47,15 +47,13 @@ function Section({
   title,
   value,
   children,
-  dividerClassName,
 }: {
   title: string
   value?: ReactNode
   children: ReactNode
-  dividerClassName: string
 }) {
   return (
-    <section className={`space-y-2 border-t pt-3 ${dividerClassName}`}>
+    <section className="space-y-2 pt-[13px]">
       <SectionHeaderRow label={title} value={value} />
       {children}
     </section>
@@ -226,7 +224,6 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     ? {
         heading: "text-gray-100",
         caption: "text-[#8D98AA]",
-        divider: "border-[#313A47]",
         action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#9AC99A]",
         error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-swiss-orange-soft",
@@ -234,7 +231,6 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     : {
         heading: "text-gray-900",
         caption: "text-gray-400",
-        divider: "border-gray-200",
         action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
         success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#2f7d32]",
         error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-[#c55a52]",
@@ -445,7 +441,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         </div>
       ) : (
         <form className={`space-y-4 ${mutedTextClassName}`} onSubmit={handleSubmit} noValidate>
-          <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+          <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
               label="Your Email"
             />
@@ -457,7 +453,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             })}
           </section>
 
-          <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+          <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
               label="Comment"
               actions={(
@@ -469,7 +465,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             {renderTextarea()}
           </section>
 
-          <Section title="Screenshots" dividerClassName={tone.divider}>
+          <Section title="Screenshots">
             <input
               ref={fileInputRef}
               type="file"
@@ -523,7 +519,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             <FieldError message={errors.screenshots} />
           </Section>
 
-          <section className={`space-y-2 border-t pt-3 ${tone.divider}`}>
+          <section className="space-y-2 pt-[13px]">
             {renderSupportLogCheckbox()}
           </section>
 
