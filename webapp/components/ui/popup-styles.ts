@@ -27,8 +27,8 @@ export function getCompactActionButtonClassName({
     return cn(
       baseButtonClassName,
       isDarkMode
-        ? "border-[#A8B1BF] bg-[#F4F6F8] text-[#1D232D] hover:bg-white"
-        : "border-gray-900 bg-gray-900 text-white hover:bg-gray-800",
+        ? "border-swiss-orange-soft/60 bg-swiss-orange-soft/20 text-[#F4F6F8] hover:bg-swiss-orange-soft/28"
+        : "border-swiss-orange-soft/70 bg-swiss-orange-soft/15 text-[#9d4039] hover:bg-swiss-orange-soft/22",
     )
   }
 

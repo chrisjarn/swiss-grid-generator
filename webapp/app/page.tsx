@@ -2041,7 +2041,7 @@ export default function Home() {
           isDarkUi={isDarkUi}
           exportDialog={{
             isOpen: exportActions.isExportDialogOpen,
-            onClose: exportActions.closeExportDialog,
+            onClose: exportActions.requestCloseExportDialog,
             selectedPageCount: exportActions.selectedPageCount,
             pageRangeOptions: exportActions.pageRangeOptions,
             rangeStart: exportActions.exportRangeStartDraft,
