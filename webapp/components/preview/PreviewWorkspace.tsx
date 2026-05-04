@@ -717,13 +717,16 @@ export function PreviewWorkspace({
                             type="button"
                             aria-label="Add page copy with content"
                             onClick={onPageAddWithContent}
-                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 text-[9px] font-semibold leading-none transition-colors ${
+                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
                               isDarkUi
                                 ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
                                 : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
                             }`}
                           >
-                            ++
+                            <span className="inline-flex h-full items-center gap-[1px]">
+                              <Plus className="h-2 w-2" />
+                              <Plus className="h-2 w-2" />
+                            </span>
                           </button>
                         </div>
                       )}
@@ -784,13 +787,16 @@ export function PreviewWorkspace({
                           type="button"
                           aria-label="Add page copy with content"
                           onClick={onPageAddWithContent}
-                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 text-[9px] font-semibold leading-none transition-colors ${
+                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
                             isDarkUi
                               ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
                               : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
                           }`}
                         >
-                          ++
+                          <span className="inline-flex h-full items-center gap-[1px]">
+                            <Plus className="h-2 w-2" />
+                            <Plus className="h-2 w-2" />
+                          </span>
                         </button>
                       </div>
                     )}
