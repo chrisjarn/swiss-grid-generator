@@ -29,6 +29,7 @@ Core editing and layout workflows.
 
 ### Preview Workspace {#help-preview-workspace}
 - The preview is the live layout surface for the active page.
+- When you load a preset, project, or another page, the new preview is only revealed after the full page snapshot and first final plan commit are ready, so provisional image/text geometry is not shown mid-load.
 - Double-click inside a module to add text with hyphenation off by default. `Shift` + double-click adds an image placeholder.
 - Hold `1..5` while double-clicking empty space to choose the new paragraph hierarchy: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`. New hierarchy blocks start as Caption `1x1`, Body/Subhead `1x2`, Headline/Display `1x3`, clamped to the remaining columns from the clicked module.
 - Hover a layer to reveal edit access and placement guides.

@@ -143,6 +143,8 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 - Removed duplicate text-run normalization on editor-open and duplicate-layer snapshot paths in:
   - `webapp/lib/preview-block-editor-state.ts`
   - `webapp/lib/preview-text-layer-state.ts`
+- Replaced phased page-load hydration with one atomic preview snapshot apply in `webapp/hooks/usePreviewDocumentLifecycle.ts`.
+- Gated preview reveal on the first committed final plan for the loaded page in `webapp/components/grid-preview.tsx`, so fast paging never shows provisional geometry during hydration.
 
 ### What This Improves
 
@@ -150,6 +152,7 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 - Undo/history boundaries avoid rebuilding full preview snapshots when the logical document revision has not changed.
 - Keyboard nudging and image/text placement helpers stop allocating throwaway arrays around row/column axis lookups.
 - Opening, re-targeting, duplicating, and reusing large text paragraphs avoids some repeated tracking/format-run normalization work.
+- Page changes stop exposing intermediate image/layer state while the new page snapshot is still settling.
 
 ### Validation
 

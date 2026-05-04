@@ -1,37 +1,9 @@
 import { useEffect } from "react"
 import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 
-import type { FontFamily } from "@/lib/config/fonts"
 import { areLayerOrdersEqual, reconcileLayerOrder } from "@/lib/preview-layer-order"
-import type { TextFormatRun } from "@/lib/text-format-runs"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { PreviewLayoutState, TextAlignMode, TextBlockPosition, TextVerticalAlignMode } from "@/lib/types/preview-layout"
-import { useInitialLayoutHydration } from "@/hooks/useInitialLayoutHydration"
-
-type BlockCollectionsState<StyleKey extends string, Key extends string> = {
-  blockOrder: Key[]
-  textContent: Record<Key, string>
-  blockTextEdited: Record<Key, boolean>
-  styleAssignments: Record<Key, StyleKey>
-  blockFontFamilies: Partial<Record<Key, FontFamily>>
-  blockFontWeights: Partial<Record<Key, number>>
-  blockOpticalKerning: Partial<Record<Key, boolean>>
-  blockTrackingScales: Partial<Record<Key, number>>
-  blockTrackingRuns: Partial<Record<Key, TextTrackingRun[]>>
-  blockTextFormatRuns: Partial<Record<Key, TextFormatRun<StyleKey, FontFamily>[]>>
-  blockColumnSpans: Partial<Record<Key, number>>
-  blockRowSpans: Partial<Record<Key, number>>
-  blockHeightBaselines: Partial<Record<Key, number>>
-  blockTextAlignments: Partial<Record<Key, TextAlignMode>>
-  blockVerticalAlignments: Partial<Record<Key, TextVerticalAlignMode>>
-  blockTextReflow: Partial<Record<Key, boolean>>
-  blockSyllableDivision: Partial<Record<Key, boolean>>
-  blockSnapToColumns: Partial<Record<Key, boolean>>
-  blockSnapToBaseline: Partial<Record<Key, boolean>>
-  blockItalic: Partial<Record<Key, boolean>>
-  blockRotations: Partial<Record<Key, number>>
-  blockModulePositions: Partial<Record<Key, TextBlockPosition>>
-}
+import type { FontFamily } from "@/lib/config/fonts"
+import type { PreviewLayoutState } from "@/lib/types/preview-layout"
 
 type Args<StyleKey extends string, Key extends string, DragState, TextEditorState, ImageEditorState> = {
   historyResetToken: number
@@ -55,25 +27,10 @@ type Args<StyleKey extends string, Key extends string, DragState, TextEditorStat
   setDragState: Dispatch<SetStateAction<DragState | null>>
   setEditorState: Dispatch<SetStateAction<TextEditorState | null>>
   setImageEditorState: Dispatch<SetStateAction<ImageEditorState | null>>
-  defaultTextColor: string
   recordHistoryBeforeChange: () => void
   pushHistory: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
   buildSnapshot: () => PreviewLayoutState<StyleKey, FontFamily, Key>
-  baseFont: FontFamily
-  gridCols: number
-  gridRows: number
-  typographyStyles: Record<StyleKey, unknown>
-  isBaseBlockId: (key: string) => boolean
-  defaultTextContent: Record<string, string>
-  defaultStyleAssignments: Record<string, StyleKey>
-  isFontFamily: (value: unknown) => value is FontFamily
-  getDefaultColumnSpan: (key: Key, gridCols: number) => number
-  getGridMetrics: () => { rowStartBaselines: number[] }
-  setBlockCollections: (updater: () => BlockCollectionsState<StyleKey, Key>) => void
-  applyImageSnapshot: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
-  applyLayerOrderSnapshot: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
-  applyCustomSizeSnapshot: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
-  applyLockedLayerSnapshot: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
+  applySnapshot: (snapshot: PreviewLayoutState<StyleKey, FontFamily, Key>) => void
   blockOrder: Key[]
   imageOrder: Key[]
   layerOrder: Key[]
@@ -108,25 +65,10 @@ export function usePreviewDocumentLifecycle<
   setDragState,
   setEditorState,
   setImageEditorState,
-  defaultTextColor,
   recordHistoryBeforeChange,
   pushHistory,
   buildSnapshot,
-  baseFont,
-  gridCols,
-  gridRows,
-  typographyStyles,
-  isBaseBlockId,
-  defaultTextContent,
-  defaultStyleAssignments,
-  isFontFamily,
-  getDefaultColumnSpan,
-  getGridMetrics,
-  setBlockCollections,
-  applyImageSnapshot,
-  applyLayerOrderSnapshot,
-  applyCustomSizeSnapshot,
-  applyLockedLayerSnapshot,
+  applySnapshot,
   blockOrder,
   imageOrder,
   layerOrder,
@@ -168,62 +110,40 @@ export function usePreviewDocumentLifecycle<
     suppressReflowCheckRef,
   ])
 
-  useInitialLayoutHydration<StyleKey, Key>({
+  useEffect(() => {
+    if (!initialLayout || initialLayoutToken === 0) return
+    if (lastAppliedLayoutKeyRef.current === initialLayoutToken) return
+    if (lastAppliedLayoutKeyRef.current !== 0) {
+      pushHistory(buildSnapshot())
+    }
+    lastAppliedLayoutKeyRef.current = initialLayoutToken
+    lastAppliedImageLayoutKeyRef.current = initialLayoutToken
+    lastAppliedLayerLayoutKeyRef.current = initialLayoutToken
+    lastAppliedCustomSizeLayoutKeyRef.current = initialLayoutToken
+    lastAppliedLockLayoutKeyRef.current = initialLayoutToken
+    suppressReflowCheckRef.current = true
+    applySnapshot(initialLayout)
+    setDragState(null)
+    clearHover()
+    setEditorState(null)
+    setImageEditorState(null)
+  }, [
+    applySnapshot,
+    buildSnapshot,
+    clearHover,
     initialLayout,
     initialLayoutToken,
-    lastAppliedLayoutTokenRef: lastAppliedLayoutKeyRef,
+    lastAppliedCustomSizeLayoutKeyRef,
+    lastAppliedImageLayoutKeyRef,
+    lastAppliedLayerLayoutKeyRef,
+    lastAppliedLayoutKeyRef,
+    lastAppliedLockLayoutKeyRef,
     pushHistory,
-    buildSnapshot,
-    baseFont,
-    defaultTextColor,
-    gridCols,
-    gridRows,
-    typographyStyles,
-    isBaseBlockId,
-    defaultTextContent,
-    defaultStyleAssignments,
-    isFontFamily,
-    getDefaultColumnSpan,
-    getGridMetrics,
-    setBlockCollections,
-    onBeforeApply: () => {
-      suppressReflowCheckRef.current = true
-    },
-    onAfterApply: () => {
-      setDragState(null)
-      clearHover()
-      setEditorState(null)
-      setImageEditorState(null)
-    },
-  })
-
-  useEffect(() => {
-    if (!initialLayout || initialLayoutToken === 0) return
-    if (lastAppliedImageLayoutKeyRef.current === initialLayoutToken) return
-    lastAppliedImageLayoutKeyRef.current = initialLayoutToken
-    applyImageSnapshot(initialLayout)
-  }, [applyImageSnapshot, initialLayout, initialLayoutToken, lastAppliedImageLayoutKeyRef])
-
-  useEffect(() => {
-    if (!initialLayout || initialLayoutToken === 0) return
-    if (lastAppliedLayerLayoutKeyRef.current === initialLayoutToken) return
-    lastAppliedLayerLayoutKeyRef.current = initialLayoutToken
-    applyLayerOrderSnapshot(initialLayout)
-  }, [applyLayerOrderSnapshot, initialLayout, initialLayoutToken, lastAppliedLayerLayoutKeyRef])
-
-  useEffect(() => {
-    if (!initialLayout || initialLayoutToken === 0) return
-    if (lastAppliedCustomSizeLayoutKeyRef.current === initialLayoutToken) return
-    lastAppliedCustomSizeLayoutKeyRef.current = initialLayoutToken
-    applyCustomSizeSnapshot(initialLayout)
-  }, [applyCustomSizeSnapshot, initialLayout, initialLayoutToken, lastAppliedCustomSizeLayoutKeyRef])
-
-  useEffect(() => {
-    if (!initialLayout || initialLayoutToken === 0) return
-    if (lastAppliedLockLayoutKeyRef.current === initialLayoutToken) return
-    lastAppliedLockLayoutKeyRef.current = initialLayoutToken
-    applyLockedLayerSnapshot(initialLayout)
-  }, [applyLockedLayerSnapshot, initialLayout, initialLayoutToken, lastAppliedLockLayoutKeyRef])
+    setDragState,
+    setEditorState,
+    setImageEditorState,
+    suppressReflowCheckRef,
+  ])
 
   useEffect(() => {
     if (!requestedLayerOrder || requestedLayerOrderToken === 0) return

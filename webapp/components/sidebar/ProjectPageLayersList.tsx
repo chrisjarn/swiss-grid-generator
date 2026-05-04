@@ -180,7 +180,10 @@ export function ProjectPageLayersList({
     if (!selectedLayerKey || !isActivePage) return
     const target = cardRefs.current[selectedLayerKey]
     if (!target) return
-    const scrollRoot = target.closest("[data-help-scroll-root='true']") as HTMLElement | null
+    const scrollRoot = (
+      target.closest("[data-page-layers-scroll-root='true']")
+      ?? target.closest("[data-help-scroll-root='true']")
+    ) as HTMLElement | null
     if (!scrollRoot) return
 
     const topGapPx = 12

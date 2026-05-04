@@ -1,7 +1,7 @@
 "use client"
 
 import { Info, Plus, X } from "lucide-react"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import { GridPreview } from "@/components/grid-preview"
 import { FeedbackPanel } from "@/components/sidebar/FeedbackPanel"
@@ -328,6 +328,7 @@ export function PreviewWorkspace({
   const [previewEditorOpenToken, setPreviewEditorOpenToken] = useState(0)
   const [previewParagraphCreateToken, setPreviewParagraphCreateToken] = useState(0)
   const [showProjectInfo, setShowProjectInfo] = useState(false)
+  const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
   const shouldRenderSidebarPanel = activeSidebarPanel !== null && (
@@ -351,6 +352,14 @@ export function PreviewWorkspace({
   const activePageNumber = useMemo(() => {
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
   }, [activePageId, projectPages])
+
+  useEffect(() => {
+    const previousEditorMode = previousEditorModeRef.current
+    previousEditorModeRef.current = editorMode
+    if (editorMode === null || previousEditorMode !== null) return
+    setPreviewEditorOpenToken((current) => current + 1)
+  }, [editorMode])
+
   const activePageTitle = useMemo(() => {
     return activeProjectPage?.name?.trim() || `Page ${activePageNumber}`
   }, [activePageNumber, activeProjectPage])
@@ -597,7 +606,6 @@ export function PreviewWorkspace({
               onSelectLayer={onLayerSelect}
               editorSidebarHost={editorSidebarHost}
               onEditorModeChange={onEditorModeChange}
-              onPreviewEditorOpen={() => setPreviewEditorOpenToken((current) => current + 1)}
               onPreviewParagraphCreate={() => setPreviewParagraphCreateToken((current) => current + 1)}
               isDarkMode={isDarkUi}
               onLayoutChange={onLayoutChange}

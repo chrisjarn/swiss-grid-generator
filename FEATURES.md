@@ -168,6 +168,7 @@ Current capability inventory for Swiss Grid Generator.
 - Preset browser in the preview area.
 - Rendered page-1 thumbnails for bundled presets.
 - Loading a preset, imported project, or saved user layout always opens the first page in its `pages` array.
+- Loaded pages are revealed only after the full page snapshot and first final preview plan are ready, so fast paging does not expose intermediate image or layer placement.
 - Preset rollover tooltip with title, description, author, and creation date metadata when rollover info is enabled.
 - User-library layouts are listed after bundled `Presets` and `Examples` when any local or synced user layouts are available.
 - The Users section header includes an info rollover describing local browser storage, data-clearing risk, and signed-in cloud sync.

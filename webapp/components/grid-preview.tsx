@@ -63,16 +63,10 @@ import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
-import {
-  BASE_BLOCK_IDS,
-  DEFAULT_STYLE_ASSIGNMENTS,
-  DEFAULT_TEXT_CONTENT,
-  isBaseBlockId,
-} from "@/lib/document-defaults"
+import { isBaseBlockId } from "@/lib/document-defaults"
 import {
   DEFAULT_BASE_FONT,
   getStyleDefaultFontWeight,
-  isFontFamily,
   type FontFamily,
 } from "@/lib/config/fonts"
 import {
@@ -317,6 +311,7 @@ export const GridPreview = memo(function GridPreview({
   const [pendingTextStyleTransfer, setPendingTextStyleTransfer] = useState<PendingTextStyleTransfer | null>(null)
   const [pendingLayerDuplicate, setPendingLayerDuplicate] = useState<PendingLayerDuplicate | null>(null)
   const [layoutEmissionEnabled, setLayoutEmissionEnabled] = useState(initialLayoutToken === 0)
+  const [layoutDisplayReady, setLayoutDisplayReady] = useState(initialLayoutToken === 0)
   const [pendingLayerEditorMode, setPendingLayerEditorMode] = useState<"text" | "image" | null>(null)
   const [activeTextZoomTarget, setActiveTextZoomTarget] = useState<BlockId | null>(null)
   const [smartTextZoomTargetVersion, setSmartTextZoomTargetVersion] = useState(0)
@@ -478,7 +473,6 @@ export const GridPreview = memo(function GridPreview({
     getImageColorReference,
     getImageOpacity,
     isImagePlaceholderKey,
-    applyImageSnapshot,
     openImageEditorState,
     closeImageEditorState,
     insertImagePlaceholder,
@@ -510,9 +504,6 @@ export const GridPreview = memo(function GridPreview({
     buildSnapshot,
     activeParagraphCount,
     layoutRevisionKey,
-    applyLayerOrderSnapshot,
-    applyCustomSizeSnapshot,
-    applyLockedLayerSnapshot,
     applySnapshot,
   } = useGridPreviewDocumentState({
     result,
@@ -1464,9 +1455,11 @@ export const GridPreview = memo(function GridPreview({
     }
     if (initialLayoutToken === 0) {
       setLayoutEmissionEnabled(true)
+      setLayoutDisplayReady(true)
       return
     }
     setLayoutEmissionEnabled(false)
+    setLayoutDisplayReady(false)
   }, [initialLayoutToken])
 
   useEffect(() => {
@@ -1546,27 +1539,10 @@ export const GridPreview = memo(function GridPreview({
     setEditorState,
     setImageEditorState,
     imageOrder,
-    defaultTextColor,
     recordHistoryBeforeChange,
     pushHistory,
     buildSnapshot,
-    baseFont,
-    gridCols: result.settings.gridCols,
-    gridRows: result.settings.gridRows,
-    typographyStyles: result.typography.styles,
-    isBaseBlockId,
-    defaultTextContent: DEFAULT_TEXT_CONTENT as Record<string, string>,
-    defaultStyleAssignments: Object.fromEntries(
-      BASE_BLOCK_IDS.map((key) => [key, DEFAULT_STYLE_ASSIGNMENTS[key]]),
-    ) as Record<string, TypographyStyleKey>,
-    isFontFamily,
-    getDefaultColumnSpan,
-    getGridMetrics,
-    setBlockCollections,
-    applyImageSnapshot,
-    applyLayerOrderSnapshot,
-    applyCustomSizeSnapshot,
-    applyLockedLayerSnapshot,
+    applySnapshot,
     blockOrder,
     layerOrder,
     setLayerOrder,
@@ -1650,6 +1626,7 @@ export const GridPreview = memo(function GridPreview({
   const [typographyPlanVersion, setTypographyPlanVersion] = useState(0)
   const handleTypographyPlanCommit = useCallback(() => {
     setTypographyPlanVersion((version) => version + 1)
+    setLayoutDisplayReady(true)
     onPreviewPlansCommit?.()
   }, [onPreviewPlansCommit])
 
@@ -1965,9 +1942,10 @@ export const GridPreview = memo(function GridPreview({
     <div
       ref={previewContainerRef}
       data-tooltip-boundary="preview-workspace"
-      className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg ${
+      className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg transition-opacity ${
         isDarkMode ? "bg-[#161A22]" : "bg-gray-100"
       }`}
+      style={{ opacity: layoutDisplayReady ? 1 : 0 }}
       onPointerDown={handlePreviewWorkspacePointerDown}
     >
       <div

@@ -222,6 +222,7 @@ Default: `swiss`
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.
+- Loading or switching to another page keeps the previous preview hidden until the target page snapshot and first final plan commit are complete, so partial intermediate geometry is never shown.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
 - Single-clicking a page row selects that page.
 - Double-clicking a page row toggles its inline layer list and aligns opened pages to the top of the panel.

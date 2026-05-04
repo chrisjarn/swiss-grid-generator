@@ -21,6 +21,7 @@ type TransientExpandedReason = "editor" | "keyboard" | "paragraph"
 const PAGE_VIRTUALIZATION_THRESHOLD = 80
 const PAGE_VIRTUALIZATION_OVERSCAN = 8
 const DEFAULT_PAGE_CARD_HEIGHT = 76
+const DEFAULT_EXPANDED_PAGE_CARD_HEIGHT = 320
 const KEYBOARD_PAGE_FOCUS_DELAY_MS = 140
 const KEYBOARD_PAGE_EXPAND_DELAY_MS = 500
 const PAGE_HEADER_SCROLL_TOP_OFFSET_PX = 0
@@ -96,6 +97,7 @@ export function PagesPanel({
   } | null>(null)
   const [scrollViewport, setScrollViewport] = useState({ top: 0, height: 0 })
   const [pageCardHeight, setPageCardHeight] = useState(DEFAULT_PAGE_CARD_HEIGHT)
+  const [measuredPageHeights, setMeasuredPageHeights] = useState<Record<string, number>>({})
   const previousPageIdsRef = useRef<string[]>(pages.map((page) => page.id))
   const pendingScrollTargetRef = useRef<{ pageId: string } | null>(null)
   const lastPreviewEditorOpenTokenRef = useRef(0)
@@ -228,7 +230,6 @@ export function PagesPanel({
   }, [activePageId, transientExpandedPageId, transientExpandedReason])
 
   const virtualizationEnabled = pages.length >= PAGE_VIRTUALIZATION_THRESHOLD
-    && expandedPageId === null
     && editingPageId === null
     && draggingPageId === null
 
@@ -258,10 +259,25 @@ export function PagesPanel({
     }
   }, [virtualizationEnabled])
 
-  const pageIndexById = useMemo(
-    () => new Map(pages.map((page, index) => [page.id, index])),
-    [pages],
-  )
+  const pageMetrics = useMemo(() => {
+    const offsets = new Map<string, number>()
+    const heights = new Map<string, number>()
+    let runningTop = 0
+    for (const page of pages) {
+      const measuredHeight = measuredPageHeights[page.id]
+      const estimatedHeight = measuredHeight ?? (
+        expandedPageId === page.id ? DEFAULT_EXPANDED_PAGE_CARD_HEIGHT : pageCardHeight
+      )
+      offsets.set(page.id, runningTop)
+      heights.set(page.id, estimatedHeight)
+      runningTop += estimatedHeight
+    }
+    return {
+      offsets,
+      heights,
+      totalHeight: runningTop,
+    }
+  }, [expandedPageId, measuredPageHeights, pageCardHeight, pages])
 
   useEffect(() => {
     const pendingScrollTarget = pendingScrollTargetRef.current
@@ -274,9 +290,9 @@ export function PagesPanel({
 
     const target = cardRefs.current[targetPageId]
     if (!target && virtualizationEnabled) {
-      const activePageIndex = pageIndexById.get(targetPageId)
-      if (activePageIndex === undefined) return
-      const nextTop = Math.max(0, activePageIndex * pageCardHeight - PAGE_HEADER_SCROLL_TOP_OFFSET_PX)
+      const targetTop = pageMetrics.offsets.get(targetPageId)
+      if (targetTop === undefined) return
+      const nextTop = Math.max(0, targetTop - PAGE_HEADER_SCROLL_TOP_OFFSET_PX)
       const rootRect = root.getBoundingClientRect()
       const scrollRootRect = scrollRoot.getBoundingClientRect()
       const rootTopInScroll = rootRect.top - scrollRootRect.top + scrollRoot.scrollTop
@@ -297,7 +313,7 @@ export function PagesPanel({
       scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
     })
     pendingScrollTargetRef.current = null
-  }, [pageCardHeight, pageIndexById, scheduledKeyboardFocusRequest, scrollViewport.height, virtualizationEnabled])
+  }, [pageMetrics, scheduledKeyboardFocusRequest, scrollViewport.height, virtualizationEnabled])
 
   useEffect(() => {
     const releaseOnMouseUp = () => {
@@ -353,20 +369,57 @@ export function PagesPanel({
     () => new Map(stationaryPages.map((page, index) => [page.id, index])),
     [stationaryPages],
   )
-  const virtualizedStartIndex = virtualizationEnabled
-    ? Math.max(0, Math.floor(scrollViewport.top / Math.max(1, pageCardHeight)) - PAGE_VIRTUALIZATION_OVERSCAN)
-    : 0
-  const virtualizedVisibleCount = virtualizationEnabled
-    ? Math.ceil(scrollViewport.height / Math.max(1, pageCardHeight)) + PAGE_VIRTUALIZATION_OVERSCAN * 2
-    : pages.length
-  const virtualizedEndIndex = virtualizationEnabled
-    ? Math.min(pages.length, virtualizedStartIndex + virtualizedVisibleCount)
-    : pages.length
+  const virtualizedWindow = useMemo(() => {
+    if (!virtualizationEnabled) {
+      return {
+        startIndex: 0,
+        endIndex: pages.length,
+      }
+    }
+
+    const overscanPx = PAGE_VIRTUALIZATION_OVERSCAN * Math.max(1, pageCardHeight)
+    const windowTop = Math.max(0, scrollViewport.top - overscanPx)
+    const windowBottom = scrollViewport.top + scrollViewport.height + overscanPx
+
+    let startIndex = 0
+    while (startIndex < pages.length) {
+      const page = pages[startIndex]
+      if (!page) break
+      const pageTop = pageMetrics.offsets.get(page.id) ?? 0
+      const pageHeight = pageMetrics.heights.get(page.id) ?? pageCardHeight
+      if (pageTop + pageHeight >= windowTop) break
+      startIndex += 1
+    }
+
+    let endIndex = startIndex
+    while (endIndex < pages.length) {
+      const page = pages[endIndex]
+      if (!page) break
+      const pageTop = pageMetrics.offsets.get(page.id) ?? 0
+      if (pageTop > windowBottom) break
+      endIndex += 1
+    }
+
+    return {
+      startIndex: Math.max(0, startIndex),
+      endIndex: Math.min(pages.length, Math.max(endIndex, startIndex + 1)),
+    }
+  }, [pageCardHeight, pageMetrics, pages, scrollViewport.height, scrollViewport.top, virtualizationEnabled])
+
+  const virtualizedStartIndex = virtualizedWindow.startIndex
+  const virtualizedEndIndex = virtualizedWindow.endIndex
   const visiblePages = virtualizationEnabled
     ? pages.slice(virtualizedStartIndex, virtualizedEndIndex)
     : pages
-  const topSpacerHeight = virtualizationEnabled ? virtualizedStartIndex * pageCardHeight : 0
-  const bottomSpacerHeight = virtualizationEnabled ? Math.max(0, (pages.length - virtualizedEndIndex) * pageCardHeight) : 0
+  const topSpacerHeight = virtualizationEnabled
+    ? (pageMetrics.offsets.get(pages[virtualizedStartIndex]?.id ?? "") ?? 0)
+    : 0
+  const bottomSpacerHeight = virtualizationEnabled
+    ? Math.max(
+      0,
+      pageMetrics.totalHeight - (pageMetrics.offsets.get(pages[virtualizedEndIndex]?.id ?? "") ?? pageMetrics.totalHeight),
+    )
+    : 0
 
   const beginRename = (page: ProjectPage<PreviewLayoutState>) => {
     setEditingPageId(page.id)
@@ -484,7 +537,18 @@ export function PagesPanel({
         <div
           ref={(node) => {
             cardRefs.current[page.id] = node
-            if (node && !isExpanded && !isEditing && Math.abs(node.offsetHeight - pageCardHeight) > 1) {
+            if (!node) return
+            if (Math.abs((measuredPageHeights[page.id] ?? 0) - node.offsetHeight) > 1) {
+              setMeasuredPageHeights((current) => (
+                current[page.id] === node.offsetHeight
+                  ? current
+                  : {
+                    ...current,
+                    [page.id]: node.offsetHeight,
+                  }
+              ))
+            }
+            if (!isExpanded && !isEditing && Math.abs(node.offsetHeight - pageCardHeight) > 1) {
               setPageCardHeight(node.offsetHeight)
             }
           }}
@@ -650,25 +714,30 @@ export function PagesPanel({
                 </button>
               </div>
               <SectionHeaderRow label="Layers" className="mt-3" />
-              <ProjectPageLayersList
-                pageId={page.id}
-                layout={resolvedPage.previewLayout}
-                baseFont={baseFont}
-                imageColorScheme={imageColorScheme}
-                selectedLayerKey={isActive ? selectedLayerKey : null}
-                hoveredLayerKey={isActive ? hoveredLayerKey : null}
-                editingLayerKey={isActive ? editingLayerKey : null}
-                isActivePage={isActive}
-                onSelectPage={onSelectPage}
-                onLayerOrderChange={onLayerOrderChange}
-                onSelectLayer={onSelectedLayerKeyChange}
-                onHoverLayerChange={onHoverLayerChange}
-                onToggleEditor={onLayerEditorToggle}
-                onToggleLock={onLayerLockToggle}
-                onToggleAllLocks={onPageLayerLockToggle}
-                onDeleteLayer={onLayerDelete}
-                isDarkMode={isDarkMode}
-              />
+              <div
+                data-page-layers-scroll-root="true"
+                className="mt-2 max-h-[min(60vh,28rem)] overflow-y-auto overscroll-contain pr-1"
+              >
+                <ProjectPageLayersList
+                  pageId={page.id}
+                  layout={resolvedPage.previewLayout}
+                  baseFont={baseFont}
+                  imageColorScheme={imageColorScheme}
+                  selectedLayerKey={isActive ? selectedLayerKey : null}
+                  hoveredLayerKey={isActive ? hoveredLayerKey : null}
+                  editingLayerKey={isActive ? editingLayerKey : null}
+                  isActivePage={isActive}
+                  onSelectPage={onSelectPage}
+                  onLayerOrderChange={onLayerOrderChange}
+                  onSelectLayer={onSelectedLayerKeyChange}
+                  onHoverLayerChange={onHoverLayerChange}
+                  onToggleEditor={onLayerEditorToggle}
+                  onToggleLock={onLayerLockToggle}
+                  onToggleAllLocks={onPageLayerLockToggle}
+                  onDeleteLayer={onLayerDelete}
+                  isDarkMode={isDarkMode}
+                />
+              </div>
             </div>
           ) : null}
         </div>
