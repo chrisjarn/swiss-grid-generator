@@ -1,7 +1,7 @@
 "use client"
 
 import { Info, Plus, X } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
 
 import { GridPreview } from "@/components/grid-preview"
 import { FeedbackPanel } from "@/components/sidebar/FeedbackPanel"
@@ -12,6 +12,7 @@ import { PagesPanel } from "@/components/sidebar/PagesPanel"
 import { PresetLayoutsPanel } from "@/components/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/components/sidebar/ProjectTitleSection"
 import { HeaderIconButton } from "@/components/ui/header-icon-button"
+import { HoverTooltip } from "@/components/ui/hover-tooltip"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import { getStyleDefaultFontWeight, resolveFontVariant, type FontFamily } from "@/lib/config/fonts"
 import {
@@ -335,6 +336,11 @@ export function PreviewWorkspace({
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
+  const pageActionButtonClassName = `inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
+    isDarkUi
+      ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
+      : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+  }`
   const shouldRenderSidebarPanel = activeSidebarPanel !== null && (
     !showPresetsBrowser
     || activeSidebarPanel === "help"
@@ -474,6 +480,35 @@ export function PreviewWorkspace({
     pageCount: documentVariablePageCount,
     now: previewVariableNow,
   }), [activePageNumber, activePageTitle, documentVariablePageCount, previewVariableNow, projectTitle])
+
+  function renderPageActionButton({
+    ariaLabel,
+    tooltip,
+    onClick,
+    children,
+  }: {
+    ariaLabel: string
+    tooltip: string
+    onClick: () => void
+    children: ReactNode
+  }) {
+    return (
+      <HoverTooltip
+        inline
+        label={tooltip}
+        tooltipClassName="w-max whitespace-pre-line text-center border-gray-200 bg-gray-100/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+      >
+        <button
+          type="button"
+          aria-label={ariaLabel}
+          onClick={onClick}
+          className={pageActionButtonClassName}
+        >
+          {children}
+        </button>
+      </HoverTooltip>
+    )
+  }
 
   return (
     <div className={`min-h-0 min-w-0 flex flex-1 flex-col ${uiTheme.previewShell}`}>
@@ -697,39 +732,29 @@ export function PreviewWorkspace({
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mt-4 rounded-md py-2">
+                  <div className="mt-3 rounded-md py-2">
                     <SectionHeaderRow
                       label="Pages"
                       labelClassName={uiTheme.sidebarHeading}
                       actions={(
                         <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            aria-label="Add clean copy page"
-                            onClick={onPageAdd}
-                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
-                              isDarkUi
-                                ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                                : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-                            }`}
-                          >
-                            <Plus className="h-2 w-2" />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label="Add page copy with content"
-                            onClick={onPageAddWithContent}
-                            className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
-                              isDarkUi
-                                ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                                : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-                            }`}
-                          >
-                            <span className="inline-flex h-full items-center gap-[1px]">
-                              <Plus className="h-2 w-2" />
-                              <Plus className="h-2 w-2" />
-                            </span>
-                          </button>
+                          {renderPageActionButton({
+                            ariaLabel: "Add clean copy page",
+                            tooltip: "+\nAdd page with layout only",
+                            onClick: onPageAdd,
+                            children: <Plus className="h-2 w-2" />,
+                          })}
+                          {renderPageActionButton({
+                            ariaLabel: "Add page copy with content",
+                            tooltip: "++\nDuplicate page with content",
+                            onClick: onPageAddWithContent,
+                            children: (
+                              <span className="inline-flex h-full items-center gap-[1px]">
+                                <Plus className="h-2 w-2" />
+                                <Plus className="h-2 w-2" />
+                              </span>
+                            ),
+                          })}
                         </div>
                       )}
                     />
@@ -774,33 +799,23 @@ export function PreviewWorkspace({
                     labelClassName={uiTheme.sidebarHeading}
                     actions={(
                       <div className="flex shrink-0 items-center gap-1">
-                        <button
-                          type="button"
-                          aria-label="Add clean copy page"
-                          onClick={onPageAdd}
-                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
-                            isDarkUi
-                              ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                              : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-                          }`}
-                        >
-                          <Plus className="h-2 w-2" />
-                        </button>
-                        <button
-                          type="button"
-                          aria-label="Add page copy with content"
-                          onClick={onPageAddWithContent}
-                          className={`inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
-                            isDarkUi
-                              ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                              : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-                          }`}
-                        >
-                          <span className="inline-flex h-full items-center gap-[1px]">
-                            <Plus className="h-2 w-2" />
-                            <Plus className="h-2 w-2" />
-                          </span>
-                        </button>
+                        {renderPageActionButton({
+                          ariaLabel: "Add clean copy page",
+                          tooltip: "+\nAdd page with layout only",
+                          onClick: onPageAdd,
+                          children: <Plus className="h-2 w-2" />,
+                        })}
+                        {renderPageActionButton({
+                          ariaLabel: "Add page copy with content",
+                          tooltip: "++\nDuplicate page with content",
+                          onClick: onPageAddWithContent,
+                          children: (
+                            <span className="inline-flex h-full items-center gap-[1px]">
+                              <Plus className="h-2 w-2" />
+                              <Plus className="h-2 w-2" />
+                            </span>
+                          ),
+                        })}
                       </div>
                     )}
                   />

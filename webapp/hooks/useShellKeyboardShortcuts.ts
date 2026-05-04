@@ -61,6 +61,8 @@ export function useShellKeyboardShortcuts({
   onSelectPreviousPageJump,
   onSelectNextPageJump,
 }: Args) {
+  const canSaveOrExport = hasPreviewLayout && !showPresetsBrowser
+
   useEffect(() => {
     const isEditableTarget = (target: EventTarget | null): boolean => {
       if (!(target instanceof HTMLElement)) return false
@@ -123,10 +125,10 @@ export function useShellKeyboardShortcuts({
           onImportProject()
           return
         case "save_to_library":
-          if (hasPreviewLayout) onOpenSaveLibraryDialog()
+          if (canSaveOrExport) onOpenSaveLibraryDialog()
           return
         case "open_export":
-          if (hasPreviewLayout) onOpenExportDialog()
+          if (canSaveOrExport) onOpenExportDialog()
           return
         case "undo":
           if (canUndo) onUndo()
@@ -171,6 +173,7 @@ export function useShellKeyboardShortcuts({
   }, [
     canRedo,
     canUndo,
+    canSaveOrExport,
     hasPreviewLayout,
     hasMultipleProjectPages,
     onOpenExportDialog,

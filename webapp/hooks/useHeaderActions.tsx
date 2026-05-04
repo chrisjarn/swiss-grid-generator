@@ -77,6 +77,7 @@ type Args = {
 }
 
 export function useHeaderActions(args: Args) {
+  const canSaveOrExport = args.hasPreviewLayout && !args.showPresetsBrowser
   const accountTooltip = args.accountUserEmail
     ? `Cloud account\nSigned in as: ${args.accountUserEmail}\nCloud status: ${args.accountCloudStatusLabel}`
     : `Cloud account\nSigned in as: Not signed in\nCloud status: ${args.accountCloudStatusLabel}`
@@ -104,7 +105,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "save_to_library",
         showStatusDot: args.hasPreviewLayout,
         statusDotClassName: args.saveStatusDotClassName,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canSaveOrExport,
         onClick: args.onOpenSaveLibraryDialog,
         icon: <Save className="h-4 w-4" />,
       },
@@ -127,7 +128,7 @@ export function useHeaderActions(args: Args) {
         ariaLabel: "Export",
         tooltip: "Export",
         shortcutId: "open_export",
-        disabled: !args.hasPreviewLayout,
+        disabled: !canSaveOrExport,
         onClick: args.onOpenExportDialog,
         icon: <Upload className="h-4 w-4" />,
       },
