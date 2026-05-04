@@ -271,6 +271,112 @@ type PageExportPlanPhaseAccumulator = {
   layerOrderMs: number
 }
 
+const PAGE_EXPORT_TEXT_INPUT_CACHE_LIMIT = 5000
+const EMPTY_TRACKING_RUNS: TextTrackingRun[] = []
+const EMPTY_FORMAT_RUNS: TextFormatRun<TypographyStyleKey, FontFamily>[] = []
+
+const normalizedPageExportTrackingRunsCache = new WeakMap<
+  readonly TextTrackingRun[],
+  Map<string, readonly TextTrackingRun[]>
+>()
+const exportFormatRunsBySchemeCache = new WeakMap<
+  readonly TextFormatRun<TypographyStyleKey, FontFamily>[],
+  Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>
+>()
+const normalizedPageExportFormatRunsCache = new WeakMap<
+  readonly TextFormatRun<TypographyStyleKey, FontFamily>[],
+  Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>
+>()
+
+function rememberPageExportCachedValue<T>(
+  cache: Map<string, T>,
+  key: string,
+  value: T,
+): T {
+  cache.set(key, value)
+  if (cache.size > PAGE_EXPORT_TEXT_INPUT_CACHE_LIMIT) {
+    cache.clear()
+    cache.set(key, value)
+  }
+  return value
+}
+
+function getPageExportBaseFormatKey(
+  baseFormat: ResolvedBlockPlan["baseFormat"],
+): string {
+  return `${baseFormat.fontFamily}:${baseFormat.fontWeight}:${baseFormat.italic ? 1 : 0}:${baseFormat.styleKey}:${baseFormat.color}`
+}
+
+function getNormalizedPageExportTrackingRuns(
+  sourceText: string,
+  trackingRuns: readonly TextTrackingRun[] | null | undefined,
+  trackingScale: number,
+): TextTrackingRun[] {
+  if (!trackingRuns || trackingRuns.length === 0) return EMPTY_TRACKING_RUNS
+  let cacheBySource = normalizedPageExportTrackingRunsCache.get(trackingRuns)
+  if (!cacheBySource) {
+    cacheBySource = new Map<string, readonly TextTrackingRun[]>()
+    normalizedPageExportTrackingRunsCache.set(trackingRuns, cacheBySource)
+  }
+  const key = `${trackingScale}::${sourceText}`
+  const cached = cacheBySource.get(key)
+  if (cached) return cached as TextTrackingRun[]
+  return rememberPageExportCachedValue(
+    cacheBySource,
+    key,
+    normalizeTextTrackingRuns(sourceText, trackingRuns, trackingScale),
+  ) as TextTrackingRun[]
+}
+
+function getExportFormatRunsForScheme(
+  formatRuns: readonly TextFormatRun<TypographyStyleKey, FontFamily>[] | null | undefined,
+  imageColorScheme: ImageColorSchemeId,
+  resolveExportTextColor: (value: unknown) => string,
+): readonly TextFormatRun<TypographyStyleKey, FontFamily>[] {
+  if (!formatRuns || formatRuns.length === 0) return EMPTY_FORMAT_RUNS
+  let cacheByScheme = exportFormatRunsBySchemeCache.get(formatRuns)
+  if (!cacheByScheme) {
+    cacheByScheme = new Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>()
+    exportFormatRunsBySchemeCache.set(formatRuns, cacheByScheme)
+  }
+  const cached = cacheByScheme.get(imageColorScheme)
+  if (cached) return cached
+  let changed = false
+  const resolvedRuns = formatRuns.map((run) => {
+    if (run.color === undefined) return run
+    const nextColor = resolveExportTextColor(run.color)
+    if (nextColor === run.color) return run
+    changed = true
+    return { ...run, color: nextColor }
+  })
+  return rememberPageExportCachedValue(
+    cacheByScheme,
+    imageColorScheme,
+    changed ? resolvedRuns : formatRuns,
+  )
+}
+
+function getNormalizedPageExportFormatRuns(
+  sourceText: string,
+  formatRuns: readonly TextFormatRun<TypographyStyleKey, FontFamily>[] | null | undefined,
+  baseFormat: ResolvedBlockPlan["baseFormat"],
+): TextFormatRun<TypographyStyleKey, FontFamily>[] {
+  if (!formatRuns || formatRuns.length === 0) return EMPTY_FORMAT_RUNS
+  let cacheBySignature = normalizedPageExportFormatRunsCache.get(formatRuns)
+  if (!cacheBySignature) {
+    cacheBySignature = new Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>()
+    normalizedPageExportFormatRunsCache.set(formatRuns, cacheBySignature)
+  }
+  const key = `${getPageExportBaseFormatKey(baseFormat)}::${sourceText}`
+  const cached = cacheBySignature.get(key)
+  if (cached) return cached as TextFormatRun<TypographyStyleKey, FontFamily>[]
+  return rememberPageExportCachedValue(
+    cacheBySignature,
+    key,
+    normalizeTextFormatRuns(sourceText, formatRuns, baseFormat),
+  ) as TextFormatRun<TypographyStyleKey, FontFamily>[]
+}
+
 function getNowMs(): number {
   return typeof performance !== "undefined" && typeof performance.now === "function"
     ? performance.now()
@@ -950,18 +1056,19 @@ function buildPageExportPlanInternal({
       color: resolvedTextColor,
     }
     const rawText = textContent[key] ?? ""
-    const rawTrackingRuns = normalizeTextTrackingRuns(
+    const rawTrackingRuns = getNormalizedPageExportTrackingRuns(
       rawText,
       blockTrackingRuns[key],
       trackingScale,
     )
-    const rawFormatRuns = normalizeTextFormatRuns(
+    const exportFormatRuns = getExportFormatRunsForScheme(
+      blockTextFormatRuns[key],
+      imageColorScheme,
+      resolveExportTextColor,
+    )
+    const rawFormatRuns = getNormalizedPageExportFormatRuns(
       rawText,
-      (blockTextFormatRuns[key] ?? []).map((run) => (
-        run.color === undefined
-          ? run
-          : { ...run, color: resolveExportTextColor(run.color) }
-      )),
+      exportFormatRuns,
       baseFormat,
     )
     const defaultFontSize = styleDefinitions[styleKey]?.size ?? 12
