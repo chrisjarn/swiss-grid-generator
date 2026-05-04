@@ -188,6 +188,7 @@ export default function Home() {
   const loadFileInputRef = useRef<HTMLInputElement | null>(null)
   const livePreviewSnapshotGetterRef = useRef<(() => PreviewLayoutState) | null>(null)
   const preferCommittedPreviewLayoutRef = useRef(false)
+  const previousEditorSidebarModeRef = useRef<"text" | "image" | null>(null)
   const headerClickTimeoutRef = useRef<number | null>(null)
   const pendingProjectLoadTimingRef = useRef<{ startedAt: number } | null>(null)
   const [editorSidebarMode, setEditorSidebarMode] = useState<"text" | "image" | null>(null)
@@ -1239,6 +1240,14 @@ export default function Home() {
     preferCommittedPreviewLayoutRef.current = false
     handlePreviewLayoutChange(layout)
   }, [handlePreviewLayoutChange])
+
+  useEffect(() => {
+    const previousMode = previousEditorSidebarModeRef.current
+    previousEditorSidebarModeRef.current = editorSidebarMode
+    if (previousMode === null || editorSidebarMode !== null) return
+
+    replaceProjectSnapshot(getCurrentProjectSnapshot())
+  }, [editorSidebarMode, getCurrentProjectSnapshot, replaceProjectSnapshot])
 
   const handlePreviewGridRestore = useCallback((cols: number, rows: number) => {
     suppressNextSettingsHistory()
