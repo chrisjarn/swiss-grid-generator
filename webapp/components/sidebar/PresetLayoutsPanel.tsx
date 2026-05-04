@@ -250,36 +250,24 @@ function PresetCard({
         </button>
         <div className={`absolute bottom-0 left-0 right-0 flex items-center gap-1 px-2 py-1 text-[10px] ${isDarkMode ? "bg-gray-900/90 text-gray-300" : "bg-white/90 text-gray-600"}`}>
           <span className="min-w-0 flex-1 truncate text-center">{preset.label}</span>
-          <div ref={menuRef} className="relative shrink-0">
-            <button
-              type="button"
-              aria-label={`More actions for ${preset.label}`}
-              className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
-              onClick={(event) => {
-                event.preventDefault()
-                event.stopPropagation()
-                onMenuOpenChange(!menuOpen)
-              }}
-            >
-              <MoreVertical className="h-3 w-3" />
-            </button>
-            {menuOpen ? (
-              <div
-                className={`absolute bottom-full right-0 z-20 mb-1 min-w-[112px] rounded-md border py-1 shadow-lg ${isDarkMode ? "border-gray-600 bg-gray-900 text-gray-200" : "border-gray-300 bg-white text-gray-700"}`}
+          {isUserPreset ? (
+            <div ref={menuRef} className="relative shrink-0">
+              <button
+                type="button"
+                aria-label={`More actions for ${preset.label}`}
+                className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                onClick={(event) => {
+                  event.preventDefault()
+                  event.stopPropagation()
+                  onMenuOpenChange(!menuOpen)
+                }}
               >
-                <button
-                  type="button"
-                  className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
-                  onClick={(event) => {
-                    event.preventDefault()
-                    event.stopPropagation()
-                    onMenuOpenChange(false)
-                    onLoadPreset(preset)
-                  }}
+                <MoreVertical className="h-3 w-3" />
+              </button>
+              {menuOpen ? (
+                <div
+                  className={`absolute bottom-full right-0 z-20 mb-1 min-w-[112px] rounded-md border py-1 shadow-lg ${isDarkMode ? "border-gray-600 bg-gray-900 text-gray-200" : "border-gray-300 bg-white text-gray-700"}`}
                 >
-                  Open
-                </button>
-                {onExportPreset ? (
                   <button
                     type="button"
                     className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
@@ -287,14 +275,12 @@ function PresetCard({
                       event.preventDefault()
                       event.stopPropagation()
                       onMenuOpenChange(false)
-                      onExportPreset(preset)
+                      onLoadPreset(preset)
                     }}
                   >
-                    Export
+                    Open
                   </button>
-                ) : null}
-                {isUserPreset ? (
-                  <>
+                  {onExportPreset ? (
                     <button
                       type="button"
                       className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
@@ -302,28 +288,40 @@ function PresetCard({
                         event.preventDefault()
                         event.stopPropagation()
                         onMenuOpenChange(false)
-                        onCopyUserPreset(preset)
+                        onExportPreset(preset)
                       }}
                     >
-                      Copy
+                      Export
                     </button>
-                    <button
-                      type="button"
-                      className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "text-red-300 hover:bg-red-950/50" : "text-red-600 hover:bg-red-50"}`}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        onMenuOpenChange(false)
-                        onDeleteUserPreset(preset)
-                      }}
-                    >
-                      Delete
-                    </button>
-                  </>
-                ) : null}
-              </div>
-            ) : null}
-          </div>
+                  ) : null}
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      onMenuOpenChange(false)
+                      onCopyUserPreset(preset)
+                    }}
+                  >
+                    Copy
+                  </button>
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "text-red-300 hover:bg-red-950/50" : "text-red-600 hover:bg-red-50"}`}
+                    onClick={(event) => {
+                      event.preventDefault()
+                      event.stopPropagation()
+                      onMenuOpenChange(false)
+                      onDeleteUserPreset(preset)
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </div>
     </HoverTooltip>
