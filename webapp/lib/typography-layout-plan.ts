@@ -302,19 +302,16 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
   const getReflowColumnLineCapacity = (rowLayouts: readonly ReflowRowLayout[]) => (
     rowLayouts.reduce((capacity, rowLayout) => capacity + rowLayout.lineCapacity, 0)
   )
-  const getReflowLineSlot = (
+  const getReflowLineSlotYOffset = (
     rowLayouts: readonly ReflowRowLayout[],
     lineIndexWithinColumn: number,
     lineStep: number,
-  ) => {
+  ): number | null => {
     let rowLineStart = 0
     for (const rowLayout of rowLayouts) {
       const rowLineEnd = rowLineStart + rowLayout.lineCapacity
       if (lineIndexWithinColumn < rowLineEnd) {
-        return {
-          rowLayout,
-          yOffset: rowLayout.yOffset + (lineIndexWithinColumn - rowLineStart) * lineStep,
-        }
+        return rowLayout.yOffset + (lineIndexWithinColumn - rowLineStart) * lineStep
       }
       rowLineStart = rowLineEnd
     }
@@ -493,9 +490,9 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
         const columnWidth = getColumnWidthAt(startCol + columnIndex)
         const anchorX = getAnchorX(columnX, columnWidth, textAlign)
         const line = lines[lineIndex]
-        const lineSlot = getReflowLineSlot(reflowRowLayouts, lineIndexWithinColumn, lineStep)
-        if (!lineSlot) continue
-        const lineTopY = origin.y + baselineStep + verticalStartOffset + lineSlot.yOffset
+        const lineSlotYOffset = getReflowLineSlotYOffset(reflowRowLayouts, lineIndexWithinColumn, lineStep)
+        if (lineSlotYOffset === null) continue
+        const lineTopY = origin.y + baselineStep + verticalStartOffset + lineSlotYOffset
         const y = lineTopY + ascent
         const moduleBottomY = origin.y + baselineStep + moduleHeightForBlock + 0.0001
         const bottomLineLimit = Math.min(pageBottomY + 0.0001, moduleBottomY)
@@ -682,9 +679,9 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       const columnWidth = getColumnWidthAt(captionStartCol + columnIndex)
       const captionAnchorX = getAnchorX(columnX, columnWidth, captionAlign)
       const line = captionLines[lineIndex]
-      const lineSlot = getReflowLineSlot(captionReflowRowLayouts, lineIndexWithinColumn, captionLineStep)
-      if (!lineSlot) continue
-      const lineTopY = captionOrigin.y + baselineStep + captionVerticalStartOffset + lineSlot.yOffset
+      const lineSlotYOffset = getReflowLineSlotYOffset(captionReflowRowLayouts, lineIndexWithinColumn, captionLineStep)
+      if (lineSlotYOffset === null) continue
+      const lineTopY = captionOrigin.y + baselineStep + captionVerticalStartOffset + lineSlotYOffset
       const y = lineTopY + captionAscent
       const captionModuleBottomY = captionOrigin.y + baselineStep + captionModuleHeight + 0.0001
       const captionBottomLineLimit = Math.min(captionPageBottomY + 0.0001, captionModuleBottomY)
