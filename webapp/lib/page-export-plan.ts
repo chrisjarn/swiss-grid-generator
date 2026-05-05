@@ -43,7 +43,7 @@ import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacit
 import {
   buildTypographyLayoutPlan,
   getTypographyLineCapacityForHeight,
-  getTypographyReflowLineCapacityForHeight,
+  getTypographyReflowLineCapacityForRowHeights,
   type TypographyLayoutPlan,
 } from "@/lib/typography-layout-plan"
 import {
@@ -867,6 +867,25 @@ function buildPageExportPlanInternal({
     heightMetricsByInput.set(key, resolved)
     return resolved
   }
+  const getReflowRowHeights = (
+    rowStart: number,
+    rowSpan: number,
+    heightBaselines: number,
+    lineStep: number,
+  ): number[] => {
+    if (rowSpan <= 0) {
+      return [Math.max(heightBaselines * baselineStep, lineStep)]
+    }
+
+    return Array.from({ length: Math.max(1, rowSpan) }, (_, rowOffset) => {
+      const rowIndex = rowStart + rowOffset
+      const rowHeight = rowIndex < 0 || rowIndex >= gridRows
+        ? modH
+        : moduleHeights[rowIndex] ?? modH
+      const extraHeight = rowOffset === rowSpan - 1 ? heightBaselines * baselineStep : 0
+      return rowHeight + extraHeight
+    })
+  }
 
   const imagePlans = showImagePlaceholders
     ? (
@@ -1099,9 +1118,11 @@ function buildPageExportPlanInternal({
         + textMetrics.getTextDescent(textMeasureContext, baseCanvasFont, baseFontSize)
       : baseFontSize
     const lineStep = Math.max(0.01, resolvedBaselineMultiplier * baselineStep)
-    const reflowCapacityHeight = blockHeight
     const maxLinesPerColumn = Math.max(1, reflowEnabled
-      ? getTypographyReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
+      ? getTypographyReflowLineCapacityForRowHeights(
+          getReflowRowHeights(startRow, rowSpan, heightBaselines, lineStep),
+          lineStep,
+        )
       : getTypographyLineCapacityForHeight(blockHeight, lineStep, firstLineHeight))
     const documentVariableContextForBlock = resolveSpreadDocumentVariableContextForColumn(
       documentVariableContext,

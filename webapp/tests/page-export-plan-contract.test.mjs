@@ -5,10 +5,11 @@ import fs from "node:fs"
 import path from "node:path"
 
 import { buildPageExportPlan } from "../lib/page-export-plan.ts"
+import { buildResolvedProjectPageExportSource } from "../lib/project-page-export-source.ts"
 import { createStressPagePlanArgs } from "./helpers/page-export-plan-fixtures.mjs"
 
 const ROOT = process.cwd()
-const EXPECTED_STRESS_PLAN_HASH = "1195fda31ed0bff16c3e3b65fcc981bdd901b108c498c31096ac596e6d2cd166"
+const EXPECTED_STRESS_PLAN_HASH = "411b50fa89e1ba91b1afbd135bb9b6d1568c0ce9244b336d078e8bdc75a175ed"
 
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
@@ -48,6 +49,38 @@ test("page export plan is deterministic for the stress fixture", () => {
   assert.ok(first.textPlans.length >= 10)
   assert.ok(first.orderedLayerKeys.length >= first.imagePlans.length + first.textPlans.length)
   assert.equal(hashPlan(first), EXPECTED_STRESS_PLAN_HASH)
+})
+
+test("row-based reflow uses the final module row for 150 Fonts display paragraphs", () => {
+  const project = JSON.parse(readText("tests/fixtures/150 Fonts.json"))
+  const page = project.pages[2]
+  const source = buildResolvedProjectPageExportSource(page, "150 Fonts page 3", {
+    projectTitle: project.title,
+    pageTitle: page.name,
+    pageNumber: 3,
+    pageCount: project.pages.length,
+  })
+  const plan = buildPageExportPlan({
+    result: source.result,
+    layout: source.previewLayout,
+    documentVariableContext: source.documentVariableContext,
+    baseFont: source.baseFont,
+    imageColorScheme: source.imageColorScheme,
+    canvasBackground: source.resolvedCanvasBackground,
+    rotation: source.uiSettings.rotation,
+    showBaselines: true,
+    showModules: true,
+    showMargins: true,
+    showImagePlaceholders: true,
+    showTypography: true,
+    includeGraphemeLines: false,
+  })
+  const displayBlockKey = "paragraph-1776958426433-3"
+  const displayPlan = plan.textPlans.find((entry) => entry.key === displayBlockKey)
+
+  assert.equal(plan.overflowByBlock[displayBlockKey], 0)
+  assert.equal(displayPlan?.commands.length, 60)
+  assert.equal(displayPlan?.commands.at(-1)?.text, "9")
 })
 
 test("layout profiling is dev-only instrumentation around existing planning and drawing calls", () => {

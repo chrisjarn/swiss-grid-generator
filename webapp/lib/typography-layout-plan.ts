@@ -67,6 +67,21 @@ export function getTypographyReflowLineCapacityForHeight(
   return Math.max(1, Math.floor((availableHeight + 0.0001) / safeLineStep))
 }
 
+export function getTypographyReflowLineCapacityForRowHeights(
+  rowHeights: readonly number[],
+  lineStep: number,
+): number {
+  return rowHeights.reduce((capacity, height) => (
+    capacity + Math.max(1, getTypographyReflowLineCapacityForHeight(height, lineStep))
+  ), 0)
+}
+
+type ReflowRowLayout = {
+  yOffset: number
+  height: number
+  lineCapacity: number
+}
+
 type TypographyLayoutPhaseAccumulator = {
   paragraphBoxesMs: number
   lineCommandsMs: number
@@ -264,7 +279,7 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     rowSpan: number,
     heightBaselines: number,
     lineStep: number,
-  ) => {
+  ): ReflowRowLayout[] => {
     if (rowSpan <= 0) {
       const height = Math.max(heightBaselines * baselineStep, lineStep)
       return [{
@@ -283,6 +298,27 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
         lineCapacity: Math.max(1, getReflowLineCapacityForHeight(height + extraHeight, lineStep)),
       }
     })
+  }
+  const getReflowColumnLineCapacity = (rowLayouts: readonly ReflowRowLayout[]) => (
+    rowLayouts.reduce((capacity, rowLayout) => capacity + rowLayout.lineCapacity, 0)
+  )
+  const getReflowLineSlot = (
+    rowLayouts: readonly ReflowRowLayout[],
+    lineIndexWithinColumn: number,
+    lineStep: number,
+  ) => {
+    let rowLineStart = 0
+    for (const rowLayout of rowLayouts) {
+      const rowLineEnd = rowLineStart + rowLayout.lineCapacity
+      if (lineIndexWithinColumn < rowLineEnd) {
+        return {
+          rowLayout,
+          yOffset: rowLayout.yOffset + (lineIndexWithinColumn - rowLineStart) * lineStep,
+        }
+      }
+      rowLineStart = rowLineEnd
+    }
+    return null
   }
 
   const getAnchorX = (left: number, width: number, align: TextAlignMode) => (
@@ -389,9 +425,8 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       : pageHeight - marginsBottom
     const moduleHeightForBlock = getRowSpanHeight(startRow, rowSpan, heightBaselines)
     const reflowRowLayouts = buildReflowRowLayouts(startRow, rowSpan, heightBaselines, lineStep)
-    const reflowCapacityHeight = moduleHeightForBlock
     const maxLinesPerColumn = Math.max(1, columnReflow
-      ? getReflowLineCapacityForHeight(reflowCapacityHeight, lineStep)
+      ? getReflowColumnLineCapacity(reflowRowLayouts)
       : getLineCapacityForHeight(moduleHeightForBlock, lineStep, firstLineHeight))
     const visibleLineCount = columnReflow ? Math.min(lines.length, maxLinesPerColumn) : lines.length
     const verticalStartOffset = getVerticalStartOffset({
@@ -458,12 +493,13 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
         const columnWidth = getColumnWidthAt(startCol + columnIndex)
         const anchorX = getAnchorX(columnX, columnWidth, textAlign)
         const line = lines[lineIndex]
-        const lineTopY = origin.y + baselineStep + verticalStartOffset + lineIndexWithinColumn * lineStep
+        const lineSlot = getReflowLineSlot(reflowRowLayouts, lineIndexWithinColumn, lineStep)
+        if (!lineSlot) continue
+        const lineTopY = origin.y + baselineStep + verticalStartOffset + lineSlot.yOffset
         const y = lineTopY + ascent
-        const lineSlotBottomY = lineTopY + lineStep
         const moduleBottomY = origin.y + baselineStep + moduleHeightForBlock + 0.0001
         const bottomLineLimit = Math.min(pageBottomY + 0.0001, moduleBottomY)
-        if (lineSlotBottomY > bottomLineLimit) continue
+        if (lineTopY > bottomLineLimit) continue
         maxUsedRows = Math.max(maxUsedRows, lineIndexWithinColumn + 1)
         const offsetX = opticalOffset({ context, key, styleKey, line: line.text, align: textAlign, fontSize })
         commands.push({
@@ -597,9 +633,8 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
     captionHeightBaselines,
     captionLineStep,
   )
-  const captionReflowCapacityHeight = captionModuleHeight
   const captionMaxLinesPerColumn = Math.max(1, captionReflowEnabled
-    ? getReflowLineCapacityForHeight(captionReflowCapacityHeight, captionLineStep)
+    ? getReflowColumnLineCapacity(captionReflowRowLayouts)
     : getLineCapacityForHeight(captionModuleHeight, captionLineStep, captionFirstLineHeight))
   const visibleCaptionLineCount = captionReflowEnabled
     ? Math.min(captionLines.length, captionMaxLinesPerColumn)
@@ -647,12 +682,13 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       const columnWidth = getColumnWidthAt(captionStartCol + columnIndex)
       const captionAnchorX = getAnchorX(columnX, columnWidth, captionAlign)
       const line = captionLines[lineIndex]
-      const lineTopY = captionOrigin.y + baselineStep + captionVerticalStartOffset + lineIndexWithinColumn * captionLineStep
+      const lineSlot = getReflowLineSlot(captionReflowRowLayouts, lineIndexWithinColumn, captionLineStep)
+      if (!lineSlot) continue
+      const lineTopY = captionOrigin.y + baselineStep + captionVerticalStartOffset + lineSlot.yOffset
       const y = lineTopY + captionAscent
-      const lineSlotBottomY = lineTopY + captionLineStep
       const captionModuleBottomY = captionOrigin.y + baselineStep + captionModuleHeight + 0.0001
       const captionBottomLineLimit = Math.min(captionPageBottomY + 0.0001, captionModuleBottomY)
-      if (lineSlotBottomY > captionBottomLineLimit) continue
+      if (lineTopY > captionBottomLineLimit) continue
       const offsetX = opticalOffset({
         context: captionContext,
         key: captionKey,
