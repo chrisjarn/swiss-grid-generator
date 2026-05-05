@@ -3,7 +3,8 @@
 import { ExportDialog } from "@/components/dialogs/ExportDialog"
 import { NoticeDialog } from "@/components/dialogs/NoticeDialog"
 import { SaveLibraryDialog } from "@/components/dialogs/SaveLibraryDialog"
-import type { ExportFormat, ExportProgressState, PrintPresetKey } from "@/hooks/useExportActions"
+import type { ExportProgressState } from "@/hooks/useExportActions"
+import type { ExportFormat } from "@/lib/export-format-options"
 
 type NoticeState = {
   title: string
@@ -53,13 +54,10 @@ type Props = {
     onJsonAuthorChange: (value: string) => void
     jsonCompressionEnabled: boolean
     onJsonCompressionEnabledChange: (value: boolean) => void
-    activePrintPreset: PrintPresetKey | null
-    showPrintAdjustments: boolean
-    onApplyPrintPreset: (key: PrintPresetKey) => void
+    bleedEnabled: boolean
+    onBleedEnabledChange: (value: boolean) => void
     bleedMm: string
     onBleedMmChange: (value: string) => void
-    registrationMarks: boolean
-    onRegistrationMarksChange: (value: boolean) => void
     onConfirm: () => void
     progress: ExportProgressState | null
   }
@@ -122,13 +120,10 @@ export function WorkspaceDialogs({
         onJsonAuthorChange={exportDialog.onJsonAuthorChange}
         jsonCompressionEnabledDraft={exportDialog.jsonCompressionEnabled}
         onJsonCompressionEnabledChange={exportDialog.onJsonCompressionEnabledChange}
-        activePrintPresetDraft={exportDialog.activePrintPreset}
-        showPrintAdjustmentsDraft={exportDialog.showPrintAdjustments}
-        onApplyPrintPreset={exportDialog.onApplyPrintPreset}
+        bleedEnabledDraft={exportDialog.bleedEnabled}
+        onBleedEnabledChange={exportDialog.onBleedEnabledChange}
         exportBleedMmDraft={exportDialog.bleedMm}
         onExportBleedMmChange={exportDialog.onBleedMmChange}
-        exportRegistrationMarksDraft={exportDialog.registrationMarks}
-        onExportRegistrationMarksChange={exportDialog.onRegistrationMarksChange}
         onConfirm={exportDialog.onConfirm}
         exportProgress={exportDialog.progress}
       />

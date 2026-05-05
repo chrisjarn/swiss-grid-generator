@@ -59,7 +59,7 @@ test("idml builder places spread items in page coordinates with an explicit page
   assert.match(source, /function\s+buildPageCoordinateTransform\(pageHeight:\s*number\):\s*Matrix/)
   assert.match(source, /return\s+\[1,\s*0,\s*0,\s*1,\s*0,\s*-pageHeight\s*\/\s*2\]/)
   assert.match(source, /ItemTransform:\s*formatMatrix\(buildPageCoordinateTransform\(pageHeight\)\)/)
-  assert.match(source, /renderRectPathGeometry\(0,\s*0,\s*pageWidth,\s*pageHeight\)/)
+  assert.match(source, /renderRectPathGeometry\(exportBox\.bleed\.x,\s*exportBox\.bleed\.y,\s*exportBox\.bleed\.width,\s*exportBox\.bleed\.height\)/)
 })
 
 test("idml designmap declares spreads before section metadata to avoid a synthetic lead page", () => {
@@ -74,6 +74,29 @@ test("idml preferences do not predeclare document pages when spreads already def
   const source = readText("lib/idml/builder.ts")
   assert.doesNotMatch(source, /PagesPerDocument:/)
   assert.match(source, /FacingPages:\s*false/)
+})
+
+test("idml export receives shared vector bleed options from the export engine", () => {
+  const engineSource = readText("lib/export-engine.ts")
+  const builderSource = readText("lib/idml/builder.ts")
+  const typesSource = readText("lib/idml/types.ts")
+  assert.match(engineSource, /bleedMm:\s*\(options\.bleed\s*\?\?\s*DEFAULT_BLEED_CONFIG\)\.enabled/)
+  assert.match(typesSource, /bleedMm\?:\s*number/)
+  assert.doesNotMatch(typesSource, /markCanvasMm\?:\s*number/)
+  assert.doesNotMatch(typesSource, /cropMarkOffsetMm\?:\s*number/)
+  assert.doesNotMatch(typesSource, /cropMarkLengthMm\?:\s*number/)
+  assert.match(builderSource, /import\s+\{[\s\S]*?buildExportBox,[\s\S]*?clipExportLineToRect,[\s\S]*?getExportGuideClipRect,[\s\S]*?type\s+ExportLine[\s\S]*?\}\s+from\s+"@\/lib\/export-box"/)
+  assert.match(builderSource, /normalizeExportBleedOptions/)
+  assert.match(builderSource, /const\s+exportBox\s*=\s*buildExportBox\(\{[\s\S]*?width:\s*pageWidth,[\s\S]*?height:\s*pageHeight,[\s\S]*?bleed:\s*documentBleed/)
+  assert.match(builderSource, /getExportGuideClipRect\(exportBox,\s*guideGroup\.clipToPage\)/)
+  assert.match(builderSource, /clipExportLineToRect\(line,\s*guideClipRect,\s*guideGroup\.strokeWidth\)/)
+  assert.match(builderSource, /Name:\s*"Export Canvas"[\s\S]*?FillColor:\s*COLOR_PAPER_ID/)
+  assert.match(builderSource, /function\s+renderCropMarkRects\([\s\S]*?cropMarkLines:\s*readonly\s+ExportLine\[\]/)
+  assert.match(builderSource, /fillColorId:\s*COLOR_BLACK_ID,[\s\S]*?name:\s*`Crop mark \$\{lineIndex \+ 1\}`/)
+  assert.match(builderSource, /renderRectPathGeometry\(exportBox\.bleed\.x,\s*exportBox\.bleed\.y,\s*exportBox\.bleed\.width,\s*exportBox\.bleed\.height\)/)
+  assert.match(builderSource, /DocumentBleedTopOffset:\s*formatIdmlNumber\(exportBox\.bleedPt\)/)
+  assert.match(builderSource, /DocumentSlugTopOffset:\s*formatIdmlNumber\(exportBox\.exportCanvasMarginPt\)/)
+  assert.match(builderSource, /DocumentBleedUniformSize:\s*true/)
 })
 
 test("idml builder converts shared vector outline geometry into outlined polygon items", () => {

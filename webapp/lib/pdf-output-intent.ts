@@ -1,12 +1,11 @@
 import type jsPDF from "jspdf"
 
-export type PdfExportColorMode = "rgb" | "cmyk"
-export type PdfOutputIntentProfileId = "srgb" | "coated-fogra39"
+export type PdfOutputIntentProfileId = "srgb"
 
 type PdfOutputIntentProfile = {
   assetPath: string
-  channels: 3 | 4
-  alternateDevice: "/DeviceRGB" | "/DeviceCMYK"
+  channels: 3
+  alternateDevice: "/DeviceRGB"
   outputConditionIdentifier: string
   outputCondition: string
   info: string
@@ -50,15 +49,6 @@ const OUTPUT_INTENT_PROFILES: Record<PdfOutputIntentProfileId, PdfOutputIntentPr
     outputConditionIdentifier: "sRGB IEC61966-2.1",
     outputCondition: "sRGB IEC61966-2.1",
     info: "sRGB IEC61966-2.1",
-    registryName: "https://www.color.org",
-  },
-  "coated-fogra39": {
-    assetPath: "/pdf-profiles/coated-fogra39.icc",
-    channels: 4,
-    alternateDevice: "/DeviceCMYK",
-    outputConditionIdentifier: "FOGRA39",
-    outputCondition: "Coated FOGRA39 (ISO 12647-2:2004)",
-    info: "Coated FOGRA39 (ISO 12647-2:2004)",
     registryName: "https://www.color.org",
   },
 }

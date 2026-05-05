@@ -72,6 +72,17 @@ test("pdf export consumes the shared page export plan instead of rebuilding layo
   assert.doesNotMatch(source, /monochromeGuides/)
 })
 
+test("pdf bleed paints the canvas background beyond the trim box", () => {
+  const source = readText("lib/pdf-vector-export.ts")
+  assert.match(source, /import\s+\{[\s\S]*?getExportGuideClipRect,[\s\S]*?type\s+ExportBox[\s\S]*?\}\s+from\s+"@\/lib\/export-box"/)
+  assert.match(source, /exportBox:\s*ExportBox/)
+  assert.match(source, /const\s+exportCanvasMarginPt\s*=\s*exportBox\.exportCanvasMarginPt/)
+  assert.match(source, /setFillColor\(pdf,\s*\{\s*r:\s*255,\s*g:\s*255,\s*b:\s*255\s*\}\)[\s\S]*?pdf\.rect\(0,\s*0,\s*pageWidth,\s*pageHeight,\s*"F"\)/)
+  assert.match(source, /const\s+backgroundRect\s*=\s*exportBox\.bleed[\s\S]*?pdf\.rect\(\s*originX\s*\+\s*backgroundRect\.x\s*\*\s*scale,[\s\S]*?originY\s*\+\s*backgroundRect\.y\s*\*\s*scale,[\s\S]*?backgroundRect\.width\s*\*\s*scale,[\s\S]*?backgroundRect\.height\s*\*\s*scale,[\s\S]*?"F"/)
+  assert.doesNotMatch(source, /drawRectOutline\(-bleedPt,\s*-bleedPt,\s*sourceWidth\s*\+\s*bleedPt\s*\*\s*2,\s*sourceHeight\s*\+\s*bleedPt\s*\*\s*2\)/)
+  assert.match(source, /if\s*\(exportBox\.cropMarkLines\.length\s*>\s*0\)\s*\{[\s\S]*?setDrawColor\(pdf,\s*\{\s*r:\s*20,\s*g:\s*20,\s*b:\s*20\s*\}\)[\s\S]*?for\s*\(const\s+line\s+of\s+exportBox\.cropMarkLines\)[\s\S]*?drawLine\(line\.x1,\s*line\.y1,\s*line\.x2,\s*line\.y2\)/)
+})
+
 test("pdf export keeps text rotation direction aligned with canvas preview", () => {
   const source = readText("lib/pdf-vector-export.ts")
   assert.match(
@@ -88,7 +99,7 @@ test("pdf export rotates text anchors around paragraph origin before page transf
   )
 })
 
-test("pdf export wraps guide groups into form objects and clips trimmed guides to the final page box", () => {
+test("pdf export wraps guide groups into form objects and clips production guides to the bleed box", () => {
   const source = readText("lib/pdf-vector-export.ts")
   assert.match(source, /type\s+PdfWithFormObjects\s*=\s*jsPDF\s*&/)
   assert.match(source, /function\s+buildGuideFormObjectKey\(\s*guideGroup:\s*PageExportGuideGroup,\s*transformFingerprint:\s*string,/)
@@ -98,7 +109,8 @@ test("pdf export wraps guide groups into form objects and clips trimmed guides t
   assert.match(source, /doFormObject\(key,\s*identityMatrix\)/)
   assert.match(source, /for\s*\(const\s+guideGroup\s+of\s+exportPlan\.guideGroups\)/)
   assert.match(source, /drawGuideGroup\(buildGuideFormObjectKey\(guideGroup,\s*guideTransformFingerprint\),\s*\(\)\s*=>\s*\{/)
-  assert.match(source, /if\s*\(guideGroup\.clipToPage\)\s*\{[\s\S]*?pdf\.rect\(originX,\s*originY,\s*width,\s*height,\s*null\)/)
+  assert.match(source, /const\s+guideClipRect\s*=\s*getExportGuideClipRect\(exportBox,\s*guideGroup\.clipToPage\)/)
+  assert.match(source, /if\s*\(guideClipRect\)\s*\{[\s\S]*?originX\s*\+\s*guideClipRect\.x\s*\*\s*scale,[\s\S]*?originY\s*\+\s*guideClipRect\.y\s*\*\s*scale,[\s\S]*?guideClipRect\.width\s*\*\s*scale,[\s\S]*?guideClipRect\.height\s*\*\s*scale,[\s\S]*?null/)
 })
 
 test("pdf guide form object cache keys include geometry so rhythm pages cannot reuse another page grid", () => {
@@ -185,20 +197,15 @@ test("pdf font registry requires verified local assets instead of runtime remote
   assert.match(packageSource, /"assets:generate":[\s\S]*npm run fonts:verify/)
 })
 
-test("pdf export switches between rgb and cmyk setters based on export color mode", () => {
+test("pdf export uses the RGB setters required by the shared sRGB export path", () => {
   const source = readText("lib/pdf-vector-export.ts")
-  assert.match(source, /colorMode:\s*PdfExportColorMode/)
-  assert.match(source, /if\s*\(colorMode\s*===\s*"cmyk"\)\s*\{[\s\S]*setDrawColorCmyk/)
-  assert.match(source, /function\s+setDrawColorRgb\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
-  assert.match(source, /function\s+setDrawColorCmyk\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
-  assert.match(source, /function\s+setTextColorRgb\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
-  assert.match(source, /function\s+setTextColorCmyk\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
-  assert.match(source, /function\s+setFillColorRgb\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
-  assert.match(source, /function\s+setFillColorCmyk\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
+  assert.match(source, /function\s+setDrawColor\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
+  assert.match(source, /function\s+setTextColor\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
+  assert.match(source, /function\s+setFillColor\(pdf:\s*jsPDF,\s*color:\s*RgbColor\)/)
   assert.match(source, /pdf\.setDrawColor\(color\.r,\s*color\.g,\s*color\.b\)/)
   assert.match(source, /pdf\.setTextColor\(color\.r,\s*color\.g,\s*color\.b\)/)
   assert.match(source, /pdf\.setFillColor\(color\.r,\s*color\.g,\s*color\.b\)/)
-  assert.match(source, /function\s+rgbToCmyk\(/)
+  assert.doesNotMatch(source, /PdfExportColorMode|rgbToCmyk|setDrawColorCmyk|setTextColorCmyk|setFillColorCmyk/)
 })
 
 test("pdf export constructs real jsPDF graphics-state instances before registering opacity states", () => {
@@ -211,7 +218,7 @@ test("pdf export constructs real jsPDF graphics-state instances before registeri
   assert.match(source, /opacityPdf\.setGState\(key\)/)
 })
 
-test("pdf export attaches an embedded output intent profile for print-aware exports", () => {
+test("pdf export attaches an embedded output intent profile for vector exports", () => {
   const source = readText("lib/pdf-output-intent.ts")
   assert.match(source, /putResources/)
   assert.match(source, /postPutResources/)
@@ -221,8 +228,8 @@ test("pdf export attaches an embedded output intent profile for print-aware expo
   assert.match(source, /\/OutputIntents\s*\[<</)
   assert.match(source, /\/DestOutputProfile\s+\$\{current\.profileObjectId\}\s+0\s+R/)
   assert.match(source, /\/S\s+\/GTS_PDFX/)
-  assert.match(source, /coated-fogra39\.icc/)
   assert.match(source, /srgb-iec61966-2-1\.icc/)
+  assert.doesNotMatch(source, /coated-fogra39\.icc|DeviceCMYK|FOGRA39/)
 })
 
 test("pdf output intent does not inject color spaces into the XObject dictionary", () => {
@@ -231,21 +238,30 @@ test("pdf output intent does not inject color spaces into the XObject dictionary
   assert.doesNotMatch(source, /\/DefaultRGB|\/DefaultCMYK/)
 })
 
-test("pdf export presets stay ordered from digital to offset and drive color-management mode", () => {
+test("vector export options expose one shared bleed setting and keep pdf color management deterministic", () => {
   const hookSource = readText("hooks/useExportActions.ts")
   const engineSource = readText("lib/export-engine.ts")
-  assert.match(hookSource, /PRINT_PRESETS[\s\S]*key:\s*"digital_print"[\s\S]*key:\s*"press_proof"[\s\S]*key:\s*"offset_final"/)
-  assert.match(hookSource, /EXPORT_DIALOG_PRINT_PRESETS\s*=\s*PRINT_PRESETS\.filter\(\(preset\)\s*=>\s*preset\.key\s*!==\s*"offset_final"\)/)
-  assert.match(engineSource, /if\s*\(!config\.enabled\)\s*\{[\s\S]*colorMode:\s*"rgb"[\s\S]*outputIntentProfileId:\s*"srgb"/)
-  assert.match(engineSource, /return\s*\{[\s\S]*colorMode:\s*"cmyk"[\s\S]*outputIntentProfileId:\s*"coated-fogra39"/)
+  const optionsSource = readText("lib/export-format-options.ts")
+  assert.match(optionsSource, /export\s+type\s+ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*boolean[\s\S]*widthMm:\s*number/)
+  assert.match(optionsSource, /pdf:\s*\{[\s\S]*supportsBleed:\s*true/)
+  assert.match(optionsSource, /svg:\s*\{[\s\S]*supportsBleed:\s*true/)
+  assert.match(optionsSource, /idml:\s*\{[\s\S]*supportsBleed:\s*true/)
+  assert.match(hookSource, /const\s+\[bleedEnabledDraft,\s*setBleedEnabledDraft\]/)
+  assert.match(hookSource, /normalizeExportBleedOptions\(\{[\s\S]*enabled:\s*supportsExportBleed\(exportFormatDraft\)\s*&&\s*bleedEnabledDraft/)
+  assert.match(engineSource, /function\s+resolvePdfExportColorManagement\(\):\s*\{[\s\S]*outputIntentProfileId:\s*PdfOutputIntentProfileId[\s\S]*return\s*\{[\s\S]*outputIntentProfileId:\s*"srgb"/)
+  assert.doesNotMatch(hookSource, /PRINT_PRESETS|EXPORT_DIALOG_PRINT_PRESETS|offset_final|press_proof|digital_print/)
 })
 
-test("export dialog relies on print presets instead of a separate print-pro switch", () => {
+test("export dialog exposes shared bleed controls instead of print presets", () => {
   const source = readText("components/dialogs/ExportDialog.tsx")
-  assert.match(source, /SectionHeaderRow\s+label="Print Presets"/)
-  assert.match(source, /EXPORT_DIALOG_PRINT_PRESETS/)
-  assert.match(source, /grid-cols-2/)
+  assert.match(source, /SectionHeaderRow[\s\S]*Bleed/)
+  assert.match(source, /Bleed Width \(mm\)/)
+  assert.match(source, /bleedEnabledDraft/)
+  assert.match(source, /onBleedEnabledChange/)
   assert.doesNotMatch(source, /Print Pro/)
+  assert.doesNotMatch(source, /Print Presets/)
+  assert.doesNotMatch(source, /EXPORT_DIALOG_PRINT_PRESETS/)
+  assert.doesNotMatch(source, /Registration-Style Marks/)
   assert.doesNotMatch(source, /onExportPrintProChange/)
 })
 
@@ -257,15 +273,16 @@ test("export dialog stays dark-mode-safe after removing size override controls",
   assert.match(source, /getPopupSurfaceClassName/)
   assert.match(source, /getPopupMutedTextClassName/)
   assert.doesNotMatch(source, /Units \/ Paper Size/)
-  assert.doesNotMatch(source, /Width \(mm\)/)
   assert.doesNotMatch(source, /Height will follow the selected aspect ratio automatically\./)
 })
 
-test("default export preset stays on digital print in code defaults and no longer depends on the bundled preset JSON", () => {
+test("default vector bleed uses a 3mm GUI/export default and no longer depends on the bundled preset JSON", () => {
   const source = readText("lib/config/ui-defaults.ts")
+  const optionsSource = readText("lib/export-format-options.ts")
   assert.doesNotMatch(source, /default_v001\.json/)
-  assert.match(source, /exportPrintPro:\s*false/)
-  assert.match(source, /exportBleedMm:\s*0/)
+  assert.match(source, /exportPrintPro:\s*true/)
+  assert.match(source, /exportBleedMm:\s*3/)
+  assert.match(optionsSource, /DEFAULT_EXPORT_BLEED_OPTIONS:\s*ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*true,[\s\S]*widthMm:\s*3/)
   assert.match(source, /exportRegistrationMarks:\s*false/)
   assert.doesNotMatch(source, /exportFinalSafeGuides/)
 })

@@ -83,7 +83,7 @@ export const DEFAULT_UI: UiSettingsSnapshot = {
     color: true,
     summary: true,
   },
-  exportPrintPro: false,
-  exportBleedMm: 0,
+  exportPrintPro: true,
+  exportBleedMm: 3,
   exportRegistrationMarks: false,
 }

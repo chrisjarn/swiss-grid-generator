@@ -6,9 +6,9 @@ import {
 import {
   runExportEngine,
   type ExportEngineFormat,
+  type ExportEngineBleedConfig,
   type ExportEngineMetadata,
   type ExportEngineOptions,
-  type ExportEnginePrintConfig,
   type ExportEngineResult,
   type ExportEngineSvgPackaging,
 } from "@/lib/export-engine"
@@ -34,7 +34,7 @@ export type ProjectExportRunnerOptions = {
   pageNumbers?: readonly number[]
   visibilitySettings: ProjectPageVisibilitySettings
   layoutEngine?: LayoutEngineContract
-  printConfig?: ExportEnginePrintConfig
+  bleed?: ExportEngineBleedConfig
   svgPackaging?: ExportEngineSvgPackaging
   onProgress?: ExportEngineOptions["onProgress"]
   onLog?: ExportEngineOptions["onLog"]
@@ -137,7 +137,7 @@ export async function runProjectExport(options: ProjectExportRunnerOptions): Pro
     startPageNumber: physicalPageNumbers[0] ?? selectedPageNumbers[0] ?? 1,
     pageNumbers: physicalPageNumbers,
     layoutEngine: options.layoutEngine ?? options.project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
-    printConfig: options.printConfig,
+    bleed: options.bleed,
     svgPackaging: options.svgPackaging,
     onProgress: options.onProgress,
     onLog: options.onLog,

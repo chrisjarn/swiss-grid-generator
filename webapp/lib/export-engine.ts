@@ -2,7 +2,13 @@ import jsPDFModule from "jspdf"
 import { strToU8, zipSync } from "fflate"
 
 import { getStyleDefaultFontWeight, isFontFamily, resolveFontVariant } from "@/lib/config/fonts"
-import { attachPdfOutputIntent, type PdfExportColorMode, type PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
+import { buildExportBox } from "@/lib/export-box"
+import type { PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
+import { attachPdfOutputIntent } from "@/lib/pdf-output-intent"
+import {
+  DEFAULT_EXPORT_BLEED_OPTIONS,
+  type ExportBleedOptions,
+} from "@/lib/export-format-options"
 import {
   preloadFontFileMetricFaces,
   type FontFileMetricFace,
@@ -23,7 +29,6 @@ import {
 } from "@/lib/planned-page-export-source"
 import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
 import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
-import { mmToPt } from "@/lib/units"
 
 export type ExportEngineFormat = "pdf" | "svg" | "idml"
 export type ExportEngineSvgPackaging = "files" | "zip"
@@ -35,11 +40,7 @@ export type ExportEngineMetadata = {
   createdAt: string
 }
 
-export type ExportEnginePrintConfig = {
-  enabled: boolean
-  bleedMm: number
-  registrationMarks: boolean
-}
+export type ExportEngineBleedConfig = ExportBleedOptions
 
 export type ExportEngineProgress = {
   format: ExportEngineFormat
@@ -95,7 +96,7 @@ export type ExportEngineOptions = {
   startPageNumber?: number
   pageNumbers?: readonly number[]
   layoutEngine?: LayoutEngineContract
-  printConfig?: ExportEnginePrintConfig
+  bleed?: ExportEngineBleedConfig
   svgPackaging?: ExportEngineSvgPackaging
   onProgress?: (progress: ExportEngineProgress) => void | Promise<void>
   onLog?: (message: string) => void
@@ -103,14 +104,7 @@ export type ExportEngineOptions = {
   assertNotCancelled?: () => void
 }
 
-const PRINT_CROP_OFFSET_MM = 2
-const PRINT_CROP_LENGTH_MM = 5
-
-const DEFAULT_PRINT_CONFIG: ExportEnginePrintConfig = {
-  enabled: false,
-  bleedMm: 0,
-  registrationMarks: false,
-}
+const DEFAULT_BLEED_CONFIG: ExportEngineBleedConfig = DEFAULT_EXPORT_BLEED_OPTIONS
 
 const JsPDFConstructor = (
   typeof jsPDFModule === "function"
@@ -185,20 +179,11 @@ function collectExportTextMetricFaces(pages: readonly ResolvedProjectPageExportS
   return collectPdfFontFaces(pages)
 }
 
-function resolvePdfExportColorManagement(config: Pick<ExportEnginePrintConfig, "enabled">): {
-  colorMode: PdfExportColorMode
+function resolvePdfExportColorManagement(): {
   outputIntentProfileId: PdfOutputIntentProfileId
 } {
-  if (!config.enabled) {
-    return {
-      colorMode: "rgb",
-      outputIntentProfileId: "srgb",
-    }
-  }
-
   return {
-    colorMode: "cmyk",
-    outputIntentProfileId: "coated-fogra39",
+    outputIntentProfileId: "srgb",
   }
 }
 
@@ -247,23 +232,21 @@ async function exportPdf(
   plannedPages: readonly PlannedProjectPageExportSource[],
   record: ReturnType<typeof createTimingRecorder>,
 ): Promise<ExportEngineOutput> {
-  const printConfig = options.printConfig ?? DEFAULT_PRINT_CONFIG
+  const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
   await publishPhaseProgress(options, "pdf", "PDF setup: initializing document")
-  const { enabled, bleedMm, registrationMarks } = printConfig
-  const { colorMode, outputIntentProfileId } = resolvePdfExportColorManagement({ enabled })
-  const bleedPt = mmToPt(bleedMm)
-  const cropOffsetPt = mmToPt(PRINT_CROP_OFFSET_MM)
-  const cropLengthPt = mmToPt(PRINT_CROP_LENGTH_MM)
-  const cropMarginPt = bleedPt + cropOffsetPt + cropLengthPt
-  const originX = enabled ? cropMarginPt : 0
-  const originY = enabled ? cropMarginPt : 0
+  const { outputIntentProfileId } = resolvePdfExportColorManagement()
   const firstPage = plannedPages[0]
   const firstDimensions = {
     width: firstPage.result.pageSizePt.width,
     height: firstPage.result.pageSizePt.height,
   }
-  const firstPageWidth = enabled ? firstDimensions.width + cropMarginPt * 2 : firstDimensions.width
-  const firstPageHeight = enabled ? firstDimensions.height + cropMarginPt * 2 : firstDimensions.height
+  const firstExportBox = buildExportBox({
+    width: firstDimensions.width,
+    height: firstDimensions.height,
+    bleed: bleedConfig,
+  })
+  const firstPageWidth = firstExportBox.media.width
+  const firstPageHeight = firstExportBox.media.height
   const trimmedTitle = options.metadata.title.trim()
   const trimmedDescription = options.metadata.description.trim()
   const trimmedAuthor = options.metadata.author.trim()
@@ -327,8 +310,13 @@ async function exportPdf(
         width: page.result.pageSizePt.width,
         height: page.result.pageSizePt.height,
       }
-      const pageWidth = enabled ? dimensions.width + cropMarginPt * 2 : dimensions.width
-      const pageHeight = enabled ? dimensions.height + cropMarginPt * 2 : dimensions.height
+      const exportBox = buildExportBox({
+        width: dimensions.width,
+        height: dimensions.height,
+        bleed: bleedConfig,
+      })
+      const pageWidth = exportBox.media.width
+      const pageHeight = exportBox.media.height
 
       if (index > 0) {
         pdf.addPage([pageWidth, pageHeight], pageWidth > pageHeight ? "landscape" : "portrait")
@@ -342,19 +330,11 @@ async function exportPdf(
         layout: page.previewLayout,
         documentVariableContext: page.documentVariableContext,
         baseFont: page.baseFont,
-        originX,
-        originY,
-        colorMode,
+        originX: exportBox.origin.x,
+        originY: exportBox.origin.y,
         imageColorScheme: page.imageColorScheme,
         canvasBackground: page.resolvedCanvasBackground,
-        printPro: {
-          enabled,
-          bleedPt,
-          cropMarkOffsetPt: cropOffsetPt,
-          cropMarkLengthPt: cropLengthPt,
-          showBleedGuide: enabled,
-          registrationMarks,
-        },
+        exportBox,
         rotation: page.uiSettings.rotation,
         showBaselines: page.uiSettings.showBaselines,
         showModules: page.uiSettings.showModules,
@@ -402,11 +382,17 @@ async function renderSvgFiles(
   plannedPages: readonly PlannedProjectPageExportSource[],
 ): Promise<Array<{ filename: string; text: string }>> {
   const startPageNumber = options.startPageNumber ?? 1
+  const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
   const files: Array<{ filename: string; text: string }> = []
   for (const [index, page] of plannedPages.entries()) {
     options.assertNotCancelled?.()
     const pageNumber = options.pageNumbers?.[index] ?? startPageNumber + index
     const pageSlug = normalizeFilenameSegment(page.name || `page-${pageNumber}`)
+    const exportBox = buildExportBox({
+      width: page.result.pageSizePt.width,
+      height: page.result.pageSizePt.height,
+      bleed: bleedConfig,
+    })
     const svg = await renderSwissGridVectorSvg({
       width: page.result.pageSizePt.width,
       height: page.result.pageSizePt.height,
@@ -431,6 +417,7 @@ async function renderSvgFiles(
       createdAt: options.metadata.createdAt,
       creatorTool: "Swiss Grid Generator",
       exportPlan: page.exportPlan,
+      exportBox,
     })
     files.push({
       filename: `${options.baseName}_page_${String(pageNumber).padStart(3, "0")}_${pageSlug}.svg`,
@@ -513,6 +500,9 @@ async function exportIdml(
   const bytes = await record.measure("idml package", () => buildSwissGridIdmlPackage({
     metadata: options.metadata,
     pages: [...plannedPages],
+    bleedMm: (options.bleed ?? DEFAULT_BLEED_CONFIG).enabled
+      ? (options.bleed ?? DEFAULT_BLEED_CONFIG).widthMm
+      : 0,
   }), `pages=${plannedPages.length}`)
   await publishProgress(options, {
     format: "idml",

@@ -18,6 +18,7 @@ import {
   preloadTextPlanOutlineFonts,
   resolveTextPlanVectorShapes,
 } from "@/lib/vector-text-outline"
+import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -43,6 +44,7 @@ type ExportVectorSvgOptions = {
   author?: string
   createdAt?: string
   creatorTool?: string
+  exportBox: ExportBox
   exportPlan?: PageExportPlan
 }
 
@@ -125,6 +127,7 @@ async function renderSwissGridVectorSvgInternal({
   author = "",
   createdAt = "",
   creatorTool = "Swiss Grid Generator",
+  exportBox,
   exportPlan: providedExportPlan,
 }: ExportVectorSvgOptions): Promise<string> {
   const exportPlan = providedExportPlan ?? buildPageExportPlan({
@@ -145,7 +148,12 @@ async function renderSwissGridVectorSvgInternal({
 
   const imagePlans = new Map(exportPlan.imagePlans.map((plan) => [plan.key, plan] as const))
   const textPlans = new Map(exportPlan.textPlans.map((plan) => [plan.key, plan] as const))
+  const documentWidth = exportBox.media.width
+  const documentHeight = exportBox.media.height
+  const viewBoxX = exportBox.media.x
+  const viewBoxY = exportBox.media.y
   const pageClipId = "swiss-page-clip"
+  const pageClipRect = getExportGuideClipRect(exportBox, true) ?? exportBox.trim
   const pageRotationTransform = renderRotationTransform(
     exportPlan.rotation,
     exportPlan.pageWidth / 2,
@@ -209,12 +217,25 @@ async function renderSwissGridVectorSvgInternal({
     return `<g id="text-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" data-style-key="${quoteAttr(textPlan.styleKey)}" data-text-rendering="text-fallback"${rotationTransform}>${fallbackLines}</g>`
   }))).join("")
 
+  const exportCanvasMarkup = exportBox.exportCanvasMarginPt > 0
+    ? `<rect x="${formatNumber(exportBox.media.x)}" y="${formatNumber(exportBox.media.y)}" width="${formatNumber(exportBox.media.width)}" height="${formatNumber(exportBox.media.height)}" fill="#ffffff" />`
+    : ""
   const backgroundMarkup = exportPlan.backgroundColor
-    ? `<rect x="0" y="0" width="${formatNumber(exportPlan.pageWidth)}" height="${formatNumber(exportPlan.pageHeight)}" fill="${formatSvgColor(exportPlan.backgroundColor)}" />`
+    ? `<rect x="${formatNumber(pageClipRect.x)}" y="${formatNumber(pageClipRect.y)}" width="${formatNumber(pageClipRect.width)}" height="${formatNumber(pageClipRect.height)}" fill="${formatSvgColor(exportPlan.backgroundColor)}" />`
     : ""
 
   const pageOutlineMarkup = exportPlan.pageOutline
     ? `<rect x="0" y="0" width="${formatNumber(exportPlan.pageWidth)}" height="${formatNumber(exportPlan.pageHeight)}" fill="none" stroke="${formatSvgColor(exportPlan.pageOutline.strokeColor)}" stroke-width="${formatNumber(exportPlan.pageOutline.strokeWidth)}" />`
+    : ""
+  const cropMarkMarkup = exportBox.cropMarkLines.length > 0
+    ? (() => {
+        const line = (x1: number, y1: number, x2: number, y2: number) => (
+          `<line x1="${formatNumber(x1)}" y1="${formatNumber(y1)}" x2="${formatNumber(x2)}" y2="${formatNumber(y2)}" />`
+        )
+        return `<g id="crop-marks" fill="none" stroke="#141414" stroke-width="0.35">` + exportBox.cropMarkLines
+          .map((cropMarkLine) => line(cropMarkLine.x1, cropMarkLine.y1, cropMarkLine.x2, cropMarkLine.y2))
+          .join("") + `</g>`
+      })()
     : ""
   const metadataMarkup = buildSvgMetadataMarkup({
     title,
@@ -226,13 +247,15 @@ async function renderSwissGridVectorSvgInternal({
 
   return [
     `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${formatNumber(width)}pt" height="${formatNumber(height)}pt" viewBox="0 0 ${formatNumber(exportPlan.pageWidth)} ${formatNumber(exportPlan.pageHeight)}" role="img" aria-labelledby="title desc">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${formatNumber(width + exportBox.exportCanvasMarginPt * 2)}pt" height="${formatNumber(height + exportBox.exportCanvasMarginPt * 2)}pt" viewBox="${formatNumber(viewBoxX)} ${formatNumber(viewBoxY)} ${formatNumber(documentWidth)} ${formatNumber(documentHeight)}" role="img" aria-labelledby="title desc">`,
     `<title id="title">${escapeXml(title)}</title>`,
     `<desc id="desc">${escapeXml(description)}</desc>`,
     metadataMarkup,
+    exportCanvasMarkup,
     backgroundMarkup,
-    `<defs><clipPath id="${pageClipId}"><rect x="0" y="0" width="${formatNumber(exportPlan.pageWidth)}" height="${formatNumber(exportPlan.pageHeight)}" /></clipPath></defs>`,
+    `<defs><clipPath id="${pageClipId}"><rect x="${formatNumber(pageClipRect.x)}" y="${formatNumber(pageClipRect.y)}" width="${formatNumber(pageClipRect.width)}" height="${formatNumber(pageClipRect.height)}" /></clipPath></defs>`,
     `<g id="page"${pageRotationTransform} stroke-linecap="butt" stroke-linejoin="miter" stroke-miterlimit="10">`,
+    cropMarkMarkup,
     pageOutlineMarkup,
     guideMarkup,
     layerMarkup,

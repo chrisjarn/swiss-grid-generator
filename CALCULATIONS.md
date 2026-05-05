@@ -492,6 +492,9 @@ PDF, SVG, and IDML are entered through the shared project export runner. The run
 
 Export rendering note:
 - All export targets remain vector-based.
+- Shared bleed is specified in millimeters at the export options boundary, defaults to `3mm`, and is converted to a shared `ExportBox` in points before format rendering.
+- PDF, SVG, and IDML consume the same normalized `ExportBox` model for trim, bleed, media canvas, export origin, crop-mark line geometry, and guide clipping so bounds stay format-consistent.
+- When bleed is enabled, exporters include the bleed box as production area, clip visible page/export geometry to that bleed box, add a fixed white crop-mark canvas outside it, and add black crop marks aimed at the trim corners. This shifts the export origin only; trim coordinates, grid modules, paragraph positions, and bleed width remain unchanged. No dashed bleed guide is exported.
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry.
 - `SVG` and `IDML` resolve typography to frozen outline geometry for downstream fidelity.
 - `PDF` keeps vector text drawing aligned with the deterministic export plan rather than forcing all text into outlines.

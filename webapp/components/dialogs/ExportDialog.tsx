@@ -5,15 +5,14 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
-import { Switch } from "@/components/ui/switch"
 import {
   getCompactActionButtonClassName,
   getPopupInputClassName,
   getPopupMutedTextClassName,
   getPopupSurfaceClassName,
 } from "@/components/ui/popup-styles"
-import { EXPORT_DIALOG_PRINT_PRESETS } from "@/hooks/useExportActions"
-import type { ExportFormat, ExportProgressState, PrintPresetKey } from "@/hooks/useExportActions"
+import type { ExportProgressState } from "@/hooks/useExportActions"
+import type { ExportFormat } from "@/lib/export-format-options"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -49,13 +48,10 @@ type Props = {
   onJsonAuthorChange: (value: string) => void
   jsonCompressionEnabledDraft: boolean
   onJsonCompressionEnabledChange: (value: boolean) => void
-  activePrintPresetDraft: PrintPresetKey | null
-  showPrintAdjustmentsDraft: boolean
-  onApplyPrintPreset: (key: PrintPresetKey) => void
+  bleedEnabledDraft: boolean
+  onBleedEnabledChange: (value: boolean) => void
   exportBleedMmDraft: string
   onExportBleedMmChange: (value: string) => void
-  exportRegistrationMarksDraft: boolean
-  onExportRegistrationMarksChange: (value: boolean) => void
   onConfirm: () => void
   exportProgress: ExportProgressState | null
 }
@@ -93,13 +89,10 @@ export function ExportDialog({
   onJsonAuthorChange,
   jsonCompressionEnabledDraft,
   onJsonCompressionEnabledChange,
-  activePrintPresetDraft,
-  showPrintAdjustmentsDraft,
-  onApplyPrintPreset,
+  bleedEnabledDraft,
+  onBleedEnabledChange,
   exportBleedMmDraft,
   onExportBleedMmChange,
-  exportRegistrationMarksDraft,
-  onExportRegistrationMarksChange,
   onConfirm,
   exportProgress,
 }: Props) {
@@ -123,15 +116,12 @@ export function ExportDialog({
 
   const compactInputClassName = getPopupInputClassName(isDarkUi, "rounded-sm px-2 py-1 text-[12px]")
   const helpTextClassName = `text-xs leading-relaxed ${getPopupMutedTextClassName(isDarkUi)}`
-  const toggleRowClassName = cn(
-    "flex items-center justify-between rounded-sm border px-2 py-2",
-    isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-300 bg-white",
-  )
   const dialogThemeClassName = isDarkUi ? "dark" : undefined
   const actionButtonClassName = getCompactActionButtonClassName({ isDarkMode: isDarkUi })
   const isPdfExport = exportFormatDraft === "pdf"
   const isSvgExport = exportFormatDraft === "svg"
   const isJsonExport = exportFormatDraft === "json"
+  const isVectorExport = exportFormatDraft !== "json"
   const isMultiPageSelection = selectedPageCount > 1
   const isExporting = exportProgress !== null
   const closedMetadataFormatSectionClassName = !isMetadataOpen ? "min-h-[196px]" : ""
@@ -429,66 +419,56 @@ export function ExportDialog({
                 </>
               ) : null}
 
-              {isPdfExport ? (
+              {isVectorExport ? (
                 <>
-                  <div className="space-y-2">
-                    <SectionHeaderRow label="Print Presets" />
-                    <div className="grid grid-cols-2 gap-2">
-                      {EXPORT_DIALOG_PRINT_PRESETS.map((preset) => (
-                        <Button
-                          key={preset.key}
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className={getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: activePrintPresetDraft === preset.key })}
-                          disabled={isExporting}
-                          onClick={() => onApplyPrintPreset(preset.key)}
-                        >
-                          {preset.label}
-                        </Button>
-                      ))}
-                    </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <SectionHeaderRow
+                      label={(
+                        <span className="inline-flex min-w-0 items-center gap-1.5">
+                          <span>Bleed</span>
+                          <span className={`text-[11px] font-normal normal-case tracking-normal ${getPopupMutedTextClassName(isDarkUi)}`}>
+                            (millimeters)
+                          </span>
+                        </span>
+                      )}
+                      className="min-w-0 flex-1"
+                    />
+                    <input
+                      type="checkbox"
+                      checked={bleedEnabledDraft}
+                      onChange={(event) => onBleedEnabledChange(event.target.checked)}
+                      disabled={isExporting}
+                      aria-label="Enable vector export bleed"
+                      className="h-3.5 w-3.5 shrink-0"
+                    />
                   </div>
-                  {showPrintAdjustmentsDraft ? (
-                    <>
-                      <div className="space-y-2">
-                        <Label>Bleed (mm)</Label>
-                        <input
-                          type="number"
-                          min={0}
-                          step="0.1"
-                          value={exportBleedMmDraft}
-                          onChange={(event) => onExportBleedMmChange(event.target.value)}
-                          disabled={isExporting}
-                          className={compactInputClassName}
-                        />
-                      </div>
-                      <div className={toggleRowClassName}>
-                        <div className="space-y-0.5">
-                          <Label className="text-sm">Registration-Style Marks</Label>
-                          <p className={`text-[11px] ${getPopupMutedTextClassName(isDarkUi)}`}>Uses rich CMYK marks instead of black.</p>
-                        </div>
-                        <Switch
-                          checked={exportRegistrationMarksDraft}
-                          onCheckedChange={onExportRegistrationMarksChange}
-                          disabled={isExporting}
-                        />
-                      </div>
-                    </>
+                  {bleedEnabledDraft ? (
+                    <div className="space-y-2">
+                      <Label>Bleed Width (mm)</Label>
+                      <input
+                        type="number"
+                        min={0}
+                        step="0.1"
+                        value={exportBleedMmDraft}
+                        onChange={(event) => onExportBleedMmChange(event.target.value)}
+                        disabled={isExporting}
+                        className={compactInputClassName}
+                      />
+                    </div>
                   ) : null}
+                  <p className={helpTextClassName}>
+                    {isPdfExport
+                      ? "PDF exports RGB vector geometry with an sRGB output intent. Bleed is a production area, with crop marks outside it."
+                      : isSvgExport
+                        ? (
+                          isMultiPageSelection
+                            ? "SVG exports a ZIP with one outlined SVG per selected page. Bleed is included as production area, with crop marks outside it."
+                            : "SVG exports outlined vector geometry. Bleed is included as production area, with crop marks outside it."
+                        )
+                        : "IDML exports outlined geometry, document bleed, slug canvas, and crop marks outside bleed."}
+                  </p>
                 </>
-              ) : isSvgExport ? (
-                <p className={helpTextClassName}>
-                  {isMultiPageSelection
-                    ? "SVG v1 exports a ZIP with one trim-sized outlined SVG per selected page. Typography is converted to glyph paths for geometric fidelity, so exported text is not live-editable."
-                    : "SVG v1 exports trim-sized glyph-outline vectors, guides, and placeholders. Typography is converted to exact glyph paths, so exported text is not live-editable."}
-                </p>
-              ) : isJsonExport ? null : (
-                <p className={helpTextClassName}>
-                  IDML v1 exports the selected project page range as an InDesign package with separate guides, outlined
-                  typography, and placeholder layers. Exported typography is frozen as geometry rather than live text.
-                </p>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

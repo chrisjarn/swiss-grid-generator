@@ -19,4 +19,5 @@ export type IdmlProjectPage = ResolvedProjectPageExportSource & {
 export type SwissGridIdmlDocument = {
   metadata: ProjectMetadata
   pages: IdmlProjectPage[]
+  bleedMm?: number
 }

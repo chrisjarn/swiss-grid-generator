@@ -43,7 +43,7 @@ That test snapshots a normalized canonical stress plan hash so performance chang
 
 - Optimize around the canonical plan, not around canvas.
 - Keep planner inputs and returned `PageExportPlan` semantics stable.
-- Keep export output paths on the shared project export runner and `ExportEngine`; UI entry points should pass project snapshots, ranges, metadata, visibility, and print settings rather than rebuilding exporter-specific page data.
+- Keep export output paths on the shared project export runner and `ExportEngine`; UI entry points should pass project snapshots, ranges, metadata, visibility, and shared vector bleed settings rather than rebuilding exporter-specific page data.
 - Cache only pure deterministic calculations with explicit keys.
 - Do not cache or reuse returned plan objects across calls unless mutation safety is proven.
 - Run `npm run test:page-export-plan`, `npm run lint`, `npx tsc --noEmit`, and `npm run benchmark:layout` after planner changes.
@@ -172,13 +172,14 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 ### Kept Changes
 
 - Added `webapp/lib/export-engine.ts` as the shared PDF/SVG/IDML engine. It consumes already resolved project page sources, builds one `PageExportPlan` per page, and then dispatches format-specific vector renderers.
-- Added `webapp/lib/project-export-runner.ts` so both browser export and `npm run export` enter export with the same project snapshot, page range, metadata, visibility state, print config, and layout engine.
+- Added `webapp/lib/project-export-runner.ts` so both browser export and `npm run export` enter export with the same project snapshot, page range, metadata, visibility state, shared vector bleed config, and layout engine.
 - Added `webapp/lib/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
+- Added `webapp/lib/export-box.ts` as the shared trim/bleed/media/crop geometry model. PDF, SVG, and IDML now consume the same `ExportBox` instead of duplicating bleed conversion, crop-mark offsets, media-canvas math, and guide clipping per format.
 - Added `webapp/lib/vector-text-outline.ts` so SVG and IDML share glyph-outline conversion.
 - Added CLI export:
   ```bash
   cd webapp
-  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --out ../tmp/export-debug
+  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --bleed-mm 3 --out ../tmp/export-debug
   ```
 - Added phase timing for:
   - `resolve export sources`
@@ -213,7 +214,7 @@ Browser measurements varied by engine:
 ### Current Boundaries
 
 - PDF remains main-thread browser work for now; no browser-specific worker path is introduced.
-- Bleed/print framing is still PDF-only. A future shared `ExportPrintFrame` should make bleed, crop marks, and media/trim geometry available consistently to PDF, SVG, and IDML.
+- Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI/export default is `3mm`; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
 
 ### Validation
 

@@ -16,8 +16,8 @@ import {
 } from "@/lib/text-rendering"
 import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
+import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
-import type { PdfExportColorMode } from "@/lib/pdf-output-intent"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
@@ -27,7 +27,6 @@ import {
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type BlockId = string
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily, BlockId>
-type CmykColor = { c: number; m: number; y: number; k: number }
 type PdfMatrix = { toString: () => string }
 type PdfMatrixConstructor = new (
   sx: number,
@@ -52,15 +51,6 @@ type PdfWithFormObjects = jsPDF & {
   addGState?: (key: string, gState: PdfGraphicsState) => jsPDF
   setGState?: (gState: string | PdfGraphicsState) => jsPDF
 }
-type PrintProOptions = {
-  enabled: boolean
-  bleedPt: number
-  cropMarkLengthPt: number
-  cropMarkOffsetPt: number
-  showBleedGuide?: boolean
-  registrationMarks?: boolean
-}
-
 type ExportVectorPdfOptions = {
   pdf: jsPDF
   width: number
@@ -71,10 +61,9 @@ type ExportVectorPdfOptions = {
   baseFont?: FontFamily
   originX?: number
   originY?: number
-  colorMode: PdfExportColorMode
   imageColorScheme: ImageColorSchemeId
   canvasBackground?: string | null
-  printPro?: PrintProOptions
+  exportBox: ExportBox
   rotation: number
   showBaselines: boolean
   showModules: boolean
@@ -147,81 +136,16 @@ function getPdfFontFamily(fontFamily: FontFamily, fontWeight: number): string {
   return isPdfSerifStyleFont(fontFamily) ? "times" : "helvetica"
 }
 
-function rgbToCmyk({ r, g, b }: RgbColor): CmykColor {
-  const rr = r / 255
-  const gg = g / 255
-  const bb = b / 255
-  const k = 1 - Math.max(rr, gg, bb)
-
-  if (k >= 0.9999) {
-    return { c: 0, m: 0, y: 0, k: 1 }
-  }
-
-  const c = (1 - rr - k) / (1 - k)
-  const m = (1 - gg - k) / (1 - k)
-  const y = (1 - bb - k) / (1 - k)
-
-  return {
-    c: Math.max(0, Math.min(1, c)),
-    m: Math.max(0, Math.min(1, m)),
-    y: Math.max(0, Math.min(1, y)),
-    k: Math.max(0, Math.min(1, k)),
-  }
-}
-
-function setDrawColorRgb(pdf: jsPDF, color: RgbColor): void {
+function setDrawColor(pdf: jsPDF, color: RgbColor): void {
   pdf.setDrawColor(color.r, color.g, color.b)
 }
 
-function setTextColorRgb(pdf: jsPDF, color: RgbColor): void {
+function setTextColor(pdf: jsPDF, color: RgbColor): void {
   pdf.setTextColor(color.r, color.g, color.b)
 }
 
-function setFillColorRgb(pdf: jsPDF, color: RgbColor): void {
+function setFillColor(pdf: jsPDF, color: RgbColor): void {
   pdf.setFillColor(color.r, color.g, color.b)
-}
-
-function setDrawColorCmyk(pdf: jsPDF, color: RgbColor): void {
-  const { c, m, y, k } = rgbToCmyk(color)
-  pdf.setDrawColor(c, m, y, k)
-}
-
-function setTextColorCmyk(pdf: jsPDF, color: RgbColor): void {
-  const { c, m, y, k } = rgbToCmyk(color)
-  pdf.setTextColor(c, m, y, k)
-}
-
-function setFillColorCmyk(pdf: jsPDF, color: RgbColor): void {
-  const { c, m, y, k } = rgbToCmyk(color)
-  pdf.setFillColor(c, m, y, k)
-}
-
-function setDrawColorFromCmyk(pdf: jsPDF, color: CmykColor): void {
-  pdf.setDrawColor(color.c, color.m, color.y, color.k)
-}
-
-function setDrawColor(pdf: jsPDF, color: RgbColor, colorMode: PdfExportColorMode): void {
-  if (colorMode === "cmyk") {
-    setDrawColorCmyk(pdf, color)
-    return
-  }
-  setDrawColorRgb(pdf, color)
-}
-
-function setTextColor(pdf: jsPDF, color: RgbColor, colorMode: PdfExportColorMode): void {
-  if (colorMode === "cmyk") {
-    setTextColorCmyk(pdf, color)
-    return
-  }
-  setTextColorRgb(pdf, color)
-}
-
-function setFillColor(pdf: jsPDF, color: RgbColor, colorMode: PdfExportColorMode): void {
-  if (colorMode === "cmyk") {
-    setFillColorCmyk(pdf, color)
-    return
-  }
-  setFillColorRgb(pdf, color)
 }
 
 async function renderSwissGridVectorPdfInternal({
@@ -234,10 +158,9 @@ async function renderSwissGridVectorPdfInternal({
   baseFont = DEFAULT_BASE_FONT,
   originX = 0,
   originY = 0,
-  colorMode,
   imageColorScheme,
   canvasBackground = null,
-  printPro,
+  exportBox,
   rotation,
   showBaselines,
   showModules,
@@ -264,6 +187,7 @@ async function renderSwissGridVectorPdfInternal({
   })
   const sourceWidth = exportPlan.pageWidth
   const sourceHeight = exportPlan.pageHeight
+  const exportCanvasMarginPt = exportBox.exportCanvasMarginPt
   const sx = width / sourceWidth
   const sy = height / sourceHeight
   const scale = (sx + sy) / 2
@@ -365,22 +289,21 @@ async function renderSwissGridVectorPdfInternal({
     opacityPdf.setGState(key)
   }
 
-  if (exportPlan.backgroundColor) {
-    setFillColor(pdf, exportPlan.backgroundColor, colorMode)
-    pdf.rect(originX, originY, width, height, "F")
+  if (exportCanvasMarginPt > 0) {
+    setFillColor(pdf, { r: 255, g: 255, b: 255 })
+    pdf.rect(0, 0, pageWidth, pageHeight, "F")
   }
 
-  const drawCropMarks = (offset: number, length: number) => {
-    const outside = offset
-    drawLine(-outside - length, 0, -outside, 0)
-    drawLine(0, -outside - length, 0, -outside)
-    drawLine(sourceWidth + outside, 0, sourceWidth + outside + length, 0)
-    drawLine(sourceWidth, -outside - length, sourceWidth, -outside)
-
-    drawLine(-outside - length, sourceHeight, -outside, sourceHeight)
-    drawLine(0, sourceHeight + outside, 0, sourceHeight + outside + length)
-    drawLine(sourceWidth + outside, sourceHeight, sourceWidth + outside + length, sourceHeight)
-    drawLine(sourceWidth, sourceHeight + outside, sourceWidth, sourceHeight + outside + length)
+  if (exportPlan.backgroundColor) {
+    const backgroundRect = exportBox.bleed
+    setFillColor(pdf, exportPlan.backgroundColor)
+    pdf.rect(
+      originX + backgroundRect.x * scale,
+      originY + backgroundRect.y * scale,
+      backgroundRect.width * scale,
+      backgroundRect.height * scale,
+      "F",
+    )
   }
 
   const rotatePointAround = (
@@ -434,29 +357,17 @@ async function renderSwissGridVectorPdfInternal({
   pdf.setLineJoin("miter")
   pdf.setLineMiterLimit(10)
   if (exportPlan.pageOutline) {
-    setDrawColor(pdf, exportPlan.pageOutline.strokeColor, colorMode)
+    setDrawColor(pdf, exportPlan.pageOutline.strokeColor)
     pdf.setLineWidth(Math.max(exportPlan.pageOutline.strokeWidth * scale, minHairlinePt))
     drawRectOutline(0, 0, sourceWidth, sourceHeight)
   }
 
-  if (printPro?.enabled) {
-    const bleed = Math.max(0, printPro.bleedPt)
-    const markOffset = Math.max(0, printPro.cropMarkOffsetPt + bleed)
-    const markLength = Math.max(0, printPro.cropMarkLengthPt)
-    if (printPro.showBleedGuide && exportPlan.pageOutline) {
-      setDrawColor(pdf, { r: 140, g: 140, b: 140 }, colorMode)
-      pdf.setLineWidth(Math.max(0.25 * scale, minHairlinePt))
-      pdf.setLineDashPattern([2 * scale, 2 * scale], 0)
-      drawRectOutline(-bleed, -bleed, sourceWidth + bleed * 2, sourceHeight + bleed * 2)
-      pdf.setLineDashPattern([], 0)
-    }
-    if (printPro.registrationMarks && colorMode === "cmyk") {
-      setDrawColorFromCmyk(pdf, { c: 1, m: 1, y: 1, k: 1 })
-    } else {
-      setDrawColor(pdf, { r: 20, g: 20, b: 20 }, colorMode)
-    }
+  if (exportBox.cropMarkLines.length > 0) {
+    setDrawColor(pdf, { r: 20, g: 20, b: 20 })
     pdf.setLineWidth(Math.max(0.35 * scale, minHairlinePt))
-    drawCropMarks(markOffset, markLength)
+    for (const line of exportBox.cropMarkLines) {
+      drawLine(line.x1, line.y1, line.x2, line.y2)
+    }
   }
 
   const drawImagePlan = (imagePlan: {
@@ -472,7 +383,7 @@ async function renderSwissGridVectorPdfInternal({
   }) => {
     pdf.saveGraphicsState()
     try {
-      setFillColor(pdf, imagePlan.fillColor, colorMode)
+      setFillColor(pdf, imagePlan.fillColor)
       setPdfOpacity(imagePlan.opacity)
       if (Math.abs(imagePlan.rotation) <= 0.0001) {
         drawFilledRect(imagePlan.x, imagePlan.y, imagePlan.width, imagePlan.height)
@@ -526,12 +437,19 @@ async function renderSwissGridVectorPdfInternal({
   }
   for (const guideGroup of exportPlan.guideGroups) {
     drawGuideGroup(buildGuideFormObjectKey(guideGroup, guideTransformFingerprint), () => {
-      setDrawColor(pdf, guideGroup.strokeColor, colorMode)
+      setDrawColor(pdf, guideGroup.strokeColor)
       pdf.setLineWidth(Math.max(guideGroup.strokeWidth * scale, minHairlinePt))
       pdf.setLineDashPattern(guideGroup.dashPattern.map((value) => value * scale), 0)
-      if (guideGroup.clipToPage) {
+      const guideClipRect = getExportGuideClipRect(exportBox, guideGroup.clipToPage)
+      if (guideClipRect) {
         pdf.saveGraphicsState()
-        pdf.rect(originX, originY, width, height, null)
+        pdf.rect(
+          originX + guideClipRect.x * scale,
+          originY + guideClipRect.y * scale,
+          guideClipRect.width * scale,
+          guideClipRect.height * scale,
+          null,
+        )
         pdf.clip()
         pdf.discardPath()
       }
@@ -541,7 +459,7 @@ async function renderSwissGridVectorPdfInternal({
       for (const line of guideGroup.lines) {
         drawLine(line.x1, line.y1, line.x2, line.y2)
       }
-      if (guideGroup.clipToPage) {
+      if (guideClipRect) {
         pdf.restoreGraphicsState()
       }
       pdf.setLineDashPattern([], 0)
@@ -560,9 +478,9 @@ async function renderSwissGridVectorPdfInternal({
     return
   }
 
-  setDrawColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
-  setTextColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
-  setFillColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
+  setDrawColor(pdf, { r: 31, g: 41, b: 55 })
+  setTextColor(pdf, { r: 31, g: 41, b: 55 })
+  setFillColor(pdf, { r: 31, g: 41, b: 55 })
 
   for (const key of exportPlan.orderedLayerKeys) {
     const imagePlan = imagePlans.get(key)
@@ -580,7 +498,7 @@ async function renderSwissGridVectorPdfInternal({
         for (const graphemes of plan.graphemeLines) {
           for (const grapheme of graphemes) {
             if (!isRenderableTextFragment(grapheme.text)) continue
-            setTextColor(pdf, parseHexColor(grapheme.color) ?? plan.textColor, colorMode)
+            setTextColor(pdf, parseHexColor(grapheme.color) ?? plan.textColor)
             pdf.setFont(
               getPdfFontFamily(grapheme.fontFamily, grapheme.fontWeight),
               grapheme.italic ? "italic" : "normal",
@@ -605,7 +523,7 @@ async function renderSwissGridVectorPdfInternal({
         if (segments.length === 0) continue
         for (const segment of segments) {
           if (!isRenderableTextFragment(segment.text)) continue
-          setTextColor(pdf, parseHexColor(segment.color) ?? plan.textColor, colorMode)
+          setTextColor(pdf, parseHexColor(segment.color) ?? plan.textColor)
           pdf.setFont(
             getPdfFontFamily(segment.fontFamily, segment.fontWeight),
             segment.italic ? "italic" : "normal",
@@ -632,7 +550,7 @@ async function renderSwissGridVectorPdfInternal({
       pdf.saveGraphicsState()
       try {
         setPdfOpacity(1)
-        setTextColor(pdf, plan.textColor, colorMode)
+        setTextColor(pdf, plan.textColor)
         pdf.setFont(
           getPdfFontFamily(plan.fontFamily, plan.fontWeight),
           plan.italic ? "italic" : "normal",

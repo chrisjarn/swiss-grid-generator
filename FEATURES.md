@@ -198,19 +198,19 @@ Current capability inventory for Swiss Grid Generator.
 - PDF, SVG, and IDML are vector-based, not raster captures.
 - PDF, SVG, and IDML are run through the shared `ProjectExportRunner` / `ExportEngine` path, so they consume the same resolved project pages and canonical `PageExportPlan` data.
 - Export metadata fields (`Project Title`, `Subject`, `Author`) are editable in the dialog for all formats.
-- `PDF` print presets:
-  - `Digital Print`
-  - `Press Proof`
-- PDF bleed and registration-style marks.
-- Embedded PDF output intents:
-  - `sRGB IEC61966-2.1` for digital export
-  - `Coated FOGRA39` for print export
+- PDF, SVG, and IDML share one bleed option:
+  - enabled by default
+  - default width `3mm`
+  - one shared `ExportBox` defines trim, bleed, media canvas, export origin, crop-mark geometry, and guide clipping
+  - visible export geometry extends through the production bleed area; a fixed white crop-mark canvas and black crop marks are added outside it
+  - no dashed bleed guide is exported
+- PDF exports RGB vector geometry with an embedded `sRGB IEC61966-2.1` output intent.
 - PDF font embedding uses verified local font assets only; missing configured assets fail `npm run fonts:verify` during asset generation.
 - PDF guide groups exported as separate form objects for margins, modules, and baselines.
 - PDF exports preserve available project metadata (`title`, `description`, `author`, `createdAt`) where the format supports it.
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry.
-- Single-page SVG exports a trim-size vector file with exact glyph-outline typography, guides, and placeholders.
-- Multi-page SVG exports a ZIP with one trim-size SVG per page.
+- Single-page SVG exports a vector file with exact glyph-outline typography, guides, placeholders, and optional bleed plus crop-mark canvas bounds and marks.
+- Multi-page SVG exports a ZIP with one SVG per page.
 - SVG exports embed available project metadata in the file metadata block.
 - SVG typography is exported as outline geometry, so downstream text is not live-editable.
 - IDML exports separate `Guides`, `Typography`, and `Placeholders` layers with frozen text-frame geometry, so downstream text is not live-editable.

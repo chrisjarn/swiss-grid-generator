@@ -310,18 +310,21 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 - All export formats stay vector-based
 - `JSON` exports the selected page range as an editable project document with metadata and current layout state
 - `PDF`, `SVG`, and `IDML` preserve available project metadata in their format-specific metadata containers
+- `PDF`, `SVG`, and `IDML` share one vector bleed control:
+  - checkbox enables bleed and defaults to enabled
+  - width is entered in millimeters and defaults to `3mm`
+  - export internals convert millimeters to one shared `ExportBox` in points
+  - the shared `ExportBox` owns trim, bleed, media canvas, export origin, crop-mark line geometry, and guide clipping for all three vector formats
+  - enabled bleed extends the visible production area through bleed, adds a fixed white crop-mark canvas outside bleed, and adds black crop marks targeting the trim corners, while trim layout math stays unchanged
+  - no dashed bleed guide is exported
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry
 - `IDML`:
   - exports the selected page range
   - keeps each page at its stored document size
   - freezes typography into outlined/non-live geometry
 - Filename input
-- `PDF` print presets:
-  - `Digital Print` (default)
-  - `Press Proof`
-  - Bleed input (mm)
-  - Registration-style marks toggle
-- `SVG` does not expose PDF print settings
+- `PDF` exports RGB vector geometry with an embedded sRGB output intent
+- `SVG`:
   - converts typography to exact glyph outlines, so exported text is not live-editable
 - Confirm/Cancel
 - `Esc` closes the popup when idle and cancels a running export at the next safe checkpoint
@@ -516,10 +519,10 @@ Behavior:
 ## Export Format Notes
 
 - JSON: full UI + preview layout state.
-- PDF: vector selected-range output with `Digital Print` and `Press Proof` presets, embedded output intents, grouped guide vectors, locally embedded verified font faces, and stored page geometry per exported page.
-- SVG: single-page trim-size vector output with typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
-- IDML: selected-range export with one InDesign page per app page and separate `Guides`, `Typography`, and `Placeholders` layers; exported text is frozen as geometry rather than live text.
-- PDF, SVG, and IDML share the same `ProjectExportRunner` / `ExportEngine` entry path and consume the same canonical `PageExportPlan` data.
+- PDF: vector selected-range output with RGB geometry, embedded sRGB output intent, optional shared bleed plus white crop-mark canvas and black crop marks, grouped guide vectors, locally embedded verified font faces, and stored page geometry per exported page.
+- SVG: single-page vector output with optional bleed plus white crop-mark canvas bounds, black crop marks, and typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
+- IDML: selected-range export with optional document bleed, slug/crop-mark canvas, black crop marks, one InDesign page per app page, and separate `Guides`, `Typography`, and `Placeholders` layers; exported text is frozen as geometry rather than live text.
+- PDF, SVG, and IDML share the same `ProjectExportRunner` / `ExportEngine` entry path, consume the same canonical `PageExportPlan` data, and use the same `ExportBox` geometry for bleed/media/crop output and guide clipping.
 - Export status shows preparation, rendering, finalization, percentage, and elapsed time. Progress updates are non-blocking for the export engine.
 
 ## JSON UI Fields (serialized)
@@ -527,7 +530,8 @@ Behavior:
 `canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `exportPrintPro`, `exportBleedMm`, `exportRegistrationMarks`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
 
 Notes:
-- `exportPrintPro` is retained as the persisted legacy backing field for the PDF print-preset mode.
+- `exportPrintPro` is retained as the persisted legacy backing field for the shared vector bleed enabled state.
+- `exportRegistrationMarks` is retained only for backward-compatible JSON loading and is no longer exposed in the export dialog.
 - Session-only GUI state is not serialized into layout JSON. That includes `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, `showTypography`, `showLayers`, and settings-panel `collapsed` state.
 - Saved layout JSON no longer stores `activePageId`; loaded projects always open on `pages[0]`.
 

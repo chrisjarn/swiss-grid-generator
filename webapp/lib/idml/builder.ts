@@ -1,6 +1,12 @@
 import { strToU8, zipSync } from "fflate"
+import {
+  buildExportBox,
+  clipExportLineToRect,
+  getExportGuideClipRect,
+  type ExportLine,
+} from "@/lib/export-box"
+import { normalizeExportBleedOptions } from "@/lib/export-format-options"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
-import { mmToPt } from "@/lib/units"
 import { resolveIdmlFontMetadata } from "@/lib/idml/font-metadata"
 import type { IdmlFontMetadata, SwissGridIdmlDocument } from "@/lib/idml/types"
 import { escapeIdmlXml, formatIdmlNumber, renderIdmlElement } from "@/lib/idml/xml"
@@ -371,6 +377,35 @@ function buildGuidesXml(
   ))
 }
 
+function renderCropMarkRects({
+  cropMarkLines,
+  pageTransformMatrix,
+  pageIndex,
+}: {
+  cropMarkLines: readonly ExportLine[]
+  pageTransformMatrix: Matrix
+  pageIndex: number
+}): string[] {
+  const weight = 0.35
+  const halfWeight = weight / 2
+  const cropMarkRects = cropMarkLines.map((line, lineIndex) => {
+    const horizontal = Math.abs(line.y1 - line.y2) <= 0.000001
+    const left = Math.min(line.x1, line.x2)
+    const top = Math.min(line.y1, line.y2)
+    return {
+      key: `sggCropMark_${pageIndex + 1}_${lineIndex + 1}`,
+      x: horizontal ? left : line.x1 - halfWeight,
+      y: horizontal ? line.y1 - halfWeight : top,
+      width: horizontal ? Math.abs(line.x2 - line.x1) : weight,
+      height: horizontal ? weight : Math.abs(line.y2 - line.y1),
+      fillColorId: COLOR_BLACK_ID,
+      layerId: LAYER_GUIDES_ID,
+      name: `Crop mark ${lineIndex + 1}`,
+    }
+  })
+  return buildGuidesXml(pageTransformMatrix, cropMarkRects)
+}
+
 async function buildSpreadAndStories(
   document: SwissGridIdmlDocument,
   colorIdBySignature: Map<string, string>,
@@ -380,12 +415,21 @@ async function buildSpreadAndStories(
 }> {
   const spreads: SpreadExportRecord[] = []
   const stories: StoryExportRecord[] = []
+  const documentBleed = normalizeExportBleedOptions({
+    enabled: (document.bleedMm ?? 0) > 0,
+    widthMm: document.bleedMm ?? 0,
+  })
 
   for (const [pageIndex, page] of document.pages.entries()) {
     const spreadId = `sggSpread${String(pageIndex + 1).padStart(3, "0")}`
     const pageId = `sggPage${String(pageIndex + 1).padStart(3, "0")}`
     const pageWidth = page.exportPlan.pageWidth
     const pageHeight = page.exportPlan.pageHeight
+    const exportBox = buildExportBox({
+      width: pageWidth,
+      height: pageHeight,
+      bleed: documentBleed,
+    })
     const marginPreference = page.result.grid.margins
     const contentWidth = Math.max(0, pageWidth - marginPreference.left - marginPreference.right)
     const pageCoordinateTransform = buildPageCoordinateTransform(pageHeight)
@@ -394,6 +438,32 @@ async function buildSpreadAndStories(
     const placeholderItems: string[] = []
     const textItems: string[] = []
     let localItemSequence = 0
+
+    if (exportBox.exportCanvasMarginPt > 0) {
+      placeholderItems.push(
+        renderIdmlElement(
+          "Rectangle",
+          {
+            Self: `sggExportCanvas${String(pageIndex + 1).padStart(3, "0")}`,
+            Name: "Export Canvas",
+            ItemLayer: LAYER_PLACEHOLDERS_ID,
+            ItemTransform: isIdentityMatrix(pageCoordinateTransform) ? undefined : formatMatrix(pageCoordinateTransform),
+            Visible: true,
+            FillColor: COLOR_PAPER_ID,
+            StrokeColor: SWATCH_NONE_ID,
+            StrokeWeight: 0,
+          },
+          renderRectPathGeometry(
+            exportBox.media.x,
+            exportBox.media.y,
+            exportBox.media.width,
+            exportBox.media.height,
+          ),
+        ),
+      )
+    }
+
+    guideItems.push(...renderCropMarkRects({ cropMarkLines: exportBox.cropMarkLines, pageTransformMatrix, pageIndex }))
 
     if (page.exportPlan.backgroundColor) {
       const signature = `${page.exportPlan.backgroundColor.r},${page.exportPlan.backgroundColor.g},${page.exportPlan.backgroundColor.b}`
@@ -410,7 +480,7 @@ async function buildSpreadAndStories(
             StrokeColor: SWATCH_NONE_ID,
             StrokeWeight: 0,
           },
-          renderRectPathGeometry(0, 0, pageWidth, pageHeight),
+          renderRectPathGeometry(exportBox.bleed.x, exportBox.bleed.y, exportBox.bleed.width, exportBox.bleed.height),
         ),
       )
     }
@@ -459,15 +529,19 @@ async function buildSpreadAndStories(
       guideItems.push(...buildGuidesXml(pageTransformMatrix, guideRects))
 
       if (guideGroup.lines.length > 0) {
+        const guideClipRect = getExportGuideClipRect(exportBox, guideGroup.clipToPage)
         const baselineRects = guideGroup.lines
           .map((line, lineIndex) => {
-            const left = guideGroup.clipToPage ? Math.max(0, Math.min(line.x1, line.x2)) : Math.min(line.x1, line.x2)
-            const right = guideGroup.clipToPage ? Math.min(pageWidth, Math.max(line.x1, line.x2)) : Math.max(line.x1, line.x2)
-            const top = line.y1 - guideGroup.strokeWidth / 2
+            const clippedLine = guideClipRect
+              ? clipExportLineToRect(line, guideClipRect, guideGroup.strokeWidth)
+              : line
+            if (!clippedLine) return null
+            const left = Math.min(clippedLine.x1, clippedLine.x2)
+            const right = Math.max(clippedLine.x1, clippedLine.x2)
+            const top = clippedLine.y1 - guideGroup.strokeWidth / 2
             const height = Math.max(guideGroup.strokeWidth, 0.25)
             const width = right - left
             if (!(width > 0)) return null
-            if (guideGroup.clipToPage && (top > pageHeight || top + height < 0)) return null
             return {
               key: `sggGuideLine_${pageIndex + 1}_${guideGroup.id}_${lineIndex + 1}`,
               x: left,
@@ -838,11 +912,19 @@ function buildStylesXml(
 
 function buildPreferencesXml(document: SwissGridIdmlDocument): string {
   const firstPage = document.pages[0]
-  const bleedPt = firstPage ? mmToPt(firstPage.uiSettings.exportBleedMm) : 0
+  const documentBleed = normalizeExportBleedOptions({
+    enabled: ((document.bleedMm ?? firstPage?.uiSettings.exportBleedMm) ?? 0) > 0,
+    widthMm: (document.bleedMm ?? firstPage?.uiSettings.exportBleedMm) ?? 0,
+  })
   const baselineStart = firstPage ? firstPage.result.grid.margins.top : 36
   const baselineDivision = firstPage ? firstPage.result.grid.gridUnit : 12
   const firstWidth = firstPage ? firstPage.exportPlan.pageWidth : 595.276
   const firstHeight = firstPage ? firstPage.exportPlan.pageHeight : 841.89
+  const exportBox = buildExportBox({
+    width: firstWidth,
+    height: firstHeight,
+    bleed: documentBleed,
+  })
 
   return [
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`,
@@ -882,11 +964,16 @@ function buildPreferencesXml(document: SwissGridIdmlDocument): string {
       PageHeight: formatIdmlNumber(firstHeight),
       PageWidth: formatIdmlNumber(firstWidth),
       FacingPages: false,
-      DocumentBleedTopOffset: formatIdmlNumber(bleedPt),
-      DocumentBleedBottomOffset: formatIdmlNumber(bleedPt),
-      DocumentBleedInsideOrLeftOffset: formatIdmlNumber(bleedPt),
-      DocumentBleedOutsideOrRightOffset: formatIdmlNumber(bleedPt),
+      DocumentBleedTopOffset: formatIdmlNumber(exportBox.bleedPt),
+      DocumentBleedBottomOffset: formatIdmlNumber(exportBox.bleedPt),
+      DocumentBleedInsideOrLeftOffset: formatIdmlNumber(exportBox.bleedPt),
+      DocumentBleedOutsideOrRightOffset: formatIdmlNumber(exportBox.bleedPt),
       DocumentBleedUniformSize: true,
+      DocumentSlugTopOffset: formatIdmlNumber(exportBox.exportCanvasMarginPt),
+      DocumentSlugBottomOffset: formatIdmlNumber(exportBox.exportCanvasMarginPt),
+      DocumentSlugInsideOrLeftOffset: formatIdmlNumber(exportBox.exportCanvasMarginPt),
+      DocumentSlugOutsideOrRightOffset: formatIdmlNumber(exportBox.exportCanvasMarginPt),
+      DocumentSlugUniformSize: true,
       PreserveLayoutWhenShuffling: true,
       AllowPageShuffle: true,
       OverprintBlack: true,

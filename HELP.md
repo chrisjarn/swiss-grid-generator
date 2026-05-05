@@ -135,7 +135,8 @@ Core editing and layout workflows.
 - PDF exports store available project metadata in the PDF document info dictionary.
 - SVG exports embed available project metadata in the SVG metadata block.
 - IDML exports carry project metadata into the package XMP metadata.
-- PDF includes print presets plus optional bleed and registration-style marks.
+- PDF, SVG, and IDML share one bleed control, enabled by default at 3mm. One shared export box defines trim, bleed, media canvas, export origin, crop marks, and guide clipping; enabled bleed extends visible production geometry through the bleed area, with a white crop-mark canvas and black crop marks outside it.
+- PDF exports RGB vector geometry with an embedded sRGB output intent.
 - PDF embeds verified local font assets only; required font files are checked during asset generation.
 - Multi-page SVG exports a ZIP with one outlined SVG per selected page.
 - IDML exports separate guides, typography, and placeholder layers with frozen text geometry.

@@ -3,6 +3,10 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 import { runProjectExport } from "@/lib/project-export-runner"
+import {
+  DEFAULT_EXPORT_BLEED_OPTIONS,
+  normalizeExportBleedOptions,
+} from "@/lib/export-format-options"
 
 const WEBAPP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const PUBLIC_ROOT = path.join(WEBAPP_ROOT, "public")
@@ -73,6 +77,7 @@ function usage() {
     "  --layout   Path to a Swiss Grid Generator layout JSON.",
     "  --range    1-based page range. Supports comma lists and spans. Default: all pages.",
     "  --format   Comma-separated formats: pdf, svg, idml. Default: pdf.",
+    `  --bleed-mm Optional vector bleed width in millimeters. Default: ${DEFAULT_EXPORT_BLEED_OPTIONS.widthMm}.`,
     "  --out      Output directory. Default: ../tmp/export-debug.",
     "  --log-every  Progress interval in pages. Default: 25.",
   ].join("\n")
@@ -117,6 +122,11 @@ function parsePageNumbers(value, pageCount) {
 function parsePositiveInteger(value, fallback) {
   const parsed = Number.parseInt(String(value ?? ""), 10)
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback
+}
+
+function parseNonNegativeNumber(value, fallback) {
+  const parsed = Number.parseFloat(String(value ?? ""))
+  return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback
 }
 
 function createLogger() {
@@ -181,12 +191,18 @@ async function main() {
   const formats = parseFormats(args.get("format"))
   const pageNumbers = parsePageNumbers(args.get("range"), project.pages.length)
   const logEvery = parsePositiveInteger(args.get("log-every"), DEFAULT_LOG_EVERY)
+  const bleed = normalizeExportBleedOptions({
+    enabled: args.has("bleed-mm") ? true : DEFAULT_EXPORT_BLEED_OPTIONS.enabled,
+    widthMm: parseNonNegativeNumber(args.get("bleed-mm"), DEFAULT_EXPORT_BLEED_OPTIONS.widthMm),
+    fallbackWidthMm: DEFAULT_EXPORT_BLEED_OPTIONS.widthMm,
+  })
   const log = createLogger()
   const metadata = buildMetadata(project, layoutPath)
   const baseName = normalizeFilenameSegment(metadata.title || path.basename(layoutPath, path.extname(layoutPath)))
   log(`layout: ${layoutPath}`)
   log(`output: ${outDir}`)
   log(`formats: ${formats.join(", ")}`)
+  log(`bleed: ${bleed.enabled ? `${bleed.widthMm} mm` : "off"}`)
   log(`pages: ${pageNumbers.length} selected from ${project.pages.length}`)
 
   await fs.promises.mkdir(outDir, { recursive: true })
@@ -199,6 +215,7 @@ async function main() {
     baseName,
     pageNumbers,
     visibilitySettings: DEFAULT_VISIBILITY,
+    bleed,
     svgPackaging: "files",
     onLog: log,
     shouldLogPage: (completed, total) => shouldLogPage(completed, total, logEvery),

@@ -147,8 +147,8 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Multi-page `SVG` export downloads a ZIP with one SVG per page
 - Export progress reports preparation, page rendering, finalization, and elapsed time
 - `Esc` closes the export dialog when idle and cancels a running export at the next safe checkpoint
-- PDF print options: bleed, registration-style marks, and output intents
-- PDF presets: **Digital Print** (RGB / sRGB) and **Press Proof** (CMYK / FOGRA39)
+- Shared vector bleed option for `PDF`, `SVG`, and `IDML`, enabled by default at `3mm`, using one export box for trim/bleed/media/crop/guide-clip geometry with visible production geometry extended through bleed plus a fixed white crop-mark canvas and black crop marks outside bleed
+- PDF export uses RGB vector geometry with an embedded sRGB output intent
 - PDF export embeds verified local font assets only; configured font files are checked during asset generation
 - Use `SVG` or `IDML` when you need typography frozen as non-live geometry
 - `SVG` converts typography to exact glyph outlines, so exported text is not live-editable
@@ -215,7 +215,7 @@ Vector export performance can be measured from `webapp/` with:
 npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000 --format pdf --out ../tmp/export-debug
 ```
 
-The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes.
+The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes. Vector bleed defaults to `3mm`; pass `--bleed-mm <n>` to override it.
 
 Before release, run:
 

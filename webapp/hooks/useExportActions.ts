@@ -2,12 +2,18 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { flushSync } from "react-dom"
 import type { ExportEngineResult } from "@/lib/export-engine"
 import { type LoadedProject } from "@/lib/document-session"
+import {
+  DEFAULT_EXPORT_BLEED_OPTIONS,
+  type ExportBleedOptions,
+  type ExportFormat,
+  normalizeExportBleedOptions,
+  resolveExportDownloadExtension,
+  supportsExportBleed,
+} from "@/lib/export-format-options"
 import { toProjectFilename } from "@/lib/project-file-naming"
 import {
   buildProjectTransferPayload,
   encodeProjectTransferPayload,
-  PROJECT_ARCHIVE_EXTENSION,
-  PROJECT_JSON_EXTENSION,
   toArrayBuffer,
 } from "@/lib/project-transfer"
 import {
@@ -23,8 +29,6 @@ import {
 } from "@/lib/project-page-export-source"
 import { runProjectExport } from "@/lib/project-export-runner"
 
-export type ExportFormat = "pdf" | "svg" | "idml" | "json"
-
 export type ExportProgressState = {
   format: ExportFormat
   completedSteps: number
@@ -34,62 +38,12 @@ export type ExportProgressState = {
   phase: "preparing" | "rendering" | "packaging"
 }
 
-type PrintPresetConfig = {
-  enabled: boolean
-  bleedMm: number
-  registrationMarks: boolean
-}
-
 type ExportMetadataDraft = {
   title: string
   description: string
   author: string
   createdAt: string
 }
-
-export type PrintPresetKey = "digital_print" | "press_proof" | "offset_final"
-
-const DIGITAL_PRINT_CONFIG: PrintPresetConfig = {
-  enabled: false,
-  bleedMm: 0,
-  registrationMarks: false,
-}
-
-const PRESS_PROOF_CONFIG: PrintPresetConfig = {
-  enabled: true,
-  bleedMm: 3,
-  registrationMarks: true,
-}
-
-const OFFSET_FINAL_CONFIG: PrintPresetConfig = {
-  enabled: true,
-  bleedMm: 3,
-  registrationMarks: true,
-}
-
-export const PRINT_PRESETS: Array<{
-  key: PrintPresetKey
-  label: string
-  config: PrintPresetConfig
-}> = [
-  {
-    key: "digital_print",
-    label: "Digital Print",
-    config: DIGITAL_PRINT_CONFIG,
-  },
-  {
-    key: "press_proof",
-    label: "Press Proof",
-    config: PRESS_PROOF_CONFIG,
-  },
-  {
-    key: "offset_final",
-    label: "Offset Final",
-    config: OFFSET_FINAL_CONFIG,
-  },
-]
-
-export const EXPORT_DIALOG_PRINT_PRESETS = PRINT_PRESETS.filter((preset) => preset.key !== "offset_final")
 
 const EXPORT_PROGRESS_BATCH_SIZE = 8
 const EXPORT_PROGRESS_MIN_INTERVAL_MS = 100
@@ -106,12 +60,6 @@ class ExportCancelledError extends Error {
 function isExportCancelledError(error: unknown): error is ExportCancelledError {
   return error instanceof ExportCancelledError
     || (error instanceof Error && error.name === "ExportCancelledError")
-}
-
-function isSamePrintPresetConfig(left: PrintPresetConfig, right: PrintPresetConfig): boolean {
-  return left.enabled === right.enabled
-    && left.bleedMm === right.bleedMm
-    && left.registrationMarks === right.registrationMarks
 }
 
 function formatExportDuration(durationMs: number): string {
@@ -169,19 +117,6 @@ function publishProgressWithoutBlockingExport(
   void publishProgress(state, force)
 }
 
-function resolveActivePrintPresetKey(config: PrintPresetConfig): PrintPresetKey | null {
-  const match = PRINT_PRESETS.find((preset) => isSamePrintPresetConfig(preset.config, config))
-  return match?.key ?? null
-}
-
-function resolveExportDownloadExtension(format: ExportFormat, selectedPageCount: number): string {
-  if (format === "svg" && selectedPageCount > 1) return ".zip"
-  if (format === "svg") return ".svg"
-  if (format === "idml") return ".idml"
-  if (format === "json") return PROJECT_JSON_EXTENSION
-  return ".pdf"
-}
-
 function updateFilenameForExport(
   current: string,
   format: ExportFormat,
@@ -190,9 +125,7 @@ function updateFilenameForExport(
   compressedJson = false,
 ): string {
   const trimmed = current.trim()
-  const extension = format === "json" && compressedJson
-    ? PROJECT_ARCHIVE_EXTENSION
-    : resolveExportDownloadExtension(format, selectedPageCount)
+  const extension = resolveExportDownloadExtension(format, selectedPageCount, compressedJson)
   if (!trimmed) return getDefaultExportFilename(format, selectedPageCount, compressedJson)
   if (/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i.test(trimmed)) {
     return trimmed.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, extension)
@@ -229,12 +162,10 @@ export type ExportActionsContext = {
 
 export function useExportActions(ctx: ExportActionsContext) {
   const {
-    exportPrintPro: persistedPrintPresetEnabled,
-    setExportPrintPro: setPersistedPrintPresetEnabled,
+    exportPrintPro: persistedBleedEnabled,
+    setExportPrintPro: setPersistedBleedEnabled,
     exportBleedMm,
     setExportBleedMm,
-    exportRegistrationMarks,
-    setExportRegistrationMarks,
     defaultPdfFilename,
     defaultIdmlFilename,
     defaultJsonFilename,
@@ -247,9 +178,8 @@ export function useExportActions(ctx: ExportActionsContext) {
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [exportFormatDraft, setExportFormatDraft] = useState<ExportFormat>("pdf")
   const [exportFilenameDraft, setExportFilenameDraft] = useState("")
-  const [printPresetEnabledDraft, setPrintPresetEnabledDraft] = useState(persistedPrintPresetEnabled)
+  const [bleedEnabledDraft, setBleedEnabledDraft] = useState(persistedBleedEnabled)
   const [exportBleedMmDraft, setExportBleedMmDraft] = useState(String(exportBleedMm))
-  const [exportRegistrationMarksDraft, setExportRegistrationMarksDraft] = useState(exportRegistrationMarks)
   const [exportRangeStartDraft, setExportRangeStartDraft] = useState(1)
   const [exportRangeEndDraft, setExportRangeEndDraft] = useState(1)
   const [exportProgress, setExportProgress] = useState<ExportProgressState | null>(null)
@@ -285,6 +215,12 @@ export function useExportActions(ctx: ExportActionsContext) {
   const activeProjectMetadata = activeProject.metadata
 
   const projectPageCount = activeProject.pages.length
+
+  const getDefaultVectorBleedDraft = useCallback(() => normalizeExportBleedOptions({
+    enabled: persistedBleedEnabled || exportBleedMm <= 0,
+    widthMm: exportBleedMm,
+    fallbackWidthMm: DEFAULT_EXPORT_BLEED_OPTIONS.widthMm,
+  }), [exportBleedMm, persistedBleedEnabled])
 
   useEffect(() => {
     void warmDefaultExportFonts()
@@ -339,9 +275,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         : format === "json"
           ? defaultJsonFilename
         : defaultPdfFilename
-    const extension = format === "json" && compressedJson
-      ? PROJECT_ARCHIVE_EXTENSION
-      : resolveExportDownloadExtension(format, selectedPages)
+    const extension = resolveExportDownloadExtension(format, selectedPages, compressedJson)
     const fallbackStem = base.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
     return toProjectFilename(activeProjectMetadata.title, fallbackStem, extension)
   }, [
@@ -416,9 +350,9 @@ export function useExportActions(ctx: ExportActionsContext) {
     setExportFormatDraft("pdf")
     setExportRangeStartDraft(defaultRange.fromPage)
     setExportRangeEndDraft(defaultRange.toPage)
-    setPrintPresetEnabledDraft(persistedPrintPresetEnabled)
-    setExportBleedMmDraft(String(exportBleedMm))
-    setExportRegistrationMarksDraft(exportRegistrationMarks)
+    const defaultBleed = getDefaultVectorBleedDraft()
+    setBleedEnabledDraft(defaultBleed.enabled)
+    setExportBleedMmDraft(String(defaultBleed.widthMm))
     setJsonCompressionEnabledDraft(false)
     setExportFilenameDraft(toProjectFilename(currentProject.metadata.title, basePdfStem, ".pdf"))
     setSaveTitleDraft(currentProject.metadata.title ?? "")
@@ -436,10 +370,8 @@ export function useExportActions(ctx: ExportActionsContext) {
     currentProject.metadata.title,
     currentProject,
     defaultPdfFilename,
-    exportBleedMm,
-    exportRegistrationMarks,
     exportViewSettings,
-    persistedPrintPresetEnabled,
+    getDefaultVectorBleedDraft,
     projectPageCount,
   ])
 
@@ -450,9 +382,9 @@ export function useExportActions(ctx: ExportActionsContext) {
     setExportFormatDraft("pdf")
     setExportRangeStartDraft(defaultRange.fromPage)
     setExportRangeEndDraft(defaultRange.toPage)
-    setPrintPresetEnabledDraft(persistedPrintPresetEnabled)
-    setExportBleedMmDraft(String(exportBleedMm))
-    setExportRegistrationMarksDraft(exportRegistrationMarks)
+    const defaultBleed = getDefaultVectorBleedDraft()
+    setBleedEnabledDraft(defaultBleed.enabled)
+    setExportBleedMmDraft(String(defaultBleed.widthMm))
     setJsonCompressionEnabledDraft(false)
     const basePdfStem = defaultPdfFilename.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
     setExportFilenameDraft(toProjectFilename(project.metadata.title, basePdfStem, ".pdf"))
@@ -467,10 +399,8 @@ export function useExportActions(ctx: ExportActionsContext) {
     })
   }, [
     defaultPdfFilename,
-    exportBleedMm,
-    exportRegistrationMarks,
     exportViewSettings,
-    persistedPrintPresetEnabled,
+    getDefaultVectorBleedDraft,
   ])
 
   const handleSaveTitleChange = useCallback((value: string) => {
@@ -557,7 +487,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     range: ProjectExportPageRange,
     visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
-    printPresetConfig: PrintPresetConfig,
+    bleed: ExportBleedOptions,
     exportMetadata: ExportMetadataDraft,
   ) => {
     if (project.pages.length === 0) return
@@ -570,7 +500,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       metadata: exportMetadata,
       baseName: filename.replace(/\.pdf$/i, ""),
       filenames: { pdf: filename },
-      printConfig: printPresetConfig,
+      bleed,
       onProgress: (progress) => {
         const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
         if (!shouldForwardExportProgress(progress, force)) return undefined
@@ -593,6 +523,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     range: ProjectExportPageRange,
     visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
+    bleed: ExportBleedOptions,
     exportMetadata: ExportMetadataDraft,
   ) => {
     if (project.pages.length === 0) return
@@ -606,6 +537,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       metadata: exportMetadata,
       baseName: filename.replace(/\.(svg|zip)$/i, ""),
       filenames: { svg: filename },
+      bleed,
       svgPackaging: "zip",
       onProgress: (progress) => {
         const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
@@ -629,6 +561,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     range: ProjectExportPageRange,
     visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
+    bleed: ExportBleedOptions,
     exportMetadata: ExportMetadataDraft,
   ) => {
     if (project.pages.length === 0) return
@@ -642,6 +575,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       metadata: exportMetadata,
       baseName: filename.replace(/\.idml$/i, ""),
       filenames: { idml: filename },
+      bleed,
       onProgress: (progress) => {
         const force = progress.phase === "packaging" || progress.completedSteps === progress.totalSteps
         if (!shouldForwardExportProgress(progress, force)) return undefined
@@ -695,18 +629,6 @@ export function useExportActions(ctx: ExportActionsContext) {
       toPage: nextEnd,
     })
   }, [applyExportRange, exportRangeStartDraft])
-
-  const applyPrintPresetConfig = useCallback((config: PrintPresetConfig) => {
-    setPrintPresetEnabledDraft(config.enabled)
-    setExportBleedMmDraft(String(config.bleedMm))
-    setExportRegistrationMarksDraft(config.registrationMarks)
-  }, [])
-
-  const applyPrintPreset = useCallback((presetKey: PrintPresetKey) => {
-    const preset = PRINT_PRESETS.find((entry) => entry.key === presetKey)
-    if (!preset) return
-    applyPrintPresetConfig(preset.config)
-  }, [applyPrintPresetConfig])
 
   const confirmExport = useCallback(async () => {
     const actionStartedAt = performance.now()
@@ -784,8 +706,11 @@ export function useExportActions(ctx: ExportActionsContext) {
       fromPage: normalizedRange.fromPage,
       toPage: normalizedRange.toPage,
     } satisfies ProjectExportPageRange
-    const parsedBleed = Number(exportBleedMmDraft)
-    const bleedMm = Number.isFinite(parsedBleed) && parsedBleed >= 0 ? parsedBleed : exportBleedMm
+    const bleed = normalizeExportBleedOptions({
+      enabled: supportsExportBleed(exportFormatDraft) && bleedEnabledDraft,
+      widthMm: Number(exportBleedMmDraft),
+      fallbackWidthMm: exportBleedMm,
+    })
     const shouldPersistActivePageExportSettings = (
       !exportProjectOverride
       && selectedPageCount === 1
@@ -802,7 +727,11 @@ export function useExportActions(ctx: ExportActionsContext) {
           currentPageNumber: normalizedRange.fromPage,
           currentLabel: currentProjectSnapshot.pages[normalizedRange.startIndex]?.name || "Preparing IDML",
         } : current)
-        await exportIDML(currentProjectSnapshot, selectedRange, exportViewSettings, filename, normalizedMetadata)
+        if (shouldPersistActivePageExportSettings) {
+          setPersistedBleedEnabled(bleed.enabled)
+          setExportBleedMm(bleed.widthMm)
+        }
+        await exportIDML(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
         recordActionTiming("idml engine and download", exportStartedAt)
         const closeStartedAt = performance.now()
         closeExportDialog()
@@ -813,19 +742,18 @@ export function useExportActions(ctx: ExportActionsContext) {
       if (exportFormatDraft === "pdf") {
         const exportStartedAt = performance.now()
         if (shouldPersistActivePageExportSettings) {
-          setPersistedPrintPresetEnabled(printPresetEnabledDraft)
-          setExportBleedMm(bleedMm)
-          setExportRegistrationMarks(exportRegistrationMarksDraft)
+          setPersistedBleedEnabled(bleed.enabled)
+          setExportBleedMm(bleed.widthMm)
         }
-        await exportPDF(currentProjectSnapshot, selectedRange, exportViewSettings, filename, {
-          enabled: printPresetEnabledDraft,
-          bleedMm,
-          registrationMarks: exportRegistrationMarksDraft,
-        }, normalizedMetadata)
+        await exportPDF(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
         recordActionTiming("pdf engine and download", exportStartedAt)
       } else {
         const exportStartedAt = performance.now()
-        await exportSVG(currentProjectSnapshot, selectedRange, exportViewSettings, filename, normalizedMetadata)
+        if (shouldPersistActivePageExportSettings) {
+          setPersistedBleedEnabled(bleed.enabled)
+          setExportBleedMm(bleed.widthMm)
+        }
+        await exportSVG(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
         recordActionTiming("svg engine and download", exportStartedAt)
       }
 
@@ -847,11 +775,11 @@ export function useExportActions(ctx: ExportActionsContext) {
     activeProject,
     activeProject.pages.length,
     activeProjectMetadata.createdAt,
+    bleedEnabledDraft,
     exportBleedMm,
     exportBleedMmDraft,
     exportFormatDraft,
     exportFilenameDraft,
-    exportRegistrationMarksDraft,
     closeExportDialog,
     exportProjectOverride,
     exportIDML,
@@ -862,7 +790,6 @@ export function useExportActions(ctx: ExportActionsContext) {
     normalizedRange.fromPage,
     normalizedRange.toPage,
     onProjectMetadataChange,
-    printPresetEnabledDraft,
     jsonCompressionEnabledDraft,
     saveAuthorDraft,
     saveDescriptionDraft,
@@ -871,18 +798,9 @@ export function useExportActions(ctx: ExportActionsContext) {
     selectedPageCount,
     selectedSinglePage?.id,
     setExportBleedMm,
-    setPersistedPrintPresetEnabled,
-    setExportRegistrationMarks,
+    setPersistedBleedEnabled,
     waitForUiCommit,
   ])
-
-  const parsedDraftBleed = Number(exportBleedMmDraft)
-  const resolvedDraftBleedMm = Number.isFinite(parsedDraftBleed) && parsedDraftBleed >= 0 ? parsedDraftBleed : exportBleedMm
-  const activePrintPresetDraft = resolveActivePrintPresetKey({
-    enabled: printPresetEnabledDraft,
-    bleedMm: resolvedDraftBleedMm,
-    registrationMarks: exportRegistrationMarksDraft,
-  })
 
   useEffect(() => {
     if (!isExportDialogOpen) return
@@ -946,16 +864,13 @@ export function useExportActions(ctx: ExportActionsContext) {
     setExportRangeEndDraft: handleExportRangeEndChange,
     pageRangeOptions,
     selectedPageCount,
-    activePrintPresetDraft,
-    showPrintAdjustmentsDraft: printPresetEnabledDraft,
+    bleedEnabledDraft,
+    setBleedEnabledDraft,
     exportBleedMmDraft,
     setExportBleedMmDraft,
-    exportRegistrationMarksDraft,
-    setExportRegistrationMarksDraft,
     exportProgress,
     openExportDialog,
     openExportDialogForProject,
-    applyPrintPreset,
     confirmExport,
     defaultExportFilename: getDefaultExportFilename(exportFormatDraft, selectedPageCount),
   }

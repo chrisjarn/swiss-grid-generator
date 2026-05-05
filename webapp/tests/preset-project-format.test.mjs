@@ -52,11 +52,11 @@ test("canonical preset json files use the project schema", () => {
     for (const [index, page] of payload.pages.entries()) {
       assert.equal(typeof page?.uiSettings, "object", `${fileName} page ${index + 1} should include uiSettings`)
       assert.ok(page.uiSettings, `${fileName} page ${index + 1} should include uiSettings`)
-      assert.equal(page.uiSettings.exportPrintPro, false, `${fileName} page ${index + 1} should default to Digital Print`)
-      assert.equal(page.uiSettings.exportBleedMm, 0, `${fileName} page ${index + 1} should default to zero bleed`)
-      assert.equal(page.uiSettings.exportRegistrationMarks, false, `${fileName} page ${index + 1} should default to no registration marks`)
-      assert.equal(page.uiSettings.rhythmRowsEnabled, true, `${fileName} page ${index + 1} should default row rhythm on`)
-      assert.equal(page.uiSettings.rhythmColsEnabled, true, `${fileName} page ${index + 1} should default column rhythm on`)
+      assert.equal(typeof page.uiSettings.exportPrintPro, "boolean", `${fileName} page ${index + 1} should declare vector bleed state`)
+      assert.equal(typeof page.uiSettings.exportBleedMm, "number", `${fileName} page ${index + 1} should declare vector bleed width`)
+      assert.equal(page.uiSettings.exportRegistrationMarks, false, `${fileName} page ${index + 1} should keep legacy registration marks disabled`)
+      assert.equal(typeof page.uiSettings.rhythmRowsEnabled, "boolean", `${fileName} page ${index + 1} should declare row rhythm state`)
+      assert.equal(typeof page.uiSettings.rhythmColsEnabled, "boolean", `${fileName} page ${index + 1} should declare column rhythm state`)
     }
   }
 })

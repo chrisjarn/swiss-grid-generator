@@ -114,6 +114,9 @@ Export should confirm a resolved layout, not repair it. Before exporting, check 
 ### Pick Export By Downstream Use {#tooltip-export-format}
 Use `JSON` for editable project exchange and backup, `PDF` for faithful vector output, `SVG` for frozen per-page vector geometry, and `IDML` for InDesign continuation. SVG and IDML freeze typography as geometry, so choose them when exact shape fidelity matters more than live text editing.
 
+### Shared Vector Bleed {#tooltip-export-bleed}
+Bleed applies to PDF, SVG, and IDML from one shared control and defaults to 3mm. Export extends visible production geometry through the bleed box, adds a white crop-mark canvas plus black trim crop marks outside it, and leaves page layout math unchanged.
+
 ### WYSIWYG Includes The Visible Overlays {#tooltip-export-visibility}
 Export follows the current preview visibility state for baselines, margins, modules, typography, and image placeholders. Turn off construction guides before final output unless they are intentionally part of the deliverable.
 
