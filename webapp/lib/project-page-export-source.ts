@@ -66,6 +66,12 @@ export type ProjectExportPageRange = {
   toPage: number
 }
 
+export type ProjectExportPageSelection = {
+  pageNumbers: number[]
+  fromPage: number
+  toPage: number
+}
+
 export type NormalizedProjectExportPageRange = ProjectExportPageRange & {
   startIndex: number
   endIndex: number
@@ -111,11 +117,6 @@ function resolveCustomMarginMultipliers(
   }
 }
 
-function resolveNonNegativeNumber(value: unknown, fallback: number): number {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return fallback
-  return value
-}
-
 function resolvePositiveNumberSetting(
   value: unknown,
   sourcePath: string,
@@ -152,6 +153,99 @@ export function normalizeProjectExportPageRange(
   }
 }
 
+export function buildProjectExportPageNumbersFromRange(
+  pageCount: number,
+  range: ProjectExportPageRange,
+): number[] {
+  const normalized = normalizeProjectExportPageRange(pageCount, range.fromPage, range.toPage)
+  return Array.from(
+    { length: normalized.endIndex - normalized.startIndex + 1 },
+    (_, index) => normalized.startIndex + index + 1,
+  )
+}
+
+export function normalizeProjectExportPageNumbers(
+  pageCount: number,
+  pageNumbers: readonly number[],
+): number[] {
+  if (pageCount <= 0) return []
+  const selected = new Set<number>()
+  pageNumbers.forEach((pageNumber) => {
+    if (!Number.isFinite(pageNumber)) return
+    const normalized = Math.round(pageNumber)
+    if (normalized < 1 || normalized > pageCount) return
+    selected.add(normalized)
+  })
+  return [...selected].sort((left, right) => left - right)
+}
+
+export function resolveProjectExportPageSelection(
+  pageCount: number,
+  pageNumbers: readonly number[],
+): ProjectExportPageSelection {
+  const normalized = normalizeProjectExportPageNumbers(pageCount, pageNumbers)
+  const fallback = pageCount > 0 ? [1] : []
+  const selected = normalized.length > 0 ? normalized : fallback
+  return {
+    pageNumbers: selected,
+    fromPage: selected[0] ?? 1,
+    toPage: selected[selected.length - 1] ?? 1,
+  }
+}
+
+export function formatProjectExportPageSelection(pageNumbers: readonly number[]): string {
+  if (pageNumbers.length === 0) return "1"
+  const parts: string[] = []
+  let rangeStart = pageNumbers[0]
+  let previous = pageNumbers[0]
+
+  for (let index = 1; index <= pageNumbers.length; index += 1) {
+    const current = pageNumbers[index]
+    if (current === previous + 1) {
+      previous = current
+      continue
+    }
+    parts.push(rangeStart === previous ? String(rangeStart) : `${rangeStart}-${previous}`)
+    rangeStart = current
+    previous = current
+  }
+
+  return parts.join(";")
+}
+
+export function parseProjectExportPageSelectionDraft(
+  value: string,
+  pageCount: number,
+): ProjectExportPageSelection | null {
+  if (pageCount <= 0) return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const segments = trimmed.split(";").map((segment) => segment.trim())
+  if (segments.some((segment) => segment.length === 0)) return null
+
+  const pageNumbers: number[] = []
+  for (const segment of segments) {
+    const match = segment.match(/^(\d+)(?:\s*[-–—]\s*(\d+))?$/)
+    if (!match) return null
+    const fromPage = Number(match[1])
+    const toPage = match[2] ? Number(match[2]) : fromPage
+    if (
+      !Number.isInteger(fromPage)
+      || !Number.isInteger(toPage)
+      || fromPage < 1
+      || toPage < fromPage
+      || toPage > pageCount
+    ) {
+      return null
+    }
+    for (let pageNumber = fromPage; pageNumber <= toPage; pageNumber += 1) {
+      pageNumbers.push(pageNumber)
+    }
+  }
+
+  return resolveProjectExportPageSelection(pageCount, pageNumbers)
+}
+
 export function sliceProjectPagesForExportRange<Layout>(
   project: LoadedProject<Layout>,
   range: ProjectExportPageRange,
@@ -161,11 +255,13 @@ export function sliceProjectPagesForExportRange<Layout>(
   return project.pages.slice(normalized.startIndex, normalized.endIndex + 1)
 }
 
-export function filterProjectByExportRange<Layout>(
+export function filterProjectByExportPageNumbers<Layout>(
   project: LoadedProject<Layout>,
-  range: ProjectExportPageRange,
+  pageNumbers: readonly number[],
 ): LoadedProject<Layout> {
-  const pages = sliceProjectPagesForExportRange(project, range)
+  const normalized = normalizeProjectExportPageNumbers(project.pages.length, pageNumbers)
+  if (normalized.length === 0) return project
+  const pages = normalized.map((pageNumber) => project.pages[pageNumber - 1]).filter((page): page is ProjectPage<Layout> => Boolean(page))
   if (pages.length === 0) return project
 
   return {
@@ -300,7 +396,6 @@ export function resolveProjectPageUiSettings(
     showMargins: visibilitySettings.showMargins,
     showImagePlaceholders: visibilitySettings.showImagePlaceholders,
     showTypography: visibilitySettings.showTypography,
-    exportBleedMm: resolveNonNegativeNumber(source.exportBleedMm, DEFAULT_UI.exportBleedMm),
   }
 }
 
@@ -344,7 +439,7 @@ export function buildResolvedProjectPageExportSource(
 export function buildResolvedProjectPageExportSources(
   project: LoadedProject<Record<string, unknown>>,
   range: ProjectExportPageRange,
-  visibilitySettings?: ProjectPageVisibilitySettings,
+  visibilitySettings: ProjectPageVisibilitySettings = project.visibilitySettings,
 ): ResolvedProjectPageExportSource[] {
   const normalizedRange = normalizeProjectExportPageRange(project.pages.length, range.fromPage, range.toPage)
   const now = new Date()

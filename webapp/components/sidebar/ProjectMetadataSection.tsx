@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 
+import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 
 type Props = {
@@ -61,13 +62,8 @@ export function ProjectMetadataSection({
     setIsEditingTitle(true)
   }, [autoFocusTitle])
 
-  const tone = isDarkMode
-    ? {
-        input: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA]",
-      }
-    : {
-        input: "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
-      }
+  const inputClassName = getNeutralFormControlClassName(isDarkMode, "w-full rounded-sm px-2 py-1 text-[12px]")
+  const textareaClassName = getNeutralFormControlClassName(isDarkMode, "w-full resize-y rounded-sm px-2 py-1.5 text-[12px] leading-[1.45]")
 
   const commitDescription = () => {
     const trimmedDescription = descriptionDraft.trim()
@@ -129,7 +125,7 @@ export function ProjectMetadataSection({
               resetTitle()
             }
           }}
-          className={`w-full rounded-sm border px-2 py-1 text-[12px] outline-none ${tone.input}`}
+          className={inputClassName}
           placeholder="Project title"
         />
       </div>
@@ -147,7 +143,7 @@ export function ProjectMetadataSection({
               resetDescription()
             }
           }}
-          className={`w-full resize-y rounded-sm border px-2 py-1.5 text-[12px] leading-[1.45] outline-none ${tone.input}`}
+          className={textareaClassName}
           placeholder="Short subject"
         />
       </div>
@@ -169,7 +165,7 @@ export function ProjectMetadataSection({
               resetAuthor()
             }
           }}
-          className={`w-full rounded-sm border px-2 py-1 text-[12px] outline-none ${tone.input}`}
+          className={inputClassName}
           placeholder="Author name"
         />
       </div>

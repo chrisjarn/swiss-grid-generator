@@ -5,6 +5,13 @@
   "description": "Example onboarding project using the optional project-level tour block.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-23T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "tour": {
     "id": "tour-example",
     "title": "Quick Onboarding Tour",
@@ -87,9 +94,6 @@
           "right": 4,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -320,9 +324,6 @@
           "right": 4,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -583,9 +584,6 @@
           "right": 4,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

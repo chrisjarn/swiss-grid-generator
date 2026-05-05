@@ -5,15 +5,17 @@ import {
   createProjectPage,
   type LoadedProject,
   type ProjectPage,
+  type ProjectVisibilitySettings,
 } from "@/lib/document-session"
 
 type Args<Layout> = {
   defaultUiSettings: Record<string, unknown>
   defaultPreviewLayout: Layout | null
   currentUiSettings: Record<string, unknown>
+  currentVisibilitySettings: ProjectVisibilitySettings
   currentPreviewLayout: Layout | null
   getCurrentPreviewLayout: () => Layout | null
-  onApplyPage: (page: ProjectPage<Layout>) => void
+  onApplyPage: (page: ProjectPage<Layout>, visibilitySettings: ProjectVisibilitySettings) => void
   onPageLimitReached?: (limit: number) => void
 }
 
@@ -139,16 +141,23 @@ function resolveActivePageDraft<Layout>(
 function persistActivePageSnapshot<Layout>(
   project: LoadedProject<Layout>,
   activePageDraft: ProjectPage<Layout> | null,
+  visibilitySettings: ProjectVisibilitySettings,
 ): LoadedProject<Layout> {
-  if (!activePageDraft) return project
+  const projectWithVisibility = project.visibilitySettings === visibilitySettings
+    ? project
+    : {
+        ...project,
+        visibilitySettings,
+      }
+  if (!activePageDraft) return projectWithVisibility
   const activePageIndex = project.pages.findIndex((page) => page.id === activePageDraft.id)
-  if (activePageIndex === -1) return project
-  if (project.pages[activePageIndex] === activePageDraft) return project
+  if (activePageIndex === -1) return projectWithVisibility
+  if (project.pages[activePageIndex] === activePageDraft) return projectWithVisibility
 
   const nextPages = project.pages.slice()
   nextPages[activePageIndex] = activePageDraft
   return {
-    ...project,
+    ...projectWithVisibility,
     pages: nextPages,
   }
 }
@@ -157,6 +166,7 @@ export function useProjectState<Layout>({
   defaultUiSettings,
   defaultPreviewLayout,
   currentUiSettings,
+  currentVisibilitySettings,
   currentPreviewLayout,
   getCurrentPreviewLayout,
   onApplyPage,
@@ -166,6 +176,7 @@ export function useProjectState<Layout>({
     createDefaultProject({
       uiSettings: defaultUiSettings,
       previewLayout: defaultPreviewLayout,
+      visibilitySettings: currentVisibilitySettings,
     }),
   )
   const activePageIdRef = useRef(project.activePageId)
@@ -193,8 +204,9 @@ export function useProjectState<Layout>({
     persistActivePageSnapshot(
       project,
       resolveActivePageDraft(project, currentUiSettings, getLivePreviewLayout()),
+      currentVisibilitySettings,
     )
-  ), [currentUiSettings, getLivePreviewLayout, project])
+  ), [currentUiSettings, currentVisibilitySettings, getLivePreviewLayout, project])
 
   const replaceProjectSnapshot = useCallback((nextProject: LoadedProject<Layout>) => {
     activePageIdRef.current = nextProject.activePageId
@@ -214,7 +226,7 @@ export function useProjectState<Layout>({
     const nextActivePage = normalizedProject.pages[0] ?? null
     if (nextActivePage) {
       activePageIdRef.current = nextActivePage.id
-      onApplyPage(nextActivePage)
+      onApplyPage(nextActivePage, normalizedProject.visibilitySettings)
     }
   }, [onApplyPage])
 
@@ -230,7 +242,7 @@ export function useProjectState<Layout>({
       ...currentProject,
       activePageId: pageId,
     })
-    onApplyPage(nextActivePage)
+    onApplyPage(nextActivePage, currentProject.visibilitySettings)
   }, [getCurrentProjectSnapshot, onApplyPage])
 
   const duplicateActivePage = useCallback((includeContent: boolean) => {
@@ -262,7 +274,7 @@ export function useProjectState<Layout>({
       pages: nextPages,
     })
     activePageIdRef.current = nextPage.id
-    onApplyPage(nextPage)
+    onApplyPage(nextPage, currentProject.visibilitySettings)
   }, [
     defaultPreviewLayout,
     getCurrentProjectSnapshot,
@@ -304,7 +316,7 @@ export function useProjectState<Layout>({
       pages: nextPages,
     })
     if (nextActivePage.id === currentProject.activePageId) {
-      onApplyPage(nextActivePage)
+      onApplyPage(nextActivePage, currentProject.visibilitySettings)
     }
   }, [getCurrentProjectSnapshot, onApplyPage])
 
@@ -350,7 +362,7 @@ export function useProjectState<Layout>({
       pages: remainingPages,
     })
     activePageIdRef.current = nextActivePage.id
-    onApplyPage(nextActivePage)
+    onApplyPage(nextActivePage, currentProject.visibilitySettings)
   }, [getCurrentProjectSnapshot, onApplyPage, project.pages.length])
 
   const reorderPages = useCallback((orderedIds: string[]) => {

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
+import { getCompactActionButtonClassName, getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import {
   cloudActivityLogQuery,
@@ -97,16 +97,14 @@ export function AccountPanel({
         caption: "text-[#8D98AA]",
         action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         button: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        field: "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]",
       }
     : {
         body: "text-gray-600",
         caption: "text-gray-400",
         action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
         button: "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
-        field: "border-gray-300 bg-white text-gray-900",
       }
-  const fieldClassName = `rounded-md border px-3 py-2 text-xs ${tone.field}`
+  const fieldClassName = getNeutralFormControlClassName(isDarkMode, "rounded-md px-3 py-2 text-xs")
   const authButtonClassName = getCompactActionButtonClassName({ isDarkMode })
   const accountActionButtonClassName = `${authButtonClassName} inline-flex justify-center gap-1.5`
   const hasPendingCode = !userEmail && Boolean(pendingEmail)
@@ -136,7 +134,7 @@ export function AccountPanel({
   ) : authMessage ? (
     <section className="space-y-2">
       <SectionHeaderRow label="Message" />
-      <div className={`rounded-md border px-3 py-2 text-xs ${tone.field}`}>
+      <div className={fieldClassName}>
         {authMessage}
       </div>
     </section>

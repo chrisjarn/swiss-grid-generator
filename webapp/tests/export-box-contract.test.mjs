@@ -2,6 +2,7 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
+import { unzipSync, strFromU8 } from "fflate"
 
 import {
   buildExportBox,
@@ -9,11 +10,56 @@ import {
   getExportGuideClipRect,
 } from "../lib/export-box.ts"
 import { DEFAULT_EXPORT_BLEED_OPTIONS } from "../lib/export-format-options.ts"
+import { runProjectExport } from "../lib/project-export-runner.ts"
 
 const ROOT = process.cwd()
+const PUBLIC_ROOT = path.join(ROOT, "public")
+const DEFAULT_VISIBILITY = {
+  showBaselines: true,
+  showModules: true,
+  showMargins: true,
+  showImagePlaceholders: true,
+  showTypography: true,
+}
+
+const ENABLED_3MM_BLEED = {
+  ...DEFAULT_EXPORT_BLEED_OPTIONS,
+  enabled: true,
+}
 
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
+}
+
+function installLocalAssetFetch() {
+  const originalFetch = globalThis.fetch?.bind(globalThis)
+  if (typeof globalThis.btoa !== "function") {
+    globalThis.btoa = (value) => Buffer.from(value, "binary").toString("base64")
+  }
+
+  globalThis.fetch = async (input, init) => {
+    const rawUrl = typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input?.url
+
+    if (typeof rawUrl === "string" && rawUrl.startsWith("/")) {
+      const localPath = path.resolve(PUBLIC_ROOT, `.${rawUrl}`)
+      if (!localPath.startsWith(PUBLIC_ROOT + path.sep) && localPath !== PUBLIC_ROOT) {
+        return new Response("Forbidden", { status: 403 })
+      }
+      try {
+        const bytes = await fs.promises.readFile(localPath)
+        return new Response(bytes, { status: 200 })
+      } catch {
+        return new Response("Not found", { status: 404 })
+      }
+    }
+
+    if (typeof originalFetch === "function") return originalFetch(input, init)
+    throw new Error(`No fetch implementation available for ${String(rawUrl ?? input)}`)
+  }
 }
 
 function round(value) {
@@ -38,11 +84,26 @@ function roundedLine(line) {
   }
 }
 
+function formatExportNumber(value) {
+  if (!Number.isFinite(value)) return "0"
+  const rounded = Math.round(value * 1000) / 1000
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(3).replace(/\.?0+$/, "")
+}
+
+function svgLineMarkup(line) {
+  return `<line x1="${formatExportNumber(line.x1)}" y1="${formatExportNumber(line.y1)}" x2="${formatExportNumber(line.x2)}" y2="${formatExportNumber(line.y2)}" />`
+}
+
+function idmlAnchorMarkup(x, y) {
+  const point = `${formatExportNumber(x)} ${formatExportNumber(y)}`
+  return `Anchor="${point}" LeftDirection="${point}" RightDirection="${point}"`
+}
+
 test("export box centralizes trim, bleed, media, origin, and crop mark geometry", () => {
   const exportBox = buildExportBox({
     width: 700,
     height: 700,
-    bleed: DEFAULT_EXPORT_BLEED_OPTIONS,
+    bleed: ENABLED_3MM_BLEED,
   })
 
   assert.deepEqual(roundedRect(exportBox.trim), { x: 0, y: 0, width: 700, height: 700 })
@@ -58,7 +119,7 @@ test("export guide clipping uses the same bleed rectangle and preserves stroked 
   const exportBox = buildExportBox({
     width: 700,
     height: 700,
-    bleed: DEFAULT_EXPORT_BLEED_OPTIONS,
+    bleed: ENABLED_3MM_BLEED,
   })
   const guideClipRect = getExportGuideClipRect(exportBox, true)
 
@@ -79,14 +140,88 @@ test("pdf svg and idml all consume shared export box and guide clipping geometry
   const engineSource = readText("lib/export-engine.ts")
   const pdfSource = readText("lib/pdf-vector-export.ts")
   const svgSource = readText("lib/svg-vector-export.ts")
+  const svgPageSetSource = readText("lib/svg-page-set-export.ts")
   const idmlSource = readText("lib/idml/builder.ts")
 
   assert.match(engineSource, /buildExportBox\(\{[\s\S]*?bleed:\s*bleedConfig/)
   assert.match(engineSource, /renderSwissGridVectorPdf\(\{[\s\S]*?exportBox,/)
-  assert.match(engineSource, /renderSwissGridVectorSvg\(\{[\s\S]*?exportBox,/)
-  assert.match(engineSource, /buildSwissGridIdmlPackage\(\{[\s\S]*?bleedMm:/)
+  assert.match(svgPageSetSource, /renderSwissGridVectorSvg\(\{[\s\S]*?exportBox,/)
+  assert.match(engineSource, /packageIdml\(options,\s*plannedPages,\s*pageSets\)/)
   assert.match(pdfSource, /getExportGuideClipRect\(exportBox,\s*guideGroup\.clipToPage\)/)
   assert.match(svgSource, /getExportGuideClipRect\(exportBox,\s*true\)\s*\?\?\s*exportBox\.trim/)
   assert.match(idmlSource, /buildExportBox\(\{[\s\S]*?bleed:\s*documentBleed/)
   assert.match(idmlSource, /clipExportLineToRect\(line,\s*guideClipRect,\s*guideGroup\.strokeWidth\)/)
+})
+
+test("real export fixture keeps shared box geometry, page identity, and metadata across outputs", async () => {
+  installLocalAssetFetch()
+  const project = JSON.parse(readText("tests/fixtures/110 Square Poster Example.json"))
+  const metadata = {
+    title: project.title,
+    description: project.description,
+    author: project.author,
+    createdAt: project.createdAt,
+  }
+
+  const result = await runProjectExport({
+    project,
+    formats: ["pdf", "svg", "idml"],
+    metadata,
+    baseName: "export-parity-fixture",
+    pageNumbers: [1],
+    visibilitySettings: DEFAULT_VISIBILITY,
+    bleed: ENABLED_3MM_BLEED,
+    svgPackaging: "files",
+    idmlCompressionLevel: 0,
+  })
+
+  const source = result.selectedSources[0]
+  const exportBox = buildExportBox({
+    width: source.result.pageSizePt.width,
+    height: source.result.pageSizePt.height,
+    bleed: ENABLED_3MM_BLEED,
+  })
+  const pdfOutput = result.outputs.find((output) => output.format === "pdf")
+  const svgOutput = result.outputs.find((output) => output.format === "svg")
+  const idmlOutput = result.outputs.find((output) => output.format === "idml")
+  assert.ok(pdfOutput?.bytes.byteLength > 0)
+  assert.equal(svgOutput?.packaging, "files")
+  assert.ok(idmlOutput?.bytes.byteLength > 0)
+  assert.deepEqual(result.selectedPageNumbers, [1])
+  assert.deepEqual(result.selectedPhysicalPageNumbers, [1])
+
+  const svg = svgOutput.files[0].text
+  assert.match(svg, /<title id="title">Square Poster Example - Page 1<\/title>/)
+  assert.match(svg, /<dc:creator><rdf:Seq><rdf:li>Swiss Grid Generator<\/rdf:li><\/rdf:Seq><\/dc:creator>/)
+  assert.ok(svg.includes(
+    `viewBox="${formatExportNumber(exportBox.media.x)} ${formatExportNumber(exportBox.media.y)} ${formatExportNumber(exportBox.media.width)} ${formatExportNumber(exportBox.media.height)}"`,
+  ))
+  assert.ok(svg.includes(
+    `<rect x="${formatExportNumber(exportBox.media.x)}" y="${formatExportNumber(exportBox.media.y)}" width="${formatExportNumber(exportBox.media.width)}" height="${formatExportNumber(exportBox.media.height)}" fill="#ffffff" />`,
+  ))
+  assert.ok(svg.includes(
+    `<clipPath id="swiss-page-clip"><rect x="${formatExportNumber(exportBox.bleed.x)}" y="${formatExportNumber(exportBox.bleed.y)}" width="${formatExportNumber(exportBox.bleed.width)}" height="${formatExportNumber(exportBox.bleed.height)}" /></clipPath>`,
+  ))
+  assert.ok(svg.includes(svgLineMarkup(exportBox.cropMarkLines[0])))
+
+  const idmlFiles = unzipSync(idmlOutput.bytes)
+  const designmap = strFromU8(idmlFiles["designmap.xml"])
+  const metadataXml = strFromU8(idmlFiles["META-INF/metadata.xml"])
+  const spread = strFromU8(idmlFiles["Spreads/Spread_001.xml"])
+  assert.match(designmap, /<Section Self="sggSection" Length="1"[\s\S]*?PageNumberStart="1" PageStart="sggPage001"/)
+  assert.match(metadataXml, /<dc:title><rdf:Alt><rdf:li xml:lang="x-default">Square Poster Example<\/rdf:li><\/rdf:Alt><\/dc:title>/)
+  assert.match(metadataXml, /<dc:creator><rdf:Seq><rdf:li>Swiss Grid Generator<\/rdf:li><\/rdf:Seq><\/dc:creator>/)
+  assert.ok(spread.includes(
+    `Name="Export Canvas" ItemLayer="sggLayerPlaceholders" ItemTransform="1 0 0 1 0 ${formatExportNumber(-source.result.pageSizePt.height / 2)}" Visible="true" FillColor="Color/Paper"`,
+  ))
+  assert.ok(spread.includes(idmlAnchorMarkup(exportBox.media.x, exportBox.media.y)))
+  assert.ok(spread.includes(idmlAnchorMarkup(exportBox.media.x + exportBox.media.width, exportBox.media.y + exportBox.media.height)))
+  assert.match(spread, /Name="Crop mark 1"[\s\S]*?PathOpen="true"/)
+  assert.ok(spread.includes(idmlAnchorMarkup(exportBox.cropMarkLines[0].x1, exportBox.cropMarkLines[0].y1)))
+  assert.ok(spread.includes(idmlAnchorMarkup(exportBox.cropMarkLines[0].x2, exportBox.cropMarkLines[0].y2)))
+
+  assert.ok(result.timings.some((entry) => entry.label === "planning" && entry.extra === "pages=1"))
+  assert.ok(result.timings.some((entry) => entry.label === "pdf render pages" && entry.extra === "pages=1"))
+  assert.ok(result.timings.some((entry) => entry.label === "svg render pages" && entry.extra === "pages=1"))
+  assert.ok(result.timings.some((entry) => entry.label === "idml render page sets" && entry.extra === "sets=1"))
 })

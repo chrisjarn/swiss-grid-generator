@@ -10,9 +10,6 @@ function areSnapshotsEqual(a: UiSettingsSnapshot, b: UiSettingsSnapshot): boolea
     a.canvasRatio === b.canvasRatio
     && a.customRatioWidth === b.customRatioWidth
     && a.customRatioHeight === b.customRatioHeight
-    && a.exportPrintPro === b.exportPrintPro
-    && a.exportBleedMm === b.exportBleedMm
-    && a.exportRegistrationMarks === b.exportRegistrationMarks
     && a.orientation === b.orientation
     && a.rotation === b.rotation
     && a.marginMethod === b.marginMethod

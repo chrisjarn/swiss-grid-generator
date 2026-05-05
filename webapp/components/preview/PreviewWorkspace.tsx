@@ -40,6 +40,8 @@ type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 type PreviewProjectPage = ProjectPage<PreviewLayoutState>
 
+const MAX_GUI_PROJECT_PAGES = 100
+
 type UiTheme = {
   divider: string
   bodyText: string
@@ -336,6 +338,7 @@ export function PreviewWorkspace({
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
+  const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const pageActionButtonClassName = `inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
     isDarkUi
       ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
@@ -486,11 +489,13 @@ export function PreviewWorkspace({
     tooltip,
     onClick,
     children,
+    disabled = false,
   }: {
     ariaLabel: string
     tooltip: string
     onClick: () => void
     children: ReactNode
+    disabled?: boolean
   }) {
     return (
       <HoverTooltip
@@ -501,8 +506,9 @@ export function PreviewWorkspace({
         <button
           type="button"
           aria-label={ariaLabel}
-          onClick={onClick}
-          className={pageActionButtonClassName}
+          disabled={disabled}
+          onClick={disabled ? undefined : onClick}
+          className={`${pageActionButtonClassName} ${disabled ? "cursor-not-allowed opacity-45 hover:text-inherit" : ""}`}
         >
           {children}
         </button>
@@ -732,7 +738,7 @@ export function PreviewWorkspace({
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mt-3 rounded-md py-2">
+                  <div className="mt-3 rounded-md pt-2 pb-1">
                     <SectionHeaderRow
                       label="Pages"
                       labelClassName={uiTheme.sidebarHeading}
@@ -740,14 +746,16 @@ export function PreviewWorkspace({
                         <div className="flex shrink-0 items-center gap-1">
                           {renderPageActionButton({
                             ariaLabel: "Add clean copy page",
-                            tooltip: "+\nAdd page with layout only",
+                            tooltip: pageAddDisabled ? `+\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "+\nAdd page with layout only",
                             onClick: onPageAdd,
+                            disabled: pageAddDisabled,
                             children: <Plus className="h-2 w-2" />,
                           })}
                           {renderPageActionButton({
                             ariaLabel: "Add page copy with content",
-                            tooltip: "++\nDuplicate page with content",
+                            tooltip: pageAddDisabled ? `++\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "++\nDuplicate page with content",
                             onClick: onPageAddWithContent,
+                            disabled: pageAddDisabled,
                             children: (
                               <span className="inline-flex h-full items-center gap-[1px]">
                                 <Plus className="h-2 w-2" />
@@ -760,38 +768,41 @@ export function PreviewWorkspace({
                     />
                   </div>
                 </div>
-                <div
-                  data-help-scroll-root="true"
-                  className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-                >
-                  <PagesPanel
-                    pages={projectPages}
-                    activePage={activeProjectPage}
-                    activePageId={activePageId}
-                    activePageFocusRequest={activePageFocusRequest}
-                    onSelectPage={onPageSelect}
-                    onFacingPageToggle={onPageFacingToggle}
-                    onRenamePage={onPageRename}
-                    onDeletePage={onPageDelete}
-                    onRequestNotice={onRequestNotice}
-                    onPageOrderChange={onPageOrderChange}
-                    baseFont={baseFont}
-                    imageColorScheme={imageColorScheme}
-                    selectedLayerKey={selectedLayerKey}
-                    hoveredLayerKey={hoveredLayerKey}
-                    editingLayerKey={editorMode ? selectedLayerKey : null}
-                    editorMode={editorMode}
-                    previewEditorOpenToken={previewEditorOpenToken}
-                    previewParagraphCreateToken={previewParagraphCreateToken}
-                    onLayerOrderChange={onLayerOrderChange}
-                    onSelectedLayerKeyChange={onSelectedLayerKeyChange}
-                        onHoverLayerChange={setLayerPanelHoveredLayerKey}
-                        onLayerEditorToggle={onLayerEditorToggle}
-                        onLayerLockToggle={onLayerLockToggle}
-                        onPageLayerLockToggle={onPageLayerLockToggle}
-                        onLayerDelete={onLayerDelete}
-                        isDarkMode={isDarkUi}
-                      />
+                <div className="flex min-h-0 flex-1 flex-col pt-2 md:pt-3">
+                  <div
+                    data-help-scroll-root="true"
+                    className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+                  >
+                    <PagesPanel
+                      pages={projectPages}
+                      activePage={activeProjectPage}
+                      activePageId={activePageId}
+                      activePageFocusRequest={activePageFocusRequest}
+                      onSelectPage={onPageSelect}
+                      onFacingPageToggle={onPageFacingToggle}
+                      onRenamePage={onPageRename}
+                      onDeletePage={onPageDelete}
+                      onRequestNotice={onRequestNotice}
+                      onPageOrderChange={onPageOrderChange}
+                      baseFont={baseFont}
+                      imageColorScheme={imageColorScheme}
+                      selectedLayerKey={selectedLayerKey}
+                      hoveredLayerKey={hoveredLayerKey}
+                      previewHoveredLayerKey={previewHoveredLayerKey}
+                      editingLayerKey={editorMode ? selectedLayerKey : null}
+                      editorMode={editorMode}
+                      previewEditorOpenToken={previewEditorOpenToken}
+                      previewParagraphCreateToken={previewParagraphCreateToken}
+                      onLayerOrderChange={onLayerOrderChange}
+                      onSelectedLayerKeyChange={onSelectedLayerKeyChange}
+                      onHoverLayerChange={setLayerPanelHoveredLayerKey}
+                      onLayerEditorToggle={onLayerEditorToggle}
+                      onLayerLockToggle={onLayerLockToggle}
+                      onPageLayerLockToggle={onPageLayerLockToggle}
+                      onLayerDelete={onLayerDelete}
+                      isDarkMode={isDarkUi}
+                    />
+                  </div>
                 </div>
                 <div className={`shrink-0 border-t px-4 py-3 text-[11px] md:px-6 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
                   <SectionHeaderRow
@@ -801,14 +812,16 @@ export function PreviewWorkspace({
                       <div className="flex shrink-0 items-center gap-1">
                         {renderPageActionButton({
                           ariaLabel: "Add clean copy page",
-                          tooltip: "+\nAdd page with layout only",
+                          tooltip: pageAddDisabled ? `+\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "+\nAdd page with layout only",
                           onClick: onPageAdd,
+                          disabled: pageAddDisabled,
                           children: <Plus className="h-2 w-2" />,
                         })}
                         {renderPageActionButton({
                           ariaLabel: "Add page copy with content",
-                          tooltip: "++\nDuplicate page with content",
+                          tooltip: pageAddDisabled ? `++\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "++\nDuplicate page with content",
                           onClick: onPageAddWithContent,
+                          disabled: pageAddDisabled,
                           children: (
                             <span className="inline-flex h-full items-center gap-[1px]">
                               <Plus className="h-2 w-2" />

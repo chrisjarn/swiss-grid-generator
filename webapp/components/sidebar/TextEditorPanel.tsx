@@ -7,6 +7,7 @@ import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScr
 import { FontSelect } from "@/components/ui/font-select"
 import { EditorColorSchemeControls } from "@/components/ui/editor-color-scheme-controls"
 import { Label } from "@/components/ui/label"
+import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { DebouncedSlider } from "@/components/ui/slider"
 import {
   Select,
@@ -696,7 +697,6 @@ export function TextEditorPanel<StyleKey extends string>({
 
   const tone = isDarkMode
     ? {
-      input: "border-gray-700 bg-gray-900 text-gray-100 focus:border-gray-500",
       muted: "text-gray-400",
       panel: "bg-transparent",
       surface: "bg-transparent",
@@ -710,7 +710,6 @@ export function TextEditorPanel<StyleKey extends string>({
       selectContent: "dark",
     }
     : {
-      input: "border-gray-200 bg-white text-gray-900 focus:border-gray-400",
       muted: "text-gray-600",
       panel: "bg-transparent",
       surface: "bg-transparent",
@@ -724,8 +723,8 @@ export function TextEditorPanel<StyleKey extends string>({
       selectContent: "",
     }
 
-  const triggerClassName = `h-9 ${tone.input}`
-  const textInputClassName = `h-9 w-full rounded-md border px-3 text-sm outline-none ${tone.input}`
+  const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
+  const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
   const segmentButtonClassName = (active: boolean) => (
     `h-8 rounded-sm border px-3 text-xs ${active ? tone.buttonActive : tone.button}`

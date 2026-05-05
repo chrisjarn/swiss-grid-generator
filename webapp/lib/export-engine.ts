@@ -13,7 +13,11 @@ import {
   preloadFontFileMetricFaces,
   type FontFileMetricFace,
 } from "@/lib/font-file-text-metrics-engine"
-import { buildSwissGridIdmlPackage } from "@/lib/idml/builder"
+import {
+  buildSwissGridIdmlPackageFromPageSets,
+  buildSwissGridIdmlPageSetArtifacts,
+} from "@/lib/idml/builder"
+import type { IdmlPageSetArtifacts } from "@/lib/idml/types"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
@@ -28,7 +32,11 @@ import {
   type PlannedProjectPageExportSource,
 } from "@/lib/planned-page-export-source"
 import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
-import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
+import {
+  renderSvgPageSetFiles,
+  type SvgExportFile,
+  type SvgPageSetRenderOptions,
+} from "@/lib/svg-page-set-export"
 
 export type ExportEngineFormat = "pdf" | "svg" | "idml"
 export type ExportEngineSvgPackaging = "files" | "zip"
@@ -98,6 +106,7 @@ export type ExportEngineOptions = {
   layoutEngine?: LayoutEngineContract
   bleed?: ExportEngineBleedConfig
   svgPackaging?: ExportEngineSvgPackaging
+  idmlCompressionLevel?: number
   onProgress?: (progress: ExportEngineProgress) => void | Promise<void>
   onLog?: (message: string) => void
   shouldLogPage?: (completed: number, total: number) => boolean
@@ -105,6 +114,92 @@ export type ExportEngineOptions = {
 }
 
 const DEFAULT_BLEED_CONFIG: ExportEngineBleedConfig = DEFAULT_EXPORT_BLEED_OPTIONS
+const DEFAULT_EXPORT_PAGE_SET_SIZE = 25
+const MAX_BROWSER_EXPORT_WORKERS = 4
+const MAX_EXPORT_PAGE_SET_CACHE_ENTRIES = 48
+const EXPORT_CACHE_KEY_PREVIEW_LENGTH = 48
+const PDF_CANCEL_CHECK_PAGE_INTERVAL = 10
+
+type ExportPageSetCacheEntry<TResult> = {
+  serializedRequest: string
+  value: TResult
+}
+
+type ExportPageSetCacheKey = {
+  id: string
+  serializedRequest: string
+}
+
+const svgPageSetCache = new Map<string, ExportPageSetCacheEntry<SvgExportFile[]>>()
+const idmlPageSetCache = new Map<string, ExportPageSetCacheEntry<IdmlPageSetArtifacts>>()
+
+function getStableRequestCacheKey(request: unknown): ExportPageSetCacheKey {
+  const serialized = JSON.stringify(request) ?? "null"
+  let hash = 2166136261
+  for (let index = 0; index < serialized.length; index += 1) {
+    hash ^= serialized.charCodeAt(index)
+    hash = Math.imul(hash, 16777619)
+  }
+  return {
+    id: `${serialized.length}:${(hash >>> 0).toString(16)}:${serialized.slice(0, EXPORT_CACHE_KEY_PREVIEW_LENGTH)}:${serialized.slice(-EXPORT_CACHE_KEY_PREVIEW_LENGTH)}`,
+    serializedRequest: serialized,
+  }
+}
+
+async function yieldForMainThreadCancellation(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, 0)
+  })
+}
+
+function readPageSetCache<TResult>(
+  cache: Map<string, ExportPageSetCacheEntry<TResult>>,
+  key: ExportPageSetCacheKey,
+  clone: (value: TResult) => TResult,
+): TResult | null {
+  const entry = cache.get(key.id)
+  if (!entry || entry.serializedRequest !== key.serializedRequest) return null
+  cache.delete(key.id)
+  cache.set(key.id, entry)
+  return clone(entry.value)
+}
+
+function writePageSetCache<TResult>(
+  cache: Map<string, ExportPageSetCacheEntry<TResult>>,
+  key: ExportPageSetCacheKey,
+  value: TResult,
+  clone: (value: TResult) => TResult,
+): void {
+  cache.set(key.id, { serializedRequest: key.serializedRequest, value: clone(value) })
+  while (cache.size > MAX_EXPORT_PAGE_SET_CACHE_ENTRIES) {
+    const oldestKey = cache.keys().next().value
+    if (!oldestKey) break
+    cache.delete(oldestKey)
+  }
+}
+
+function cloneSvgExportFiles(files: SvgExportFile[]): SvgExportFile[] {
+  return files.map((file) => ({ ...file }))
+}
+
+function cloneUint8Array(bytes: Uint8Array): Uint8Array {
+  return bytes.slice()
+}
+
+function cloneIdmlPageSetArtifacts(artifacts: IdmlPageSetArtifacts): IdmlPageSetArtifacts {
+  return {
+    startPageIndex: artifacts.startPageIndex,
+    pageCount: artifacts.pageCount,
+    spreads: artifacts.spreads.map((spread) => ({
+      ...spread,
+      bytes: cloneUint8Array(spread.bytes),
+    })),
+    stories: artifacts.stories.map((story) => ({
+      ...story,
+      bytes: cloneUint8Array(story.bytes),
+    })),
+  }
+}
 
 const JsPDFConstructor = (
   typeof jsPDFModule === "function"
@@ -112,17 +207,30 @@ const JsPDFConstructor = (
     : (jsPDFModule as unknown as { jsPDF: typeof jsPDFModule }).jsPDF
 )
 
-function normalizeFilenameSegment(value: string): string {
-  const trimmed = value.trim().toLowerCase()
-  if (!trimmed) return "page"
-  return trimmed
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    || "page"
-}
-
 function toUint8Array(buffer: ArrayBuffer): Uint8Array {
   return new Uint8Array(buffer)
+}
+
+export type ExportPageSet<TPage> = {
+  index: number
+  startIndex: number
+  pages: readonly TPage[]
+}
+
+export function buildExportPageSets<TPage>(
+  pages: readonly TPage[],
+  pageSetSize = DEFAULT_EXPORT_PAGE_SET_SIZE,
+): Array<ExportPageSet<TPage>> {
+  const normalizedSize = Math.max(1, Math.floor(pageSetSize))
+  const pageSets: Array<ExportPageSet<TPage>> = []
+  for (let startIndex = 0; startIndex < pages.length; startIndex += normalizedSize) {
+    pageSets.push({
+      index: pageSets.length,
+      startIndex,
+      pages: pages.slice(startIndex, startIndex + normalizedSize),
+    })
+  }
+  return pageSets
 }
 
 function getFontFaceCacheKey(face: PdfFontRegistrationFace): string {
@@ -203,6 +311,191 @@ function createTimingRecorder() {
   }
 }
 
+type BrowserWorkerRequestPayload<TRequest> = {
+  request: TRequest
+  transfer?: Transferable[]
+}
+
+type BrowserPageSetWorkerOptions<TRequest, TResponse, TResult> = {
+  options: ExportEngineOptions
+  pageSets: readonly ExportPageSet<PlannedProjectPageExportSource>[]
+  workerCount: number
+  format: ExportEngineFormat
+  label: string
+  createWorker: () => Worker
+  buildRequest: (pageSet: ExportPageSet<PlannedProjectPageExportSource>) => BrowserWorkerRequestPayload<TRequest>
+  readResult: (response: TResponse) => TResult
+  cache?: Map<string, ExportPageSetCacheEntry<TResult>>
+  cloneForCache?: (value: TResult) => TResult
+}
+
+type SingleBrowserWorkerOptions<TRequest, TResponse, TResult> = {
+  options: ExportEngineOptions
+  createWorker: () => Worker
+  request: TRequest
+  transfer?: Transferable[]
+  readResult: (response: TResponse) => TResult
+  errorLabel: string
+}
+
+function getLastCompletedPageNumber(
+  options: ExportEngineOptions,
+  completedPages: number,
+): number {
+  const startPageNumber = options.startPageNumber ?? 1
+  return options.pageNumbers?.[Math.max(0, completedPages - 1)] ?? startPageNumber + completedPages - 1
+}
+
+async function runBrowserPageSetWorkers<TRequest, TResponse, TResult>({
+  options,
+  pageSets,
+  workerCount,
+  format,
+  label,
+  createWorker,
+  buildRequest,
+  readResult,
+  cache,
+  cloneForCache,
+}: BrowserPageSetWorkerOptions<TRequest, TResponse, TResult>): Promise<TResult[]> {
+  const results: TResult[] = []
+  const workers = Array.from({ length: workerCount }, createWorker)
+  let nextPageSetIndex = 0
+  let completedPages = 0
+  let completedPageSets = 0
+
+  return new Promise((resolve, reject) => {
+    let settled = false
+    const cancelTimer = setInterval(() => {
+      try {
+        options.assertNotCancelled?.()
+      } catch (error) {
+        fail(error)
+      }
+    }, 100)
+    const cleanup = () => {
+      clearInterval(cancelTimer)
+      workers.forEach((worker) => worker.terminate())
+    }
+    const fail = (error: unknown) => {
+      if (settled) return
+      settled = true
+      cleanup()
+      reject(error)
+    }
+    const completePageSet = async (pageSet: ExportPageSet<PlannedProjectPageExportSource>, result: TResult) => {
+      results[pageSet.index] = result
+      completedPageSets += 1
+      completedPages += pageSet.pages.length
+      await publishProgress(options, {
+        format,
+        completedSteps: completedPages,
+        totalSteps: options.pages.length,
+        currentPageNumber: getLastCompletedPageNumber(options, completedPages),
+        currentLabel: `${label} page set ${pageSet.index + 1}/${pageSets.length}`,
+        phase: "rendering",
+      })
+    }
+    const dispatch = (worker: Worker) => {
+      options.assertNotCancelled?.()
+      const pageSet = pageSets[nextPageSetIndex]
+      if (!pageSet) {
+        if (completedPageSets === pageSets.length && !settled) {
+          settled = true
+          cleanup()
+          resolve(results)
+        }
+        return
+      }
+      nextPageSetIndex += 1
+      const payload = buildRequest(pageSet)
+      const cacheKey = cache && cloneForCache ? getStableRequestCacheKey(payload.request) : null
+      if (cache && cloneForCache && cacheKey) {
+        const cachedResult = readPageSetCache(cache, cacheKey, cloneForCache)
+        if (cachedResult) {
+          void completePageSet(pageSet, cachedResult)
+            .then(() => dispatch(worker))
+            .catch(fail)
+          return
+        }
+      }
+      worker.onmessage = (event: MessageEvent<TResponse>) => {
+        let result: TResult
+        try {
+          result = readResult(event.data)
+        } catch (error) {
+          fail(error)
+          return
+        }
+        if (cache && cloneForCache && cacheKey) {
+          writePageSetCache(cache, cacheKey, result, cloneForCache)
+        }
+        void completePageSet(pageSet, result)
+          .then(() => dispatch(worker))
+          .catch(fail)
+      }
+      worker.onerror = (event) => {
+        fail(new Error(event.message || `${label} page-set worker failed.`))
+      }
+      worker.postMessage(payload.request, payload.transfer ?? [])
+    }
+
+    try {
+      workers.forEach(dispatch)
+    } catch (error) {
+      fail(error)
+    }
+  })
+}
+
+async function runSingleBrowserWorker<TRequest, TResponse, TResult>({
+  options,
+  createWorker,
+  request,
+  transfer,
+  readResult,
+  errorLabel,
+}: SingleBrowserWorkerOptions<TRequest, TResponse, TResult>): Promise<TResult> {
+  return new Promise((resolve, reject) => {
+    const worker = createWorker()
+    let settled = false
+    const cancelTimer = setInterval(() => {
+      try {
+        options.assertNotCancelled?.()
+      } catch (error) {
+        fail(error)
+      }
+    }, 100)
+    const cleanup = () => {
+      clearInterval(cancelTimer)
+      worker.terminate()
+    }
+    const fail = (error: unknown) => {
+      if (settled) return
+      settled = true
+      cleanup()
+      reject(error)
+    }
+    worker.onmessage = (event: MessageEvent<TResponse>) => {
+      let result: TResult
+      try {
+        result = readResult(event.data)
+      } catch (error) {
+        fail(error)
+        return
+      }
+      if (settled) return
+      settled = true
+      cleanup()
+      resolve(result)
+    }
+    worker.onerror = (event) => {
+      fail(new Error(event.message || `${errorLabel} worker failed.`))
+    }
+    worker.postMessage(request, transfer ?? [])
+  })
+}
+
 async function publishProgress(
   options: ExportEngineOptions,
   progress: ExportEngineProgress,
@@ -233,6 +526,7 @@ async function exportPdf(
   record: ReturnType<typeof createTimingRecorder>,
 ): Promise<ExportEngineOutput> {
   const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
+  options.onLog?.("pdf: initializing document")
   await publishPhaseProgress(options, "pdf", "PDF setup: initializing document")
   const { outputIntentProfileId } = resolvePdfExportColorManagement()
   const firstPage = plannedPages[0]
@@ -288,6 +582,7 @@ async function exportPdf(
   await record.measure(
     "pdf font register",
     async () => {
+      options.onLog?.(`pdf: registering ${pdfFontFaces.length} font faces`)
       await publishPhaseProgress(options, "pdf", `PDF setup: registering ${pdfFontFaces.length} font faces`)
       await ensurePdfFontFacesRegistered(pdf, pdfFontFaces)
     },
@@ -296,6 +591,7 @@ async function exportPdf(
   await record.measure(
     "pdf output intent",
     async () => {
+      options.onLog?.(`pdf: attaching ${outputIntentProfileId} output intent`)
       await publishPhaseProgress(options, "pdf", `PDF setup: attaching ${outputIntentProfileId} output intent`)
       await attachPdfOutputIntent(pdf, outputIntentProfileId)
     },
@@ -303,6 +599,15 @@ async function exportPdf(
   )
   record.record("pdf setup", performance.now() - pdfSetupStartedAt, `faces=${pdfFontFaces.length}`)
 
+  options.onLog?.(`pdf: rendering ${plannedPages.length} pages`)
+  await publishProgress(options, {
+    format: "pdf",
+    completedSteps: 0,
+    totalSteps: plannedPages.length,
+    currentPageNumber: options.pageNumbers?.[0] ?? options.startPageNumber ?? 1,
+    currentLabel: `Rendering ${plannedPages.length} PDF pages`,
+    phase: "rendering",
+  })
   await record.measure("pdf render pages", async () => {
     for (const [index, page] of plannedPages.entries()) {
       options.assertNotCancelled?.()
@@ -356,10 +661,15 @@ async function exportPdf(
         currentLabel: page.name || `Page ${completed}`,
         phase: "rendering",
       })
+      if (completed % PDF_CANCEL_CHECK_PAGE_INTERVAL === 0) {
+        await yieldForMainThreadCancellation()
+        options.assertNotCancelled?.()
+      }
     }
   }, `pages=${plannedPages.length}`)
 
   return record.measure("pdf finalize", async () => {
+    options.onLog?.("pdf: finalizing bytes")
     await publishProgress(options, {
       format: "pdf",
       completedSteps: plannedPages.length,
@@ -368,6 +678,8 @@ async function exportPdf(
       currentLabel: "Finalizing PDF bytes",
       phase: "packaging",
     })
+    await yieldForMainThreadCancellation()
+    options.assertNotCancelled?.()
     return {
       format: "pdf" as const,
       filename: options.filenames?.pdf ?? `${options.baseName}.pdf`,
@@ -380,63 +692,167 @@ async function exportPdf(
 async function renderSvgFiles(
   options: ExportEngineOptions,
   plannedPages: readonly PlannedProjectPageExportSource[],
-): Promise<Array<{ filename: string; text: string }>> {
+): Promise<SvgExportFile[]> {
   const startPageNumber = options.startPageNumber ?? 1
   const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
-  const files: Array<{ filename: string; text: string }> = []
-  for (const [index, page] of plannedPages.entries()) {
+  const pageSets = buildExportPageSets(plannedPages)
+  const workerCount = getBrowserExportWorkerCount(pageSets.length)
+  if (workerCount > 1) {
+    options.onLog?.(`svg: rendering ${pageSets.length} page sets on ${workerCount} workers`)
+    return renderSvgPageSetsWithBrowserWorkers(options, pageSets, bleedConfig, workerCount)
+  }
+
+  options.onLog?.(`svg: rendering ${pageSets.length} page sets`)
+  return renderSvgPageSetsSequentially(options, pageSets, bleedConfig, startPageNumber)
+}
+
+async function renderSvgPageSetsSequentially(
+  options: ExportEngineOptions,
+  pageSets: readonly ExportPageSet<PlannedProjectPageExportSource>[],
+  bleedConfig: ExportEngineBleedConfig,
+  startPageNumber: number,
+): Promise<SvgExportFile[]> {
+  const files: SvgExportFile[] = []
+  let completedPages = 0
+  for (const pageSet of pageSets) {
     options.assertNotCancelled?.()
-    const pageNumber = options.pageNumbers?.[index] ?? startPageNumber + index
-    const pageSlug = normalizeFilenameSegment(page.name || `page-${pageNumber}`)
-    const exportBox = buildExportBox({
-      width: page.result.pageSizePt.width,
-      height: page.result.pageSizePt.height,
+    const request: SvgPageSetWorkerRequest = {
+      id: pageSet.index,
+      options: {
+        pages: pageSet.pages,
+        metadata: options.metadata,
+        baseName: options.baseName,
+        startPageNumber: startPageNumber + pageSet.startIndex,
+        pageNumbers: pageSet.pages.map((_, index) => options.pageNumbers?.[pageSet.startIndex + index] ?? startPageNumber + pageSet.startIndex + index),
+        bleed: bleedConfig,
+        layoutEngine: options.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
+      },
+    }
+    const cacheKey = getStableRequestCacheKey(request)
+    const cachedFiles = readPageSetCache(svgPageSetCache, cacheKey, cloneSvgExportFiles)
+    const pageSetFiles = cachedFiles ?? await renderSvgPageSetFiles({
+      pages: pageSet.pages,
+      metadata: options.metadata,
+      baseName: options.baseName,
+      startPageNumber: startPageNumber + pageSet.startIndex,
+      pageNumbers: pageSet.pages.map((_, index) => options.pageNumbers?.[pageSet.startIndex + index] ?? startPageNumber + pageSet.startIndex + index),
       bleed: bleedConfig,
-    })
-    const svg = await renderSwissGridVectorSvg({
-      width: page.result.pageSizePt.width,
-      height: page.result.pageSizePt.height,
-      result: page.result,
-      layout: page.previewLayout,
-      documentVariableContext: page.documentVariableContext,
-      baseFont: page.baseFont,
-      imageColorScheme: page.imageColorScheme,
-      canvasBackground: page.resolvedCanvasBackground,
-      rotation: page.uiSettings.rotation,
-      showBaselines: page.uiSettings.showBaselines,
-      showModules: page.uiSettings.showModules,
-      showMargins: page.uiSettings.showMargins,
-      showImagePlaceholders: page.uiSettings.showImagePlaceholders,
-      showTypography: page.uiSettings.showTypography,
       layoutEngine: options.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
-      title: options.metadata.title.trim()
-        ? `${options.metadata.title.trim()} - Page ${pageNumber}`
-        : `${options.baseName} - Page ${pageNumber}`,
-      description: options.metadata.description.trim() || `Swiss Grid Vector Export - Page ${pageNumber}`,
-      author: options.metadata.author.trim(),
-      createdAt: options.metadata.createdAt,
-      creatorTool: "Swiss Grid Generator",
-      exportPlan: page.exportPlan,
-      exportBox,
     })
-    files.push({
-      filename: `${options.baseName}_page_${String(pageNumber).padStart(3, "0")}_${pageSlug}.svg`,
-      text: svg,
-    })
-    const completed = index + 1
-    if (options.shouldLogPage?.(completed, plannedPages.length)) {
-      options.onLog?.(`svg: ${completed}/${plannedPages.length} ${page.name || `Page ${pageNumber}`}`)
+    if (!cachedFiles) {
+      writePageSetCache(svgPageSetCache, cacheKey, pageSetFiles, cloneSvgExportFiles)
+    }
+    files.push(...pageSetFiles)
+    completedPages += pageSet.pages.length
+    if (options.shouldLogPage?.(completedPages, options.pages.length)) {
+      options.onLog?.(`svg: ${completedPages}/${options.pages.length} page set ${pageSet.index + 1}`)
     }
     await publishProgress(options, {
       format: "svg",
-      completedSteps: completed,
-      totalSteps: plannedPages.length,
-      currentPageNumber: pageNumber,
-      currentLabel: page.name || `Page ${pageNumber}`,
+      completedSteps: completedPages,
+      totalSteps: options.pages.length,
+      currentPageNumber: options.pageNumbers?.[Math.max(0, completedPages - 1)] ?? completedPages,
+      currentLabel: `SVG page set ${pageSet.index + 1}/${pageSets.length}`,
       phase: "rendering",
     })
   }
   return files
+}
+
+type SvgPageSetWorkerRequest = {
+  id: number
+  options: SvgPageSetRenderOptions
+}
+
+type SvgPageSetWorkerResponse =
+  | {
+      id: number
+      ok: true
+      files: SvgExportFile[]
+    }
+  | {
+      id: number
+      ok: false
+      error: string
+    }
+
+type SvgZipWorkerRequest = {
+  id: number
+  files: SvgExportFile[]
+}
+
+type SvgZipWorkerResponse =
+  | {
+      id: number
+      ok: true
+      bytes: Uint8Array
+    }
+  | {
+      id: number
+      ok: false
+      error: string
+    }
+
+function createSvgPageSetWorker(): Worker {
+  return new Worker(new URL("../workers/svg-page-set.worker.ts", import.meta.url), { type: "module" })
+}
+
+function createSvgZipWorker(): Worker {
+  return new Worker(new URL("../workers/svg-zip.worker.ts", import.meta.url), { type: "module" })
+}
+
+async function zipSvgFilesWithBrowserWorker(
+  options: ExportEngineOptions,
+  files: SvgExportFile[],
+): Promise<Uint8Array> {
+  return runSingleBrowserWorker<SvgZipWorkerRequest, SvgZipWorkerResponse, Uint8Array>({
+    options,
+    createWorker: createSvgZipWorker,
+    request: { id: 1, files },
+    errorLabel: "SVG zip",
+    readResult: (response) => {
+      if (!response.ok) throw new Error(response.error)
+      return response.bytes
+    },
+  })
+}
+
+async function renderSvgPageSetsWithBrowserWorkers(
+  options: ExportEngineOptions,
+  pageSets: readonly ExportPageSet<PlannedProjectPageExportSource>[],
+  bleedConfig: ExportEngineBleedConfig,
+  workerCount: number,
+): Promise<SvgExportFile[]> {
+  const startPageNumber = options.startPageNumber ?? 1
+  const fileSets = await runBrowserPageSetWorkers<SvgPageSetWorkerRequest, SvgPageSetWorkerResponse, SvgExportFile[]>({
+    options,
+    pageSets,
+    workerCount,
+    format: "svg",
+    label: "SVG",
+    createWorker: createSvgPageSetWorker,
+    buildRequest: (pageSet) => ({
+      request: {
+        id: pageSet.index,
+        options: {
+          pages: [...pageSet.pages],
+          metadata: options.metadata,
+          baseName: options.baseName,
+          startPageNumber: startPageNumber + pageSet.startIndex,
+          pageNumbers: pageSet.pages.map((_, index) => options.pageNumbers?.[pageSet.startIndex + index] ?? startPageNumber + pageSet.startIndex + index),
+          bleed: bleedConfig,
+          layoutEngine: options.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
+        },
+      },
+    }),
+    readResult: (response) => {
+      if (!response.ok) throw new Error(response.error)
+      return response.files
+    },
+    cache: svgPageSetCache,
+    cloneForCache: cloneSvgExportFiles,
+  })
+  return fileSets.flat()
 }
 
 async function exportSvg(
@@ -481,15 +897,227 @@ async function exportSvg(
     phase: "packaging",
   })
   return record.measure("svg zip", async () => {
-    const zipEntries = Object.fromEntries(files.map((file) => [file.filename, strToU8(file.text)]))
+    const bytes = typeof Worker === "undefined"
+      ? (() => {
+          const zipEntries = Object.fromEntries(files.map((file) => [file.filename, strToU8(file.text)]))
+          return zipSync(zipEntries)
+        })()
+      : await zipSvgFilesWithBrowserWorker(options, files)
     return {
       format: "svg" as const,
       packaging: "zip" as const,
       filename: options.filenames?.svg ?? `${options.baseName}.zip`,
       mimeType: "application/zip",
-      bytes: zipSync(zipEntries),
+      bytes,
     }
   }, `files=${files.length}`)
+}
+
+type IdmlPageSetWorkerRequest = {
+  id: number
+  document: {
+    metadata: ExportEngineMetadata
+    pages: PlannedProjectPageExportSource[]
+    bleedMm: number
+  }
+  startPageIndex: number
+}
+
+type IdmlPageSetWorkerResponse =
+  | {
+      id: number
+      ok: true
+      artifacts: IdmlPageSetArtifacts
+    }
+  | {
+      id: number
+      ok: false
+      error: string
+    }
+
+type IdmlPackageWorkerRequest = {
+  id: number
+  document: {
+    metadata: ExportEngineMetadata
+    pages: PlannedProjectPageExportSource[]
+    bleedMm: number
+  }
+  pageSets: IdmlPageSetArtifacts[]
+  compressionLevel?: number
+}
+
+type IdmlPackageWorkerResponse =
+  | {
+      id: number
+      ok: true
+      bytes: Uint8Array
+    }
+  | {
+      id: number
+      ok: false
+      error: string
+    }
+
+function getBrowserExportWorkerCount(pageSetCount: number): number {
+  if (typeof Worker === "undefined") return 0
+  const concurrency = typeof navigator === "undefined" ? 2 : navigator.hardwareConcurrency || 2
+  return Math.max(0, Math.min(MAX_BROWSER_EXPORT_WORKERS, pageSetCount, Math.max(1, concurrency - 1)))
+}
+
+function createIdmlPageSetWorker(): Worker {
+  return new Worker(new URL("../workers/idml-page-set.worker.ts", import.meta.url), { type: "module" })
+}
+
+function createIdmlPackageWorker(): Worker {
+  return new Worker(new URL("../workers/idml-package.worker.ts", import.meta.url), { type: "module" })
+}
+
+async function renderIdmlPageSetsSequentially(
+  options: ExportEngineOptions,
+  pageSets: readonly ExportPageSet<PlannedProjectPageExportSource>[],
+  bleedMm: number,
+): Promise<IdmlPageSetArtifacts[]> {
+  const artifacts: IdmlPageSetArtifacts[] = []
+  let completedPages = 0
+  for (const pageSet of pageSets) {
+    options.assertNotCancelled?.()
+    const request: IdmlPageSetWorkerRequest = {
+      id: pageSet.index,
+      document: {
+        metadata: options.metadata,
+        pages: [...pageSet.pages],
+        bleedMm,
+      },
+      startPageIndex: pageSet.startIndex,
+    }
+    const cacheKey = getStableRequestCacheKey(request)
+    const cachedArtifacts = readPageSetCache(idmlPageSetCache, cacheKey, cloneIdmlPageSetArtifacts)
+    const pageSetArtifacts = cachedArtifacts ?? await buildSwissGridIdmlPageSetArtifacts(request.document, {
+      startPageIndex: request.startPageIndex,
+    })
+    if (!cachedArtifacts) {
+      writePageSetCache(idmlPageSetCache, cacheKey, pageSetArtifacts, cloneIdmlPageSetArtifacts)
+    }
+    artifacts[pageSet.index] = pageSetArtifacts
+    completedPages += pageSet.pages.length
+    await publishProgress(options, {
+      format: "idml",
+      completedSteps: completedPages,
+      totalSteps: options.pages.length,
+      currentPageNumber: options.pageNumbers?.[Math.max(0, completedPages - 1)] ?? completedPages,
+      currentLabel: `IDML page set ${pageSet.index + 1}/${pageSets.length}`,
+      phase: "rendering",
+    })
+  }
+  return artifacts
+}
+
+async function renderIdmlPageSetsWithBrowserWorkers(
+  options: ExportEngineOptions,
+  pageSets: readonly ExportPageSet<PlannedProjectPageExportSource>[],
+  bleedMm: number,
+  workerCount: number,
+): Promise<IdmlPageSetArtifacts[]> {
+  return runBrowserPageSetWorkers<IdmlPageSetWorkerRequest, IdmlPageSetWorkerResponse, IdmlPageSetArtifacts>({
+    options,
+    pageSets,
+    workerCount,
+    format: "idml",
+    label: "IDML",
+    createWorker: createIdmlPageSetWorker,
+    buildRequest: (pageSet) => ({
+      request: {
+        id: pageSet.index,
+        document: {
+          metadata: options.metadata,
+          pages: [...pageSet.pages],
+          bleedMm,
+        },
+        startPageIndex: pageSet.startIndex,
+      },
+    }),
+    readResult: (response) => {
+      if (!response.ok) throw new Error(response.error)
+      return response.artifacts
+    },
+    cache: idmlPageSetCache,
+    cloneForCache: cloneIdmlPageSetArtifacts,
+  })
+}
+
+async function renderIdmlPageSetArtifacts(
+  options: ExportEngineOptions,
+  plannedPages: readonly PlannedProjectPageExportSource[],
+  record: ReturnType<typeof createTimingRecorder>,
+): Promise<IdmlPageSetArtifacts[]> {
+  const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
+  const bleedMm = bleedConfig.enabled ? bleedConfig.widthMm : 0
+  const pageSets = buildExportPageSets(plannedPages)
+  const workerCount = getBrowserExportWorkerCount(pageSets.length)
+  return record.measure(
+    "idml render page sets",
+    async () => {
+      if (workerCount > 1) {
+        options.onLog?.(`idml: rendering ${pageSets.length} page sets on ${workerCount} workers`)
+        return renderIdmlPageSetsWithBrowserWorkers(options, pageSets, bleedMm, workerCount)
+      }
+      options.onLog?.(`idml: rendering ${pageSets.length} page sets`)
+      return renderIdmlPageSetsSequentially(options, pageSets, bleedMm)
+    },
+    `sets=${pageSets.length}${workerCount > 1 ? ` workers=${workerCount}` : ""}`,
+  )
+}
+
+async function packageIdmlWithBrowserWorker(
+  options: ExportEngineOptions,
+  plannedPages: readonly PlannedProjectPageExportSource[],
+  pageSets: IdmlPageSetArtifacts[],
+): Promise<Uint8Array> {
+  const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
+  const request: IdmlPackageWorkerRequest = {
+    id: 1,
+    document: {
+      metadata: options.metadata,
+      pages: [...plannedPages],
+      bleedMm: bleedConfig.enabled ? bleedConfig.widthMm : 0,
+    },
+    pageSets,
+    compressionLevel: options.idmlCompressionLevel,
+  }
+  const transfer = pageSets.flatMap((pageSet) => [
+    ...pageSet.spreads.map((spread) => spread.bytes.buffer),
+    ...pageSet.stories.map((story) => story.bytes.buffer),
+  ]) as Transferable[]
+  return runSingleBrowserWorker<IdmlPackageWorkerRequest, IdmlPackageWorkerResponse, Uint8Array>({
+    options,
+    createWorker: createIdmlPackageWorker,
+    request,
+    transfer,
+    errorLabel: "IDML package",
+    readResult: (response) => {
+      if (!response.ok) throw new Error(response.error)
+      return response.bytes
+    },
+  })
+}
+
+async function packageIdml(
+  options: ExportEngineOptions,
+  plannedPages: readonly PlannedProjectPageExportSource[],
+  pageSets: IdmlPageSetArtifacts[],
+): Promise<Uint8Array> {
+  const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
+  if (typeof Worker !== "undefined" && pageSets.length > 1) {
+    options.onLog?.("idml: packaging in worker")
+    return packageIdmlWithBrowserWorker(options, plannedPages, pageSets)
+  }
+  return buildSwissGridIdmlPackageFromPageSets({
+    metadata: options.metadata,
+    pages: [...plannedPages],
+    bleedMm: bleedConfig.enabled ? bleedConfig.widthMm : 0,
+  }, pageSets, {
+    compressionLevel: options.idmlCompressionLevel,
+  })
 }
 
 async function exportIdml(
@@ -497,18 +1125,13 @@ async function exportIdml(
   plannedPages: readonly PlannedProjectPageExportSource[],
   record: ReturnType<typeof createTimingRecorder>,
 ): Promise<ExportEngineOutput> {
-  const bytes = await record.measure("idml package", () => buildSwissGridIdmlPackage({
-    metadata: options.metadata,
-    pages: [...plannedPages],
-    bleedMm: (options.bleed ?? DEFAULT_BLEED_CONFIG).enabled
-      ? (options.bleed ?? DEFAULT_BLEED_CONFIG).widthMm
-      : 0,
-  }), `pages=${plannedPages.length}`)
+  const pageSets = await renderIdmlPageSetArtifacts(options, plannedPages, record)
+  const bytes = await record.measure("idml package", () => packageIdml(options, plannedPages, pageSets), `pages=${plannedPages.length}`)
   await publishProgress(options, {
     format: "idml",
     completedSteps: plannedPages.length,
     totalSteps: plannedPages.length,
-    currentPageNumber: plannedPages.length,
+    currentPageNumber: options.pageNumbers?.[plannedPages.length - 1] ?? (options.startPageNumber ?? 1) + plannedPages.length - 1,
     currentLabel: "Packaging IDML",
     phase: "packaging",
   })

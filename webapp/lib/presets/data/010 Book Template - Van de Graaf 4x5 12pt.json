@@ -5,6 +5,13 @@
   "description": "Book Starter incl. Cover and Content templates with pagination.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "pages": [
     {
       "id": "page-91be039f-3601-486e-ba90-1bdc8d78833e",
@@ -37,9 +44,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -158,9 +162,6 @@
           "right": 3,
           "bottom": 6
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -279,9 +280,6 @@
           "right": 3,
           "bottom": 6
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

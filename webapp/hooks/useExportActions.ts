@@ -1,12 +1,15 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { flushSync } from "react-dom"
-import type { ExportEngineResult } from "@/lib/export-engine"
-import { type LoadedProject } from "@/lib/document-session"
+import type { ExportEngineProgress, ExportEngineResult } from "@/lib/export-engine"
+import { type LoadedProject, type ProjectVisibilitySettings } from "@/lib/document-session"
 import {
   DEFAULT_EXPORT_BLEED_OPTIONS,
   type ExportBleedOptions,
   type ExportFormat,
+  type VectorExportFormat,
+  EXPORT_DOWNLOAD_EXTENSION_PATTERN,
   normalizeExportBleedOptions,
+  resolveExportBaseName,
   resolveExportDownloadExtension,
   supportsExportBleed,
 } from "@/lib/export-format-options"
@@ -22,10 +25,12 @@ import {
   warmProjectExportFonts,
 } from "@/lib/export-font-warmup"
 import {
-  filterProjectByExportRange,
-  normalizeProjectExportPageRange,
+  buildProjectExportPageNumbersFromRange,
+  filterProjectByExportPageNumbers,
+  formatProjectExportPageSelection,
+  parseProjectExportPageSelectionDraft,
+  resolveProjectExportPageSelection,
   type ProjectPageVisibilitySettings,
-  type ProjectExportPageRange,
 } from "@/lib/project-page-export-source"
 import { runProjectExport } from "@/lib/project-export-runner"
 
@@ -121,25 +126,28 @@ function updateFilenameForExport(
   current: string,
   format: ExportFormat,
   selectedPageCount: number,
-  getDefaultExportFilename: (format: ExportFormat, selectedPageCount: number, compressedJson?: boolean) => string,
-  compressedJson = false,
+  getDefaultExportFilename: (format: ExportFormat, selectedPageCount: number) => string,
 ): string {
   const trimmed = current.trim()
-  const extension = resolveExportDownloadExtension(format, selectedPageCount, compressedJson)
-  if (!trimmed) return getDefaultExportFilename(format, selectedPageCount, compressedJson)
-  if (/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i.test(trimmed)) {
-    return trimmed.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, extension)
+  const extension = resolveExportDownloadExtension(format, selectedPageCount)
+  if (!trimmed) return getDefaultExportFilename(format, selectedPageCount)
+  if (EXPORT_DOWNLOAD_EXTENSION_PATTERN.test(trimmed)) {
+    return trimmed.replace(EXPORT_DOWNLOAD_EXTENSION_PATTERN, extension)
   }
   return `${trimmed}${extension}`
 }
 
+function getVectorExportLogLabel(format: VectorExportFormat): string {
+  return format.toUpperCase()
+}
+
+function shouldForceVectorProgress(format: VectorExportFormat, progress: ExportProgressState): boolean {
+  void format
+  if (progress.phase === "preparing" || progress.phase === "packaging") return true
+  return progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
+}
+
 export type ExportActionsContext = {
-  exportPrintPro: boolean
-  setExportPrintPro: (b: boolean) => void
-  exportBleedMm: number
-  setExportBleedMm: (n: number) => void
-  exportRegistrationMarks: boolean
-  setExportRegistrationMarks: (b: boolean) => void
   defaultPdfFilename: string
   defaultSvgFilename: string
   defaultIdmlFilename: string
@@ -156,38 +164,37 @@ export type ExportActionsContext = {
     author: string
     createdAt?: string
   }) => void
-  exportViewSettings: ProjectPageVisibilitySettings
+  onProjectVisibilityToggle: (key: keyof ProjectVisibilitySettings) => void
   getCurrentProjectSnapshot: () => LoadedProject<Record<string, unknown>>
 }
 
 export function useExportActions(ctx: ExportActionsContext) {
   const {
-    exportPrintPro: persistedBleedEnabled,
-    setExportPrintPro: setPersistedBleedEnabled,
-    exportBleedMm,
-    setExportBleedMm,
     defaultPdfFilename,
     defaultIdmlFilename,
     defaultJsonFilename,
     projectMetadata,
     onProjectMetadataChange,
-    exportViewSettings,
+    onProjectVisibilityToggle,
     getCurrentProjectSnapshot,
   } = ctx
   const [isSaveLibraryDialogOpen, setIsSaveLibraryDialogOpen] = useState(false)
   const [isExportDialogOpen, setIsExportDialogOpen] = useState(false)
   const [exportFormatDraft, setExportFormatDraft] = useState<ExportFormat>("pdf")
   const [exportFilenameDraft, setExportFilenameDraft] = useState("")
-  const [bleedEnabledDraft, setBleedEnabledDraft] = useState(persistedBleedEnabled)
-  const [exportBleedMmDraft, setExportBleedMmDraft] = useState(String(exportBleedMm))
+  const [bleedEnabledDraft, setBleedEnabledDraft] = useState(DEFAULT_EXPORT_BLEED_OPTIONS.enabled)
+  const [bleedWidthMmDraft, setBleedWidthMmDraft] = useState(String(DEFAULT_EXPORT_BLEED_OPTIONS.widthMm))
   const [exportRangeStartDraft, setExportRangeStartDraft] = useState(1)
-  const [exportRangeEndDraft, setExportRangeEndDraft] = useState(1)
+  const [exportPageNumbersDraft, setExportPageNumbersDraft] = useState<number[]>([1])
+  const [exportRangeDraft, setExportRangeDraft] = useState("1-1")
   const [exportProgress, setExportProgress] = useState<ExportProgressState | null>(null)
   const exportCancelRequestedRef = useRef(false)
+  const exportInFlightRef = useRef(false)
+  const currentExportWorkerRef = useRef<Worker | null>(null)
+  const currentExportRejectRef = useRef<((error: Error) => void) | null>(null)
   const [saveTitleDraft, setSaveTitleDraft] = useState("")
   const [saveDescriptionDraft, setSaveDescriptionDraft] = useState("")
   const [saveAuthorDraft, setSaveAuthorDraft] = useState("")
-  const [jsonCompressionEnabledDraft, setJsonCompressionEnabledDraft] = useState(false)
   const [exportProjectOverride, setExportProjectOverride] = useState<LoadedProject<Record<string, unknown>> | null>(null)
   const warmedProjectFontSignatureRef = useRef("")
 
@@ -217,10 +224,10 @@ export function useExportActions(ctx: ExportActionsContext) {
   const projectPageCount = activeProject.pages.length
 
   const getDefaultVectorBleedDraft = useCallback(() => normalizeExportBleedOptions({
-    enabled: persistedBleedEnabled || exportBleedMm <= 0,
-    widthMm: exportBleedMm,
+    enabled: DEFAULT_EXPORT_BLEED_OPTIONS.enabled,
+    widthMm: DEFAULT_EXPORT_BLEED_OPTIONS.widthMm,
     fallbackWidthMm: DEFAULT_EXPORT_BLEED_OPTIONS.widthMm,
-  }), [exportBleedMm, persistedBleedEnabled])
+  }), [])
 
   useEffect(() => {
     void warmDefaultExportFonts()
@@ -236,38 +243,26 @@ export function useExportActions(ctx: ExportActionsContext) {
       const signature = getProjectExportFontWarmupSignature({
         project: currentProject,
         range,
-        visibilitySettings: exportViewSettings,
+        visibilitySettings: currentProject.visibilitySettings,
       })
       if (signature === warmedProjectFontSignatureRef.current) return
       warmedProjectFontSignatureRef.current = signature
       void warmProjectExportFonts({
         project: currentProject,
         range,
-        visibilitySettings: exportViewSettings,
+        visibilitySettings: currentProject.visibilitySettings,
       })
     }, 650)
     return () => window.clearTimeout(timeoutId)
-  }, [currentProject, exportViewSettings])
+  }, [currentProject])
 
-  const normalizedRange = useMemo(() => normalizeProjectExportPageRange(
-    projectPageCount,
-    exportRangeStartDraft,
-    exportRangeEndDraft,
-  ), [exportRangeEndDraft, exportRangeStartDraft, projectPageCount])
+  const selectedPageNumbers = useMemo(() => (
+    resolveProjectExportPageSelection(projectPageCount, exportPageNumbersDraft).pageNumbers
+  ), [exportPageNumbersDraft, projectPageCount])
 
-  const selectedProjectPages = useMemo(
-    () => activeProject.pages.slice(normalizedRange.startIndex, normalizedRange.endIndex + 1),
-    [activeProject.pages, normalizedRange.endIndex, normalizedRange.startIndex],
-  )
-  const selectedPageCount = selectedProjectPages.length
-  const selectedSinglePage = selectedPageCount === 1 ? selectedProjectPages[0] ?? null : null
+  const selectedPageCount = selectedPageNumbers.length
 
-  const pageRangeOptions = useMemo(() => activeProject.pages.map((page, index) => ({
-    value: String(index + 1),
-    label: `${index + 1}. ${page.name || `Page ${index + 1}`}`,
-  })), [activeProject.pages])
-
-  const getDefaultExportFilename = useCallback((format: ExportFormat, selectedPages: number, compressedJson = jsonCompressionEnabledDraft) => {
+  const getDefaultExportFilename = useCallback((format: ExportFormat, selectedPages: number) => {
     const base = format === "svg"
       ? ctx.defaultSvgFilename
       : format === "idml"
@@ -275,8 +270,8 @@ export function useExportActions(ctx: ExportActionsContext) {
         : format === "json"
           ? defaultJsonFilename
         : defaultPdfFilename
-    const extension = resolveExportDownloadExtension(format, selectedPages, compressedJson)
-    const fallbackStem = base.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
+    const extension = resolveExportDownloadExtension(format, selectedPages)
+    const fallbackStem = resolveExportBaseName(base)
     return toProjectFilename(activeProjectMetadata.title, fallbackStem, extension)
   }, [
     activeProjectMetadata.title,
@@ -284,24 +279,21 @@ export function useExportActions(ctx: ExportActionsContext) {
     defaultIdmlFilename,
     defaultJsonFilename,
     defaultPdfFilename,
-    jsonCompressionEnabledDraft,
   ])
 
   const updateFilenameForFormat = useCallback((
     current: string,
     format: ExportFormat,
     selectedPages: number,
-    compressedJson = jsonCompressionEnabledDraft,
   ) => (
-    updateFilenameForExport(current, format, selectedPages, getDefaultExportFilename, compressedJson)
-  ), [getDefaultExportFilename, jsonCompressionEnabledDraft])
+    updateFilenameForExport(current, format, selectedPages, getDefaultExportFilename)
+  ), [getDefaultExportFilename])
 
   const saveJSON = useCallback(
     (
       filename: string,
       projectSnapshot: LoadedProject<Record<string, unknown>>,
       metadata: { title: string; description: string; author: string; createdAt: string },
-      compressed: boolean,
     ) => {
       const trimmed = filename.trim()
       if (!trimmed) return
@@ -311,13 +303,12 @@ export function useExportActions(ctx: ExportActionsContext) {
         metadata,
         tour: projectSnapshot.tour ?? null,
       })
-      const encoded = encodeProjectTransferPayload(payload, compressed)
+      const encoded = encodeProjectTransferPayload(payload, false)
       const normalizedFilename = updateFilenameForExport(
         trimmed,
         "json",
         projectSnapshot.pages.length,
         getDefaultExportFilename,
-        compressed,
       )
       const blob = new Blob([toArrayBuffer(encoded.bytes)], { type: encoded.mimeType })
       const url = URL.createObjectURL(blob)
@@ -345,15 +336,16 @@ export function useExportActions(ctx: ExportActionsContext) {
   const openExportDialog = useCallback(() => {
     setExportProjectOverride(null)
     const defaultRange = { fromPage: 1, toPage: projectPageCount }
-    const basePdfStem = defaultPdfFilename.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
+    const basePdfStem = resolveExportBaseName(defaultPdfFilename)
 
     setExportFormatDraft("pdf")
     setExportRangeStartDraft(defaultRange.fromPage)
-    setExportRangeEndDraft(defaultRange.toPage)
+    const defaultPageNumbers = buildProjectExportPageNumbersFromRange(projectPageCount, defaultRange)
+    setExportPageNumbersDraft(defaultPageNumbers)
+    setExportRangeDraft(formatProjectExportPageSelection(defaultPageNumbers))
     const defaultBleed = getDefaultVectorBleedDraft()
     setBleedEnabledDraft(defaultBleed.enabled)
-    setExportBleedMmDraft(String(defaultBleed.widthMm))
-    setJsonCompressionEnabledDraft(false)
+    setBleedWidthMmDraft(String(defaultBleed.widthMm))
     setExportFilenameDraft(toProjectFilename(currentProject.metadata.title, basePdfStem, ".pdf"))
     setSaveTitleDraft(currentProject.metadata.title ?? "")
     setSaveDescriptionDraft(currentProject.metadata.description ?? "")
@@ -362,7 +354,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     void warmProjectExportFonts({
       project: currentProject,
       range: defaultRange,
-      visibilitySettings: exportViewSettings,
+      visibilitySettings: currentProject.visibilitySettings,
     })
   }, [
     currentProject.metadata.author,
@@ -370,7 +362,6 @@ export function useExportActions(ctx: ExportActionsContext) {
     currentProject.metadata.title,
     currentProject,
     defaultPdfFilename,
-    exportViewSettings,
     getDefaultVectorBleedDraft,
     projectPageCount,
   ])
@@ -381,12 +372,13 @@ export function useExportActions(ctx: ExportActionsContext) {
 
     setExportFormatDraft("pdf")
     setExportRangeStartDraft(defaultRange.fromPage)
-    setExportRangeEndDraft(defaultRange.toPage)
+    const defaultPageNumbers = buildProjectExportPageNumbersFromRange(project.pages.length, defaultRange)
+    setExportPageNumbersDraft(defaultPageNumbers)
+    setExportRangeDraft(formatProjectExportPageSelection(defaultPageNumbers))
     const defaultBleed = getDefaultVectorBleedDraft()
     setBleedEnabledDraft(defaultBleed.enabled)
-    setExportBleedMmDraft(String(defaultBleed.widthMm))
-    setJsonCompressionEnabledDraft(false)
-    const basePdfStem = defaultPdfFilename.replace(/\.(pdf|svg|idml|json|zip|swissgridgenerator)$/i, "")
+    setBleedWidthMmDraft(String(defaultBleed.widthMm))
+    const basePdfStem = resolveExportBaseName(defaultPdfFilename)
     setExportFilenameDraft(toProjectFilename(project.metadata.title, basePdfStem, ".pdf"))
     setSaveTitleDraft(project.metadata.title ?? "")
     setSaveDescriptionDraft(project.metadata.description ?? "")
@@ -395,11 +387,10 @@ export function useExportActions(ctx: ExportActionsContext) {
     void warmProjectExportFonts({
       project,
       range: defaultRange,
-      visibilitySettings: exportViewSettings,
+      visibilitySettings: project.visibilitySettings,
     })
   }, [
     defaultPdfFilename,
-    exportViewSettings,
     getDefaultVectorBleedDraft,
   ])
 
@@ -472,6 +463,10 @@ export function useExportActions(ctx: ExportActionsContext) {
 
   const cancelExport = useCallback(() => {
     exportCancelRequestedRef.current = true
+    currentExportWorkerRef.current?.terminate()
+    currentExportWorkerRef.current = null
+    currentExportRejectRef.current?.(new ExportCancelledError())
+    currentExportRejectRef.current = null
     setExportProgress((current) => (
       current
         ? {
@@ -482,153 +477,208 @@ export function useExportActions(ctx: ExportActionsContext) {
     ))
   }, [])
 
-  const exportPDF = useCallback(async (
+  const setBleedEnabledDraftWithDefaultWidth = useCallback((enabled: boolean) => {
+    setBleedEnabledDraft(enabled)
+    if (!enabled) return
+    setBleedWidthMmDraft((current) => {
+      const width = Number(current)
+      if (Number.isFinite(width) && width > 0) return current
+      return String(DEFAULT_EXPORT_BLEED_OPTIONS.widthMm)
+    })
+  }, [])
+
+  const runPdfExportInBrowserWorker = useCallback(({
+    project,
+    pageNumbers,
+    visibilitySettings,
+    filename,
+    bleed,
+    exportMetadata,
+    onProgress,
+  }: {
+    project: LoadedProject<Record<string, unknown>>
+    pageNumbers: readonly number[]
+    visibilitySettings: ProjectPageVisibilitySettings
+    filename: string
+    bleed: ExportBleedOptions
+    exportMetadata: ExportMetadataDraft
+    onProgress: (progress: ExportEngineProgress) => void
+  }): Promise<ExportEngineResult> => {
+    if (typeof Worker === "undefined") {
+      return runProjectExport({
+        formats: ["pdf"],
+        project,
+        pageNumbers,
+        visibilitySettings,
+        metadata: exportMetadata,
+        baseName: resolveExportBaseName(filename),
+        filenames: { pdf: filename },
+        bleed,
+        onProgress,
+        assertNotCancelled: throwIfExportCancelled,
+      })
+    }
+
+    return new Promise<ExportEngineResult>((resolve, reject) => {
+      const worker = new Worker(new URL("../workers/pdf-export.worker.ts", import.meta.url), { type: "module" })
+      const requestId = 1
+      let settled = false
+      const cleanup = () => {
+        if (currentExportWorkerRef.current === worker) {
+          currentExportWorkerRef.current = null
+          currentExportRejectRef.current = null
+        }
+        worker.terminate()
+      }
+      const fail = (error: Error) => {
+        if (settled) return
+        settled = true
+        cleanup()
+        reject(error)
+      }
+      currentExportWorkerRef.current = worker
+      currentExportRejectRef.current = fail
+      worker.onmessage = (event: MessageEvent<
+        | { id: number; type: "progress"; progress: ExportEngineProgress }
+        | { id: number; type: "done"; result: ExportEngineResult }
+        | { id: number; type: "error"; error: string }
+      >) => {
+        const response = event.data
+        if (response.id !== requestId || settled) return
+        if (response.type === "progress") {
+          onProgress(response.progress)
+          return
+        }
+        if (response.type === "error") {
+          fail(new Error(response.error))
+          return
+        }
+        settled = true
+        cleanup()
+        resolve(response.result)
+      }
+      worker.onerror = (event) => {
+        fail(new Error(event.message || "PDF export worker failed."))
+      }
+      worker.postMessage({
+        id: requestId,
+        project,
+        pageNumbers: [...pageNumbers],
+        visibilitySettings,
+        metadata: exportMetadata,
+        baseName: resolveExportBaseName(filename),
+        filename,
+        bleed,
+        layoutEngine: project.layoutEngine,
+      })
+    })
+  }, [throwIfExportCancelled])
+
+  const exportVector = useCallback(async (
+    format: VectorExportFormat,
     project: LoadedProject<Record<string, unknown>>,
-    range: ProjectExportPageRange,
+    pageNumbers: readonly number[],
     visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
     bleed: ExportBleedOptions,
     exportMetadata: ExportMetadataDraft,
   ) => {
     if (project.pages.length === 0) return
+    const label = getVectorExportLogLabel(format)
     const publishProgress = createProgressPublisher()
-    const result = await runProjectExport({
-      formats: ["pdf"],
-      project,
-      range,
-      visibilitySettings,
-      metadata: exportMetadata,
-      baseName: filename.replace(/\.pdf$/i, ""),
-      filenames: { pdf: filename },
-      bleed,
-      onProgress: (progress) => {
-        const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
-        if (!shouldForwardExportProgress(progress, force)) return undefined
-        publishProgressWithoutBlockingExport(publishProgress, progress, force)
-        return undefined
-      },
-      assertNotCancelled: throwIfExportCancelled,
-    })
-    logExportEnginePerformance("PDF", result)
+    const onProgress = (progress: ExportEngineProgress) => {
+      const force = shouldForceVectorProgress(format, progress)
+      if (!shouldForwardExportProgress(progress, force)) return undefined
+      publishProgressWithoutBlockingExport(publishProgress, progress, force)
+      return undefined
+    }
+    const result = format === "pdf"
+      ? await runPdfExportInBrowserWorker({
+          project,
+          pageNumbers,
+          visibilitySettings,
+          filename,
+          bleed,
+          exportMetadata,
+          onProgress,
+        })
+      : await runProjectExport({
+          formats: [format],
+          project,
+          pageNumbers,
+          visibilitySettings,
+          metadata: exportMetadata,
+          baseName: resolveExportBaseName(filename),
+          filenames: { [format]: filename },
+          bleed,
+          svgPackaging: format === "svg" ? "zip" : undefined,
+          onProgress,
+          assertNotCancelled: throwIfExportCancelled,
+        })
+    logExportEnginePerformance(label, result)
     const output = result.outputs[0]
-    if (output?.format === "pdf") {
+    if (
+      (format === "svg" && output?.format === "svg" && output.packaging === "zip")
+      || (format !== "svg" && output?.format === format)
+    ) {
       const downloadStartedAt = performance.now()
       downloadBytes(output.bytes, output.mimeType, output.filename)
-      logExportDownloadPerformance("PDF", performance.now() - downloadStartedAt, output.bytes.byteLength)
+      logExportDownloadPerformance(label, performance.now() - downloadStartedAt, output.bytes.byteLength)
     }
-  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
-
-  const exportSVG = useCallback(async (
-    project: LoadedProject<Record<string, unknown>>,
-    range: ProjectExportPageRange,
-    visibilitySettings: ProjectPageVisibilitySettings,
-    filename: string,
-    bleed: ExportBleedOptions,
-    exportMetadata: ExportMetadataDraft,
-  ) => {
-    if (project.pages.length === 0) return
-
-    const publishProgress = createProgressPublisher()
-    const result = await runProjectExport({
-      formats: ["svg"],
-      project,
-      range,
-      visibilitySettings,
-      metadata: exportMetadata,
-      baseName: filename.replace(/\.(svg|zip)$/i, ""),
-      filenames: { svg: filename },
-      bleed,
-      svgPackaging: "zip",
-      onProgress: (progress) => {
-        const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
-        if (!shouldForwardExportProgress(progress, force)) return undefined
-        publishProgressWithoutBlockingExport(publishProgress, progress, force)
-        return undefined
-      },
-      assertNotCancelled: throwIfExportCancelled,
-    })
-    logExportEnginePerformance("SVG", result)
-    const output = result.outputs[0]
-    if (output?.format === "svg" && output.packaging === "zip") {
-      const downloadStartedAt = performance.now()
-      downloadBytes(output.bytes, output.mimeType, output.filename)
-      logExportDownloadPerformance("SVG", performance.now() - downloadStartedAt, output.bytes.byteLength)
-    }
-  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
-
-  const exportIDML = useCallback(async (
-    project: LoadedProject<Record<string, unknown>>,
-    range: ProjectExportPageRange,
-    visibilitySettings: ProjectPageVisibilitySettings,
-    filename: string,
-    bleed: ExportBleedOptions,
-    exportMetadata: ExportMetadataDraft,
-  ) => {
-    if (project.pages.length === 0) return
-
-    const publishProgress = createProgressPublisher()
-    const result = await runProjectExport({
-      formats: ["idml"],
-      project,
-      range,
-      visibilitySettings,
-      metadata: exportMetadata,
-      baseName: filename.replace(/\.idml$/i, ""),
-      filenames: { idml: filename },
-      bleed,
-      onProgress: (progress) => {
-        const force = progress.phase === "packaging" || progress.completedSteps === progress.totalSteps
-        if (!shouldForwardExportProgress(progress, force)) return undefined
-        publishProgressWithoutBlockingExport(publishProgress, progress, force)
-        return undefined
-      },
-      assertNotCancelled: throwIfExportCancelled,
-    })
-    logExportEnginePerformance("IDML", result)
-    const output = result.outputs[0]
-    if (output?.format === "idml") {
-      const downloadStartedAt = performance.now()
-      downloadBytes(output.bytes, output.mimeType, output.filename)
-      logExportDownloadPerformance("IDML", performance.now() - downloadStartedAt, output.bytes.byteLength)
-    }
-  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
+  }, [createProgressPublisher, downloadBytes, runPdfExportInBrowserWorker, throwIfExportCancelled])
 
   const handleExportFormatChange = useCallback((format: ExportFormat) => {
     setExportFormatDraft(format)
     setExportFilenameDraft((current) => updateFilenameForFormat(current, format, selectedPageCount))
   }, [selectedPageCount, updateFilenameForFormat])
 
-  const handleJsonCompressionEnabledChange = useCallback((enabled: boolean) => {
-    setJsonCompressionEnabledDraft(enabled)
-    setExportFilenameDraft((current) => updateFilenameForFormat(current, "json", activeProject.pages.length, enabled))
-  }, [activeProject.pages.length, updateFilenameForFormat])
+  const toggleExportVisibility = useCallback((key: keyof ProjectVisibilitySettings) => {
+    if (exportProjectOverride) {
+      setExportProjectOverride((current) => current ? {
+        ...current,
+        visibilitySettings: {
+          ...current.visibilitySettings,
+          [key]: !current.visibilitySettings[key],
+        },
+      } : current)
+      return
+    }
+    onProjectVisibilityToggle(key)
+  }, [exportProjectOverride, onProjectVisibilityToggle])
 
-  const applyExportRange = useCallback((nextRange: ProjectExportPageRange) => {
-    const normalized = normalizeProjectExportPageRange(projectPageCount, nextRange.fromPage, nextRange.toPage)
+  const applyExportPageSelection = useCallback((pageNumbers: readonly number[]) => {
+    const normalized = resolveProjectExportPageSelection(projectPageCount, pageNumbers)
+    setExportPageNumbersDraft(normalized.pageNumbers)
     setExportRangeStartDraft(normalized.fromPage)
-    setExportRangeEndDraft(normalized.toPage)
+    setExportRangeDraft(formatProjectExportPageSelection(normalized.pageNumbers))
     setExportFilenameDraft((current) => updateFilenameForFormat(
       current,
       exportFormatDraft,
-      normalized.toPage - normalized.fromPage + 1,
+      normalized.pageNumbers.length,
     ))
   }, [exportFormatDraft, projectPageCount, updateFilenameForFormat])
 
-  const handleExportRangeStartChange = useCallback((value: string) => {
-    const nextStart = Number(value)
-    applyExportRange({
-      fromPage: nextStart,
-      toPage: Math.max(nextStart, exportRangeEndDraft),
-    })
-  }, [applyExportRange, exportRangeEndDraft])
+  const handleExportRangeDraftChange = useCallback((value: string) => {
+    setExportRangeDraft(value)
+    const parsed = parseProjectExportPageSelectionDraft(value, projectPageCount)
+    if (!parsed) return
+    applyExportPageSelection(parsed.pageNumbers)
+  }, [applyExportPageSelection, projectPageCount])
 
-  const handleExportRangeEndChange = useCallback((value: string) => {
-    const nextEnd = Number(value)
-    applyExportRange({
-      fromPage: Math.min(exportRangeStartDraft, nextEnd),
-      toPage: nextEnd,
-    })
-  }, [applyExportRange, exportRangeStartDraft])
+  const commitExportRangeDraft = useCallback(() => {
+    const parsed = parseProjectExportPageSelectionDraft(exportRangeDraft, projectPageCount)
+    if (parsed) {
+      applyExportPageSelection(parsed.pageNumbers)
+      return true
+    }
+    setExportRangeDraft(formatProjectExportPageSelection(selectedPageNumbers))
+    return false
+  }, [
+    applyExportPageSelection,
+    exportRangeDraft,
+    projectPageCount,
+    selectedPageNumbers,
+  ])
 
   const confirmExport = useCallback(async () => {
     const actionStartedAt = performance.now()
@@ -641,7 +691,13 @@ export function useExportActions(ctx: ExportActionsContext) {
     }
     const trimmedName = exportFilenameDraft.trim()
     if (!trimmedName) return
-    if (exportFormatDraft !== "json" && selectedPageCount === 0) return
+    const parsedPageSelection = parseProjectExportPageSelectionDraft(exportRangeDraft, projectPageCount)
+    if (!parsedPageSelection) {
+      setExportRangeDraft(formatProjectExportPageSelection(selectedPageNumbers))
+      return
+    }
+    const exportSelectedPageCount = parsedPageSelection.pageNumbers.length
+    if (exportFormatDraft !== "json" && exportSelectedPageCount === 0) return
 
     const nextCreatedAt = activeProjectMetadata.createdAt && !Number.isNaN(Date.parse(activeProjectMetadata.createdAt))
       ? new Date(activeProjectMetadata.createdAt).toISOString()
@@ -656,19 +712,14 @@ export function useExportActions(ctx: ExportActionsContext) {
 
     if (exportFormatDraft === "json") {
       const jsonStartedAt = performance.now()
-      const selectedRange = {
-        fromPage: normalizedRange.fromPage,
-        toPage: normalizedRange.toPage,
-      } satisfies ProjectExportPageRange
-      const selectedProject = filterProjectByExportRange(activeProject, selectedRange)
+      const selectedProject = filterProjectByExportPageNumbers(activeProject, parsedPageSelection.pageNumbers)
       const filename = updateFilenameForExport(
         trimmedName,
         exportFormatDraft,
         selectedProject.pages.length,
         getDefaultExportFilename,
-        jsonCompressionEnabledDraft,
       )
-      saveJSON(filename, selectedProject, normalizedMetadata, jsonCompressionEnabledDraft)
+      saveJSON(filename, selectedProject, normalizedMetadata)
       if (!exportProjectOverride) {
         onProjectMetadataChange(normalizedMetadata)
       }
@@ -679,14 +730,15 @@ export function useExportActions(ctx: ExportActionsContext) {
     }
 
     exportCancelRequestedRef.current = false
+    exportInFlightRef.current = true
 
     const progressStartedAt = performance.now()
     flushSync(() => {
       setExportProgress({
         format: exportFormatDraft,
         completedSteps: 0,
-        totalSteps: selectedPageCount,
-        currentPageNumber: normalizedRange.fromPage,
+        totalSteps: exportSelectedPageCount,
+        currentPageNumber: parsedPageSelection.fromPage,
         currentLabel: "Preparing export",
         phase: "preparing",
       })
@@ -698,63 +750,30 @@ export function useExportActions(ctx: ExportActionsContext) {
     const filename = updateFilenameForExport(
       trimmedName,
       exportFormatDraft,
-      selectedPageCount,
+      exportSelectedPageCount,
       getDefaultExportFilename,
     )
     const currentProjectSnapshot = activeProject
-    const selectedRange = {
-      fromPage: normalizedRange.fromPage,
-      toPage: normalizedRange.toPage,
-    } satisfies ProjectExportPageRange
     const bleed = normalizeExportBleedOptions({
       enabled: supportsExportBleed(exportFormatDraft) && bleedEnabledDraft,
-      widthMm: Number(exportBleedMmDraft),
-      fallbackWidthMm: exportBleedMm,
+      widthMm: Number(bleedWidthMmDraft),
+      fallbackWidthMm: DEFAULT_EXPORT_BLEED_OPTIONS.widthMm,
     })
-    const shouldPersistActivePageExportSettings = (
-      !exportProjectOverride
-      && selectedPageCount === 1
-      && selectedSinglePage?.id === currentProjectSnapshot.activePageId
-    )
     recordActionTiming("export options prepare", optionsStartedAt)
 
     try {
-      if (exportFormatDraft === "idml") {
+      if (supportsExportBleed(exportFormatDraft)) {
         const exportStartedAt = performance.now()
-        setExportProgress((current) => current ? {
-          ...current,
-          totalSteps: selectedPageCount,
-          currentPageNumber: normalizedRange.fromPage,
-          currentLabel: currentProjectSnapshot.pages[normalizedRange.startIndex]?.name || "Preparing IDML",
-        } : current)
-        if (shouldPersistActivePageExportSettings) {
-          setPersistedBleedEnabled(bleed.enabled)
-          setExportBleedMm(bleed.widthMm)
+        if (exportFormatDraft === "idml") {
+          setExportProgress((current) => current ? {
+            ...current,
+            totalSteps: exportSelectedPageCount,
+            currentPageNumber: parsedPageSelection.fromPage,
+            currentLabel: currentProjectSnapshot.pages[parsedPageSelection.fromPage - 1]?.name || "Preparing IDML",
+          } : current)
         }
-        await exportIDML(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
-        recordActionTiming("idml engine and download", exportStartedAt)
-        const closeStartedAt = performance.now()
-        closeExportDialog()
-        recordActionTiming("close dialog", closeStartedAt)
-        return
-      }
-
-      if (exportFormatDraft === "pdf") {
-        const exportStartedAt = performance.now()
-        if (shouldPersistActivePageExportSettings) {
-          setPersistedBleedEnabled(bleed.enabled)
-          setExportBleedMm(bleed.widthMm)
-        }
-        await exportPDF(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
-        recordActionTiming("pdf engine and download", exportStartedAt)
-      } else {
-        const exportStartedAt = performance.now()
-        if (shouldPersistActivePageExportSettings) {
-          setPersistedBleedEnabled(bleed.enabled)
-          setExportBleedMm(bleed.widthMm)
-        }
-        await exportSVG(currentProjectSnapshot, selectedRange, exportViewSettings, filename, bleed, normalizedMetadata)
-        recordActionTiming("svg engine and download", exportStartedAt)
+        await exportVector(exportFormatDraft, currentProjectSnapshot, parsedPageSelection.pageNumbers, currentProjectSnapshot.visibilitySettings, filename, bleed, normalizedMetadata)
+        recordActionTiming(`${exportFormatDraft} engine and download`, exportStartedAt)
       }
 
       const closeStartedAt = performance.now()
@@ -767,73 +786,82 @@ export function useExportActions(ctx: ExportActionsContext) {
     } finally {
       const cleanupStartedAt = performance.now()
       exportCancelRequestedRef.current = false
+      exportInFlightRef.current = false
+      currentExportWorkerRef.current?.terminate()
+      currentExportWorkerRef.current = null
+      currentExportRejectRef.current = null
       setExportProgress(null)
       recordActionTiming("cleanup progress state", cleanupStartedAt)
       logExportActionPerformance(exportFormatDraft.toUpperCase(), actionTimings, performance.now() - actionStartedAt)
     }
   }, [
     activeProject,
-    activeProject.pages.length,
     activeProjectMetadata.createdAt,
     bleedEnabledDraft,
-    exportBleedMm,
-    exportBleedMmDraft,
+    bleedWidthMmDraft,
     exportFormatDraft,
     exportFilenameDraft,
+    exportRangeDraft,
     closeExportDialog,
     exportProjectOverride,
-    exportIDML,
-    exportPDF,
-    exportSVG,
-    exportViewSettings,
+    exportVector,
     getDefaultExportFilename,
-    normalizedRange.fromPage,
-    normalizedRange.toPage,
+    projectPageCount,
     onProjectMetadataChange,
-    jsonCompressionEnabledDraft,
     saveAuthorDraft,
     saveDescriptionDraft,
     saveJSON,
     saveTitleDraft,
-    selectedPageCount,
-    selectedSinglePage?.id,
-    setExportBleedMm,
-    setPersistedBleedEnabled,
+    selectedPageNumbers,
     waitForUiCommit,
   ])
 
   useEffect(() => {
     if (!isExportDialogOpen) return
-    const next = normalizeProjectExportPageRange(projectPageCount, exportRangeStartDraft, exportRangeEndDraft)
-    if (next.fromPage === exportRangeStartDraft && next.toPage === exportRangeEndDraft) return
+    const next = resolveProjectExportPageSelection(projectPageCount, exportPageNumbersDraft)
+    const isSameSelection = next.pageNumbers.length === exportPageNumbersDraft.length
+      && next.pageNumbers.every((pageNumber, index) => pageNumber === exportPageNumbersDraft[index])
+    if (isSameSelection && next.fromPage === exportRangeStartDraft) return
+    setExportPageNumbersDraft(next.pageNumbers)
     setExportRangeStartDraft(next.fromPage)
-    setExportRangeEndDraft(next.toPage)
-  }, [exportRangeEndDraft, exportRangeStartDraft, isExportDialogOpen, projectPageCount])
+    setExportRangeDraft(formatProjectExportPageSelection(next.pageNumbers))
+  }, [exportPageNumbersDraft, exportRangeStartDraft, isExportDialogOpen, projectPageCount])
 
   // Close export dialog on Escape
   useEffect(() => {
     if (!isExportDialogOpen) return
+    const isEscapeKey = (event: KeyboardEvent) =>
+      event.key === "Escape" || event.key === "Esc" || event.code === "Escape"
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        event.preventDefault()
-        if (exportProgress !== null) {
-          cancelExport()
-          return
-        }
-        closeExportDialog()
+      if (!isEscapeKey(event)) return
+      event.preventDefault()
+      event.stopPropagation()
+      event.stopImmediatePropagation()
+      if (exportInFlightRef.current) {
+        cancelExport()
+        return
       }
+      closeExportDialog()
     }
-    window.addEventListener("keydown", onKeyDown)
-    return () => window.removeEventListener("keydown", onKeyDown)
-  }, [cancelExport, closeExportDialog, exportProgress, isExportDialogOpen])
+    window.addEventListener("keydown", onKeyDown, { capture: true })
+    document.addEventListener("keydown", onKeyDown, { capture: true })
+    window.addEventListener("keyup", onKeyDown, { capture: true })
+    document.addEventListener("keyup", onKeyDown, { capture: true })
+    return () => {
+      window.removeEventListener("keydown", onKeyDown, { capture: true })
+      document.removeEventListener("keydown", onKeyDown, { capture: true })
+      window.removeEventListener("keyup", onKeyDown, { capture: true })
+      document.removeEventListener("keyup", onKeyDown, { capture: true })
+    }
+  }, [cancelExport, closeExportDialog, isExportDialogOpen])
 
   const requestCloseExportDialog = useCallback(() => {
-    if (exportProgress !== null) {
+    if (exportInFlightRef.current) {
       cancelExport()
       return
     }
     closeExportDialog()
-  }, [cancelExport, closeExportDialog, exportProgress])
+  }, [cancelExport, closeExportDialog])
 
   return {
     // Save to Library dialog
@@ -847,8 +875,6 @@ export function useExportActions(ctx: ExportActionsContext) {
     setSaveDescriptionDraft,
     saveAuthorDraft,
     setSaveAuthorDraft,
-    jsonCompressionEnabledDraft,
-    setJsonCompressionEnabledDraft: handleJsonCompressionEnabledChange,
     // Export dialog
     isExportDialogOpen,
     setIsExportDialogOpen,
@@ -858,16 +884,18 @@ export function useExportActions(ctx: ExportActionsContext) {
     setExportFormatDraft: handleExportFormatChange,
     exportFilenameDraft,
     setExportFilenameDraft,
+    exportRangeDraft,
+    setExportRangeDraft: handleExportRangeDraftChange,
+    commitExportRangeDraft,
     exportRangeStartDraft,
-    setExportRangeStartDraft: handleExportRangeStartChange,
-    exportRangeEndDraft,
-    setExportRangeEndDraft: handleExportRangeEndChange,
-    pageRangeOptions,
+    previewProject: activeProject,
+    visibilitySettings: activeProject.visibilitySettings,
+    toggleExportVisibility,
     selectedPageCount,
     bleedEnabledDraft,
-    setBleedEnabledDraft,
-    exportBleedMmDraft,
-    setExportBleedMmDraft,
+    setBleedEnabledDraft: setBleedEnabledDraftWithDefaultWidth,
+    bleedWidthMmDraft,
+    setBleedWidthMmDraft,
     exportProgress,
     openExportDialog,
     openExportDialogForProject,

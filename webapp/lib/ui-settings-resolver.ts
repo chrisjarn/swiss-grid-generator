@@ -104,11 +104,6 @@ function resolveBoolean(value: unknown, fallback: boolean): boolean {
   return typeof value === "boolean" ? value : fallback
 }
 
-function resolveNonNegativeNumber(value: unknown, fallback: number): number {
-  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return fallback
-  return value
-}
-
 function resolveCustomMarginMultipliers(value: unknown): UiSettingsSnapshot["customMarginMultipliers"] {
   if (typeof value !== "object" || value === null) {
     return { ...DEFAULT_UI.customMarginMultipliers }
@@ -149,9 +144,6 @@ export function resolveUiSettingsSnapshot(
     canvasRatio,
     customRatioWidth: resolveCustomRatioUnit(source.customRatioWidth, DEFAULT_UI.customRatioWidth),
     customRatioHeight: resolveCustomRatioUnit(source.customRatioHeight, DEFAULT_UI.customRatioHeight),
-    exportPrintPro: resolveBoolean(source.exportPrintPro, DEFAULT_UI.exportPrintPro),
-    exportBleedMm: resolveNonNegativeNumber(source.exportBleedMm, DEFAULT_UI.exportBleedMm),
-    exportRegistrationMarks: resolveBoolean(source.exportRegistrationMarks, DEFAULT_UI.exportRegistrationMarks),
     orientation: resolveOrientation(source.orientation),
     rotation: typeof source.rotation === "number" && Number.isFinite(source.rotation)
       ? clampRotation(source.rotation)

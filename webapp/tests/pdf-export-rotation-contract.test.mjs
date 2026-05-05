@@ -168,6 +168,18 @@ test("pdf export action forwards placeholder visibility and active image color s
   assert.match(source, /exportPlan:\s*page\.exportPlan/)
 })
 
+test("browser pdf export runs in a cancellable worker", () => {
+  const source = readText("hooks/useExportActions.ts")
+  const workerSource = readText("workers/pdf-export.worker.ts")
+  assert.match(source, /new Worker\(new URL\("\.\.\/workers\/pdf-export\.worker\.ts",\s*import\.meta\.url\),\s*\{\s*type:\s*"module"\s*\}\)/)
+  assert.match(source, /currentExportWorkerRef\.current\?\.terminate\(\)/)
+  assert.match(source, /currentExportRejectRef\.current\?\.\(new ExportCancelledError\(\)\)/)
+  assert.match(workerSource, /formats:\s*\["pdf"\]/)
+  assert.match(workerSource, /onProgress:\s*\(progress\)\s*=>/)
+  assert.match(workerSource, /type:\s*"progress"/)
+  assert.match(workerSource, /type:\s*"done"/)
+})
+
 test("pdf export registers inline format-run fonts before rendering text", () => {
   const source = readText("lib/export-engine.ts")
   assert.match(source, /function\s+collectPdfFontFaces\(pages:\s*readonly\s+ResolvedProjectPageExportSource\[\]\):\s*PdfFontRegistrationFace\[\]/)
@@ -255,7 +267,7 @@ test("vector export options expose one shared bleed setting and keep pdf color m
 test("export dialog exposes shared bleed controls instead of print presets", () => {
   const source = readText("components/dialogs/ExportDialog.tsx")
   assert.match(source, /SectionHeaderRow[\s\S]*Bleed/)
-  assert.match(source, /Bleed Width \(mm\)/)
+  assert.match(source, /Bleed Width/)
   assert.match(source, /bleedEnabledDraft/)
   assert.match(source, /onBleedEnabledChange/)
   assert.doesNotMatch(source, /Print Pro/)
@@ -268,21 +280,19 @@ test("export dialog exposes shared bleed controls instead of print presets", () 
 test("export dialog stays dark-mode-safe after removing size override controls", () => {
   const source = readText("components/dialogs/ExportDialog.tsx")
   assert.match(source, /isDarkUi:\s*boolean/)
-  assert.match(source, /const\s+dialogThemeClassName\s*=\s*isDarkUi\s*\?\s*"dark"\s*:\s*undefined/)
-  assert.match(source, /SelectContent className=\{dialogThemeClassName\}/)
   assert.match(source, /getPopupSurfaceClassName/)
+  assert.match(source, /getPopupInputClassName/)
   assert.match(source, /getPopupMutedTextClassName/)
+  assert.match(source, /isDarkUi \? "bg-\[#313A47\]" : "bg-gray-300"/)
   assert.doesNotMatch(source, /Units \/ Paper Size/)
   assert.doesNotMatch(source, /Height will follow the selected aspect ratio automatically\./)
 })
 
-test("default vector bleed uses a 3mm GUI/export default and no longer depends on the bundled preset JSON", () => {
+test("default vector bleed starts disabled but keeps 3mm as the activation width", () => {
   const source = readText("lib/config/ui-defaults.ts")
   const optionsSource = readText("lib/export-format-options.ts")
   assert.doesNotMatch(source, /default_v001\.json/)
-  assert.match(source, /exportPrintPro:\s*true/)
-  assert.match(source, /exportBleedMm:\s*3/)
-  assert.match(optionsSource, /DEFAULT_EXPORT_BLEED_OPTIONS:\s*ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*true,[\s\S]*widthMm:\s*3/)
-  assert.match(source, /exportRegistrationMarks:\s*false/)
+  assert.match(optionsSource, /DEFAULT_EXPORT_BLEED_OPTIONS:\s*ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*false,[\s\S]*widthMm:\s*3/)
+  assert.doesNotMatch(source, /exportPrintPro|exportBleedMm|exportRegistrationMarks/)
   assert.doesNotMatch(source, /exportFinalSafeGuides/)
 })

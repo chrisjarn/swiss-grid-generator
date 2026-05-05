@@ -417,7 +417,6 @@ function getContourOpticalBoundaryProfile(char: string, fontSize: number): {
     return { leftQuantile: 0.2, rightQuantile: 0.8, blend: 0.32, leftAdjustmentEm: -0.0203 }
   }
   if (/^\d$/.test(char)) {
-    if (char === "7") return { leftQuantile: 0.5, rightQuantile: 0.8, blend: 0.86 }
     if (char === "1" && fontSize >= 48 && fontSize <= 96) {
       return { leftQuantile: 0.5, rightQuantile: 0.8, blend: 0.18, leftAdjustmentEm: -0.0047 }
     }

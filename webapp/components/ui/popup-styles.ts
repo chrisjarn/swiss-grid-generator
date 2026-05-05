@@ -51,14 +51,18 @@ export function getPopupSurfaceClassName(isDarkMode: boolean, className?: string
   )
 }
 
-export function getPopupInputClassName(isDarkMode: boolean, className?: string): string {
+export function getNeutralFormControlClassName(isDarkMode: boolean, className?: string): string {
   return cn(
-    "w-full rounded-[5px] border px-3 py-2 text-sm outline-none transition-colors",
+    "rounded-[5px] border outline-none transition-colors",
     isDarkMode
       ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA] focus:border-[#A8B1BF]"
-      : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-gray-500",
+      : "border-gray-300 bg-gray-100 text-gray-900 placeholder:text-gray-400 focus:border-gray-500",
     className,
   )
+}
+
+export function getPopupInputClassName(isDarkMode: boolean, className?: string): string {
+  return getNeutralFormControlClassName(isDarkMode, cn("w-full px-3 py-2 text-sm", className))
 }
 
 export function getPopupMutedTextClassName(isDarkMode: boolean): string {

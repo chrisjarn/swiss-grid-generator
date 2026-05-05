@@ -11,6 +11,8 @@ const Select = SelectPrimitive.Root
 const SelectGroup = SelectPrimitive.Group
 
 const SelectValue = SelectPrimitive.Value
+const SELECT_CONTENT_MAX_HEIGHT = "min(var(--radix-select-content-available-height, 24rem), 24rem)"
+const SELECT_CONTENT_COLLISION_PADDING = 16
 
 const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
@@ -71,7 +73,14 @@ SelectScrollDownButton.displayName =
 const SelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ className, children, position = "popper", ...props }, ref) => (
+>(({
+  className,
+  children,
+  position = "popper",
+  collisionPadding = SELECT_CONTENT_COLLISION_PADDING,
+  style,
+  ...props
+}, ref) => (
   <SelectPrimitive.Portal>
     <SelectPrimitive.Content
       ref={ref}
@@ -79,12 +88,17 @@ const SelectContent = React.forwardRef<
       data-text-editor-select-content="true"
       data-editor-interactive-root="true"
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
         className
       )}
       position={position}
+      collisionPadding={collisionPadding}
+      style={{
+        maxHeight: SELECT_CONTENT_MAX_HEIGHT,
+        ...style,
+      }}
       {...props}
     >
       <SelectScrollUpButton />
@@ -106,7 +120,7 @@ SelectContent.displayName = SelectPrimitive.Content.displayName
 const TopSelectContent = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
->(({ side = "top", sideOffset = 4, avoidCollisions = false, ...props }, ref) => (
+>(({ side = "top", sideOffset = 4, avoidCollisions = true, ...props }, ref) => (
   <SelectContent
     ref={ref}
     side={side}

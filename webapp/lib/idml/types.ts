@@ -21,3 +21,22 @@ export type SwissGridIdmlDocument = {
   pages: IdmlProjectPage[]
   bleedMm?: number
 }
+
+export type IdmlSpreadArtifact = {
+  filePath: string
+  pageId: string
+  bytes: Uint8Array
+}
+
+export type IdmlStoryArtifact = {
+  id: string
+  filePath: string
+  bytes: Uint8Array
+}
+
+export type IdmlPageSetArtifacts = {
+  startPageIndex: number
+  pageCount: number
+  spreads: IdmlSpreadArtifact[]
+  stories: IdmlStoryArtifact[]
+}

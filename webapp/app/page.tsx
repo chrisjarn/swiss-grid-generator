@@ -28,7 +28,7 @@ import { useUiSettingsPreview } from "@/hooks/useUiSettingsPreview"
 import { useProjectTourController } from "@/hooks/useProjectTourController"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { useCloudProjectSync } from "@/hooks/useCloudProjectSync"
-import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage } from "@/lib/document-session"
+import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage, type ProjectVisibilitySettings } from "@/lib/document-session"
 import { type FontFamily } from "@/lib/config/fonts"
 import { BASELINE_OPTIONS } from "@/lib/config/defaults"
 import { DEFAULT_UI } from "@/lib/config/ui-defaults"
@@ -37,10 +37,8 @@ import {
 } from "@/lib/config/color-schemes"
 import {
   DEFAULT_A4_BASELINE,
-  INITIAL_EXPORT_UI_STATE,
   INITIAL_GRID_UI_STATE,
   buildUiSnapshotFromLoadedSettings,
-  exportUiReducer,
   gridUiReducer,
   type UiAction,
 } from "@/lib/workspace-ui-state"
@@ -220,7 +218,6 @@ export default function Home() {
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
   const layoutOpenTooltipDismissedForSessionRef = useRef(false)
   const [gridUi, dispatchGrid] = useReducer(gridUiReducer, INITIAL_GRID_UI_STATE)
-  const [exportUi, dispatchExport] = useReducer(exportUiReducer, INITIAL_EXPORT_UI_STATE)
 
   useEffect(() => {
     if (process.env.NODE_ENV !== "development") return undefined
@@ -236,15 +233,9 @@ export default function Home() {
   }, [])
 
   const dispatch = useCallback((action: UiAction) => {
-    if (action.type === "BATCH") {
-      dispatchGrid(action)
-      dispatchExport(action)
-      return
-    }
     dispatchGrid(action)
-    dispatchExport(action)
-  }, [dispatchExport, dispatchGrid])
-  const ui = useMemo(() => ({ ...gridUi, ...exportUi }), [gridUi, exportUi])
+  }, [dispatchGrid])
+  const ui = gridUi
   const handleRequestNotice = useCallback((notice: NonNullable<NoticeState>) => {
     setNoticeState(notice)
   }, [])
@@ -354,9 +345,9 @@ export default function Home() {
     projectRedoHandlerRef.current()
   }, [])
   const {
-    canvasRatio, exportPrintPro, exportBleedMm,
+    canvasRatio,
     customRatioWidth, customRatioHeight,
-    exportRegistrationMarks, orientation, rotation,
+    orientation, rotation,
     marginMethod, gridCols, gridRows, baselineMultiple, gutterMultiple, rhythm,
     rhythmRowsEnabled, rhythmRowsDirection, rhythmColsEnabled, rhythmColsDirection,
     typographyScale, baseFont, imageColorScheme, canvasBackground, customBaseline,
@@ -386,9 +377,6 @@ export default function Home() {
     setCustomBaseline,
     setUseCustomMargins,
     setCustomMarginMultipliers,
-    setExportPrintPro,
-    setExportBleedMm,
-    setExportRegistrationMarks,
     setShowLayers,
     setShowImagePlaceholders,
     toggleShowBaselines,
@@ -562,13 +550,17 @@ export default function Home() {
     }),
     [collapsed, showBaselines, showImagePlaceholders, showLayers, showMargins, showModules, showTypography],
   )
+  const currentVisibilitySettings = useMemo<ProjectVisibilitySettings>(() => ({
+    showBaselines,
+    showModules,
+    showMargins,
+    showImagePlaceholders,
+    showTypography,
+  }), [showBaselines, showImagePlaceholders, showMargins, showModules, showTypography])
   const currentDocumentUiSnapshot = useMemo<UiSettingsSnapshot>(() => ({
     canvasRatio,
     customRatioWidth,
     customRatioHeight,
-    exportPrintPro,
-    exportBleedMm,
-    exportRegistrationMarks,
     orientation,
     rotation,
     marginMethod,
@@ -599,9 +591,6 @@ export default function Home() {
     canvasRatio,
     customRatioWidth,
     customRatioHeight,
-    exportPrintPro,
-    exportBleedMm,
-    exportRegistrationMarks,
     orientation,
     rotation,
     marginMethod,
@@ -676,13 +665,19 @@ export default function Home() {
     livePreviewSnapshotGetterRef.current = getSnapshot
   }, [])
 
-  const handleApplyProjectPage = useCallback((page: ProjectPage<PreviewLayoutState>) => {
-    const snapshot = buildUiSnapshotFromLoadedSettings(page.uiSettings, sessionUiState)
+  const handleApplyProjectPage = useCallback((
+    page: ProjectPage<PreviewLayoutState>,
+    visibilitySettings: ProjectVisibilitySettings = currentVisibilitySettings,
+  ) => {
+    const snapshot = buildUiSnapshotFromLoadedSettings(page.uiSettings, {
+      ...sessionUiState,
+      ...visibilitySettings,
+    })
     applyLoadedUiSnapshot(snapshot)
     preferCommittedPreviewLayoutRef.current = true
     applyLoadedPreviewLayout(page.previewLayout)
     setShowPresetsBrowser(false)
-  }, [applyLoadedPreviewLayout, applyLoadedUiSnapshot, sessionUiState, setShowPresetsBrowser])
+  }, [applyLoadedPreviewLayout, applyLoadedUiSnapshot, currentVisibilitySettings, sessionUiState, setShowPresetsBrowser])
 
   const {
     project,
@@ -704,6 +699,7 @@ export default function Home() {
     defaultUiSettings: currentUiSettingsPayload,
     defaultPreviewLayout: DEFAULT_PAGE_PREVIEW_LAYOUT,
     currentUiSettings: currentUiSettingsPayload,
+    currentVisibilitySettings,
     currentPreviewLayout: previewLayout,
     getCurrentPreviewLayout,
     onApplyPage: handleApplyProjectPage,
@@ -1335,45 +1331,23 @@ export default function Home() {
 
   const exportActionsContext = useMemo(
     () => ({
-      exportPrintPro,
-      setExportPrintPro,
-      exportBleedMm,
-      setExportBleedMm,
-      exportRegistrationMarks,
-      setExportRegistrationMarks,
       defaultPdfFilename,
       defaultSvgFilename,
       defaultIdmlFilename,
       defaultJsonFilename,
       projectMetadata: effectiveProjectMetadata,
       onProjectMetadataChange: applyProjectMetadata,
-      exportViewSettings: {
-        showBaselines,
-        showModules,
-        showMargins,
-        showImagePlaceholders,
-        showTypography,
-      },
+      onProjectVisibilityToggle: handleHeaderVisibilityToggle,
       getCurrentProjectSnapshot,
     }),
     [
-      exportPrintPro,
-      setExportPrintPro,
-      exportBleedMm,
-      setExportBleedMm,
-      exportRegistrationMarks,
-      setExportRegistrationMarks,
       defaultPdfFilename,
       defaultSvgFilename,
       defaultIdmlFilename,
       defaultJsonFilename,
       effectiveProjectMetadata,
       applyProjectMetadata,
-      showBaselines,
-      showModules,
-      showMargins,
-      showImagePlaceholders,
-      showTypography,
+      handleHeaderVisibilityToggle,
       getCurrentProjectSnapshot,
     ],
   )
@@ -2062,22 +2036,20 @@ export default function Home() {
           exportDialog={{
             isOpen: exportActions.isExportDialogOpen,
             onClose: exportActions.requestCloseExportDialog,
-            selectedPageCount: exportActions.selectedPageCount,
-            showBaselines,
-            onToggleBaselines: () => handleHeaderVisibilityToggle("showBaselines"),
-            showMargins,
-            onToggleMargins: () => handleHeaderVisibilityToggle("showMargins"),
-            showModules,
-            onToggleModules: () => handleHeaderVisibilityToggle("showModules"),
-            showTypography,
-            onToggleTypography: () => handleHeaderVisibilityToggle("showTypography"),
-            showImagePlaceholders,
-            onToggleImagePlaceholders: () => handleHeaderVisibilityToggle("showImagePlaceholders"),
-            pageRangeOptions: exportActions.pageRangeOptions,
+            showBaselines: exportActions.visibilitySettings.showBaselines,
+            onToggleBaselines: () => exportActions.toggleExportVisibility("showBaselines"),
+            showMargins: exportActions.visibilitySettings.showMargins,
+            onToggleMargins: () => exportActions.toggleExportVisibility("showMargins"),
+            showModules: exportActions.visibilitySettings.showModules,
+            onToggleModules: () => exportActions.toggleExportVisibility("showModules"),
+            showTypography: exportActions.visibilitySettings.showTypography,
+            onToggleTypography: () => exportActions.toggleExportVisibility("showTypography"),
+            showImagePlaceholders: exportActions.visibilitySettings.showImagePlaceholders,
+            onToggleImagePlaceholders: () => exportActions.toggleExportVisibility("showImagePlaceholders"),
+            rangeDraft: exportActions.exportRangeDraft,
+            onRangeDraftChange: exportActions.setExportRangeDraft,
+            onRangeDraftCommit: exportActions.commitExportRangeDraft,
             rangeStart: exportActions.exportRangeStartDraft,
-            onRangeStartChange: exportActions.setExportRangeStartDraft,
-            rangeEnd: exportActions.exportRangeEndDraft,
-            onRangeEndChange: exportActions.setExportRangeEndDraft,
             format: exportActions.exportFormatDraft,
             onFormatChange: exportActions.setExportFormatDraft,
             filename: exportActions.exportFilenameDraft,
@@ -2089,14 +2061,13 @@ export default function Home() {
             onJsonDescriptionChange: exportActions.setSaveDescriptionDraft,
             jsonAuthor: exportActions.saveAuthorDraft,
             onJsonAuthorChange: exportActions.setSaveAuthorDraft,
-            jsonCompressionEnabled: exportActions.jsonCompressionEnabledDraft,
-            onJsonCompressionEnabledChange: exportActions.setJsonCompressionEnabledDraft,
             bleedEnabled: exportActions.bleedEnabledDraft,
             onBleedEnabledChange: exportActions.setBleedEnabledDraft,
-            bleedMm: exportActions.exportBleedMmDraft,
-            onBleedMmChange: exportActions.setExportBleedMmDraft,
+            bleedMm: exportActions.bleedWidthMmDraft,
+            onBleedMmChange: exportActions.setBleedWidthMmDraft,
             onConfirm: exportActions.confirmExport,
             progress: exportActions.exportProgress,
+            previewProject: exportActions.previewProject,
           }}
           saveLibraryDialog={{
             isOpen: exportActions.isSaveLibraryDialogOpen,

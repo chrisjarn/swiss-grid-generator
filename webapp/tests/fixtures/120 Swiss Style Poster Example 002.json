@@ -5,6 +5,13 @@
   "description": "Swiss style poster preset with a bold editorial composition.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-03-09T12:51:56.921Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "pages": [
     {
       "id": "page-din-ab-portrait-4x4-method1-12-000pt-grid",
@@ -37,9 +44,6 @@
           "right": 1,
           "bottom": 1
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

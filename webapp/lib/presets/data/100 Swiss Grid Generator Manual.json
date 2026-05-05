@@ -5,6 +5,13 @@
   "description": "Swiss Grid Generator Software Manual",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "pages": [
     {
       "id": "page-manual-00",
@@ -37,9 +44,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -294,9 +298,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -551,9 +552,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -808,9 +806,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1065,9 +1060,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1322,9 +1314,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1579,9 +1568,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1836,9 +1822,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2093,9 +2076,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2350,9 +2330,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2607,9 +2584,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2864,9 +2838,6 @@
           "right": 3,
           "bottom": 2
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

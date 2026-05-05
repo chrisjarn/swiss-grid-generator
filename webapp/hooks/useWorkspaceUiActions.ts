@@ -122,18 +122,6 @@ export function useWorkspaceUiActions({
     dispatch({ type: "SET", key: "customMarginMultipliers", value })
   }, [dispatch])
 
-  const setExportPrintPro = useCallback((value: boolean) => {
-    dispatch({ type: "SET", key: "exportPrintPro", value })
-  }, [dispatch])
-
-  const setExportBleedMm = useCallback((value: number) => {
-    dispatch({ type: "SET", key: "exportBleedMm", value })
-  }, [dispatch])
-
-  const setExportRegistrationMarks = useCallback((value: boolean) => {
-    dispatch({ type: "SET", key: "exportRegistrationMarks", value })
-  }, [dispatch])
-
   const setShowLayers = useCallback((value: boolean) => {
     dispatch({ type: "SET", key: "showLayers", value })
   }, [dispatch])
@@ -185,9 +173,6 @@ export function useWorkspaceUiActions({
     setCustomBaseline,
     setUseCustomMargins,
     setCustomMarginMultipliers,
-    setExportPrintPro,
-    setExportBleedMm,
-    setExportRegistrationMarks,
     setShowLayers,
     setShowImagePlaceholders,
     toggleShowBaselines,

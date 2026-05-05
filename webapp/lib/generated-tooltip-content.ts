@@ -309,7 +309,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Bleed applies to PDF, SVG, and IDML from one shared control and defaults to 3mm. Export extends visible production geometry through the bleed box, adds a white crop-mark canvas plus black trim crop marks outside it, and leaves page layout math unchanged."
+        "text": "Bleed applies to PDF, SVG, and IDML from one shared control. It opens off and restores 3mm when activated. Export extends visible production geometry through the bleed box, adds a white crop-mark canvas plus black trim crop marks outside it, and leaves page layout math unchanged."
       }
     ]
   },
@@ -329,7 +329,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Long exports report preparation, page rendering, finalization, and elapsed time. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled."
+        "text": "Long exports report preparation, page rendering, finalization, and percentage. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled."
       }
     ]
   },

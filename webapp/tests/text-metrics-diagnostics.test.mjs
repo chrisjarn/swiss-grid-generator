@@ -496,8 +496,13 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     fontFileEngineSource,
-    /function getContourOpticalBoundaryProfile[\s\S]*?char === "7"[\s\S]*?blend:\s*0\.86[\s\S]*?\^\[ag\]\$[\s\S]*?fontSize >= 200[\s\S]*?blend:\s*0\.24[\s\S]*?char === "S"[\s\S]*?blend:\s*0\.75[\s\S]*?char === "D"[\s\S]*?fontSize >= 48[\s\S]*?fontSize <= 96[\s\S]*?leftAdjustmentEm:\s*-0\.01465[\s\S]*?char === "F"[\s\S]*?fontSize >= 180[\s\S]*?leftAdjustmentEm:\s*-0\.0045[\s\S]*?\^\[A-ZÄÖÜ\][\s\S]*?blend:\s*0\.25[\s\S]*?blend:\s*0\.82/,
+    /function getContourOpticalBoundaryProfile[\s\S]*?\^\\d\$[\s\S]*?return \{ leftQuantile:\s*0\.2,\s*rightQuantile:\s*0\.8,\s*blend:\s*0\.32 \}[\s\S]*?\^\[ag\]\$[\s\S]*?fontSize >= 200[\s\S]*?blend:\s*0\.24[\s\S]*?char === "S"[\s\S]*?blend:\s*0\.75[\s\S]*?char === "D"[\s\S]*?fontSize >= 48[\s\S]*?fontSize <= 96[\s\S]*?leftAdjustmentEm:\s*-0\.01465[\s\S]*?char === "F"[\s\S]*?fontSize >= 180[\s\S]*?leftAdjustmentEm:\s*-0\.0045[\s\S]*?\^\[A-ZÄÖÜ\][\s\S]*?blend:\s*0\.25[\s\S]*?blend:\s*0\.82/,
     "outline contour optical margins should keep uppercase correction restrained while allowing stronger lowercase display correction",
+  )
+  assert.doesNotMatch(
+    fontFileEngineSource,
+    /char === "7"[\s\S]*?leftQuantile:\s*0\.5[\s\S]*?blend:\s*0\.86/,
+    "digit 7 must not use the diagonal foot as the leading optical boundary",
   )
   assert.match(
     fontFileEngineSource,

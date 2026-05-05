@@ -280,6 +280,47 @@ function buildRenderedTextLines(
   return renderedLines
 }
 
+function formatCanvasPlanSignatureNumber(value: number): string {
+  return Number.isFinite(value) ? value.toFixed(3) : "NaN"
+}
+
+function buildCanvasTextPlanSignature({
+  key,
+  font,
+  textColor,
+  commands,
+  segmentLines,
+}: {
+  key: string
+  font: string
+  textColor: string
+  commands: readonly TextDrawCommand[]
+  segmentLines: BlockRenderPlan<string>["segmentLines"]
+}): string {
+  const commandSignature = commands.map((command) => [
+    command.text,
+    formatCanvasPlanSignatureNumber(command.x),
+    formatCanvasPlanSignatureNumber(command.y),
+    command.sourceStart ?? "",
+    command.sourceEnd ?? "",
+  ].join(",")).join(";")
+  const segmentSignature = segmentLines.map((line) => line.map((segment) => [
+    segment.text,
+    segment.start,
+    segment.end,
+    segment.styleKey,
+    segment.fontFamily,
+    segment.fontWeight,
+    segment.italic ? 1 : 0,
+    formatCanvasPlanSignatureNumber(segment.fontSize),
+    formatCanvasPlanSignatureNumber(segment.trackingScale),
+    formatCanvasPlanSignatureNumber(segment.x),
+    formatCanvasPlanSignatureNumber(segment.y),
+    formatCanvasPlanSignatureNumber(segment.width ?? 0),
+  ].join(",")).join("|")).join(";")
+  return [key, font, textColor, commandSignature, segmentSignature].join("::")
+}
+
 export function buildCanvasImagePlans<Key extends string>({
   imageOrder,
   imageModulePositions,
@@ -761,11 +802,18 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
       segmentLines,
       planFont,
     )
+    const signature = buildCanvasTextPlanSignature({
+      key: plan.key,
+      font: planFont,
+      textColor,
+      commands: plan.commands,
+      segmentLines,
+    })
     textPlans.set(plan.key, {
       key: plan.key,
       rect: plan.rect,
       guideRects: plan.guideRects,
-      signature: "",
+      signature,
       font: planFont,
       textColor,
       textAlign: plan.textAlign,
@@ -815,11 +863,18 @@ export function buildCanvasTextRenderPlanFromPageExportPlan(
   const renderedSegmentLines = textPlan.graphemeLines.length > 0
     ? textPlan.graphemeLines
     : textPlan.segmentLines
+  const signature = buildCanvasTextPlanSignature({
+    key: textPlan.key,
+    font,
+    textColor,
+    commands: textPlan.commands,
+    segmentLines: renderedSegmentLines,
+  })
   return {
     key: textPlan.key,
     rect: textPlan.rect,
     guideRects: textPlan.guideRects,
-    signature: "",
+    signature,
     font,
     textColor,
     textAlign: textPlan.textAlign,

@@ -8,7 +8,13 @@ import {
 import { normalizeExportBleedOptions } from "@/lib/export-format-options"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
 import { resolveIdmlFontMetadata } from "@/lib/idml/font-metadata"
-import type { IdmlFontMetadata, SwissGridIdmlDocument } from "@/lib/idml/types"
+import type {
+  IdmlFontMetadata,
+  IdmlPageSetArtifacts,
+  IdmlSpreadArtifact,
+  IdmlStoryArtifact,
+  SwissGridIdmlDocument,
+} from "@/lib/idml/types"
 import { escapeIdmlXml, formatIdmlNumber, renderIdmlElement } from "@/lib/idml/xml"
 import {
   convertOpenTypeCommandsToGeometryPaths,
@@ -55,6 +61,12 @@ type IdmlPathPoint = {
 }
 
 const IDML_MIMETYPE = "application/vnd.adobe.indesign-idml-package"
+const IDML_ZIP_COMPRESSION_LEVEL = 1
+type IdmlZipCompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+
+export type SwissGridIdmlPackageOptions = {
+  compressionLevel?: number
+}
 
 const DOCUMENT_ID = "d"
 const BACKING_STORY_ID = "sggBackingStory"
@@ -439,6 +451,7 @@ function renderCropMarkLines({
 async function buildSpreadAndStories(
   document: SwissGridIdmlDocument,
   colorIdBySignature: Map<string, string>,
+  startPageIndex = 0,
 ): Promise<{
   spreads: SpreadExportRecord[]
   stories: StoryExportRecord[]
@@ -451,8 +464,9 @@ async function buildSpreadAndStories(
   })
 
   for (const [pageIndex, page] of document.pages.entries()) {
-    const spreadId = `sggSpread${String(pageIndex + 1).padStart(3, "0")}`
-    const pageId = `sggPage${String(pageIndex + 1).padStart(3, "0")}`
+    const globalPageIndex = startPageIndex + pageIndex
+    const spreadId = `sggSpread${String(globalPageIndex + 1).padStart(3, "0")}`
+    const pageId = `sggPage${String(globalPageIndex + 1).padStart(3, "0")}`
     const pageWidth = page.exportPlan.pageWidth
     const pageHeight = page.exportPlan.pageHeight
     const exportBox = buildExportBox({
@@ -474,7 +488,7 @@ async function buildSpreadAndStories(
         renderIdmlElement(
           "Rectangle",
           {
-            Self: `sggExportCanvas${String(pageIndex + 1).padStart(3, "0")}`,
+            Self: `sggExportCanvas${String(globalPageIndex + 1).padStart(3, "0")}`,
             Name: "Export Canvas",
             ItemLayer: LAYER_PLACEHOLDERS_ID,
             ItemTransform: isIdentityMatrix(pageCoordinateTransform) ? undefined : formatMatrix(pageCoordinateTransform),
@@ -493,7 +507,7 @@ async function buildSpreadAndStories(
       )
     }
 
-    guideItems.push(...renderCropMarkLines({ cropMarkLines: exportBox.cropMarkLines, pageTransformMatrix, pageIndex }))
+    guideItems.push(...renderCropMarkLines({ cropMarkLines: exportBox.cropMarkLines, pageTransformMatrix, pageIndex: globalPageIndex }))
 
     if (page.exportPlan.backgroundColor) {
       const signature = `${page.exportPlan.backgroundColor.r},${page.exportPlan.backgroundColor.g},${page.exportPlan.backgroundColor.b}`
@@ -501,7 +515,7 @@ async function buildSpreadAndStories(
         renderIdmlElement(
           "Rectangle",
           {
-            Self: `sggBackground${String(pageIndex + 1).padStart(3, "0")}`,
+            Self: `sggBackground${String(globalPageIndex + 1).padStart(3, "0")}`,
             Name: "Canvas Background",
             ItemLayer: LAYER_PLACEHOLDERS_ID,
             ItemTransform: isIdentityMatrix(pageCoordinateTransform) ? undefined : formatMatrix(pageCoordinateTransform),
@@ -527,7 +541,7 @@ async function buildSpreadAndStories(
         renderIdmlElement(
           "Rectangle",
           {
-            Self: `sggPlaceholder_${pageIndex + 1}_${localItemSequence}`,
+            Self: `sggPlaceholder_${globalPageIndex + 1}_${localItemSequence}`,
             Name: `Placeholder ${imagePlan.key}`,
             ItemLayer: LAYER_PLACEHOLDERS_ID,
             ItemTransform: isIdentityMatrix(imageTransform) ? undefined : formatMatrix(imageTransform),
@@ -546,7 +560,7 @@ async function buildSpreadAndStories(
       const guideColorSignature = `${guideGroup.strokeColor.r},${guideGroup.strokeColor.g},${guideGroup.strokeColor.b}`
       const guideColorId = colorIdBySignature.get(guideColorSignature) ?? COLOR_BLACK_ID
       const guideRects = guideGroup.rects.map((rect, rectIndex) => ({
-        key: `sggGuideRect_${pageIndex + 1}_${guideGroup.id}_${rectIndex + 1}`,
+        key: `sggGuideRect_${globalPageIndex + 1}_${guideGroup.id}_${rectIndex + 1}`,
         x: rect.x,
         y: rect.y,
         width: rect.width,
@@ -567,7 +581,7 @@ async function buildSpreadAndStories(
               : line
             if (!clippedLine) return null
             return {
-              key: `sggGuideLine_${pageIndex + 1}_${guideGroup.id}_${lineIndex + 1}`,
+              key: `sggGuideLine_${globalPageIndex + 1}_${guideGroup.id}_${lineIndex + 1}`,
               line: clippedLine,
               strokeColorId: guideColorId,
               strokeWeight: guideGroup.strokeWidth,
@@ -597,7 +611,7 @@ async function buildSpreadAndStories(
         const geometryPaths = convertOpenTypeCommandsToGeometryPaths(shape.commands)
         if (geometryPaths.length === 0) continue
         localItemSequence += 1
-        const itemId = `sggGlyph_${String(pageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
+        const itemId = `sggGlyph_${String(globalPageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
         const itemName = `${page.name} / ${textPlan.key} / glyph ${shapeIndex + 1}`
         const colorSignature = `${shape.color.r},${shape.color.g},${shape.color.b}`
         textItems.push(renderIdmlElement(
@@ -618,7 +632,7 @@ async function buildSpreadAndStories(
     }
 
     spreads.push({
-      filePath: `Spreads/Spread_${String(pageIndex + 1).padStart(3, "0")}.xml`,
+      filePath: `Spreads/Spread_${String(globalPageIndex + 1).padStart(3, "0")}.xml`,
       pageId,
       xml: [
         `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`,
@@ -646,7 +660,7 @@ async function buildSpreadAndStories(
                 AppliedMaster: "n",
                 OverrideList: "",
                 MasterPageTransform: formatMatrix(IDENTITY_MATRIX),
-                Name: String(pageIndex + 1),
+                Name: String(globalPageIndex + 1),
                 AppliedTrapPreset: "TrapPreset/$ID/kDefaultTrapStyleName",
                 GeometricBounds: `0 0 ${formatIdmlNumber(pageHeight)} ${formatIdmlNumber(pageWidth)}`,
                 ItemTransform: formatMatrix(buildPageCoordinateTransform(pageHeight)),
@@ -935,8 +949,8 @@ function buildStylesXml(
 function buildPreferencesXml(document: SwissGridIdmlDocument): string {
   const firstPage = document.pages[0]
   const documentBleed = normalizeExportBleedOptions({
-    enabled: ((document.bleedMm ?? firstPage?.uiSettings.exportBleedMm) ?? 0) > 0,
-    widthMm: (document.bleedMm ?? firstPage?.uiSettings.exportBleedMm) ?? 0,
+    enabled: (document.bleedMm ?? 0) > 0,
+    widthMm: document.bleedMm ?? 0,
   })
   const baselineStart = firstPage ? firstPage.result.grid.margins.top : 36
   const baselineDivision = firstPage ? firstPage.result.grid.gridUnit : 12
@@ -1226,8 +1240,8 @@ function buildMetadataXml(document: SwissGridIdmlDocument): string {
 function buildDesignMapXml(
   document: SwissGridIdmlDocument,
   customSwatches: ColorSwatch[],
-  spreads: SpreadExportRecord[],
-  stories: StoryExportRecord[],
+  spreads: Array<Pick<SpreadExportRecord, "filePath" | "pageId">>,
+  stories: Array<Pick<StoryExportRecord, "id" | "filePath">>,
 ): string {
   const firstPage = document.pages[0]
   const docName = document.metadata.title.trim() || "Swiss Grid Document"
@@ -1390,9 +1404,35 @@ function buildDesignMapXml(
   ].join("")
 }
 
-export async function buildSwissGridIdmlPackage(document: SwissGridIdmlDocument): Promise<Uint8Array> {
+function normalizeIdmlZipCompressionLevel(level: number | undefined): IdmlZipCompressionLevel {
+  if (level === undefined) return IDML_ZIP_COMPRESSION_LEVEL
+  if (!Number.isFinite(level)) return IDML_ZIP_COMPRESSION_LEVEL
+  return Math.max(0, Math.min(9, Math.round(level))) as IdmlZipCompressionLevel
+}
+
+export async function buildSwissGridIdmlPackage(
+  document: SwissGridIdmlDocument,
+  options: SwissGridIdmlPackageOptions = {},
+): Promise<Uint8Array> {
   if (!document.pages.length) {
     throw new Error("Cannot export IDML without project pages.")
+  }
+
+  const pageSet = await buildSwissGridIdmlPageSetArtifacts(document)
+  return buildSwissGridIdmlPackageFromPageSets(document, [pageSet], options)
+}
+
+export async function buildSwissGridIdmlPageSetArtifacts(
+  document: SwissGridIdmlDocument,
+  options: { startPageIndex?: number } = {},
+): Promise<IdmlPageSetArtifacts> {
+  if (!document.pages.length) {
+    return {
+      startPageIndex: options.startPageIndex ?? 0,
+      pageCount: 0,
+      spreads: [],
+      stories: [],
+    }
   }
 
   const customSwatches = buildColorSwatches(document)
@@ -1401,15 +1441,53 @@ export async function buildSwissGridIdmlPackage(document: SwissGridIdmlDocument)
     ["255,255,255", COLOR_PAPER_ID],
     ...customSwatches.map((swatch) => [`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id] as const),
   ])
+  const { spreads, stories } = await buildSpreadAndStories(
+    document,
+    colorIdBySignature,
+    options.startPageIndex ?? 0,
+  )
+  return {
+    startPageIndex: options.startPageIndex ?? 0,
+    pageCount: document.pages.length,
+    spreads: spreads.map((spread): IdmlSpreadArtifact => ({
+      filePath: spread.filePath,
+      pageId: spread.pageId,
+      bytes: strToU8(spread.xml),
+    })),
+    stories: stories.map((story): IdmlStoryArtifact => ({
+      id: story.id,
+      filePath: story.filePath,
+      bytes: strToU8(story.xml),
+    })),
+  }
+}
+
+export async function buildSwissGridIdmlPackageFromPageSets(
+  document: SwissGridIdmlDocument,
+  pageSets: readonly IdmlPageSetArtifacts[],
+  options: SwissGridIdmlPackageOptions = {},
+): Promise<Uint8Array> {
+  if (!document.pages.length) {
+    throw new Error("Cannot export IDML without project pages.")
+  }
+
+  const customSwatches = buildColorSwatches(document)
   const fontCatalog = await buildFontCatalog(document)
   const fonts = [...new Map(fontCatalog.values().map((font) => [`${font.family}|${font.styleName}`, font] as const)).values()]
+  const colorIdBySignature = new Map<string, string>([
+    ["0,0,0", COLOR_BLACK_ID],
+    ["255,255,255", COLOR_PAPER_ID],
+    ...customSwatches.map((swatch) => [`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id] as const),
+  ])
   const { styles: characterStyles } = await buildCharacterStyles(
     document,
     colorIdBySignature,
     fontCatalog,
   )
   const paragraphStyleKeys = buildParagraphStyleKeys(document)
-  const { spreads, stories } = await buildSpreadAndStories(document, colorIdBySignature)
+  const orderedPageSets = [...pageSets].sort((left, right) => left.startPageIndex - right.startPageIndex)
+  const spreads = orderedPageSets.flatMap((set) => set.spreads)
+  const stories = orderedPageSets.flatMap((set) => set.stories)
   const designMapXml = buildDesignMapXml(document, customSwatches, spreads, stories)
 
   return zipSync({
@@ -1435,7 +1513,7 @@ export async function buildSwissGridIdmlPackage(document: SwissGridIdmlDocument)
     "XML/BackingStory.xml": strToU8(buildBackingStoryXml()),
     "XML/Tags.xml": strToU8(buildTagsXml()),
     "designmap.xml": strToU8(designMapXml),
-    ...Object.fromEntries(spreads.map((spread) => [spread.filePath, strToU8(spread.xml)])),
-    ...Object.fromEntries(stories.map((story) => [story.filePath, strToU8(story.xml)])),
-  }, { level: 6 })
+    ...Object.fromEntries(spreads.map((spread) => [spread.filePath, spread.bytes])),
+    ...Object.fromEntries(stories.map((story) => [story.filePath, story.bytes])),
+  }, { level: normalizeIdmlZipCompressionLevel(options.compressionLevel) })
 }

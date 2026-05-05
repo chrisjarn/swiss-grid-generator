@@ -4,6 +4,7 @@ import { ExportDialog } from "@/components/dialogs/ExportDialog"
 import { NoticeDialog } from "@/components/dialogs/NoticeDialog"
 import { SaveLibraryDialog } from "@/components/dialogs/SaveLibraryDialog"
 import type { ExportProgressState } from "@/hooks/useExportActions"
+import type { LoadedProject } from "@/lib/document-session"
 import type { ExportFormat } from "@/lib/export-format-options"
 
 type NoticeState = {
@@ -15,17 +16,11 @@ type NoticeState = {
   onCancel?: () => void
 } | null
 
-type DialogOption = {
-  value: string
-  label: string
-}
-
 type Props = {
   isDarkUi: boolean
   exportDialog: {
     isOpen: boolean
     onClose: () => void
-    selectedPageCount: number
     showBaselines: boolean
     onToggleBaselines: () => void
     showMargins: boolean
@@ -36,11 +31,10 @@ type Props = {
     onToggleTypography: () => void
     showImagePlaceholders: boolean
     onToggleImagePlaceholders: () => void
-    pageRangeOptions: DialogOption[]
+    rangeDraft: string
+    onRangeDraftChange: (value: string) => void
+    onRangeDraftCommit: () => boolean
     rangeStart: number
-    onRangeStartChange: (value: string) => void
-    rangeEnd: number
-    onRangeEndChange: (value: string) => void
     format: ExportFormat
     onFormatChange: (value: ExportFormat) => void
     filename: string
@@ -52,14 +46,13 @@ type Props = {
     onJsonDescriptionChange: (value: string) => void
     jsonAuthor: string
     onJsonAuthorChange: (value: string) => void
-    jsonCompressionEnabled: boolean
-    onJsonCompressionEnabledChange: (value: boolean) => void
     bleedEnabled: boolean
     onBleedEnabledChange: (value: boolean) => void
     bleedMm: string
     onBleedMmChange: (value: string) => void
     onConfirm: () => void
     progress: ExportProgressState | null
+    previewProject: LoadedProject<Record<string, unknown>>
   }
   saveLibraryDialog: {
     isOpen: boolean
@@ -91,7 +84,6 @@ export function WorkspaceDialogs({
         isOpen={exportDialog.isOpen}
         onClose={exportDialog.onClose}
         isDarkUi={isDarkUi}
-        selectedPageCount={exportDialog.selectedPageCount}
         showBaselines={exportDialog.showBaselines}
         onToggleBaselines={exportDialog.onToggleBaselines}
         showMargins={exportDialog.showMargins}
@@ -102,11 +94,10 @@ export function WorkspaceDialogs({
         onToggleTypography={exportDialog.onToggleTypography}
         showImagePlaceholders={exportDialog.showImagePlaceholders}
         onToggleImagePlaceholders={exportDialog.onToggleImagePlaceholders}
-        pageRangeOptions={exportDialog.pageRangeOptions}
+        exportRangeDraft={exportDialog.rangeDraft}
+        onExportRangeChange={exportDialog.onRangeDraftChange}
+        onExportRangeCommit={exportDialog.onRangeDraftCommit}
         exportRangeStartDraft={exportDialog.rangeStart}
-        onExportRangeStartChange={exportDialog.onRangeStartChange}
-        exportRangeEndDraft={exportDialog.rangeEnd}
-        onExportRangeEndChange={exportDialog.onRangeEndChange}
         exportFormatDraft={exportDialog.format}
         onExportFormatChange={exportDialog.onFormatChange}
         exportFilenameDraft={exportDialog.filename}
@@ -118,14 +109,13 @@ export function WorkspaceDialogs({
         onJsonDescriptionChange={exportDialog.onJsonDescriptionChange}
         jsonAuthorDraft={exportDialog.jsonAuthor}
         onJsonAuthorChange={exportDialog.onJsonAuthorChange}
-        jsonCompressionEnabledDraft={exportDialog.jsonCompressionEnabled}
-        onJsonCompressionEnabledChange={exportDialog.onJsonCompressionEnabledChange}
         bleedEnabledDraft={exportDialog.bleedEnabled}
         onBleedEnabledChange={exportDialog.onBleedEnabledChange}
-        exportBleedMmDraft={exportDialog.bleedMm}
-        onExportBleedMmChange={exportDialog.onBleedMmChange}
+        bleedWidthMmDraft={exportDialog.bleedMm}
+        onBleedWidthMmChange={exportDialog.onBleedMmChange}
         onConfirm={exportDialog.onConfirm}
         exportProgress={exportDialog.progress}
+        previewProject={exportDialog.previewProject}
       />
 
       <SaveLibraryDialog

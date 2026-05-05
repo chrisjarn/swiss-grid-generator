@@ -62,6 +62,7 @@ export function useShellKeyboardShortcuts({
   onSelectNextPageJump,
 }: Args) {
   const canSaveOrExport = hasPreviewLayout && !showPresetsBrowser
+  const canUseLayerControls = hasPreviewLayout && !showPresetsBrowser
 
   useEffect(() => {
     const isEditableTarget = (target: EventTarget | null): boolean => {
@@ -140,19 +141,19 @@ export function useShellKeyboardShortcuts({
           onToggleDarkMode()
           return
         case "toggle_baselines":
-          if (hasPreviewLayout) onToggleBaselines()
+          if (canUseLayerControls) onToggleBaselines()
           return
         case "toggle_margins":
-          if (hasPreviewLayout) onToggleMargins()
+          if (canUseLayerControls) onToggleMargins()
           return
         case "toggle_modules":
-          if (hasPreviewLayout) onToggleModules()
+          if (canUseLayerControls) onToggleModules()
           return
         case "toggle_typography":
-          if (hasPreviewLayout) onToggleTypography()
+          if (canUseLayerControls) onToggleTypography()
           return
         case "toggle_image_placeholders":
-          if (hasPreviewLayout) onToggleImagePlaceholders()
+          if (canUseLayerControls) onToggleImagePlaceholders()
           return
         case "toggle_layers_panel":
           onToggleLayersPanel()
@@ -174,7 +175,7 @@ export function useShellKeyboardShortcuts({
     canRedo,
     canUndo,
     canSaveOrExport,
-    hasPreviewLayout,
+    canUseLayerControls,
     hasMultipleProjectPages,
     onOpenExportDialog,
     onImportProject,

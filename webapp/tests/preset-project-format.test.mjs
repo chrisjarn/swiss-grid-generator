@@ -52,9 +52,9 @@ test("canonical preset json files use the project schema", () => {
     for (const [index, page] of payload.pages.entries()) {
       assert.equal(typeof page?.uiSettings, "object", `${fileName} page ${index + 1} should include uiSettings`)
       assert.ok(page.uiSettings, `${fileName} page ${index + 1} should include uiSettings`)
-      assert.equal(typeof page.uiSettings.exportPrintPro, "boolean", `${fileName} page ${index + 1} should declare vector bleed state`)
-      assert.equal(typeof page.uiSettings.exportBleedMm, "number", `${fileName} page ${index + 1} should declare vector bleed width`)
-      assert.equal(page.uiSettings.exportRegistrationMarks, false, `${fileName} page ${index + 1} should keep legacy registration marks disabled`)
+      assert.equal(page.uiSettings.exportPrintPro, undefined, `${fileName} page ${index + 1} should not serialize legacy vector bleed state`)
+      assert.equal(page.uiSettings.exportBleedMm, undefined, `${fileName} page ${index + 1} should not serialize legacy vector bleed width`)
+      assert.equal(page.uiSettings.exportRegistrationMarks, undefined, `${fileName} page ${index + 1} should not serialize legacy registration marks`)
       assert.equal(typeof page.uiSettings.rhythmRowsEnabled, "boolean", `${fileName} page ${index + 1} should declare row rhythm state`)
       assert.equal(typeof page.uiSettings.rhythmColsEnabled, "boolean", `${fileName} page ${index + 1} should declare column rhythm state`)
     }

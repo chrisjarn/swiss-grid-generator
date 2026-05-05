@@ -34,7 +34,7 @@ type TypographyStyleDefinition = {
 
 type ThumbnailGuideArgs = {
   ctx: CanvasRenderingContext2D
-  margins: { top: number; left: number; bottom: number }
+  margins: { top: number; left: number; right: number; bottom: number }
   gridUnit: number
   gridRows: number
   gridCols: number
@@ -47,6 +47,17 @@ type ThumbnailGuideArgs = {
   pageWidth: number
   pageHeight: number
   scale: number
+  showBaselines: boolean
+  showMargins: boolean
+  showModules: boolean
+}
+
+export type PresetThumbnailRenderOptions = {
+  showBaselines?: boolean
+  showMargins?: boolean
+  showModules?: boolean
+  showImagePlaceholders?: boolean
+  showTypography?: boolean
 }
 
 function normalizeKeys(value: unknown): BlockId[] {
@@ -71,6 +82,9 @@ function drawThumbnailConstructionGuides({
   pageWidth,
   pageHeight,
   scale,
+  showBaselines,
+  showMargins,
+  showModules,
 }: ThumbnailGuideArgs): void {
   const contentTop = margins.top * scale
   const baselineSpacing = gridUnit * scale
@@ -85,27 +99,43 @@ function drawThumbnailConstructionGuides({
   ctx.strokeStyle = "#06b6d4"
   ctx.lineWidth = 0.5
 
-  for (let row = 0; row < gridRows; row += 1) {
-    for (let col = 0; col < gridCols; col += 1) {
-      const x = margins.left * scale + (colStarts[col] ?? 0) * scale
-      const y = contentTop + (rowStarts[row] ?? 0) * scale
-      const width = (moduleWidths[col] ?? fallbackModuleWidth) * scale
-      const height = (moduleHeights[row] ?? fallbackModuleHeight) * scale
-      ctx.strokeRect(x, y, width, height)
+  if (showModules) {
+    for (let row = 0; row < gridRows; row += 1) {
+      for (let col = 0; col < gridCols; col += 1) {
+        const x = margins.left * scale + (colStarts[col] ?? 0) * scale
+        const y = contentTop + (rowStarts[row] ?? 0) * scale
+        const width = (moduleWidths[col] ?? fallbackModuleWidth) * scale
+        const height = (moduleHeights[row] ?? fallbackModuleHeight) * scale
+        ctx.strokeRect(x, y, width, height)
+      }
     }
+  }
+
+  if (showMargins) {
+    ctx.globalAlpha = 0.42
+    ctx.strokeStyle = "#06b6d4"
+    ctx.lineWidth = 0.6
+    ctx.strokeRect(
+      margins.left * scale,
+      margins.top * scale,
+      Math.max(0, pageWidth - (margins.left + margins.right) * scale),
+      Math.max(0, pageHeight - (margins.top + margins.bottom) * scale),
+    )
   }
 
   ctx.globalAlpha = 0.3
   ctx.strokeStyle = "#ec4899"
   ctx.lineWidth = 0.3
 
-  for (let row = 0; row <= baselineRows; row += 1) {
-    const y = contentTop + row * baselineSpacing
-    if (y > contentBottom + 0.0001) break
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(pageWidth, y)
-    ctx.stroke()
+  if (showBaselines) {
+    for (let row = 0; row <= baselineRows; row += 1) {
+      const y = contentTop + row * baselineSpacing
+      if (y > contentBottom + 0.0001) break
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.lineTo(pageWidth, y)
+      ctx.stroke()
+    }
   }
 
   ctx.restore()
@@ -220,6 +250,7 @@ export function drawPresetThumbnailToCanvas(
   cssWidth: number,
   cssHeight: number,
   pixelRatio = 1,
+  options: PresetThumbnailRenderOptions = {},
 ): void {
   const safeWidth = Math.max(0, cssWidth)
   const safeHeight = Math.max(0, cssHeight)
@@ -252,6 +283,11 @@ export function drawPresetThumbnailToCanvas(
   const pageRotation = typeof page.uiSettings.rotation === "number" && Number.isFinite(page.uiSettings.rotation)
     ? clampRotation(page.uiSettings.rotation)
     : 0
+  const showBaselines = options.showBaselines ?? true
+  const showMargins = options.showMargins ?? true
+  const showModules = options.showModules ?? true
+  const showImagePlaceholders = options.showImagePlaceholders ?? true
+  const showTypography = options.showTypography ?? true
 
   ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
   ctx.clearRect(0, 0, safeWidth, safeHeight)
@@ -280,6 +316,9 @@ export function drawPresetThumbnailToCanvas(
     pageWidth,
     pageHeight,
     scale,
+    showBaselines,
+    showMargins,
+    showModules,
   })
 
   const exportPlan = buildPageExportPlan({
@@ -291,9 +330,9 @@ export function drawPresetThumbnailToCanvas(
     rotation: pageRotation,
     showBaselines: false,
     showModules: false,
-    showMargins: false,
-    showImagePlaceholders: true,
-    showTypography: true,
+    showMargins,
+    showImagePlaceholders,
+    showTypography,
     layoutEngine: page.layoutEngine,
   })
   const canvasRenderPlans = buildCanvasRenderPlansFromPageExportPlan(exportPlan)

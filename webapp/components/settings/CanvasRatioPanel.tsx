@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectItem, SelectTrigger, SelectValue, TopSelectContent } from "@/components/ui/select"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
+import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import {
   CANVAS_RATIOS,
   clampCustomCanvasRatioUnit,
@@ -70,7 +71,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
   const ratioLabel = getCanvasRatioDisplayLabel(canvasRatio, customRatioWidth, customRatioHeight)
   const customRatioText = formatCustomCanvasRatio(customRatioWidth, customRatioHeight)
   const customRatioDecimal = getCanvasRatioDecimal(customRatioWidth, customRatioHeight)
-  const inputClassName = "w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+  const inputClassName = getNeutralFormControlClassName(isDarkMode, "w-full rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:ring-offset-2")
 
   const commitCustomRatioWidth = useCallback(() => {
     const parsed = parseCustomRatioUnitInput(customRatioWidthInput)

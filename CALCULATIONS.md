@@ -488,12 +488,17 @@ PDF export embeds selected local font assets before layout/draw:
 
 The export plan is computed before drawing with the same deterministic metrics pipeline as live preview. PDF then renders vector text from that plan; SVG and IDML freeze typography to outline geometry for downstream fidelity.
 
-PDF, SVG, and IDML are entered through the shared project export runner. The runner resolves selected project pages, page numbers, document variables, visibility state, and font warmup inputs once, then hands canonical planned pages to the format renderers.
+PDF, SVG, and IDML are entered through the shared project export runner. The runner resolves selected project pages, page numbers, document variables, root `visibilitySettings`, and font warmup inputs once, then hands canonical planned pages to the format renderers.
+
+Long export rendering can be partitioned into deterministic page sets after planning. Page sets preserve absolute page indices, so worker-backed format adapters can render independent page artifacts without changing page numbering, spread references, crop geometry, or final assembly order. SVG and IDML use this boundary for browser artifact generation, then the export engine assembles final outputs in sorted page-set order. The worker scheduling, cancellation, ordered result slots, and packaging handoff are shared export-engine logic; format adapters only build requests and serialize format-specific payloads.
+
+SVG and IDML page-set artifact reuse is valid only when the serialized page-set request is exactly identical. Cache keys therefore include the complete serialized request for collision verification, not only a hash. Reused IDML artifacts are cloned before packaging so transfer to an IDML package worker cannot detach the cached typed-array buffers.
 
 Export rendering note:
 - All export targets remain vector-based.
-- Shared bleed is specified in millimeters at the export options boundary, defaults to `3mm`, and is converted to a shared `ExportBox` in points before format rendering.
+- Shared bleed is specified in millimeters at the export options boundary. The GUI opens with bleed disabled and restores `3mm` as the standard activation width; enabled bleed is converted to a shared `ExportBox` in points before format rendering.
 - PDF, SVG, and IDML consume the same normalized `ExportBox` model for trim, bleed, media canvas, export origin, crop-mark line geometry, and guide clipping so bounds stay format-consistent.
+- `webapp/tests/export-box-contract.test.mjs` includes a real PDF/SVG/IDML export fixture that checks shared export-box coordinates, crop marks, page identity, metadata, and one-time planning timing against emitted output.
 - When bleed is enabled, exporters include the bleed box as production area, clip visible page/export geometry to that bleed box, add a fixed white crop-mark canvas outside it, and add black crop marks aimed at the trim corners. This shifts the export origin only; trim coordinates, grid modules, paragraph positions, and bleed width remain unchanged. No dashed bleed guide is exported.
 - In IDML, line-based export geometry stays line-based: crop marks and guide lines are emitted as stroked `GraphicLine` items, while module and margin guide boxes remain rectangle outlines.
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry.

@@ -36,7 +36,7 @@ Core editing and layout workflows.
 - Drag to move.
 - Hovered text paragraphs expose a `+` affordance: click to duplicate the paragraph, then click the target placement, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.
 - Hovered image placeholders expose a `+` affordance for duplication.
-- Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown on the active page.
+- Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown for the layout. The same project-level visibility state is used for export.
 - Locked layers still show preview rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked in the Project panel.
 - Arrow keys nudge the selected unlocked layer. Snapped axes move by the grid; unsnapped axes move in fine steps. `Shift` increases the unsnapped step and switches snapped Y to baseline movement.
 - `Page Up`, `Page Down`, `Home`, and `End` navigate project pages.
@@ -125,22 +125,25 @@ Core editing and layout workflows.
 
 ### Export {#help-export}
 - Export supports JSON, vector PDF, SVG, and IDML.
-- Multi-page projects can export a page range.
-- The dialog includes a fixed header/footer, five display toggles, a format switcher, page-range selectors, a filename field, phase-based export progress with elapsed time, and a collapsible metadata section.
-- Exports are WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
+- Multi-page projects can export a page range or explicit page selection.
+- The dialog includes five display toggles, a live thumbnail preview, a format switcher, a page-selection field, filename and metadata fields, plus compact action-button progress with a thin top progress rail.
+- Exports are WYSIWYG with respect to the project-level visibility state for baselines, margins, modules, typography, and image placeholders.
 - PDF, SVG, and IDML exports are 100% vector based.
 - PDF, SVG, and IDML use one shared export runner and canonical page plan path.
-- JSON exports the selected page range as an editable project document with metadata and current layout state, with an optional gzip-compressed `.swissgridgenerator` variant.
+- Long exports keep the browser responsive: PDF runs in a cancellable browser worker, and SVG/IDML can render page-set artifacts through one shared browser-worker scheduler before deterministic assembly.
+- PDF, SVG, and IDML share one browser vector export action for filename handling, progress, and download handoff before entering the shared export runner.
+- Repeated SVG/IDML exports can reuse unchanged page-set artifacts from an exact-request in-memory cache.
+- JSON exports the selected page range as an editable project document with metadata and current layout state.
 - Project Title, Subject, and Author can be adjusted in the export dialog for all formats without changing the live project until a JSON export is saved.
 - PDF exports store available project metadata in the PDF document info dictionary.
 - SVG exports embed available project metadata in the SVG metadata block.
 - IDML exports carry project metadata into the package XMP metadata.
-- PDF, SVG, and IDML share one bleed control, enabled by default at 3mm. One shared export box defines trim, bleed, media canvas, export origin, crop marks, and guide clipping; enabled bleed extends visible production geometry through the bleed area, with a white crop-mark canvas and black crop marks outside it.
+- PDF, SVG, and IDML share one bleed control, disabled by default with 3mm as the standard activation width. One shared export box defines trim, bleed, media canvas, export origin, crop marks, and guide clipping; enabled bleed extends visible production geometry through the bleed area, with a white crop-mark canvas and black crop marks outside it.
 - PDF exports RGB vector geometry with an embedded sRGB output intent.
 - PDF embeds verified local font assets only; required font files are checked during asset generation.
 - Multi-page SVG exports a ZIP with one outlined SVG per selected page.
 - IDML exports separate guides, typography, and placeholder layers with frozen text geometry; guide lines and crop marks stay as real stroked line items.
-- `Esc` closes the dialog when no export is running and cancels an in-progress export at the next safe checkpoint.
+- `Esc` closes the dialog when no export is running and cancels an in-progress export; PDF cancellation terminates the active export worker.
 - Clicking outside the popup follows the same close/cancel behavior.
 
 ### Project Tours {#help-project-tours}
@@ -164,7 +167,6 @@ Global controls and panel behavior.
 ### Header and Sidebars {#help-sidebars-header}
 - Header actions cover presets, import, save, export, undo/redo, dark mode, smart text zoom, display toggles, Project, help, and cloud account.
 - The Project panel can be toggled with `Cmd/Ctrl+Shift+P`.
-- `Shift` + click on a page-visibility toggle applies the same state to every page in the project.
 
 ### Help Navigation {#help-help-navigation}
 - When help is open, orange-marked UI targets jump to their matching help topic on hover.
@@ -222,19 +224,19 @@ Toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`.
 Toggles automatic zoom-to-paragraph while text editing. When enabled, entering text edit zooms to the active paragraph, ordinary text/style edits keep the current zoom, geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit returns to full-page fit.
 
 ### Baselines Toggle {#help-header-baselines}
-Shows or hides baseline guides on the active page. `Shift` + click applies the same state to all pages. Shortcut: `Cmd/Ctrl+Shift+B`.
+Shows or hides baseline guides for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+B`.
 
 ### Margins Toggle {#help-header-margins}
-Shows or hides margin guides on the active page. `Shift` + click applies the same state to all pages. Shortcut: `Cmd/Ctrl+Shift+M`.
+Shows or hides margin guides for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+M`.
 
 ### Modules Toggle {#help-header-modules}
-Shows or hides modules and gutters on the active page. `Shift` + click applies the same state to all pages. Shortcut: `Cmd/Ctrl+Shift+G`.
+Shows or hides modules and gutters for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+G`.
 
 ### Typography Toggle {#help-header-typography}
-Shows or hides typography overlays on the active page. `Shift` + click applies the same state to all pages. Shortcut: `Cmd/Ctrl+Shift+T`.
+Shows or hides typography overlays for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+T`.
 
 ### Image Placeholders Toggle {#help-header-image-placeholders}
-Shows or hides image placeholders on the active page. `Shift` + click applies the same state to all pages. Shortcut: `Cmd/Ctrl+Shift+J`.
+Shows or hides image placeholders for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+J`.
 
 ### Project Panel {#help-header-layers}
 - Opens the project title and page/layer management panel.
@@ -254,6 +256,7 @@ Shows or hides image placeholders on the active page. `Shift` + click applies th
 - A project can contain up to `1000` pages.
 - `Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.
 - Active-page layer cards mirror preview hover/guides.
+- Hovering a preview layer opens the active page transiently and brings the matching layer card into view in the Project panel.
 - Hovering an active-page layer card temporarily routes keyboard layer nudging to that layer; leaving the card restores keyboard nudging to the selected layer.
 - Drag unlocked layer cards to reorder z-index.
 - Layer cards include lock and delete controls.

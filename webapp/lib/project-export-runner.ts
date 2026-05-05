@@ -18,7 +18,8 @@ import {
 } from "@/lib/layout-engine-contract"
 import {
   buildResolvedProjectPageExportSource,
-  normalizeProjectExportPageRange,
+  buildProjectExportPageNumbersFromRange,
+  normalizeProjectExportPageNumbers,
   type ProjectExportPageRange,
   type ProjectPageVisibilitySettings,
   type ResolvedProjectPageExportSource,
@@ -36,6 +37,7 @@ export type ProjectExportRunnerOptions = {
   layoutEngine?: LayoutEngineContract
   bleed?: ExportEngineBleedConfig
   svgPackaging?: ExportEngineSvgPackaging
+  idmlCompressionLevel?: number
   onProgress?: ExportEngineOptions["onProgress"]
   onLog?: ExportEngineOptions["onLog"]
   shouldLogPage?: ExportEngineOptions["shouldLogPage"]
@@ -48,35 +50,16 @@ export type ProjectExportRunnerResult = ExportEngineResult & {
   selectedSources: ResolvedProjectPageExportSource[]
 }
 
-function uniqueSortedPageNumbers(pageNumbers: readonly number[], pageCount: number): number[] {
-  const selected = new Set<number>()
-  pageNumbers.forEach((pageNumber) => {
-    if (!Number.isFinite(pageNumber)) return
-    const normalized = Math.round(pageNumber)
-    if (normalized < 1 || normalized > pageCount) return
-    selected.add(normalized)
-  })
-  return [...selected].sort((left, right) => left - right)
-}
-
 export function resolveProjectExportPageNumbers(
   project: LoadedProject<Record<string, unknown>>,
   options: Pick<ProjectExportRunnerOptions, "range" | "pageNumbers">,
 ): number[] {
   if (project.pages.length === 0) return []
   if (options.pageNumbers?.length) {
-    return uniqueSortedPageNumbers(options.pageNumbers, project.pages.length)
+    return normalizeProjectExportPageNumbers(project.pages.length, options.pageNumbers)
   }
   if (options.range) {
-    const normalized = normalizeProjectExportPageRange(
-      project.pages.length,
-      options.range.fromPage,
-      options.range.toPage,
-    )
-    return Array.from(
-      { length: normalized.endIndex - normalized.startIndex + 1 },
-      (_, index) => normalized.startIndex + index + 1,
-    )
+    return buildProjectExportPageNumbersFromRange(project.pages.length, options.range)
   }
   return Array.from({ length: project.pages.length }, (_, index) => index + 1)
 }
@@ -139,6 +122,7 @@ export async function runProjectExport(options: ProjectExportRunnerOptions): Pro
     layoutEngine: options.layoutEngine ?? options.project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
     bleed: options.bleed,
     svgPackaging: options.svgPackaging,
+    idmlCompressionLevel: options.idmlCompressionLevel,
     onProgress: options.onProgress,
     onLog: options.onLog,
     shouldLogPage: options.shouldLogPage,

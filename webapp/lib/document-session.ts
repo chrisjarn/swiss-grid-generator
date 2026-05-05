@@ -16,6 +16,21 @@ export type ProjectMetadata = {
 }
 
 export type ProjectPageLayoutMode = "single" | "facing"
+export type ProjectVisibilitySettings = {
+  showBaselines: boolean
+  showModules: boolean
+  showMargins: boolean
+  showImagePlaceholders: boolean
+  showTypography: boolean
+}
+
+export const DEFAULT_PROJECT_VISIBILITY_SETTINGS: ProjectVisibilitySettings = {
+  showBaselines: true,
+  showModules: true,
+  showMargins: true,
+  showImagePlaceholders: true,
+  showTypography: true,
+}
 
 // NEW: Project/Pages/Layers architecture
 export type ProjectPage<Layout> = {
@@ -31,6 +46,7 @@ export type LoadedProject<Layout> = {
   pages: ProjectPage<Layout>[]
   metadata: ProjectMetadata
   layoutEngine: LayoutEngineContract
+  visibilitySettings: ProjectVisibilitySettings
   tour?: ProjectTour | null
 }
 
@@ -79,6 +95,28 @@ function toLoadedPreviewLayout<Layout>(value: unknown): Layout | null {
   return value && typeof value === "object" ? value as Layout : null
 }
 
+function isObjectRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function resolveBooleanSetting(value: unknown, fallback: boolean): boolean {
+  return typeof value === "boolean" ? value : fallback
+}
+
+export function resolveProjectVisibilitySettings(
+  source: unknown,
+  fallback: ProjectVisibilitySettings = DEFAULT_PROJECT_VISIBILITY_SETTINGS,
+): ProjectVisibilitySettings {
+  const payload = isObjectRecord(source) ? source : {}
+  return {
+    showBaselines: resolveBooleanSetting(payload.showBaselines, fallback.showBaselines),
+    showModules: resolveBooleanSetting(payload.showModules, fallback.showModules),
+    showMargins: resolveBooleanSetting(payload.showMargins, fallback.showMargins),
+    showImagePlaceholders: resolveBooleanSetting(payload.showImagePlaceholders, fallback.showImagePlaceholders),
+    showTypography: resolveBooleanSetting(payload.showTypography, fallback.showTypography),
+  }
+}
+
 function toPageName(value: unknown, fallback: string): string {
   if (typeof value !== "string") return fallback
   const trimmed = value.trim()
@@ -114,6 +152,7 @@ export function createDefaultProject<Layout>({
   previewLayout,
   metadata = EMPTY_PROJECT_METADATA,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  visibilitySettings = DEFAULT_PROJECT_VISIBILITY_SETTINGS,
   defaultPageName = DEFAULT_PAGE_NAME,
   tour = null,
 }: {
@@ -121,6 +160,7 @@ export function createDefaultProject<Layout>({
   previewLayout: Layout | null
   metadata?: ProjectMetadata
   layoutEngine?: LayoutEngineContract
+  visibilitySettings?: ProjectVisibilitySettings
   defaultPageName?: string
   tour?: ProjectTour | null
 }): LoadedProject<Layout> {
@@ -135,6 +175,7 @@ export function createDefaultProject<Layout>({
     pages: [page],
     metadata,
     layoutEngine,
+    visibilitySettings,
     tour,
   }
 }
@@ -178,6 +219,11 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
   const layoutEngine = parseLayoutEngineContract(payload.layoutEngine)
   const tour = parseProjectTour(payload.tour)
   const parsedPages = parseProjectPages<Layout>(payload.pages)
+  const legacyPageVisibilitySettings = parsedPages[0]?.uiSettings ?? null
+  const visibilitySettings = resolveProjectVisibilitySettings(
+    payload.visibilitySettings,
+    resolveProjectVisibilitySettings(legacyPageVisibilitySettings),
+  )
 
   if (parsedPages.length > 0) {
     const activePageId = typeof payload.activePageId === "string"
@@ -190,6 +236,7 @@ export function parseLoadedProject<Layout>(source: unknown): LoadedProject<Layou
       pages: parsedPages,
       metadata,
       layoutEngine,
+      visibilitySettings,
       tour,
     }
   }

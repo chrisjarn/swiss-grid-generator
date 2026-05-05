@@ -83,6 +83,7 @@ function toLoadedProject(record: UserProjectRecord): LoadedProject<Record<string
       createdAt: record.createdAt,
     },
     layoutEngine: parsedProject.layoutEngine,
+    visibilitySettings: parsedProject.visibilitySettings,
     tour: parsedProject.tour ?? null,
   }
 }

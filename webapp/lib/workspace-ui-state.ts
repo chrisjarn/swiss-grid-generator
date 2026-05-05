@@ -58,13 +58,6 @@ export type GridUiState = Pick<
   | "collapsed"
 >
 
-export type ExportUiState = Pick<
-  UiSettingsSnapshot,
-  | "exportPrintPro"
-  | "exportBleedMm"
-  | "exportRegistrationMarks"
->
-
 export const DEFAULT_A4_BASELINE = FORMAT_BASELINES["A4"] ?? 12
 
 function clampBaselineMultiple(value: number): number {
@@ -118,19 +111,10 @@ export const INITIAL_GRID_UI_STATE: GridUiState = {
   ),
 }
 
-export const INITIAL_EXPORT_UI_STATE: ExportUiState = {
-  exportPrintPro: DEFAULT_UI.exportPrintPro,
-  exportBleedMm: DEFAULT_UI.exportBleedMm,
-  exportRegistrationMarks: DEFAULT_UI.exportRegistrationMarks,
-}
-
 export type UiAction =
   | { type: "SET"; key: "canvasRatio"; value: CanvasRatioKey }
   | { type: "SET"; key: "customRatioWidth"; value: number }
   | { type: "SET"; key: "customRatioHeight"; value: number }
-  | { type: "SET"; key: "exportPrintPro"; value: boolean }
-  | { type: "SET"; key: "exportBleedMm"; value: number }
-  | { type: "SET"; key: "exportRegistrationMarks"; value: boolean }
   | { type: "SET"; key: "orientation"; value: "portrait" | "landscape" }
   | { type: "SET"; key: "rotation"; value: number }
   | { type: "SET"; key: "marginMethod"; value: 1 | 2 | 3 }
@@ -270,31 +254,6 @@ export function gridUiReducer(state: GridUiState, action: UiAction): GridUiState
       }
     case "BATCH":
       return action.actions.reduce(gridUiReducer, state)
-    default:
-      return state
-  }
-}
-
-export function exportUiReducer(state: ExportUiState, action: UiAction): ExportUiState {
-  switch (action.type) {
-    case "SET":
-      switch (action.key) {
-        case "exportPrintPro":
-        case "exportBleedMm":
-        case "exportRegistrationMarks":
-          if (state[action.key] === action.value) return state
-          return { ...state, [action.key]: action.value }
-        default:
-          return state
-      }
-    case "APPLY_SNAPSHOT":
-      return {
-        exportPrintPro: action.snapshot.exportPrintPro,
-        exportBleedMm: action.snapshot.exportBleedMm,
-        exportRegistrationMarks: action.snapshot.exportRegistrationMarks,
-      }
-    case "BATCH":
-      return action.actions.reduce(exportUiReducer, state)
     default:
       return state
   }

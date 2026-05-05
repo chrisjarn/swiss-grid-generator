@@ -12,17 +12,18 @@ import {
   isCardDragIgnoreTarget,
   lockDocumentUserSelect,
 } from "@/lib/sidebar-card-drag"
+import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
-type TransientExpandedReason = "editor" | "keyboard" | "paragraph"
+type TransientExpandedReason = "editor" | "keyboard" | "paragraph" | "preview-hover"
 
 const PAGE_VIRTUALIZATION_THRESHOLD = 80
 const PAGE_VIRTUALIZATION_OVERSCAN = 8
-const DEFAULT_PAGE_CARD_HEIGHT = 76
+const DEFAULT_PAGE_CARD_HEIGHT = 50
 const DEFAULT_EXPANDED_PAGE_CARD_HEIGHT = 320
-const KEYBOARD_PAGE_FOCUS_DELAY_MS = 140
+const KEYBOARD_PAGE_SETTLE_DELAY_MS = 100
 const KEYBOARD_PAGE_EXPAND_DELAY_MS = 500
 const PAGE_HEADER_SCROLL_TOP_OFFSET_PX = 0
 
@@ -51,6 +52,7 @@ type Props = {
   imageColorScheme: ImageColorSchemeId
   selectedLayerKey: string | null
   hoveredLayerKey: string | null
+  previewHoveredLayerKey: string | null
   editingLayerKey: string | null
   editorMode: "text" | "image" | null
   previewEditorOpenToken: number
@@ -80,6 +82,7 @@ export function PagesPanel({
   imageColorScheme,
   selectedLayerKey,
   hoveredLayerKey,
+  previewHoveredLayerKey,
   editingLayerKey,
   editorMode,
   previewEditorOpenToken,
@@ -97,6 +100,7 @@ export function PagesPanel({
   const [pageNameDraft, setPageNameDraft] = useState("")
   const [draggingPageId, setDraggingPageId] = useState<string | null>(null)
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null)
+  const [previewHoverFocusToken, setPreviewHoverFocusToken] = useState(0)
   const [manualExpandedPageId, setManualExpandedPageId] = useState<string | null>(null)
   const [transientExpandedPageId, setTransientExpandedPageId] = useState<string | null>(null)
   const [transientExpandedReason, setTransientExpandedReason] = useState<TransientExpandedReason | null>(null)
@@ -104,14 +108,14 @@ export function PagesPanel({
     token: number
     pageId: string
   } | null>(null)
+  const [deferredPreviewHoveredLayerKey, setDeferredPreviewHoveredLayerKey] = useState<string | null>(null)
   const [scrollViewport, setScrollViewport] = useState({ top: 0, height: 0 })
-  const [pageCardHeight, setPageCardHeight] = useState(DEFAULT_PAGE_CARD_HEIGHT)
   const [measuredPageHeights, setMeasuredPageHeights] = useState<Record<string, number>>({})
   const previousPageIdsRef = useRef<string[]>(pages.map((page) => page.id))
   const pendingScrollTargetRef = useRef<{ pageId: string } | null>(null)
   const lastPreviewEditorOpenTokenRef = useRef(0)
   const lastActivePageFocusTokenRef = useRef(0)
-  const keyboardFocusTimeoutRef = useRef<number | null>(null)
+  const keyboardSettleTimeoutRef = useRef<number | null>(null)
   const keyboardExpandTimeoutRef = useRef<number | null>(null)
   const rootRef = useRef<HTMLDivElement | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
@@ -172,6 +176,23 @@ export function PagesPanel({
   }, [activePageId, previewParagraphCreateToken])
 
   useEffect(() => {
+    if (!previewHoveredLayerKey) {
+      setDeferredPreviewHoveredLayerKey(null)
+      if (transientExpandedReason === "preview-hover") {
+        setTransientExpandedPageId(null)
+        setTransientExpandedReason(null)
+      }
+      return
+    }
+    pendingScrollTargetRef.current = { pageId: activePageId }
+    setPreviewHoverFocusToken((current) => current + 1)
+    setDeferredPreviewHoveredLayerKey(previewHoveredLayerKey)
+    if (expandedPageId === activePageId) return
+    setTransientExpandedPageId(activePageId)
+    setTransientExpandedReason("preview-hover")
+  }, [activePageId, expandedPageId, previewHoveredLayerKey, transientExpandedReason])
+
+  useEffect(() => {
     if (previewEditorOpenToken === 0) return
     if (lastPreviewEditorOpenTokenRef.current === previewEditorOpenToken) return
     lastPreviewEditorOpenTokenRef.current = previewEditorOpenToken
@@ -189,22 +210,22 @@ export function PagesPanel({
     if (lastActivePageFocusTokenRef.current === nextToken) return
     lastActivePageFocusTokenRef.current = nextToken
     setScheduledKeyboardFocusRequest(null)
-    if (keyboardFocusTimeoutRef.current !== null) {
-      window.clearTimeout(keyboardFocusTimeoutRef.current)
-      keyboardFocusTimeoutRef.current = null
+    if (keyboardSettleTimeoutRef.current !== null) {
+      window.clearTimeout(keyboardSettleTimeoutRef.current)
+      keyboardSettleTimeoutRef.current = null
     }
     if (keyboardExpandTimeoutRef.current !== null) {
       window.clearTimeout(keyboardExpandTimeoutRef.current)
       keyboardExpandTimeoutRef.current = null
     }
-    if (transientExpandedReason === "keyboard") {
-      setTransientExpandedPageId(null)
-      setTransientExpandedReason(null)
-    }
-    keyboardFocusTimeoutRef.current = window.setTimeout(() => {
+    keyboardSettleTimeoutRef.current = window.setTimeout(() => {
+      if (transientExpandedReason === "keyboard") {
+        setTransientExpandedPageId(null)
+        setTransientExpandedReason(null)
+      }
       setScheduledKeyboardFocusRequest({ token: nextToken, pageId: nextPageId })
-      keyboardFocusTimeoutRef.current = null
-    }, KEYBOARD_PAGE_FOCUS_DELAY_MS)
+      keyboardSettleTimeoutRef.current = null
+    }, KEYBOARD_PAGE_SETTLE_DELAY_MS)
   }, [activePageFocusRequest, transientExpandedReason])
 
   useEffect(() => {
@@ -234,6 +255,7 @@ export function PagesPanel({
     if (transientExpandedPageId === null) return
     if (transientExpandedPageId === activePageId) return
     if (transientExpandedReason === "editor") return
+    if (transientExpandedReason === "keyboard") return
     setTransientExpandedPageId(null)
     setTransientExpandedReason(null)
   }, [activePageId, transientExpandedPageId, transientExpandedReason])
@@ -275,7 +297,7 @@ export function PagesPanel({
     for (const page of pages) {
       const measuredHeight = measuredPageHeights[page.id]
       const estimatedHeight = measuredHeight ?? (
-        expandedPageId === page.id ? DEFAULT_EXPANDED_PAGE_CARD_HEIGHT : pageCardHeight
+        expandedPageId === page.id ? DEFAULT_EXPANDED_PAGE_CARD_HEIGHT : DEFAULT_PAGE_CARD_HEIGHT
       )
       offsets.set(page.id, runningTop)
       heights.set(page.id, estimatedHeight)
@@ -286,7 +308,7 @@ export function PagesPanel({
       heights,
       totalHeight: runningTop,
     }
-  }, [expandedPageId, measuredPageHeights, pageCardHeight, pages])
+  }, [expandedPageId, measuredPageHeights, pages])
 
   useEffect(() => {
     const pendingScrollTarget = pendingScrollTargetRef.current
@@ -322,7 +344,7 @@ export function PagesPanel({
       scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
     })
     pendingScrollTargetRef.current = null
-  }, [pageMetrics, scheduledKeyboardFocusRequest, scrollViewport.height, virtualizationEnabled])
+  }, [pageMetrics, previewHoverFocusToken, scheduledKeyboardFocusRequest, scrollViewport.height, virtualizationEnabled])
 
   useEffect(() => {
     const releaseOnMouseUp = () => {
@@ -341,9 +363,9 @@ export function PagesPanel({
 
   useEffect(() => (
     () => {
-      if (keyboardFocusTimeoutRef.current !== null) {
-        window.clearTimeout(keyboardFocusTimeoutRef.current)
-        keyboardFocusTimeoutRef.current = null
+      if (keyboardSettleTimeoutRef.current !== null) {
+        window.clearTimeout(keyboardSettleTimeoutRef.current)
+        keyboardSettleTimeoutRef.current = null
       }
       if (keyboardExpandTimeoutRef.current !== null) {
         window.clearTimeout(keyboardExpandTimeoutRef.current)
@@ -359,16 +381,15 @@ export function PagesPanel({
         row: "border-[#313A47] text-[#F4F6F8] hover:bg-[#232A35]",
         rowMuted: "text-[#8D98AA]",
         close: "text-[#A8B1BF] hover:bg-[#232A35] hover:text-[#F4F6F8]",
-        input: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA]",
         accent: "text-swiss-orange-soft",
       }
     : {
         row: "border-gray-200 text-gray-900 hover:bg-gray-100",
         rowMuted: "text-gray-500",
         close: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
-        input: "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400",
         accent: "text-swiss-orange",
       }
+  const renameInputClassName = getNeutralFormControlClassName(isDarkMode, "h-6 w-full rounded-sm px-2 text-[12px] leading-none")
 
   const stationaryPages = useMemo(
     () => pages.filter((page) => page.id !== draggingPageId),
@@ -386,7 +407,7 @@ export function PagesPanel({
       }
     }
 
-    const overscanPx = PAGE_VIRTUALIZATION_OVERSCAN * Math.max(1, pageCardHeight)
+    const overscanPx = PAGE_VIRTUALIZATION_OVERSCAN * DEFAULT_PAGE_CARD_HEIGHT
     const windowTop = Math.max(0, scrollViewport.top - overscanPx)
     const windowBottom = scrollViewport.top + scrollViewport.height + overscanPx
 
@@ -395,7 +416,7 @@ export function PagesPanel({
       const page = pages[startIndex]
       if (!page) break
       const pageTop = pageMetrics.offsets.get(page.id) ?? 0
-      const pageHeight = pageMetrics.heights.get(page.id) ?? pageCardHeight
+      const pageHeight = pageMetrics.heights.get(page.id) ?? DEFAULT_PAGE_CARD_HEIGHT
       if (pageTop + pageHeight >= windowTop) break
       startIndex += 1
     }
@@ -413,7 +434,7 @@ export function PagesPanel({
       startIndex: Math.max(0, startIndex),
       endIndex: Math.min(pages.length, Math.max(endIndex, startIndex + 1)),
     }
-  }, [pageCardHeight, pageMetrics, pages, scrollViewport.height, scrollViewport.top, virtualizationEnabled])
+  }, [pageMetrics, pages, scrollViewport.height, scrollViewport.top, virtualizationEnabled])
 
   const virtualizedStartIndex = virtualizedWindow.startIndex
   const virtualizedEndIndex = virtualizedWindow.endIndex
@@ -557,9 +578,6 @@ export function PagesPanel({
                   }
               ))
             }
-            if (!isExpanded && !isEditing && Math.abs(node.offsetHeight - pageCardHeight) > 1) {
-              setPageCardHeight(node.offsetHeight)
-            }
           }}
           draggable={!isEditing && !isExpanded}
           onPointerDownCapture={(event) => {
@@ -598,7 +616,7 @@ export function PagesPanel({
             setTransientExpandedPageId(null)
             setTransientExpandedReason(null)
           }}
-          className={`flex min-h-[50px] flex-col justify-center border-t px-4 py-2 text-xs leading-snug transition-colors md:px-6 ${tone.row} ${
+          className={`flex min-h-[50px] flex-col border-t text-xs leading-snug transition-colors ${tone.row} ${
             draggingPageId === page.id
               ? "opacity-45"
               : ""
@@ -606,7 +624,7 @@ export function PagesPanel({
             isEditing || isExpanded ? "select-none" : "cursor-grab select-none"
           }`}
         >
-          <div className="flex min-h-6 items-center justify-between gap-3">
+          <div className="flex min-h-[50px] items-center justify-between gap-3 px-4 md:px-6">
             <div className={`min-w-0 flex-1 ${isEditing ? "" : "pointer-events-none select-none"}`}>
               {isEditing ? (
                 <input
@@ -626,7 +644,7 @@ export function PagesPanel({
                       cancelRename()
                     }
                   }}
-                  className={`h-6 w-full rounded-sm border px-2 text-[12px] leading-none outline-none ${tone.input}`}
+                  className={renameInputClassName}
                 />
               ) : (
                 <div className={`flex items-center gap-1.5 ${pageTitleToneClassName}`}>
@@ -636,37 +654,40 @@ export function PagesPanel({
                     <File className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
                   )}
                   <div className="truncate text-[12px] font-medium leading-none">{page.name}</div>
-                  {isWaitingForKeyboardExpand ? (
-                    <LoaderCircle
-                      className={`h-3 w-3 shrink-0 animate-spin ${tone.rowMuted}`}
-                      strokeWidth={2}
-                    />
-                  ) : null}
                 </div>
               )}
             </div>
             <div className="flex h-6 items-center gap-1">
-              <button
-                type="button"
-                data-card-drag-ignore="true"
-                aria-label={isExpanded ? `Collapse ${page.name}` : `Expand ${page.name}`}
-                className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${tone.close}`}
-                onClick={(event) => {
-                  event.stopPropagation()
-                  if (isExpanded) {
-                    setManualExpandedPageId(null)
+              {isWaitingForKeyboardExpand ? (
+                <div className="inline-flex h-6 w-6 items-center justify-center">
+                  <LoaderCircle
+                    className={`h-3 w-3 animate-spin ${tone.rowMuted}`}
+                    strokeWidth={2}
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  data-card-drag-ignore="true"
+                  aria-label={isExpanded ? `Collapse ${page.name}` : `Expand ${page.name}`}
+                  className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${tone.close}`}
+                  onClick={(event) => {
+                    event.stopPropagation()
+                    if (isExpanded) {
+                      setManualExpandedPageId(null)
+                      setTransientExpandedPageId(null)
+                      setTransientExpandedReason(null)
+                      return
+                    }
+                    pendingScrollTargetRef.current = { pageId: page.id }
+                    setManualExpandedPageId(page.id)
                     setTransientExpandedPageId(null)
                     setTransientExpandedReason(null)
-                    return
-                  }
-                  pendingScrollTargetRef.current = { pageId: page.id }
-                  setManualExpandedPageId(page.id)
-                  setTransientExpandedPageId(null)
-                  setTransientExpandedReason(null)
-                }}
-              >
-                <ChevronUp className={`h-3.5 w-3.5 transition-transform ${isExpanded ? "rotate-180" : "rotate-90"}`} />
-              </button>
+                  }}
+                >
+                  <ChevronUp className={`h-3.5 w-3.5 transition-transform ${isExpanded ? "rotate-180" : "rotate-90"}`} />
+                </button>
+              )}
               <button
                 type="button"
                 data-card-drag-ignore="true"
@@ -709,7 +730,7 @@ export function PagesPanel({
             </div>
           </div>
           {isExpanded ? (
-            <div data-card-drag-ignore="true" className="mt-3">
+            <div data-card-drag-ignore="true" className="px-4 pb-4 md:px-6">
               <div className="flex items-center justify-between gap-3">
                 <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] ${tone.rowMuted}`}>
                   Facing Pages
@@ -741,6 +762,7 @@ export function PagesPanel({
                   imageColorScheme={imageColorScheme}
                   selectedLayerKey={isActive ? selectedLayerKey : null}
                   hoveredLayerKey={isActive ? hoveredLayerKey : null}
+                  previewHoveredLayerKey={isActive && isExpanded ? deferredPreviewHoveredLayerKey : null}
                   editingLayerKey={isActive ? editingLayerKey : null}
                   isActivePage={isActive}
                   onSelectPage={onSelectPage}
@@ -764,7 +786,7 @@ export function PagesPanel({
   return (
     <div
       ref={rootRef}
-      className="flex flex-col py-4 md:py-6"
+      className="flex flex-col pb-4 md:pb-6"
       onDragOver={handleListDragOver}
       onDrop={handleListDrop}
     >

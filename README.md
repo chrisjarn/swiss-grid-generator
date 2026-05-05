@@ -144,10 +144,13 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - `PDF`, `SVG`, and `IDML` all export the selected page range using each page's stored document size
 - All export formats are vector-based rather than raster screenshot captures
 - `PDF`, `SVG`, and `IDML` share one deterministic export engine fed by the same project snapshot and `PageExportPlan` pipeline
+- Long exports use deterministic worker-backed paths: PDF runs in a cancellable browser worker, and SVG/IDML render page-set artifacts through one shared browser-worker scheduler before ordered assembly
+- Repeated SVG/IDML page-set artifacts can be reused from a bounded exact-request cache; IDML cache entries are cloned before worker packaging to avoid detached-buffer reuse
+- Export format labels, filename extensions, bleed capability, and browser vector-export action setup are centralized so PDF/SVG/IDML enter the shared runner consistently
 - Multi-page `SVG` export downloads a ZIP with one SVG per page
-- Export progress reports preparation, page rendering, finalization, and elapsed time
-- `Esc` closes the export dialog when idle and cancels a running export at the next safe checkpoint
-- Shared vector bleed option for `PDF`, `SVG`, and `IDML`, enabled by default at `3mm`, using one export box for trim/bleed/media/crop/guide-clip geometry with visible production geometry extended through bleed plus a fixed white crop-mark canvas and black crop marks outside bleed
+- Export progress reports preparation, page rendering, finalization, and percentage in the popup action button and top progress rail
+- `Esc` closes the export dialog when idle and cancels a running export; PDF cancellation terminates its worker even during final byte serialization
+- Shared vector bleed option for `PDF`, `SVG`, and `IDML`, disabled by default with `3mm` as the standard activation width, using one export box for trim/bleed/media/crop/guide-clip geometry with visible production geometry extended through bleed plus a fixed white crop-mark canvas and black crop marks outside bleed
 - PDF export uses RGB vector geometry with an embedded sRGB output intent
 - PDF export embeds verified local font assets only; configured font files are checked during asset generation
 - Use `SVG` or `IDML` when you need typography frozen as non-live geometry
@@ -216,7 +219,7 @@ Vector export performance can be measured from `webapp/` with:
 npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000 --format pdf --out ../tmp/export-debug
 ```
 
-The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes. Vector bleed defaults to `3mm`; pass `--bleed-mm <n>` to override it.
+The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes. Browser vector export opens with bleed disabled and keeps `3mm` as the standard activation width; pass `--bleed-mm <n>` in the CLI to enable/override bleed for scripted exports.
 
 Before release, run:
 

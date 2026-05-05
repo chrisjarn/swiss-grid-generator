@@ -1,7 +1,7 @@
 "use client"
 
 import { Image as ImageIcon, Lock, LockOpen, Type, Trash2 } from "lucide-react"
-import { Fragment, useEffect, useMemo, useRef, useState } from "react"
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { DragEvent } from "react"
 
 import {
@@ -29,6 +29,7 @@ type Props = {
   imageColorScheme: ImageColorSchemeId
   selectedLayerKey: string | null
   hoveredLayerKey: string | null
+  previewHoveredLayerKey: string | null
   editingLayerKey: string | null
   isActivePage: boolean
   onSelectPage: (pageId: string) => void
@@ -104,6 +105,7 @@ export function ProjectPageLayersList({
   imageColorScheme,
   selectedLayerKey,
   hoveredLayerKey,
+  previewHoveredLayerKey,
   editingLayerKey,
   isActivePage,
   onSelectPage,
@@ -122,6 +124,7 @@ export function ProjectPageLayersList({
   const dropIndicatorIndexRef = useRef<number | null>(null)
   const selectionLockCleanupRef = useRef<(() => void) | null>(null)
   const lockButtonClickTimeoutRef = useRef<number | null>(null)
+  const layerScrollFrameRef = useRef<number | null>(null)
 
   const blockOrder = useMemo(() => layout?.blockOrder ?? [], [layout?.blockOrder])
   const imageOrder = useMemo(() => layout?.imageOrder ?? [], [layout?.imageOrder])
@@ -176,9 +179,8 @@ export function ProjectPageLayersList({
     [stationaryVisibleOrder],
   )
 
-  useEffect(() => {
-    if (!selectedLayerKey || !isActivePage) return
-    const target = cardRefs.current[selectedLayerKey]
+  const scrollLayerCardIntoView = useCallback((layerKey: string, align: ScrollLogicalPosition = "nearest") => {
+    const target = cardRefs.current[layerKey]
     if (!target) return
     const scrollRoot = (
       target.closest("[data-page-layers-scroll-root='true']")
@@ -190,6 +192,14 @@ export function ProjectPageLayersList({
     const bottomGapPx = 12
     const rootRect = scrollRoot.getBoundingClientRect()
     const targetRect = target.getBoundingClientRect()
+    if (align === "center") {
+      const nextTop = scrollRoot.scrollTop
+        + (targetRect.top - rootRect.top)
+        - (rootRect.height - targetRect.height) / 2
+      scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
+      return
+    }
+
     const isAbove = targetRect.top < rootRect.top + topGapPx
     const isBelow = targetRect.bottom > rootRect.bottom - bottomGapPx
     if (!isAbove && !isBelow) return
@@ -201,7 +211,29 @@ export function ProjectPageLayersList({
     window.requestAnimationFrame(() => {
       scrollRoot.scrollTo({ top: Math.max(0, nextTop), behavior: "smooth" })
     })
-  }, [isActivePage, selectedLayerKey])
+  }, [])
+
+  const scheduleLayerCardScroll = useCallback((layerKey: string, align?: ScrollLogicalPosition) => {
+    if (layerScrollFrameRef.current !== null) {
+      window.cancelAnimationFrame(layerScrollFrameRef.current)
+    }
+    layerScrollFrameRef.current = window.requestAnimationFrame(() => {
+      layerScrollFrameRef.current = window.requestAnimationFrame(() => {
+        scrollLayerCardIntoView(layerKey, align)
+        layerScrollFrameRef.current = null
+      })
+    })
+  }, [scrollLayerCardIntoView])
+
+  useEffect(() => {
+    if (!selectedLayerKey || !isActivePage) return
+    scheduleLayerCardScroll(selectedLayerKey)
+  }, [isActivePage, scheduleLayerCardScroll, selectedLayerKey])
+
+  useEffect(() => {
+    if (!previewHoveredLayerKey || !isActivePage) return
+    scheduleLayerCardScroll(previewHoveredLayerKey, "center")
+  }, [isActivePage, previewHoveredLayerKey, scheduleLayerCardScroll, visibleOrder])
 
   useEffect(() => {
     const releaseOnMouseUp = () => {
@@ -223,6 +255,10 @@ export function ProjectPageLayersList({
       if (lockButtonClickTimeoutRef.current !== null) {
         window.clearTimeout(lockButtonClickTimeoutRef.current)
         lockButtonClickTimeoutRef.current = null
+      }
+      if (layerScrollFrameRef.current !== null) {
+        window.cancelAnimationFrame(layerScrollFrameRef.current)
+        layerScrollFrameRef.current = null
       }
       selectionLockCleanupRef.current?.()
       selectionLockCleanupRef.current = null

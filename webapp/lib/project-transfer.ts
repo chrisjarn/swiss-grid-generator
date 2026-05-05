@@ -23,6 +23,7 @@ export type ProjectTransferPayload = Record<string, unknown> & {
   author: string
   createdAt?: string
   layoutEngine: LayoutEngineContract
+  visibilitySettings: LoadedProject<unknown>["visibilitySettings"]
   pages: Array<Record<string, unknown>>
   tour?: Record<string, unknown>
 }
@@ -73,6 +74,7 @@ export function buildProjectTransferPayload<Layout>(
     author: project.metadata.author,
     createdAt: project.metadata.createdAt,
     layoutEngine: project.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT,
+    visibilitySettings: project.visibilitySettings,
     pages,
     tour: project.tour ? project.tour as Record<string, unknown> : undefined,
   }

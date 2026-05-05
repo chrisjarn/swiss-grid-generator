@@ -5,6 +5,13 @@
   "description": "Blank Poster Template to get you started.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "pages": [
     {
       "id": "page-blank-start",
@@ -37,9 +44,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

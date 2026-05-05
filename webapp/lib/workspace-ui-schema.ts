@@ -27,9 +27,6 @@ export type UiSettingsSnapshot = {
   canvasRatio: CanvasRatioKey
   customRatioWidth: number
   customRatioHeight: number
-  exportPrintPro: boolean
-  exportBleedMm: number
-  exportRegistrationMarks: boolean
   orientation: "portrait" | "landscape"
   rotation: number
   marginMethod: 1 | 2 | 3

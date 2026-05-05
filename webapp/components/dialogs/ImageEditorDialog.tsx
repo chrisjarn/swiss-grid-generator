@@ -6,6 +6,7 @@ import { EditorSidebarSection } from "@/components/layout/EditorSidebarSection"
 import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScrollFrame"
 import { EditorColorSchemeControls } from "@/components/ui/editor-color-scheme-controls"
 import { Label } from "@/components/ui/label"
+import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { DebouncedSlider } from "@/components/ui/slider"
 import {
   Select,
@@ -216,7 +217,6 @@ export function ImageEditorDialog({
 
   const tone = isDarkMode
     ? {
-      input: "border-gray-700 bg-gray-900 text-gray-100 focus:border-gray-500",
       muted: "text-gray-400",
       panel: "bg-transparent",
       surface: "bg-transparent",
@@ -229,7 +229,6 @@ export function ImageEditorDialog({
       selectContent: "dark",
     }
     : {
-      input: "border-gray-200 bg-white text-gray-900 focus:border-gray-400",
       muted: "text-gray-600",
       panel: "bg-transparent",
       surface: "bg-transparent",
@@ -242,8 +241,8 @@ export function ImageEditorDialog({
       selectContent: "",
     }
 
-  const triggerClassName = `h-9 ${tone.input}`
-  const textInputClassName = `h-9 w-full rounded-md border px-3 text-sm outline-none ${tone.input}`
+  const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
+  const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
   const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
   const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"

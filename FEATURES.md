@@ -187,16 +187,19 @@ Current capability inventory for Swiss Grid Generator.
 - Save dialog stores the current project into the local `Users` library with editable title, subject, and author metadata.
 - Local `Users` library records are stored as gzip-compressed project archives in IndexedDB.
 - `PDF` selected-range export.
-- `JSON` selected-range export, optionally gzip-compressed as `.swissgridgenerator`.
+- `JSON` selected-range export as a standard editable `.json` project document.
 - `SVG v1` selected-range export.
 - `IDML v1` selected-range export.
 - Export defaults to the full project page range.
-- Export dialog includes header display toggles for baselines, margins, modules, typography, and image placeholders, plus JSON/PDF/SVG/IDML format switching, page-range controls for multipage projects, filename field, export progress, a collapsible metadata section, and a fixed header/footer layout.
-- Export progress displays preparation, page rendering, finalization, percentage, and elapsed time.
-- Export is WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
+- Export dialog includes display toggles for baselines, margins, modules, typography, and image placeholders, plus a live thumbnail preview, JSON/PDF/SVG/IDML format switching driven by the shared format options table, explicit page-selection input, filename and metadata fields, and compact action-button progress with a thin top progress rail.
+- Export progress displays preparation, page rendering, finalization, and percentage without a separate status report panel.
+- Export is WYSIWYG with respect to the project-level visibility state for baselines, margins, modules, typography, and image placeholders.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.
 - PDF, SVG, and IDML are run through the shared `ProjectExportRunner` / `ExportEngine` path, so they consume the same resolved project pages and canonical `PageExportPlan` data.
+- Browser vector export actions share one wrapper for PDF, SVG, and IDML filename/base-name resolution, progress rules, and download handoff.
+- The export engine partitions long exports into deterministic page sets; SVG and IDML use one shared worker scheduler for page-set artifact generation, cancellation, progress, and ordered assembly.
+- SVG and IDML page-set artifacts can be reused from a bounded exact-request cache for repeated exports without re-rendering unchanged page sets.
 - Export metadata fields (`Project Title`, `Subject`, `Author`) are editable in the dialog for all formats.
 - PDF, SVG, and IDML share one bleed option:
   - enabled by default

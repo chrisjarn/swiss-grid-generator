@@ -78,6 +78,7 @@ type Args = {
 
 export function useHeaderActions(args: Args) {
   const canSaveOrExport = args.hasPreviewLayout && !args.showPresetsBrowser
+  const canUseLayerControls = args.hasPreviewLayout && !args.showPresetsBrowser
   const accountTooltip = args.accountUserEmail
     ? `Cloud account\nSigned in as: ${args.accountUserEmail}\nCloud status: ${args.accountCloudStatusLabel}`
     : `Cloud account\nSigned in as: Not signed in\nCloud status: ${args.accountCloudStatusLabel}`
@@ -197,7 +198,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "toggle_baselines",
         variant: args.showBaselines ? "default" : "outline",
         pressed: args.showBaselines,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canUseLayerControls,
         onClick: args.onToggleBaselines,
         icon: <Rows3 className="h-4 w-4" />,
       },
@@ -211,7 +212,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "toggle_margins",
         variant: args.showMargins ? "default" : "outline",
         pressed: args.showMargins,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canUseLayerControls,
         onClick: args.onToggleMargins,
         icon: <SquareDashed className="h-4 w-4" />,
       },
@@ -225,7 +226,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "toggle_modules",
         variant: args.showModules ? "default" : "outline",
         pressed: args.showModules,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canUseLayerControls,
         onClick: args.onToggleModules,
         icon: <LayoutGrid className="h-4 w-4" />,
       },
@@ -239,7 +240,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "toggle_typography",
         variant: args.showTypography ? "default" : "outline",
         pressed: args.showTypography,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canUseLayerControls,
         onClick: args.onToggleTypography,
         icon: <Type className="h-4 w-4" />,
       },
@@ -253,7 +254,7 @@ export function useHeaderActions(args: Args) {
         shortcutId: "toggle_image_placeholders",
         variant: args.showImagePlaceholders ? "default" : "outline",
         pressed: args.showImagePlaceholders,
-        disabled: !args.hasPreviewLayout,
+        disabled: !canUseLayerControls,
         onClick: args.onToggleImagePlaceholders,
         icon: <Image className="h-4 w-4" />,
       },

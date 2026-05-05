@@ -5,6 +5,13 @@
   "description": "Performance test preset with 100 pages and 20 alternating body text/image layers per page on a 4x5 grid, with varied font overrides, image palettes, and placeholder transparencies.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "pages": [
     {
       "id": "page-performance-001",
@@ -37,9 +44,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -460,9 +464,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -883,9 +884,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1306,9 +1304,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -1729,9 +1724,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2152,9 +2144,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2575,9 +2564,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -2998,9 +2984,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -3421,9 +3404,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -3844,9 +3824,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -4267,9 +4244,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -4690,9 +4664,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -5113,9 +5084,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -5536,9 +5504,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -5959,9 +5924,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -6382,9 +6344,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -6805,9 +6764,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -7228,9 +7184,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -7651,9 +7604,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -8074,9 +8024,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -8497,9 +8444,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -8920,9 +8864,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -9343,9 +9284,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -9766,9 +9704,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -10189,9 +10124,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -10612,9 +10544,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -11035,9 +10964,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -11458,9 +11384,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -11881,9 +11804,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -12304,9 +12224,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -12727,9 +12644,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -13150,9 +13064,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -13573,9 +13484,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -13996,9 +13904,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -14419,9 +14324,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -14842,9 +14744,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -15265,9 +15164,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -15688,9 +15584,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -16111,9 +16004,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -16534,9 +16424,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -16957,9 +16844,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -17380,9 +17264,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -17803,9 +17684,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -18226,9 +18104,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -18649,9 +18524,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -19072,9 +18944,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -19495,9 +19364,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -19918,9 +19784,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -20341,9 +20204,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -20764,9 +20624,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -21187,9 +21044,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -21610,9 +21464,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -22033,9 +21884,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -22456,9 +22304,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -22879,9 +22724,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -23302,9 +23144,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -23725,9 +23564,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -24148,9 +23984,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -24571,9 +24404,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -24994,9 +24824,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -25417,9 +25244,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -25840,9 +25664,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -26263,9 +26084,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -26686,9 +26504,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -27109,9 +26924,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -27532,9 +27344,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -27955,9 +27764,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -28378,9 +28184,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -28801,9 +28604,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -29224,9 +29024,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -29647,9 +29444,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -30070,9 +29864,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -30493,9 +30284,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -30916,9 +30704,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -31339,9 +31124,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -31762,9 +31544,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -32185,9 +31964,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -32608,9 +32384,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -33031,9 +32804,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -33454,9 +33224,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -33877,9 +33644,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -34300,9 +34064,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -34723,9 +34484,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -35146,9 +34904,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -35569,9 +35324,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -35992,9 +35744,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -36415,9 +36164,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -36838,9 +36584,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -37261,9 +37004,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -37684,9 +37424,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -38107,9 +37844,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -38530,9 +38264,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -38953,9 +38684,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -39376,9 +39104,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -39799,9 +39524,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -40222,9 +39944,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -40645,9 +40364,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -41068,9 +40784,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -41491,9 +41204,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {
@@ -41914,9 +41624,6 @@
           "right": 2,
           "bottom": 3
         },
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "format": "A4"
       },
       "previewLayout": {

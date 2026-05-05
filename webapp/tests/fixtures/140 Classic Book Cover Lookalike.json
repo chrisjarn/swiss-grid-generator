@@ -5,6 +5,13 @@
   "description": "Book Cover Lookalike from Anton Stankowski 1978.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": true,
+    "showModules": true,
+    "showMargins": true,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
   "layoutEngine": {
     "id": "swiss-grid-layout-v2",
     "version": 2,
@@ -22,9 +29,6 @@
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,
         "customRatioHeight": 5,
-        "exportPrintPro": false,
-        "exportBleedMm": 0,
-        "exportRegistrationMarks": false,
         "orientation": "portrait",
         "rotation": 0,
         "marginMethod": 3,

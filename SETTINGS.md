@@ -291,18 +291,16 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 
 ### Export dialog
 
-- Sticky dialog header keeps the display toggles and `Format` visible
-- Format buttons: `JSON`, `PDF`, `SVG`, `IDML`
+- Format buttons: `JSON`, `PDF`, `SVG`, `IDML`; labels, extensions, bleed capability, filename extension replacement, and vector format availability are resolved from one shared export format options table.
 - Display toggles: baselines, margins, modules, typography, image placeholders
-- Sticky dialog footer keeps `Actions` visible
-- Metadata section is collapsible and closed by default
+- Metadata fields are displayed directly in the compact export form
 - Metadata fields are available for all formats:
   - Project Title
   - Subject
   - Author
-- `JSON` export includes an optional `GZIP-Compression` toggle
-- Uncompressed JSON exports use `.json`; compressed exports use `.swissgridgenerator`
-- `Pages` range controls (`From`, `To`) appear for multipage projects
+- `JSON` export writes a standard editable `.json` project document
+- JSON exports use `.json`
+- `Pages` range input appears only for multipage projects
   - default selection is the full project page range
 - All export formats use each page's stored document size
   - no paper-size override controls
@@ -311,8 +309,8 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 - `JSON` exports the selected page range as an editable project document with metadata and current layout state
 - `PDF`, `SVG`, and `IDML` preserve available project metadata in their format-specific metadata containers
 - `PDF`, `SVG`, and `IDML` share one vector bleed control:
-  - checkbox enables bleed and defaults to enabled
-  - width is entered in millimeters and defaults to `3mm`
+  - bleed defaults to off
+  - width is entered in millimeters and restores `3mm` when activated from an empty or non-positive value
   - export internals convert millimeters to one shared `ExportBox` in points
   - the shared `ExportBox` owns trim, bleed, media canvas, export origin, crop-mark line geometry, and guide clipping for all three vector formats
   - enabled bleed extends the visible production area through bleed, adds a fixed white crop-mark canvas outside bleed, and adds black crop marks targeting the trim corners, while trim layout math stays unchanged
@@ -523,16 +521,20 @@ Behavior:
 - SVG: single-page vector output with optional bleed plus white crop-mark canvas bounds, black crop marks, and typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
 - IDML: selected-range export with optional document bleed, slug/crop-mark canvas, black crop marks, one InDesign page per app page, and separate `Guides`, `Typography`, and `Placeholders` layers; guide lines and crop marks are stroked `GraphicLine` items, while exported text is frozen as geometry rather than live text.
 - PDF, SVG, and IDML share the same `ProjectExportRunner` / `ExportEngine` entry path, consume the same canonical `PageExportPlan` data, and use the same `ExportBox` geometry for bleed/media/crop output and guide clipping.
-- Export status shows preparation, rendering, finalization, percentage, and elapsed time. Progress updates are non-blocking for the export engine.
+- Browser PDF, SVG, and IDML actions also share one vector export action wrapper. That wrapper resolves base filenames, format-specific output names, SVG ZIP packaging, progress forcing, and download handoff from the same format options table before calling the shared project export runner.
+- Long exports can be partitioned into deterministic page sets by the export engine. SVG and IDML use this page-set boundary for worker-backed browser artifact generation; final assembly remains ordered by page index.
+- SVG and IDML use one shared export-engine worker scheduler for page-set dispatch, cancellation, progress, ordered result collection, and single-worker archive/package handoff. Format code remains responsible only for its request payload and serialized output.
+- SVG and IDML page-set artifacts may be reused from a bounded in-memory LRU cache only when the serialized page-set request matches exactly. Cached IDML artifacts are cloned before reuse because package-worker transfer detaches typed-array buffers.
+- Export status shows preparation, rendering, finalization, and percentage through the popup action button and top progress rail. Progress updates are non-blocking for the export engine.
 
 ## JSON UI Fields (serialized)
 
-`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `exportPrintPro`, `exportBleedMm`, `exportRegistrationMarks`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
+`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
 
 Notes:
-- `exportPrintPro` is retained as the persisted legacy backing field for the shared vector bleed enabled state.
-- `exportRegistrationMarks` is retained only for backward-compatible JSON loading and is no longer exposed in the export dialog.
-- Session-only GUI state is not serialized into layout JSON. That includes `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, `showTypography`, `showLayers`, and settings-panel `collapsed` state.
+- Export bleed is session/export-run state, not serialized per page. The default is centralized in `DEFAULT_EXPORT_BLEED_OPTIONS`.
+- Project-level visibility state is serialized once at layout root in `visibilitySettings`: `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, and `showTypography`. It is not stored per page.
+- Session-only GUI state is not serialized into layout JSON. That includes `showLayers` and settings-panel `collapsed` state.
 - Saved layout JSON no longer stores `activePageId`; loaded projects always open on `pages[0]`.
 
 ## JSON Preview Layout Fields (current)

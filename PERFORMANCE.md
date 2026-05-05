@@ -177,6 +177,8 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added `webapp/lib/export-box.ts` as the shared trim/bleed/media/crop geometry model. PDF, SVG, and IDML now consume the same `ExportBox` instead of duplicating bleed conversion, crop-mark offsets, media-canvas math, and guide clipping per format.
 - Added `webapp/lib/vector-text-outline.ts` so SVG and IDML share glyph-outline conversion.
 - IDML now serializes crop marks and guide lines as stroked `GraphicLine` items instead of thin filled rectangle approximations; rectangle guide outlines remain rectangle page items.
+- Added export-engine page sets as the shared artifact boundary for long exports. IDML renders deterministic spread XML page sets in workers, SVG renders page-set files in workers, and browser archive/package assembly is worker-backed where the format allows it. SVG and IDML now share the same worker scheduler for dispatch, cancellation, progress, ordered result collection, and single-worker packaging handoff.
+- IDML package compression uses the fast deflate level to reduce packaging time without changing XML geometry or rendering semantics.
 - Added CLI export:
   ```bash
   cd webapp
@@ -193,8 +195,12 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
   - `pdf finalize`
   - `svg render pages`
   - `svg zip`
+  - `idml render page sets`
   - `idml package`
-- Browser export progress now reports the same high-level phases as the CLI and includes elapsed time. UI progress publishing is fire-and-forget so React status updates do not throttle export work.
+- Browser export progress now reports the same high-level phases as the CLI through compact popup button text and a thin progress rail. UI progress publishing is fire-and-forget so React status updates do not throttle export work.
+- Added a real export parity fixture that runs PDF, SVG, and IDML from one project export call and verifies shared export-box coordinates, crop marks, page identity, metadata, and one-time planning timing against emitted output.
+- Centralized browser vector export actions so PDF, SVG, and IDML share filename/base-name normalization, SVG ZIP packaging selection, progress forcing, and download handoff before entering the shared project export runner.
+- Added bounded page-set artifact caches for SVG and IDML. Cache hits require an exact serialized request match; entries are LRU-capped, and IDML artifacts are cloned on store/read so worker transfer cannot detach cached buffers. This prepares warm repeated exports without changing planner math or emitted geometry.
 - PDF font registration now uses verified local font assets only. Runtime Google Fonts repository discovery was removed from export.
 - Added `npm run fonts:verify` and wired it into `assets:generate`, so build/dev/lint fail if configured local font assets are missing.
 - Added document-used font warmup in `webapp/lib/export-font-warmup.ts`. The app warms only required metric/PDF font faces after project changes and when the export dialog opens, keyed by a font-face signature.
@@ -212,10 +218,40 @@ Browser measurements varied by engine:
 - Firefox reached about `5s` for the 1000-page PDF export after the shared path and handoff optimizations.
 - Safari stayed higher, around `18-19s`, indicating remaining browser/jsPDF/Blob serialization cost rather than layout math.
 
+On the 1000-page performance fixture via CLI IDML export:
+
+- Browser/CLI page-set generation now uses the same deterministic page-set boundary.
+- CLI 1000-page IDML export measured about `30.62s`: `0.35s` font preload, `0.38s` planning, `17.85s` IDML page-set rendering, `11.83s` IDML package assembly, and `0.18s` write time.
+- A 100-page IDML compression check measured level `1` at `3.06s` / `12.26MB` and level `6` at `3.96s` / `11.48MB`; the production default therefore stays at the fast level because geometry/rendering is identical and large-document export latency is the limiting factor.
+
+Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the shared export-path centralization:
+
+```text
+[+ 161.8s] performance summary:
+[+ 161.8s]   resolve export sources    0.02s pages=1000
+[+ 161.8s]   font metrics preload      0.26s
+[+ 161.8s]   planning                  0.88s pages=1000
+[+ 161.8s]   pdf init                  0.00s
+[+ 161.8s]   pdf font register         0.34s faces=60
+[+ 161.8s]   pdf output intent         0.00s srgb
+[+ 161.8s]   pdf setup                 0.35s faces=60
+[+ 161.8s]   pdf render pages          0.68s pages=1000
+[+ 161.8s]   pdf finalize              0.69s
+[+ 161.8s]   svg render pages         13.91s pages=1000
+[+ 161.8s]   svg zip                   0.00s not used
+[+ 161.8s]   idml render page sets    52.74s sets=40
+[+ 161.8s]   idml package             83.04s pages=1000
+[+ 161.8s]   idml finalize             0.00s
+[+ 161.8s]   pdf write                 0.03s size=2.81MB
+[+ 161.8s]   svg write files           7.74s files=1000
+[+ 161.8s]   idml write                1.41s size=353.76MB
+[+ 161.8s]   total                   161.76s
+```
+
 ### Current Boundaries
 
-- PDF remains main-thread browser work for now; no browser-specific worker path is introduced.
-- Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI/export default is `3mm`; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
+- PDF export runs in a cancellable browser worker so `Esc`/Cancel can terminate the active export even when final PDF byte serialization is busy. SVG page-set rendering, SVG ZIP packaging, IDML page-set XML generation, and IDML package assembly can also run worker-backed in the browser; final artifact order remains deterministic.
+- Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI default is off and restores `3mm` as the standard activation width; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
 
 ### Validation
 
