@@ -153,6 +153,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Use `SVG` or `IDML` when you need typography frozen as non-live geometry
 - `SVG` converts typography to exact glyph outlines, so exported text is not live-editable
 - `IDML` separates **Guides**, **Typography**, and **Placeholders** into distinct layers and freezes typography geometry
+- `IDML` keeps crop marks and guide lines as stroked `GraphicLine` items while preserving rectangle guide outlines as rectangle geometry
 
 ### Extras
 - Undo / Redo

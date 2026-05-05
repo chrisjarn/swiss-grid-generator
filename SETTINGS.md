@@ -521,7 +521,7 @@ Behavior:
 - JSON: full UI + preview layout state.
 - PDF: vector selected-range output with RGB geometry, embedded sRGB output intent, optional shared bleed plus white crop-mark canvas and black crop marks, grouped guide vectors, locally embedded verified font faces, and stored page geometry per exported page.
 - SVG: single-page vector output with optional bleed plus white crop-mark canvas bounds, black crop marks, and typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
-- IDML: selected-range export with optional document bleed, slug/crop-mark canvas, black crop marks, one InDesign page per app page, and separate `Guides`, `Typography`, and `Placeholders` layers; exported text is frozen as geometry rather than live text.
+- IDML: selected-range export with optional document bleed, slug/crop-mark canvas, black crop marks, one InDesign page per app page, and separate `Guides`, `Typography`, and `Placeholders` layers; guide lines and crop marks are stroked `GraphicLine` items, while exported text is frozen as geometry rather than live text.
 - PDF, SVG, and IDML share the same `ProjectExportRunner` / `ExportEngine` entry path, consume the same canonical `PageExportPlan` data, and use the same `ExportBox` geometry for bleed/media/crop output and guide clipping.
 - Export status shows preparation, rendering, finalization, percentage, and elapsed time. Progress updates are non-blocking for the export engine.
 

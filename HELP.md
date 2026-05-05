@@ -139,7 +139,7 @@ Core editing and layout workflows.
 - PDF exports RGB vector geometry with an embedded sRGB output intent.
 - PDF embeds verified local font assets only; required font files are checked during asset generation.
 - Multi-page SVG exports a ZIP with one outlined SVG per selected page.
-- IDML exports separate guides, typography, and placeholder layers with frozen text geometry.
+- IDML exports separate guides, typography, and placeholder layers with frozen text geometry; guide lines and crop marks stay as real stroked line items.
 - `Esc` closes the dialog when no export is running and cancels an in-progress export at the next safe checkpoint.
 - Clicking outside the popup follows the same close/cancel behavior.
 

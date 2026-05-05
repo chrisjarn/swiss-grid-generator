@@ -176,6 +176,7 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added `webapp/lib/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
 - Added `webapp/lib/export-box.ts` as the shared trim/bleed/media/crop geometry model. PDF, SVG, and IDML now consume the same `ExportBox` instead of duplicating bleed conversion, crop-mark offsets, media-canvas math, and guide clipping per format.
 - Added `webapp/lib/vector-text-outline.ts` so SVG and IDML share glyph-outline conversion.
+- IDML now serializes crop marks and guide lines as stroked `GraphicLine` items instead of thin filled rectangle approximations; rectangle guide outlines remain rectangle page items.
 - Added CLI export:
   ```bash
   cd webapp

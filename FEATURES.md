@@ -214,6 +214,7 @@ Current capability inventory for Swiss Grid Generator.
 - SVG exports embed available project metadata in the file metadata block.
 - SVG typography is exported as outline geometry, so downstream text is not live-editable.
 - IDML exports separate `Guides`, `Typography`, and `Placeholders` layers with frozen text-frame geometry, so downstream text is not live-editable.
+- IDML guide lines and crop marks are serialized as real stroked `GraphicLine` page items; rectangle guide outlines remain rectangle geometry.
 - IDML exports preserve available project metadata in the package XMP metadata.
 - `Esc` closes idle export UI and cancels a running export at the next safe checkpoint.
 - Clicking the backdrop follows the same close/cancel behavior as `Esc`.

@@ -176,6 +176,16 @@ function renderRectPathGeometry(
   }])
 }
 
+function renderLinePathGeometry(line: ExportLine): string {
+  return renderPathGeometry([{
+    open: true,
+    points: [
+      buildStraightPathPoint({ x: line.x1, y: line.y1 }),
+      buildStraightPathPoint({ x: line.x2, y: line.y2 }),
+    ],
+  }])
+}
+
 function buildColorId(color: RgbColor): string {
   return `Color/sgg-r${String(color.r).padStart(3, "0")}g${String(color.g).padStart(3, "0")}b${String(color.b).padStart(3, "0")}`
 }
@@ -346,7 +356,7 @@ function buildParagraphStyleId(styleKey: string): string {
   return `ParagraphStyle/sgg/${styleKey.replace(/[^A-Za-z0-9_-]/g, "_")}`
 }
 
-function buildGuidesXml(
+function buildGuideRectanglesXml(
   pageTransformMatrix: Matrix,
   rects: Array<{
     key: string
@@ -377,7 +387,34 @@ function buildGuidesXml(
   ))
 }
 
-function renderCropMarkRects({
+function buildGuideLinesXml(
+  pageTransformMatrix: Matrix,
+  lines: Array<{
+    key: string
+    line: ExportLine
+    strokeColorId: string
+    strokeWeight: number
+    layerId: string
+    name: string
+  }>,
+): string[] {
+  return lines.map((line, index) => renderIdmlElement(
+    "GraphicLine",
+    {
+      Self: `${line.key}_${index + 1}`,
+      Name: line.name,
+      ItemLayer: line.layerId,
+      ItemTransform: isIdentityMatrix(pageTransformMatrix) ? undefined : formatMatrix(pageTransformMatrix),
+      Visible: true,
+      FillColor: SWATCH_NONE_ID,
+      StrokeColor: line.strokeColorId,
+      StrokeWeight: formatIdmlNumber(line.strokeWeight),
+    },
+    renderLinePathGeometry(line.line),
+  ))
+}
+
+function renderCropMarkLines({
   cropMarkLines,
   pageTransformMatrix,
   pageIndex,
@@ -386,24 +423,17 @@ function renderCropMarkRects({
   pageTransformMatrix: Matrix
   pageIndex: number
 }): string[] {
-  const weight = 0.35
-  const halfWeight = weight / 2
-  const cropMarkRects = cropMarkLines.map((line, lineIndex) => {
-    const horizontal = Math.abs(line.y1 - line.y2) <= 0.000001
-    const left = Math.min(line.x1, line.x2)
-    const top = Math.min(line.y1, line.y2)
-    return {
+  return buildGuideLinesXml(
+    pageTransformMatrix,
+    cropMarkLines.map((line, lineIndex) => ({
       key: `sggCropMark_${pageIndex + 1}_${lineIndex + 1}`,
-      x: horizontal ? left : line.x1 - halfWeight,
-      y: horizontal ? line.y1 - halfWeight : top,
-      width: horizontal ? Math.abs(line.x2 - line.x1) : weight,
-      height: horizontal ? weight : Math.abs(line.y2 - line.y1),
-      fillColorId: COLOR_BLACK_ID,
+      line,
+      strokeColorId: COLOR_BLACK_ID,
+      strokeWeight: 0.35,
       layerId: LAYER_GUIDES_ID,
       name: `Crop mark ${lineIndex + 1}`,
-    }
-  })
-  return buildGuidesXml(pageTransformMatrix, cropMarkRects)
+    })),
+  )
 }
 
 async function buildSpreadAndStories(
@@ -463,7 +493,7 @@ async function buildSpreadAndStories(
       )
     }
 
-    guideItems.push(...renderCropMarkRects({ cropMarkLines: exportBox.cropMarkLines, pageTransformMatrix, pageIndex }))
+    guideItems.push(...renderCropMarkLines({ cropMarkLines: exportBox.cropMarkLines, pageTransformMatrix, pageIndex }))
 
     if (page.exportPlan.backgroundColor) {
       const signature = `${page.exportPlan.backgroundColor.r},${page.exportPlan.backgroundColor.g},${page.exportPlan.backgroundColor.b}`
@@ -526,35 +556,27 @@ async function buildSpreadAndStories(
         layerId: LAYER_GUIDES_ID,
         name: `${guideGroup.id} ${rectIndex + 1}`,
       }))
-      guideItems.push(...buildGuidesXml(pageTransformMatrix, guideRects))
+      guideItems.push(...buildGuideRectanglesXml(pageTransformMatrix, guideRects))
 
       if (guideGroup.lines.length > 0) {
         const guideClipRect = getExportGuideClipRect(exportBox, guideGroup.clipToPage)
-        const baselineRects = guideGroup.lines
+        const guideLines = guideGroup.lines
           .map((line, lineIndex) => {
             const clippedLine = guideClipRect
               ? clipExportLineToRect(line, guideClipRect, guideGroup.strokeWidth)
               : line
             if (!clippedLine) return null
-            const left = Math.min(clippedLine.x1, clippedLine.x2)
-            const right = Math.max(clippedLine.x1, clippedLine.x2)
-            const top = clippedLine.y1 - guideGroup.strokeWidth / 2
-            const height = Math.max(guideGroup.strokeWidth, 0.25)
-            const width = right - left
-            if (!(width > 0)) return null
             return {
               key: `sggGuideLine_${pageIndex + 1}_${guideGroup.id}_${lineIndex + 1}`,
-              x: left,
-              y: top,
-              width,
-              height,
-              fillColorId: guideColorId,
+              line: clippedLine,
+              strokeColorId: guideColorId,
+              strokeWeight: guideGroup.strokeWidth,
               layerId: LAYER_GUIDES_ID,
               name: `${guideGroup.id} line ${lineIndex + 1}`,
             }
           })
           .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
-        guideItems.push(...buildGuidesXml(pageTransformMatrix, baselineRects))
+        guideItems.push(...buildGuideLinesXml(pageTransformMatrix, guideLines))
       }
     }
 
