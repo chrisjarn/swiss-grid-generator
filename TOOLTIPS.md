@@ -117,6 +117,9 @@ Use `JSON` for editable project exchange and backup, `PDF` for faithful vector o
 ### WYSIWYG Includes The Visible Overlays {#tooltip-export-visibility}
 Export follows the current preview visibility state for baselines, margins, modules, typography, and image placeholders. Turn off construction guides before final output unless they are intentionally part of the deliverable.
 
+### Export Progress {#tooltip-export-progress}
+Long exports report preparation, page rendering, finalization, and elapsed time. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled.
+
 ## Common Corrections
 
 ### If The Page Feels Loose {#tooltip-fix-loose-page}

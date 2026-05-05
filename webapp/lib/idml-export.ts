@@ -1,5 +1,4 @@
 import type { LoadedProject } from "@/lib/document-session"
-import { buildPageExportPlan } from "@/lib/page-export-plan"
 import { getFontVariants, isFontFamily, type FontFamily } from "@/lib/config/fonts"
 import {
   preloadFontFileMetricFaces,
@@ -10,6 +9,7 @@ import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
 import type { SwissGridIdmlDocument } from "@/lib/idml/types"
 import { buildResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
 import type { ProjectPageVisibilitySettings } from "@/lib/project-page-export-source"
+import { buildPlannedProjectPageExportSource } from "@/lib/planned-page-export-source"
 import {
   getProjectPagePhysicalPageNumberAtIndex,
   getProjectPhysicalPageCount,
@@ -73,24 +73,7 @@ async function renderSwissGridIdmlProjectInternal(
       pageCount,
       now,
     }, visibilitySettings)
-    const plannedPage = {
-      ...resolved,
-      exportPlan: buildPageExportPlan({
-        result: resolved.result,
-        layout: resolved.previewLayout,
-        documentVariableContext: resolved.documentVariableContext,
-        baseFont: resolved.baseFont,
-        imageColorScheme: resolved.imageColorScheme,
-        canvasBackground: resolved.resolvedCanvasBackground,
-        rotation: resolved.uiSettings.rotation,
-        showBaselines: resolved.uiSettings.showBaselines,
-        showModules: resolved.uiSettings.showModules,
-        showMargins: resolved.uiSettings.showMargins,
-        showImagePlaceholders: resolved.uiSettings.showImagePlaceholders,
-        showTypography: resolved.uiSettings.showTypography,
-        layoutEngine,
-      }),
-    }
+    const plannedPage = buildPlannedProjectPageExportSource(resolved, layoutEngine)
     pages.push(plannedPage)
     await onProgress?.({
       completedSteps: index + 1,

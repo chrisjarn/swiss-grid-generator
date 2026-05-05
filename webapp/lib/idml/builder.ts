@@ -1,10 +1,15 @@
 import { strToU8, zipSync } from "fflate"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
-import { loadOutlineFont, type OpenTypePathCommand } from "@/lib/font-outline"
 import { mmToPt } from "@/lib/units"
 import { resolveIdmlFontMetadata } from "@/lib/idml/font-metadata"
 import type { IdmlFontMetadata, SwissGridIdmlDocument } from "@/lib/idml/types"
 import { escapeIdmlXml, formatIdmlNumber, renderIdmlElement } from "@/lib/idml/xml"
+import {
+  convertOpenTypeCommandsToGeometryPaths,
+  preloadTextPlanOutlineFonts,
+  type GeometryPath,
+  resolveTextPlanVectorShapes,
+} from "@/lib/vector-text-outline"
 
 type Matrix = readonly [number, number, number, number, number, number]
 type Point = { x: number; y: number }
@@ -41,11 +46,6 @@ type IdmlPathPoint = {
   anchor: Point
   left: Point
   right: Point
-}
-
-type IdmlGeometryPath = {
-  open: boolean
-  points: IdmlPathPoint[]
 }
 
 const IDML_MIMETYPE = "application/vnd.adobe.indesign-idml-package"
@@ -115,10 +115,6 @@ function buildStraightPathPoint(point: Point): IdmlPathPoint {
   }
 }
 
-function pointsEqual(left: Point, right: Point): boolean {
-  return Math.abs(left.x - right.x) <= 0.0001 && Math.abs(left.y - right.y) <= 0.0001
-}
-
 function buildPageCoordinateTransform(pageHeight: number): Matrix {
   return [1, 0, 0, 1, 0, -pageHeight / 2]
 }
@@ -130,7 +126,7 @@ function buildPageItemTransform(pageWidth: number, pageHeight: number, pageRotat
   return multiplyMatrices(pageCoordinateTransform, pageRotationTransform)
 }
 
-function renderPathGeometry(paths: IdmlGeometryPath[]): string {
+function renderPathGeometry(paths: GeometryPath[]): string {
   return renderIdmlElement(
     "Properties",
     {},
@@ -172,98 +168,6 @@ function renderRectPathGeometry(
       buildStraightPathPoint({ x, y: y + height }),
     ],
   }])
-}
-
-function isRenderableTextFragment(text: string): boolean {
-  return text.replace(/\s+/g, "").length > 0
-}
-
-function quadraticToCubic(start: Point, control: Point, end: Point): { control1: Point; control2: Point } {
-  return {
-    control1: {
-      x: start.x + ((control.x - start.x) * 2) / 3,
-      y: start.y + ((control.y - start.y) * 2) / 3,
-    },
-    control2: {
-      x: end.x + ((control.x - end.x) * 2) / 3,
-      y: end.y + ((control.y - end.y) * 2) / 3,
-    },
-  }
-}
-
-function convertOpenTypeCommandsToGeometryPaths(commands: readonly OpenTypePathCommand[]): IdmlGeometryPath[] {
-  const paths: IdmlGeometryPath[] = []
-  let current: IdmlPathPoint[] = []
-
-  const finalizeCurrent = (open: boolean) => {
-    if (current.length === 0) return
-    if (!open && current.length > 1) {
-      const first = current[0]!
-      const last = current[current.length - 1]!
-      if (pointsEqual(first.anchor, last.anchor)) {
-        first.left = clonePoint(last.left)
-        current = current.slice(0, -1)
-      }
-    }
-    if (current.length > 0) {
-      paths.push({ open, points: current })
-    }
-    current = []
-  }
-
-  for (const command of commands) {
-    switch (command.type) {
-      case "M": {
-        finalizeCurrent(true)
-        current = [buildStraightPathPoint({ x: command.x, y: command.y })]
-        break
-      }
-      case "L": {
-        if (current.length === 0) break
-        const lastPoint = current[current.length - 1]!
-        const nextPoint = buildStraightPathPoint({ x: command.x, y: command.y })
-        lastPoint.right = clonePoint(lastPoint.anchor)
-        current.push(nextPoint)
-        break
-      }
-      case "C": {
-        if (current.length === 0) break
-        const lastPoint = current[current.length - 1]!
-        lastPoint.right = { x: command.x1, y: command.y1 }
-        current.push({
-          anchor: { x: command.x, y: command.y },
-          left: { x: command.x2, y: command.y2 },
-          right: { x: command.x, y: command.y },
-        })
-        break
-      }
-      case "Q": {
-        if (current.length === 0) break
-        const lastPoint = current[current.length - 1]!
-        const cubic = quadraticToCubic(
-          lastPoint.anchor,
-          { x: command.x1, y: command.y1 },
-          { x: command.x, y: command.y },
-        )
-        lastPoint.right = cubic.control1
-        current.push({
-          anchor: { x: command.x, y: command.y },
-          left: cubic.control2,
-          right: { x: command.x, y: command.y },
-        })
-        break
-      }
-      case "Z": {
-        finalizeCurrent(false)
-        break
-      }
-      default:
-        break
-    }
-  }
-
-  finalizeCurrent(true)
-  return paths.filter((path) => path.points.length > 0)
 }
 
 function buildColorId(color: RgbColor): string {
@@ -580,63 +484,41 @@ async function buildSpreadAndStories(
       }
     }
 
+    await preloadTextPlanOutlineFonts(page.exportPlan.textPlans)
+
     for (const textPlan of page.exportPlan.textPlans) {
-      if (textPlan.graphemeLines.length === 0) continue
       const blockRotationMatrix = buildRotationMatrix(
         textPlan.blockRotation,
         textPlan.rotationOriginX,
         textPlan.rotationOriginY,
       )
       const itemMatrix = multiplyMatrices(pageTransformMatrix, blockRotationMatrix)
-      const outlinedGraphemeTasks: Array<Promise<string | null>> = []
-
-      for (const [lineIndex, graphemeLine] of textPlan.graphemeLines.entries()) {
-        for (const [graphemeIndex, grapheme] of graphemeLine.entries()) {
-          if (!isRenderableTextFragment(grapheme.text)) continue
-          localItemSequence += 1
-          const itemId = `sggGlyph_${String(pageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
-          const itemName = `${page.name} / ${textPlan.key} / glyph ${lineIndex + 1}.${graphemeIndex + 1}`
-          outlinedGraphemeTasks.push((async () => {
-            const font = await loadOutlineFont(grapheme.fontFamily, grapheme.fontWeight, grapheme.italic)
-            if (!font) {
-              throw new Error(`Unable to resolve outline font for IDML export: ${grapheme.fontFamily} ${grapheme.fontWeight}${grapheme.italic ? " italic" : ""}`)
-            }
-
-            const geometryPaths = convertOpenTypeCommandsToGeometryPaths(
-              font.getPath(
-                grapheme.text,
-                grapheme.x,
-                grapheme.y,
-                grapheme.fontSize,
-                {
-                  kerning: false,
-                  hinting: false,
-                },
-              ).commands,
-            )
-            if (geometryPaths.length === 0) return null
-
-            const graphemeColor = parseHexColor(grapheme.color) ?? textPlan.textColor
-            const colorSignature = `${graphemeColor.r},${graphemeColor.g},${graphemeColor.b}`
-            return renderIdmlElement(
-              "Polygon",
-              {
-                Self: itemId,
-                Name: itemName,
-                ItemLayer: LAYER_TYPOGRAPHY_ID,
-                ItemTransform: isIdentityMatrix(itemMatrix) ? undefined : formatMatrix(itemMatrix),
-                Visible: true,
-                FillColor: colorIdBySignature.get(colorSignature) ?? COLOR_BLACK_ID,
-                StrokeColor: SWATCH_NONE_ID,
-                StrokeWeight: 0,
-              },
-              renderPathGeometry(geometryPaths),
-            )
-          })())
-        }
+      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(textPlan)
+      if (fallbackTextShapes.length > 0) {
+        throw new Error(`Unable to resolve outline font for IDML export: ${textPlan.key}`)
       }
-
-      textItems.push(...(await Promise.all(outlinedGraphemeTasks)).filter((item): item is string => item !== null))
+      for (const [shapeIndex, shape] of outlineShapes.entries()) {
+        const geometryPaths = convertOpenTypeCommandsToGeometryPaths(shape.commands)
+        if (geometryPaths.length === 0) continue
+        localItemSequence += 1
+        const itemId = `sggGlyph_${String(pageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
+        const itemName = `${page.name} / ${textPlan.key} / glyph ${shapeIndex + 1}`
+        const colorSignature = `${shape.color.r},${shape.color.g},${shape.color.b}`
+        textItems.push(renderIdmlElement(
+          "Polygon",
+          {
+            Self: itemId,
+            Name: itemName,
+            ItemLayer: LAYER_TYPOGRAPHY_ID,
+            ItemTransform: isIdentityMatrix(itemMatrix) ? undefined : formatMatrix(itemMatrix),
+            Visible: true,
+            FillColor: colorIdBySignature.get(colorSignature) ?? COLOR_BLACK_ID,
+            StrokeColor: SWATCH_NONE_ID,
+            StrokeWeight: 0,
+          },
+          renderPathGeometry(geometryPaths),
+        ))
+      }
     }
 
     spreads.push({

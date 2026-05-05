@@ -314,6 +314,16 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     ]
   },
   {
+    "id": "tooltip-export-progress",
+    "title": "Export Progress",
+    "blocks": [
+      {
+        "type": "paragraph",
+        "text": "Long exports report preparation, page rendering, finalization, and elapsed time. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled."
+      }
+    ]
+  },
+  {
     "id": "tooltip-fix-loose-page",
     "title": "If The Page Feels Loose",
     "blocks": [

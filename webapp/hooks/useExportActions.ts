@@ -1,17 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { flushSync } from "react-dom"
-import jsPDF from "jspdf"
-import { getFontVariants, isFontFamily, type FontFamily } from "@/lib/config/fonts"
-import { attachPdfOutputIntent, type PdfExportColorMode, type PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
-import { renderSwissGridVectorPdf } from "@/lib/pdf-vector-export"
-import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
-import { renderSwissGridIdmlProject } from "@/lib/idml-export"
-import {
-  preloadFontFileMetricFaces,
-  type FontFileMetricFace,
-} from "@/lib/font-file-text-metrics-engine"
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
-import { ensurePdfFontsRegistered } from "@/lib/pdf-font-registry"
+import type { ExportEngineResult } from "@/lib/export-engine"
 import { type LoadedProject } from "@/lib/document-session"
 import { toProjectFilename } from "@/lib/project-file-naming"
 import {
@@ -22,14 +11,17 @@ import {
   toArrayBuffer,
 } from "@/lib/project-transfer"
 import {
-  buildResolvedProjectPageExportSources,
+  getProjectExportFontWarmupSignature,
+  warmDefaultExportFonts,
+  warmProjectExportFonts,
+} from "@/lib/export-font-warmup"
+import {
   filterProjectByExportRange,
   normalizeProjectExportPageRange,
   type ProjectPageVisibilitySettings,
   type ProjectExportPageRange,
-  type ResolvedProjectPageExportSource,
 } from "@/lib/project-page-export-source"
-import { mmToPt } from "@/lib/units"
+import { runProjectExport } from "@/lib/project-export-runner"
 
 export type ExportFormat = "pdf" | "svg" | "idml" | "json"
 
@@ -39,7 +31,7 @@ export type ExportProgressState = {
   totalSteps: number
   currentPageNumber: number
   currentLabel: string
-  phase: "rendering" | "packaging"
+  phase: "preparing" | "rendering" | "packaging"
 }
 
 type PrintPresetConfig = {
@@ -99,37 +91,10 @@ export const PRINT_PRESETS: Array<{
 
 export const EXPORT_DIALOG_PRINT_PRESETS = PRINT_PRESETS.filter((preset) => preset.key !== "offset_final")
 
-const PRINT_CROP_OFFSET_MM = 2
-const PRINT_CROP_LENGTH_MM = 5
 const EXPORT_PROGRESS_BATCH_SIZE = 8
 const EXPORT_PROGRESS_MIN_INTERVAL_MS = 100
-
-function collectPdfFontFamilies(pages: ResolvedProjectPageExportSource[]): Set<FontFamily> {
-  const fontsToRegister = new Set<FontFamily>()
-  pages.forEach((page) => {
-    fontsToRegister.add(page.baseFont)
-    Object.values(page.previewLayout?.blockFontFamilies ?? {}).forEach((family) => {
-      if (isFontFamily(family)) fontsToRegister.add(family)
-    })
-    Object.values(page.previewLayout?.blockTextFormatRuns ?? {}).forEach((runs) => {
-      if (!Array.isArray(runs)) return
-      runs.forEach((run) => {
-        if (isFontFamily(run.fontFamily)) fontsToRegister.add(run.fontFamily)
-      })
-    })
-  })
-  return fontsToRegister
-}
-
-function collectExportTextMetricFaces(pages: ResolvedProjectPageExportSource[]): FontFileMetricFace[] {
-  return [...collectPdfFontFamilies(pages)].flatMap((fontFamily) => (
-    getFontVariants(fontFamily).map((variant) => ({
-      fontFamily,
-      fontWeight: variant.weight,
-      italic: variant.italic,
-    }))
-  ))
-}
+const LARGE_EXPORT_PROGRESS_THRESHOLD = 250
+const LARGE_EXPORT_PROGRESS_PAGE_INTERVAL = 250
 
 class ExportCancelledError extends Error {
   constructor() {
@@ -149,35 +114,64 @@ function isSamePrintPresetConfig(left: PrintPresetConfig, right: PrintPresetConf
     && left.registrationMarks === right.registrationMarks
 }
 
+function formatExportDuration(durationMs: number): string {
+  return `${(durationMs / 1000).toFixed(2)}s`
+}
+
+function logExportEnginePerformance(label: string, result: ExportEngineResult): void {
+  if (typeof console === "undefined") return
+  const rows = result.timings.map((entry) => ({
+    phase: entry.label,
+    duration: formatExportDuration(entry.durationMs),
+    extra: entry.extra,
+  }))
+  const total = formatExportDuration(result.totalDurationMs)
+  console.info(`[Swiss Grid Generator] ${label} export performance total ${total}`)
+  if (typeof console.table === "function") {
+    console.table(rows)
+  } else {
+    console.info(rows)
+  }
+}
+
+function logExportDownloadPerformance(label: string, durationMs: number, byteLength: number): void {
+  if (typeof console === "undefined") return
+  const sizeMb = byteLength / 1024 / 1024
+  console.info(`[Swiss Grid Generator] ${label} download handoff ${formatExportDuration(durationMs)} size=${sizeMb.toFixed(2)}MB`)
+}
+
+function logExportActionPerformance(label: string, timings: Array<{ phase: string; durationMs: number }>, totalDurationMs: number): void {
+  if (typeof console === "undefined") return
+  const rows = timings.map((entry) => ({
+    phase: entry.phase,
+    duration: formatExportDuration(entry.durationMs),
+  }))
+  console.info(`[Swiss Grid Generator] ${label} export action total ${formatExportDuration(totalDurationMs)}`)
+  if (typeof console.table === "function") {
+    console.table(rows)
+  } else {
+    console.info(rows)
+  }
+}
+
+function shouldForwardExportProgress(state: ExportProgressState, force = false): boolean {
+  if (force) return true
+  if (state.totalSteps < LARGE_EXPORT_PROGRESS_THRESHOLD) return true
+  if (state.completedSteps === 0 || state.completedSteps === state.totalSteps) return true
+  return state.completedSteps % LARGE_EXPORT_PROGRESS_PAGE_INTERVAL === 0
+}
+
+function publishProgressWithoutBlockingExport(
+  publishProgress: (state: ExportProgressState, force?: boolean) => Promise<void>,
+  state: ExportProgressState,
+  force: boolean,
+): void {
+  void publishProgress(state, force)
+}
+
 function resolveActivePrintPresetKey(config: PrintPresetConfig): PrintPresetKey | null {
   const match = PRINT_PRESETS.find((preset) => isSamePrintPresetConfig(preset.config, config))
   return match?.key ?? null
-}
-
-function resolvePdfExportColorManagement(config: Pick<PrintPresetConfig, "enabled">): {
-  colorMode: PdfExportColorMode
-  outputIntentProfileId: PdfOutputIntentProfileId
-} {
-  if (!config.enabled) {
-    return {
-      colorMode: "rgb",
-      outputIntentProfileId: "srgb",
-    }
-  }
-
-  return {
-    colorMode: "cmyk",
-    outputIntentProfileId: "coated-fogra39",
-  }
-}
-
-function normalizeFilenameSegment(value: string): string {
-  const trimmed = value.trim().toLowerCase()
-  if (!trimmed) return "page"
-  return trimmed
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    || "page"
 }
 
 function resolveExportDownloadExtension(format: ExportFormat, selectedPageCount: number): string {
@@ -265,6 +259,7 @@ export function useExportActions(ctx: ExportActionsContext) {
   const [saveAuthorDraft, setSaveAuthorDraft] = useState("")
   const [jsonCompressionEnabledDraft, setJsonCompressionEnabledDraft] = useState(false)
   const [exportProjectOverride, setExportProjectOverride] = useState<LoadedProject<Record<string, unknown>> | null>(null)
+  const warmedProjectFontSignatureRef = useRef("")
 
   const getCurrentProjectWithMetadata = useCallback(() => ({
     ...getCurrentProjectSnapshot(),
@@ -290,6 +285,33 @@ export function useExportActions(ctx: ExportActionsContext) {
   const activeProjectMetadata = activeProject.metadata
 
   const projectPageCount = activeProject.pages.length
+
+  useEffect(() => {
+    void warmDefaultExportFonts()
+  }, [])
+
+  useEffect(() => {
+    if (currentProject.pages.length === 0) return
+    const timeoutId = window.setTimeout(() => {
+      const range = {
+        fromPage: 1,
+        toPage: currentProject.pages.length,
+      }
+      const signature = getProjectExportFontWarmupSignature({
+        project: currentProject,
+        range,
+        visibilitySettings: exportViewSettings,
+      })
+      if (signature === warmedProjectFontSignatureRef.current) return
+      warmedProjectFontSignatureRef.current = signature
+      void warmProjectExportFonts({
+        project: currentProject,
+        range,
+        visibilitySettings: exportViewSettings,
+      })
+    }, 650)
+    return () => window.clearTimeout(timeoutId)
+  }, [currentProject, exportViewSettings])
 
   const normalizedRange = useMemo(() => normalizeProjectExportPageRange(
     projectPageCount,
@@ -403,13 +425,20 @@ export function useExportActions(ctx: ExportActionsContext) {
     setSaveDescriptionDraft(currentProject.metadata.description ?? "")
     setSaveAuthorDraft(currentProject.metadata.author ?? "")
     setIsExportDialogOpen(true)
+    void warmProjectExportFonts({
+      project: currentProject,
+      range: defaultRange,
+      visibilitySettings: exportViewSettings,
+    })
   }, [
     currentProject.metadata.author,
     currentProject.metadata.description,
     currentProject.metadata.title,
+    currentProject,
     defaultPdfFilename,
     exportBleedMm,
     exportRegistrationMarks,
+    exportViewSettings,
     persistedPrintPresetEnabled,
     projectPageCount,
   ])
@@ -431,10 +460,16 @@ export function useExportActions(ctx: ExportActionsContext) {
     setSaveDescriptionDraft(project.metadata.description ?? "")
     setSaveAuthorDraft(project.metadata.author ?? "")
     setIsExportDialogOpen(true)
+    void warmProjectExportFonts({
+      project,
+      range: defaultRange,
+      visibilitySettings: exportViewSettings,
+    })
   }, [
     defaultPdfFilename,
     exportBleedMm,
     exportRegistrationMarks,
+    exportViewSettings,
     persistedPrintPresetEnabled,
   ])
 
@@ -448,8 +483,20 @@ export function useExportActions(ctx: ExportActionsContext) {
     anchor.href = url
     anchor.download = filename
     anchor.click()
-    URL.revokeObjectURL(url)
+    window.setTimeout(() => URL.revokeObjectURL(url), 0)
   }, [])
+
+  const downloadBytes = useCallback((bytes: Uint8Array, mimeType: string, filename: string) => {
+    const backingBuffer = bytes.buffer
+    const blobPart: BlobPart = backingBuffer instanceof ArrayBuffer
+      ? (
+        bytes.byteOffset === 0 && bytes.byteLength === backingBuffer.byteLength
+          ? backingBuffer
+          : backingBuffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
+      )
+      : bytes.slice().buffer
+    downloadBlob(new Blob([blobPart], { type: mimeType }), filename)
+  }, [downloadBlob])
 
   const yieldToBrowser = useCallback(async () => {
     await new Promise<void>((resolve) => {
@@ -472,6 +519,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     return async (state: ExportProgressState, force = false) => {
       const now = typeof performance !== "undefined" ? performance.now() : Date.now()
       const shouldPublish = force
+        || state.phase === "preparing"
         || state.phase === "packaging"
         || state.completedSteps === 0
         || state.completedSteps === state.totalSteps
@@ -505,288 +553,111 @@ export function useExportActions(ctx: ExportActionsContext) {
   }, [])
 
   const exportPDF = useCallback(async (
-    pages: ResolvedProjectPageExportSource[],
+    project: LoadedProject<Record<string, unknown>>,
+    range: ProjectExportPageRange,
+    visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
     printPresetConfig: PrintPresetConfig,
     exportMetadata: ExportMetadataDraft,
-    layoutEngine: LayoutEngineContract,
   ) => {
-    if (pages.length === 0) return
-
-    const { enabled, bleedMm, registrationMarks } = printPresetConfig
-    const { colorMode, outputIntentProfileId } = resolvePdfExportColorManagement({ enabled })
-    const bleedPt = mmToPt(bleedMm)
-    const cropOffsetPt = mmToPt(PRINT_CROP_OFFSET_MM)
-    const cropLengthPt = mmToPt(PRINT_CROP_LENGTH_MM)
-    const cropMarginPt = bleedPt + cropOffsetPt + cropLengthPt
-    const originX = enabled ? cropMarginPt : 0
-    const originY = enabled ? cropMarginPt : 0
-    const firstDimensions = {
-      width: pages[0].result.pageSizePt.width,
-      height: pages[0].result.pageSizePt.height,
-    }
-    const firstPageWidth = enabled ? firstDimensions.width + cropMarginPt * 2 : firstDimensions.width
-    const firstPageHeight = enabled ? firstDimensions.height + cropMarginPt * 2 : firstDimensions.height
-
-    const pdf = new jsPDF({
-      orientation: firstPageWidth > firstPageHeight ? "landscape" : "portrait",
-      unit: "pt",
-      format: [firstPageWidth, firstPageHeight],
-      compress: true,
-      putOnlyUsedFonts: true,
-      precision: 12,
-      floatPrecision: "smart",
-      userUnit: 1,
-    })
-    const trimmedTitle = exportMetadata.title.trim()
-    const trimmedDescription = exportMetadata.description.trim()
-    const trimmedAuthor = exportMetadata.author.trim()
-    const parsedCreatedAt = exportMetadata.createdAt ? Date.parse(exportMetadata.createdAt) : Number.NaN
-    pdf.setDocumentProperties({
-      title: trimmedTitle || filename,
-      author: trimmedAuthor || "Generated by Swiss Grid Generator",
-      subject: trimmedDescription || "Swiss Grid Vector Export",
-      creator: "Swiss Grid Generator",
-      keywords: "swiss grid, typography, modular grid, vector pdf",
-    })
-    pdf.setCreationDate(Number.isNaN(parsedCreatedAt) ? new Date() : new Date(parsedCreatedAt))
-    pdf.setLanguage("en-US")
-    pdf.viewerPreferences({
-      DisplayDocTitle: true,
-      PrintScaling: "None",
-      PickTrayByPDFSize: true,
-      PrintArea: "TrimBox",
-      PrintClip: "TrimBox",
-      ViewArea: "TrimBox",
-      ViewClip: "TrimBox",
-    })
-
-    await ensurePdfFontsRegistered(pdf, collectPdfFontFamilies(pages))
-    await preloadFontFileMetricFaces(collectExportTextMetricFaces(pages))
-    await attachPdfOutputIntent(pdf, outputIntentProfileId)
+    if (project.pages.length === 0) return
     const publishProgress = createProgressPublisher()
-
-    for (const [index, page] of pages.entries()) {
-      throwIfExportCancelled()
-      const dimensions = {
-        width: page.result.pageSizePt.width,
-        height: page.result.pageSizePt.height,
-      }
-      const pageWidth = enabled ? dimensions.width + cropMarginPt * 2 : dimensions.width
-      const pageHeight = enabled ? dimensions.height + cropMarginPt * 2 : dimensions.height
-
-      if (index > 0) {
-        pdf.addPage([pageWidth, pageHeight], pageWidth > pageHeight ? "landscape" : "portrait")
-      }
-
-      renderSwissGridVectorPdf({
-        pdf,
-        width: dimensions.width,
-        height: dimensions.height,
-        result: page.result,
-        layout: page.previewLayout,
-        documentVariableContext: page.documentVariableContext,
-        baseFont: page.baseFont,
-        originX,
-        originY,
-        colorMode,
-        imageColorScheme: page.imageColorScheme,
-        canvasBackground: page.resolvedCanvasBackground,
-        printPro: {
-          enabled,
-          bleedPt,
-          cropMarkOffsetPt: cropOffsetPt,
-          cropMarkLengthPt: cropLengthPt,
-          showBleedGuide: enabled,
-          registrationMarks,
-        },
-        rotation: page.uiSettings.rotation,
-        showBaselines: page.uiSettings.showBaselines,
-        showModules: page.uiSettings.showModules,
-        showMargins: page.uiSettings.showMargins,
-        showImagePlaceholders: page.uiSettings.showImagePlaceholders,
-        showTypography: page.uiSettings.showTypography,
-        layoutEngine,
-      })
-      throwIfExportCancelled()
-      await publishProgress({
-        format: "pdf",
-        completedSteps: index + 1,
-        totalSteps: pages.length,
-        currentPageNumber: index + 1,
-        currentLabel: page.name || `Page ${index + 1}`,
-        phase: "rendering",
-      })
+    const result = await runProjectExport({
+      formats: ["pdf"],
+      project,
+      range,
+      visibilitySettings,
+      metadata: exportMetadata,
+      baseName: filename.replace(/\.pdf$/i, ""),
+      filenames: { pdf: filename },
+      printConfig: printPresetConfig,
+      onProgress: (progress) => {
+        const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
+        if (!shouldForwardExportProgress(progress, force)) return undefined
+        publishProgressWithoutBlockingExport(publishProgress, progress, force)
+        return undefined
+      },
+      assertNotCancelled: throwIfExportCancelled,
+    })
+    logExportEnginePerformance("PDF", result)
+    const output = result.outputs[0]
+    if (output?.format === "pdf") {
+      const downloadStartedAt = performance.now()
+      downloadBytes(output.bytes, output.mimeType, output.filename)
+      logExportDownloadPerformance("PDF", performance.now() - downloadStartedAt, output.bytes.byteLength)
     }
-
-    throwIfExportCancelled()
-    pdf.save(filename)
-  }, [createProgressPublisher, throwIfExportCancelled])
+  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
 
   const exportSVG = useCallback(async (
-    pages: ResolvedProjectPageExportSource[],
+    project: LoadedProject<Record<string, unknown>>,
+    range: ProjectExportPageRange,
+    visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
-    startPageNumber: number,
     exportMetadata: ExportMetadataDraft,
-    layoutEngine: LayoutEngineContract,
   ) => {
-    if (pages.length === 0) return
+    if (project.pages.length === 0) return
 
-    const trimmedTitle = exportMetadata.title.trim()
-    const trimmedDescription = exportMetadata.description.trim()
-    const trimmedAuthor = exportMetadata.author.trim()
-    const parsedCreatedAt = exportMetadata.createdAt ? Date.parse(exportMetadata.createdAt) : Number.NaN
-    const normalizedCreatedAt = Number.isNaN(parsedCreatedAt)
-      ? ""
-      : new Date(parsedCreatedAt).toISOString()
     const publishProgress = createProgressPublisher()
-
-    if (pages.length === 1) {
-      const page = pages[0]
-      await publishProgress({
-        format: "svg",
-        completedSteps: 0,
-        totalSteps: 1,
-        currentPageNumber: startPageNumber,
-        currentLabel: page.name || `Page ${startPageNumber}`,
-        phase: "rendering",
-      }, true)
-      throwIfExportCancelled()
-      await preloadFontFileMetricFaces(collectExportTextMetricFaces([page]))
-      const svg = await renderSwissGridVectorSvg({
-        width: page.result.pageSizePt.width,
-        height: page.result.pageSizePt.height,
-        result: page.result,
-        layout: page.previewLayout,
-        documentVariableContext: page.documentVariableContext,
-        baseFont: page.baseFont,
-        imageColorScheme: page.imageColorScheme,
-        canvasBackground: page.resolvedCanvasBackground,
-        rotation: page.uiSettings.rotation,
-        showBaselines: page.uiSettings.showBaselines,
-        showModules: page.uiSettings.showModules,
-        showMargins: page.uiSettings.showMargins,
-        showImagePlaceholders: page.uiSettings.showImagePlaceholders,
-        showTypography: page.uiSettings.showTypography,
-        layoutEngine,
-        title: trimmedTitle || filename,
-        description: trimmedDescription || "Swiss Grid Vector Export",
-        author: trimmedAuthor,
-        createdAt: normalizedCreatedAt,
-        creatorTool: "Swiss Grid Generator",
-      })
-      throwIfExportCancelled()
-      await publishProgress({
-        format: "svg",
-        completedSteps: 1,
-        totalSteps: 1,
-        currentPageNumber: startPageNumber,
-        currentLabel: page.name || `Page ${startPageNumber}`,
-        phase: "rendering",
-      }, true)
-      downloadBlob(new Blob([svg], { type: "image/svg+xml;charset=utf-8" }), filename)
-      return
+    const result = await runProjectExport({
+      formats: ["svg"],
+      project,
+      range,
+      visibilitySettings,
+      metadata: exportMetadata,
+      baseName: filename.replace(/\.(svg|zip)$/i, ""),
+      filenames: { svg: filename },
+      svgPackaging: "zip",
+      onProgress: (progress) => {
+        const force = progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps
+        if (!shouldForwardExportProgress(progress, force)) return undefined
+        publishProgressWithoutBlockingExport(publishProgress, progress, force)
+        return undefined
+      },
+      assertNotCancelled: throwIfExportCancelled,
+    })
+    logExportEnginePerformance("SVG", result)
+    const output = result.outputs[0]
+    if (output?.format === "svg" && output.packaging === "zip") {
+      const downloadStartedAt = performance.now()
+      downloadBytes(output.bytes, output.mimeType, output.filename)
+      logExportDownloadPerformance("SVG", performance.now() - downloadStartedAt, output.bytes.byteLength)
     }
-
-    const { strToU8, zipSync } = await import("fflate")
-    const zipEntries: Record<string, Uint8Array> = {}
-    const archiveBaseName = filename.replace(/\.(pdf|svg|idml|zip)$/i, "")
-    const normalizedArchiveBaseName = normalizeFilenameSegment(archiveBaseName)
-
-    for (const [index, page] of pages.entries()) {
-      throwIfExportCancelled()
-      await preloadFontFileMetricFaces(collectExportTextMetricFaces([page]))
-      const pageNumber = startPageNumber + index
-      const pageSlug = normalizeFilenameSegment(page.name || `page-${pageNumber}`)
-      const pageFilename = `${normalizedArchiveBaseName}_page_${String(pageNumber).padStart(3, "0")}_${pageSlug}.svg`
-      const svg = await renderSwissGridVectorSvg({
-        width: page.result.pageSizePt.width,
-        height: page.result.pageSizePt.height,
-        result: page.result,
-        layout: page.previewLayout,
-        documentVariableContext: page.documentVariableContext,
-        baseFont: page.baseFont,
-        imageColorScheme: page.imageColorScheme,
-        canvasBackground: page.resolvedCanvasBackground,
-        rotation: page.uiSettings.rotation,
-        showBaselines: page.uiSettings.showBaselines,
-        showModules: page.uiSettings.showModules,
-        showMargins: page.uiSettings.showMargins,
-        showImagePlaceholders: page.uiSettings.showImagePlaceholders,
-        showTypography: page.uiSettings.showTypography,
-        layoutEngine,
-        title: trimmedTitle ? `${trimmedTitle} - Page ${pageNumber}` : `${archiveBaseName} - Page ${pageNumber}`,
-        description: trimmedDescription || `Swiss Grid Vector Export - Page ${pageNumber}`,
-        author: trimmedAuthor,
-        createdAt: normalizedCreatedAt,
-        creatorTool: "Swiss Grid Generator",
-      })
-      throwIfExportCancelled()
-      zipEntries[pageFilename] = strToU8(svg)
-      await publishProgress({
-        format: "svg",
-        completedSteps: index + 1,
-        totalSteps: pages.length,
-        currentPageNumber: pageNumber,
-        currentLabel: page.name || `Page ${pageNumber}`,
-        phase: "rendering",
-      })
-    }
-
-    throwIfExportCancelled()
-    await publishProgress({
-      format: "svg",
-      completedSteps: pages.length,
-      totalSteps: pages.length,
-      currentPageNumber: startPageNumber + pages.length - 1,
-      currentLabel: "Packaging SVG archive",
-      phase: "packaging",
-    }, true)
-    throwIfExportCancelled()
-    const zipBytes = zipSync(zipEntries)
-    const zipBuffer = new ArrayBuffer(zipBytes.byteLength)
-    new Uint8Array(zipBuffer).set(zipBytes)
-    downloadBlob(new Blob([zipBuffer], { type: "application/zip" }), filename)
-  }, [createProgressPublisher, downloadBlob, throwIfExportCancelled])
+  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
 
   const exportIDML = useCallback(async (
     project: LoadedProject<Record<string, unknown>>,
+    range: ProjectExportPageRange,
+    visibilitySettings: ProjectPageVisibilitySettings,
     filename: string,
+    exportMetadata: ExportMetadataDraft,
   ) => {
+    if (project.pages.length === 0) return
+
     const publishProgress = createProgressPublisher()
-    const bytes = await renderSwissGridIdmlProject(
+    const result = await runProjectExport({
+      formats: ["idml"],
       project,
-      project.layoutEngine,
-      async (progress) => {
-        throwIfExportCancelled()
-        const isPackagingStep = progress.pageName === "Packaging IDML"
-        await publishProgress({
-          format: "idml",
-          completedSteps: progress.completedSteps,
-          totalSteps: progress.totalSteps,
-          currentPageNumber: progress.pageNumber,
-          currentLabel: progress.pageName,
-          phase: isPackagingStep ? "packaging" : "rendering",
-        }, isPackagingStep || progress.completedSteps === 1 || progress.completedSteps === progress.totalSteps)
+      range,
+      visibilitySettings,
+      metadata: exportMetadata,
+      baseName: filename.replace(/\.idml$/i, ""),
+      filenames: { idml: filename },
+      onProgress: (progress) => {
+        const force = progress.phase === "packaging" || progress.completedSteps === progress.totalSteps
+        if (!shouldForwardExportProgress(progress, force)) return undefined
+        publishProgressWithoutBlockingExport(publishProgress, progress, force)
+        return undefined
       },
-      throwIfExportCancelled,
-      exportViewSettings,
-    )
-    throwIfExportCancelled()
-    setExportProgress({
-      format: "idml",
-      completedSteps: project.pages.length,
-      totalSteps: project.pages.length,
-      currentPageNumber: project.pages.length,
-      currentLabel: "Packaging IDML",
-      phase: "packaging",
+      assertNotCancelled: throwIfExportCancelled,
     })
-    const buffer = new ArrayBuffer(bytes.byteLength)
-    new Uint8Array(buffer).set(bytes)
-    downloadBlob(new Blob([buffer], {
-      type: "application/vnd.adobe.indesign-idml-package",
-    }), filename)
-  }, [createProgressPublisher, downloadBlob, exportViewSettings, throwIfExportCancelled])
+    logExportEnginePerformance("IDML", result)
+    const output = result.outputs[0]
+    if (output?.format === "idml") {
+      const downloadStartedAt = performance.now()
+      downloadBytes(output.bytes, output.mimeType, output.filename)
+      logExportDownloadPerformance("IDML", performance.now() - downloadStartedAt, output.bytes.byteLength)
+    }
+  }, [createProgressPublisher, downloadBytes, throwIfExportCancelled])
 
   const handleExportFormatChange = useCallback((format: ExportFormat) => {
     setExportFormatDraft(format)
@@ -838,6 +709,14 @@ export function useExportActions(ctx: ExportActionsContext) {
   }, [applyPrintPresetConfig])
 
   const confirmExport = useCallback(async () => {
+    const actionStartedAt = performance.now()
+    const actionTimings: Array<{ phase: string; durationMs: number }> = []
+    const recordActionTiming = (phase: string, startedAt: number) => {
+      actionTimings.push({
+        phase,
+        durationMs: performance.now() - startedAt,
+      })
+    }
     const trimmedName = exportFilenameDraft.trim()
     if (!trimmedName) return
     if (exportFormatDraft !== "json" && selectedPageCount === 0) return
@@ -851,8 +730,10 @@ export function useExportActions(ctx: ExportActionsContext) {
       author: saveAuthorDraft.trim(),
       createdAt: nextCreatedAt,
     }
+    recordActionTiming("metadata prepare", actionStartedAt)
 
     if (exportFormatDraft === "json") {
+      const jsonStartedAt = performance.now()
       const selectedRange = {
         fromPage: normalizedRange.fromPage,
         toPage: normalizedRange.toPage,
@@ -870,11 +751,14 @@ export function useExportActions(ctx: ExportActionsContext) {
         onProjectMetadataChange(normalizedMetadata)
       }
       closeExportDialog()
+      recordActionTiming("json save and close", jsonStartedAt)
+      logExportActionPerformance("JSON", actionTimings, performance.now() - actionStartedAt)
       return
     }
 
     exportCancelRequestedRef.current = false
 
+    const progressStartedAt = performance.now()
     flushSync(() => {
       setExportProgress({
         format: exportFormatDraft,
@@ -882,11 +766,13 @@ export function useExportActions(ctx: ExportActionsContext) {
         totalSteps: selectedPageCount,
         currentPageNumber: normalizedRange.fromPage,
         currentLabel: "Preparing export",
-        phase: "rendering",
+        phase: "preparing",
       })
     })
     await waitForUiCommit()
+    recordActionTiming("initial progress paint", progressStartedAt)
 
+    const optionsStartedAt = performance.now()
     const filename = updateFilenameForExport(
       trimmedName,
       exportFormatDraft,
@@ -905,54 +791,57 @@ export function useExportActions(ctx: ExportActionsContext) {
       && selectedPageCount === 1
       && selectedSinglePage?.id === currentProjectSnapshot.activePageId
     )
+    recordActionTiming("export options prepare", optionsStartedAt)
 
     try {
       if (exportFormatDraft === "idml") {
-        const selectedProject = filterProjectByExportRange(currentProjectSnapshot, selectedRange)
+        const exportStartedAt = performance.now()
         setExportProgress((current) => current ? {
           ...current,
-          totalSteps: selectedProject.pages.length,
+          totalSteps: selectedPageCount,
           currentPageNumber: normalizedRange.fromPage,
-          currentLabel: selectedProject.pages[0]?.name || "Preparing IDML",
+          currentLabel: currentProjectSnapshot.pages[normalizedRange.startIndex]?.name || "Preparing IDML",
         } : current)
-        await exportIDML(selectedProject, filename)
+        await exportIDML(currentProjectSnapshot, selectedRange, exportViewSettings, filename, normalizedMetadata)
+        recordActionTiming("idml engine and download", exportStartedAt)
+        const closeStartedAt = performance.now()
         closeExportDialog()
+        recordActionTiming("close dialog", closeStartedAt)
         return
       }
 
       if (exportFormatDraft === "pdf") {
-        const resolvedPages = buildResolvedProjectPageExportSources(
-          currentProjectSnapshot,
-          selectedRange,
-          exportViewSettings,
-        )
+        const exportStartedAt = performance.now()
         if (shouldPersistActivePageExportSettings) {
           setPersistedPrintPresetEnabled(printPresetEnabledDraft)
           setExportBleedMm(bleedMm)
           setExportRegistrationMarks(exportRegistrationMarksDraft)
         }
-        await exportPDF(resolvedPages, filename, {
+        await exportPDF(currentProjectSnapshot, selectedRange, exportViewSettings, filename, {
           enabled: printPresetEnabledDraft,
           bleedMm,
           registrationMarks: exportRegistrationMarksDraft,
-        }, normalizedMetadata, currentProjectSnapshot.layoutEngine)
+        }, normalizedMetadata)
+        recordActionTiming("pdf engine and download", exportStartedAt)
       } else {
-        const resolvedPages = buildResolvedProjectPageExportSources(
-          currentProjectSnapshot,
-          selectedRange,
-          exportViewSettings,
-        )
-        await exportSVG(resolvedPages, filename, normalizedRange.fromPage, normalizedMetadata, currentProjectSnapshot.layoutEngine)
+        const exportStartedAt = performance.now()
+        await exportSVG(currentProjectSnapshot, selectedRange, exportViewSettings, filename, normalizedMetadata)
+        recordActionTiming("svg engine and download", exportStartedAt)
       }
 
+      const closeStartedAt = performance.now()
       closeExportDialog()
+      recordActionTiming("close dialog", closeStartedAt)
     } catch (error) {
       if (!isExportCancelledError(error)) {
         throw error
       }
     } finally {
+      const cleanupStartedAt = performance.now()
       exportCancelRequestedRef.current = false
       setExportProgress(null)
+      recordActionTiming("cleanup progress state", cleanupStartedAt)
+      logExportActionPerformance(exportFormatDraft.toUpperCase(), actionTimings, performance.now() - actionStartedAt)
     }
   }, [
     activeProject,

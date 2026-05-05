@@ -143,10 +143,13 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Export opens with the full project page range selected by default
 - `PDF`, `SVG`, and `IDML` all export the selected page range using each page's stored document size
 - All export formats are vector-based rather than raster screenshot captures
+- `PDF`, `SVG`, and `IDML` share one deterministic export engine fed by the same project snapshot and `PageExportPlan` pipeline
 - Multi-page `SVG` export downloads a ZIP with one SVG per page
+- Export progress reports preparation, page rendering, finalization, and elapsed time
 - `Esc` closes the export dialog when idle and cancels a running export at the next safe checkpoint
 - PDF print options: bleed, registration-style marks, and output intents
 - PDF presets: **Digital Print** (RGB / sRGB) and **Press Proof** (CMYK / FOGRA39)
+- PDF export embeds verified local font assets only; configured font files are checked during asset generation
 - Use `SVG` or `IDML` when you need typography frozen as non-live geometry
 - `SVG` converts typography to exact glyph outlines, so exported text is not live-editable
 - `IDML` separates **Guides**, **Typography**, and **Placeholders** into distinct layers and freezes typography geometry
@@ -206,10 +209,19 @@ That means preset thumbnails, the live preview, drag previews, edit geometry, an
 
 Performance measurement for the canonical 2.0 layout planner is documented in [PERFORMANCE.md](PERFORMANCE.md). Use `NEXT_PUBLIC_LAYOUT_PROFILING=1 npm run dev` for live timing logs and `npm run benchmark:layout` from `webapp/` for deterministic stress-page planning runs.
 
+Vector export performance can be measured from `webapp/` with:
+
+```bash
+npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000 --format pdf --out ../tmp/export-debug
+```
+
+The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes.
+
 Before release, run:
 
 ```bash
 cd webapp
+npm run fonts:verify
 npm run lint
 npx tsc --noEmit
 npm run test:text-metrics

@@ -480,11 +480,15 @@ This contract is part of the layout semantics. Future layout math changes must b
 
 ### PDF Font Embedding Parity
 
-PDF export embeds selected Google font assets before layout/draw:
-- `regular`, `bold`, `italic`, `bolditalic` are registered per family.
-- If local files are missing, registry can fall back to Google Fonts repository sources.
+PDF export embeds selected local font assets before layout/draw:
+- only font faces actually used by the selected export pages are registered;
+- font files come from `public/fonts/google/<slug>/<weight>[italic].ttf`;
+- missing configured font files are build-time verification errors via `npm run fonts:verify`;
+- runtime export does not discover or download remote Google Fonts repository sources.
 
 The export plan is computed before drawing with the same deterministic metrics pipeline as live preview. PDF then renders vector text from that plan; SVG and IDML freeze typography to outline geometry for downstream fidelity.
+
+PDF, SVG, and IDML are entered through the shared project export runner. The runner resolves selected project pages, page numbers, document variables, visibility state, and font warmup inputs once, then hands canonical planned pages to the format renderers.
 
 Export rendering note:
 - All export targets remain vector-based.

@@ -192,9 +192,11 @@ Current capability inventory for Swiss Grid Generator.
 - `IDML v1` selected-range export.
 - Export defaults to the full project page range.
 - Export dialog includes header display toggles for baselines, margins, modules, typography, and image placeholders, plus JSON/PDF/SVG/IDML format switching, page-range controls for multipage projects, filename field, export progress, a collapsible metadata section, and a fixed header/footer layout.
+- Export progress displays preparation, page rendering, finalization, percentage, and elapsed time.
 - Export is WYSIWYG with respect to the current preview visibility state for baselines, margins, modules, typography, and image placeholders.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.
+- PDF, SVG, and IDML are run through the shared `ProjectExportRunner` / `ExportEngine` path, so they consume the same resolved project pages and canonical `PageExportPlan` data.
 - Export metadata fields (`Project Title`, `Subject`, `Author`) are editable in the dialog for all formats.
 - `PDF` print presets:
   - `Digital Print`
@@ -203,6 +205,7 @@ Current capability inventory for Swiss Grid Generator.
 - Embedded PDF output intents:
   - `sRGB IEC61966-2.1` for digital export
   - `Coated FOGRA39` for print export
+- PDF font embedding uses verified local font assets only; missing configured assets fail `npm run fonts:verify` during asset generation.
 - PDF guide groups exported as separate form objects for margins, modules, and baselines.
 - PDF exports preserve available project metadata (`title`, `description`, `author`, `createdAt`) where the format supports it.
 - Use `SVG` or `IDML` when typography must be frozen as non-live geometry.

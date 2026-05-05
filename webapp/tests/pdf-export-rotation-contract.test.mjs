@@ -61,8 +61,13 @@ test("page export plan resolves paragraph and inline text colors through the tex
 
 test("pdf export consumes the shared page export plan instead of rebuilding layout inline", () => {
   const source = readText("lib/pdf-vector-export.ts")
-  assert.match(source, /import\s+\{\s*buildPageExportPlan\s*\}\s+from\s+"@\/lib\/page-export-plan"/)
-  assert.match(source, /const\s+exportPlan\s*=\s*buildPageExportPlan\(\{[\s\S]*?showBaselines,[\s\S]*?showModules,[\s\S]*?showMargins,[\s\S]*?showImagePlaceholders,[\s\S]*?showTypography,/)
+  const plannedSource = readText("lib/planned-page-export-source.ts")
+  assert.match(source, /import\s+\{\s*buildPageExportPlan,[\s\S]*?\}\s+from\s+"@\/lib\/page-export-plan"/)
+  assert.match(source, /exportPlan\?:\s*PageExportPlan/)
+  assert.match(source, /exportPlan:\s*providedExportPlan/)
+  assert.match(source, /const\s+exportPlan\s*=\s*providedExportPlan\s*\?\?\s*buildPageExportPlan\(\{[\s\S]*?showBaselines,[\s\S]*?showModules,[\s\S]*?showMargins,[\s\S]*?showImagePlaceholders,[\s\S]*?showTypography,/)
+  assert.match(plannedSource, /export\s+type\s+PlannedProjectPageExportSource\s*=\s*ResolvedProjectPageExportSource\s*&\s*\{[\s\S]*?exportPlan:\s*PageExportPlan/)
+  assert.match(plannedSource, /exportPlan:\s*buildPageExportPlan\(\{[\s\S]*?source\.uiSettings\.showTypography/)
   assert.doesNotMatch(source, /monochromeGuides/)
 })
 
@@ -85,13 +90,23 @@ test("pdf export rotates text anchors around paragraph origin before page transf
 test("pdf export wraps guide groups into form objects and clips trimmed guides to the final page box", () => {
   const source = readText("lib/pdf-vector-export.ts")
   assert.match(source, /type\s+PdfWithFormObjects\s*=\s*jsPDF\s*&/)
+  assert.match(source, /function\s+buildGuideFormObjectKey\(\s*guideGroup:\s*PageExportGuideGroup,\s*transformFingerprint:\s*string,/)
   assert.match(source, /const\s+drawGuideGroup\s*=\s*\(key:\s*string,\s*draw:\s*\(\)\s*=>\s*void\)/)
   assert.match(source, /beginFormObject\(0,\s*0,\s*pageWidth,\s*pageHeight,\s*identityMatrix\)/)
   assert.match(source, /endFormObject\(key\)/)
   assert.match(source, /doFormObject\(key,\s*identityMatrix\)/)
   assert.match(source, /for\s*\(const\s+guideGroup\s+of\s+exportPlan\.guideGroups\)/)
-  assert.match(source, /drawGuideGroup\(`swiss_guides_\$\{guideGroup\.id\}`,\s*\(\)\s*=>\s*\{/)
+  assert.match(source, /drawGuideGroup\(buildGuideFormObjectKey\(guideGroup,\s*guideTransformFingerprint\),\s*\(\)\s*=>\s*\{/)
   assert.match(source, /if\s*\(guideGroup\.clipToPage\)\s*\{[\s\S]*?pdf\.rect\(originX,\s*originY,\s*width,\s*height,\s*null\)/)
+})
+
+test("pdf guide form object cache keys include geometry so rhythm pages cannot reuse another page grid", () => {
+  const source = readText("lib/pdf-vector-export.ts")
+  assert.match(source, /hash\s*=\s*appendHashText\(hash,\s*guideGroup\.id\)/)
+  assert.match(source, /hash\s*=\s*appendHashText\(hash,\s*transformFingerprint\)/)
+  assert.match(source, /for\s*\(const\s+rect\s+of\s+guideGroup\.rects\)\s*\{[\s\S]*?formatCacheNumber\(rect\.x\)[\s\S]*?formatCacheNumber\(rect\.height\)/)
+  assert.match(source, /for\s*\(const\s+line\s+of\s+guideGroup\.lines\)\s*\{[\s\S]*?formatCacheNumber\(line\.x1\)[\s\S]*?formatCacheNumber\(line\.y2\)/)
+  assert.doesNotMatch(source, /drawGuideGroup\(`swiss_guides_\$\{guideGroup\.id\}`/)
 })
 
 test("pdf export uses the shared ordered layer list for placeholders and text", () => {
@@ -106,25 +121,47 @@ test("pdf export applies tracking through charSpace instead of horizontal scalin
   assert.match(source, /pdf\.text\(line,\s*point\.x,\s*point\.y,\s*\{[\s\S]*?charSpace:\s*getTrackingLetterSpacing\(fontSize\s*\*\s*scale,\s*trackingScale\)[\s\S]*?\}\)/)
 })
 
-test("pdf export draws pre-positioned tracking segments with explicit left anchors", () => {
+test("vector text outlines use pre-positioned tracking segments with explicit left anchors", () => {
+  const source = readText("lib/vector-text-outline.ts")
+  assert.match(source, /if\s*\(textPlan\.graphemeLines\.length\s*>\s*0\)/)
+  assert.match(source, /for\s*\(const\s+graphemes\s+of\s+textPlan\.graphemeLines\)/)
+  assert.match(source, /text:\s*grapheme\.text,[\s\S]*?x:\s*grapheme\.x,[\s\S]*?y:\s*grapheme\.y,/)
+  assert.match(source, /trackingScale:\s*0/)
+  assert.match(source, /for\s*\(const\s+segments\s+of\s+textPlan\.segmentLines\)/)
+})
+
+test("pdf export isolates placeholder opacity from later live text fills", () => {
+  const source = readText("lib/pdf-vector-export.ts")
+  assert.match(source, /const\s+drawImagePlan\s*=\s*\(imagePlan:[\s\S]*?\)\s*=>\s*\{[\s\S]*?pdf\.saveGraphicsState\(\)/)
+  assert.match(source, /try\s*\{[\s\S]*?setPdfOpacity\(imagePlan\.opacity\)[\s\S]*?drawFilledRect/)
+  assert.match(source, /finally\s*\{[\s\S]*?pdf\.restoreGraphicsState\(\)/)
+  assert.match(source, /const\s+rotationOrigin\s*=\s*\{\s*x:\s*plan\.rotationOriginX,\s*y:\s*plan\.rotationOriginY\s*\}[\s\S]*?pdf\.saveGraphicsState\(\)[\s\S]*?setPdfOpacity\(1\)[\s\S]*?setTextColor\(pdf,[\s\S]*?finally\s*\{[\s\S]*?pdf\.restoreGraphicsState\(\)/)
+})
+
+test("pdf export uses positioned live text segments instead of a second glyph-outline renderer", () => {
   const source = readText("lib/pdf-vector-export.ts")
   assert.match(source, /if\s*\(plan\.graphemeLines\.length\s*>\s*0\)/)
   assert.match(source, /for\s*\(const\s+graphemes\s+of\s+plan\.graphemeLines\)/)
   assert.match(source, /drawText\(\s*grapheme\.text,\s*grapheme\.x,\s*grapheme\.y,\s*"left",\s*0,/)
   assert.match(source, /for\s*\(const\s+segments\s+of\s+plan\.segmentLines\)/)
+  assert.match(source, /drawText\(\s*segment\.text,\s*segment\.x,\s*segment\.y,\s*"left",\s*segment\.trackingScale,/)
+  assert.doesNotMatch(source, /resolveTextPlanVectorShapes\(plan\)/)
+  assert.doesNotMatch(source, /pdf\.path\(path,\s*"F"\)/)
 })
 
 test("pdf export action forwards placeholder visibility and active image color scheme", () => {
-  const source = readText("hooks/useExportActions.ts")
+  const source = readText("lib/export-engine.ts")
   assert.match(source, /renderSwissGridVectorPdf\(\{[\s\S]*?imageColorScheme:\s*page\.imageColorScheme,[\s\S]*?canvasBackground:\s*page\.resolvedCanvasBackground,[\s\S]*?showImagePlaceholders:\s*page\.uiSettings\.showImagePlaceholders,[\s\S]*?showTypography:\s*page\.uiSettings\.showTypography,/)
+  assert.match(source, /exportPlan:\s*page\.exportPlan/)
 })
 
 test("pdf export registers inline format-run fonts before rendering text", () => {
-  const source = readText("hooks/useExportActions.ts")
-  assert.match(source, /function\s+collectPdfFontFamilies\(pages:\s*ResolvedProjectPageExportSource\[\]\):\s*Set<FontFamily>/)
-  assert.match(source, /page\.previewLayout\?\.blockTextFormatRuns/)
+  const source = readText("lib/export-engine.ts")
+  assert.match(source, /function\s+collectPdfFontFaces\(pages:\s*readonly\s+ResolvedProjectPageExportSource\[\]\):\s*PdfFontRegistrationFace\[\]/)
+  assert.match(source, /layout\.blockTextFormatRuns\?\.\[key\]\?\.forEach/)
   assert.match(source, /isFontFamily\(run\.fontFamily\)/)
-  assert.match(source, /ensurePdfFontsRegistered\(pdf,\s*collectPdfFontFamilies\(pages\)\)/)
+  assert.match(source, /const\s+pdfFontFaces\s*=\s*collectPdfFontFaces\(plannedPages\)/)
+  assert.match(source, /ensurePdfFontFacesRegistered\(pdf,\s*pdfFontFaces\)/)
 })
 
 test("canvas preview loads inline format-run fonts before measuring text", () => {
@@ -137,10 +174,14 @@ test("canvas preview loads inline format-run fonts before measuring text", () =>
   assert.match(metricsSource, /collectFontFileMetricFacesFromBlocks\(fontBlocks\)/)
 })
 
-test("pdf font registry falls back to bundled local assets when remote discovery fails", () => {
+test("pdf font registry requires verified local assets instead of runtime remote discovery", () => {
   const source = readText("lib/pdf-font-registry.ts")
-  assert.match(source, /const\s+response\s*=\s*await\s+fetch\(apiUrl\)\.catch\(\(\)\s*=>\s*null\)/)
-  assert.match(source, /if\s*\(!response\)\s*continue/)
+  const packageSource = readText("package.json")
+  assert.match(source, /Failed to load required font asset/)
+  assert.match(source, /preloadPdfFontFaces/)
+  assert.doesNotMatch(source, /api\.github\.com|raw\.githubusercontent\.com|discoverGoogleRepoVariableSources/)
+  assert.match(packageSource, /"fonts:verify":\s*"node --import \.\/scripts\/register-ts-alias-loader\.mjs scripts\/verify-font-assets\.mjs"/)
+  assert.match(packageSource, /"assets:generate":[\s\S]*npm run fonts:verify/)
 })
 
 test("pdf export switches between rgb and cmyk setters based on export color mode", () => {
@@ -190,16 +231,17 @@ test("pdf output intent does not inject color spaces into the XObject dictionary
 })
 
 test("pdf export presets stay ordered from digital to offset and drive color-management mode", () => {
-  const source = readText("hooks/useExportActions.ts")
-  assert.match(source, /PRINT_PRESETS[\s\S]*key:\s*"digital_print"[\s\S]*key:\s*"press_proof"[\s\S]*key:\s*"offset_final"/)
-  assert.match(source, /EXPORT_DIALOG_PRINT_PRESETS\s*=\s*PRINT_PRESETS\.filter\(\(preset\)\s*=>\s*preset\.key\s*!==\s*"offset_final"\)/)
-  assert.match(source, /if\s*\(!config\.enabled\)\s*\{[\s\S]*colorMode:\s*"rgb"[\s\S]*outputIntentProfileId:\s*"srgb"/)
-  assert.match(source, /return\s*\{[\s\S]*colorMode:\s*"cmyk"[\s\S]*outputIntentProfileId:\s*"coated-fogra39"/)
+  const hookSource = readText("hooks/useExportActions.ts")
+  const engineSource = readText("lib/export-engine.ts")
+  assert.match(hookSource, /PRINT_PRESETS[\s\S]*key:\s*"digital_print"[\s\S]*key:\s*"press_proof"[\s\S]*key:\s*"offset_final"/)
+  assert.match(hookSource, /EXPORT_DIALOG_PRINT_PRESETS\s*=\s*PRINT_PRESETS\.filter\(\(preset\)\s*=>\s*preset\.key\s*!==\s*"offset_final"\)/)
+  assert.match(engineSource, /if\s*\(!config\.enabled\)\s*\{[\s\S]*colorMode:\s*"rgb"[\s\S]*outputIntentProfileId:\s*"srgb"/)
+  assert.match(engineSource, /return\s*\{[\s\S]*colorMode:\s*"cmyk"[\s\S]*outputIntentProfileId:\s*"coated-fogra39"/)
 })
 
 test("export dialog relies on print presets instead of a separate print-pro switch", () => {
   const source = readText("components/dialogs/ExportDialog.tsx")
-  assert.match(source, /Label>Print Presets<\/Label>/)
+  assert.match(source, /SectionHeaderRow\s+label="Print Presets"/)
   assert.match(source, /EXPORT_DIALOG_PRINT_PRESETS/)
   assert.match(source, /grid-cols-2/)
   assert.doesNotMatch(source, /Print Pro/)

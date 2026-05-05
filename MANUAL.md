@@ -74,6 +74,8 @@ Choose the export format according to what happens next. Use `PDF` for faithful 
 
 Before exporting, confirm the selected page range, the page order, the page numbering, the document size, and the output of editorial variables. On long documents or rotated pages, always make a visual check after export. Export should confirm a resolved layout, not compensate for an unresolved one.
 
+PDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time; use it as feedback for long documents, not as a reason to change layout decisions mid-export.
+
 ## 9. Keyboard and Fast Interaction
 
 ### Use shortcuts to protect concentration.

@@ -477,6 +477,10 @@ Font behavior:
 - Browser canvas text metrics are diagnostics only; they are not the production source for text wrapping, drag/edit geometry, thumbnail layout, or export plans.
 - Asset sync routine:
   - `npm run fonts:sync` (reads `lib/config/fonts.ts` and rebuilds local Google font assets)
+- Asset verification routine:
+  - `npm run fonts:verify` (checks every configured family/cut path referenced by `lib/config/fonts.ts`)
+- `npm run fonts:verify` runs as part of `assets:generate`; missing configured font assets are build-time errors, not runtime export fallbacks.
+- Export warms document-used metric/PDF font faces in the background after project changes and when the export dialog opens. It does not preload all bundled fonts.
 
 Syllable division behavior:
 - Stored per paragraph in `blockSyllableDivision`.
@@ -512,9 +516,11 @@ Behavior:
 ## Export Format Notes
 
 - JSON: full UI + preview layout state.
-- PDF: vector selected-range output with `Digital Print` and `Press Proof` presets, embedded output intents, grouped guide vectors, and stored page geometry per exported page.
+- PDF: vector selected-range output with `Digital Print` and `Press Proof` presets, embedded output intents, grouped guide vectors, locally embedded verified font faces, and stored page geometry per exported page.
 - SVG: single-page trim-size vector output with typography converted to exact glyph outlines plus guides and placeholders, or a ZIP with one SVG per selected page for multi-page ranges; exported text is not live-editable.
 - IDML: selected-range export with one InDesign page per app page and separate `Guides`, `Typography`, and `Placeholders` layers; exported text is frozen as geometry rather than live text.
+- PDF, SVG, and IDML share the same `ProjectExportRunner` / `ExportEngine` entry path and consume the same canonical `PageExportPlan` data.
+- Export status shows preparation, rendering, finalization, percentage, and elapsed time. Progress updates are non-blocking for the export engine.
 
 ## JSON UI Fields (serialized)
 

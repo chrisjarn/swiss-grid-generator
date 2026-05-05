@@ -43,6 +43,7 @@ That test snapshots a normalized canonical stress plan hash so performance chang
 
 - Optimize around the canonical plan, not around canvas.
 - Keep planner inputs and returned `PageExportPlan` semantics stable.
+- Keep export output paths on the shared project export runner and `ExportEngine`; UI entry points should pass project snapshots, ranges, metadata, visibility, and print settings rather than rebuilding exporter-specific page data.
 - Cache only pure deterministic calculations with explicit keys.
 - Do not cache or reuse returned plan objects across calls unless mutation safety is proven.
 - Run `npm run test:page-export-plan`, `npm run lint`, `npx tsc --noEmit`, and `npm run benchmark:layout` after planner changes.
@@ -163,3 +164,64 @@ The kept checkpoints from this pass were validated with:
 - `npm run test:snapshot`
 - `npm run test:preview-interactions`
 - `npm run test:editor-interactions`
+
+## 2026-05-05 Export Pipeline Summary
+
+Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export onto one shared project export path.
+
+### Kept Changes
+
+- Added `webapp/lib/export-engine.ts` as the shared PDF/SVG/IDML engine. It consumes already resolved project page sources, builds one `PageExportPlan` per page, and then dispatches format-specific vector renderers.
+- Added `webapp/lib/project-export-runner.ts` so both browser export and `npm run export` enter export with the same project snapshot, page range, metadata, visibility state, print config, and layout engine.
+- Added `webapp/lib/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
+- Added `webapp/lib/vector-text-outline.ts` so SVG and IDML share glyph-outline conversion.
+- Added CLI export:
+  ```bash
+  cd webapp
+  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --out ../tmp/export-debug
+  ```
+- Added phase timing for:
+  - `resolve export sources`
+  - `font metrics preload`
+  - `planning`
+  - `pdf init`
+  - `pdf font register`
+  - `pdf output intent`
+  - `pdf render pages`
+  - `pdf finalize`
+  - `svg render pages`
+  - `svg zip`
+  - `idml package`
+- Browser export progress now reports the same high-level phases as the CLI and includes elapsed time. UI progress publishing is fire-and-forget so React status updates do not throttle export work.
+- PDF font registration now uses verified local font assets only. Runtime Google Fonts repository discovery was removed from export.
+- Added `npm run fonts:verify` and wired it into `assets:generate`, so build/dev/lint fail if configured local font assets are missing.
+- Added document-used font warmup in `webapp/lib/export-font-warmup.ts`. The app warms only required metric/PDF font faces after project changes and when the export dialog opens, keyed by a font-face signature.
+
+### Measured Improvements
+
+On the 1000-page performance fixture via CLI PDF export:
+
+- Before the shared export/font cleanup: total about `2.60s`
+- After local-only used-face registration and warmup support: total about `2.01s`
+- `pdf font register`: about `0.88s` down to about `0.38-0.42s`
+
+Browser measurements varied by engine:
+
+- Firefox reached about `5s` for the 1000-page PDF export after the shared path and handoff optimizations.
+- Safari stayed higher, around `18-19s`, indicating remaining browser/jsPDF/Blob serialization cost rather than layout math.
+
+### Current Boundaries
+
+- PDF remains main-thread browser work for now; no browser-specific worker path is introduced.
+- Bleed/print framing is still PDF-only. A future shared `ExportPrintFrame` should make bleed, crop marks, and media/trim geometry available consistently to PDF, SVG, and IDML.
+
+### Validation
+
+The kept checkpoints from this pass were validated with:
+
+- `npm run fonts:verify`
+- `npm run test:pdf`
+- `npm run test:svg`
+- `npm run test:idml`
+- `npm run lint`
+- `npx tsc --noEmit`

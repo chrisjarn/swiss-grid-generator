@@ -7,13 +7,14 @@ import {
   isPdfSerifStyleFont,
   type FontFamily,
 } from "@/lib/config/fonts"
-import { buildPageExportPlan } from "@/lib/page-export-plan"
-import { measureLayoutPerformance } from "@/lib/layout-performance"
+import { buildPageExportPlan, type PageExportGuideGroup, type PageExportPlan } from "@/lib/page-export-plan"
+import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
 import { resolvePdfFontFamily } from "@/lib/pdf-font-registry"
 import {
   DEFAULT_TRACKING_SCALE,
   getTrackingLetterSpacing,
 } from "@/lib/text-rendering"
+import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { parseHexColor, type RgbColor } from "@/lib/export-colors"
 import type { PdfExportColorMode } from "@/lib/pdf-output-intent"
@@ -81,6 +82,63 @@ type ExportVectorPdfOptions = {
   showImagePlaceholders: boolean
   showTypography: boolean
   layoutEngine?: LayoutEngineContract
+  exportPlan?: PageExportPlan
+}
+
+function formatCacheNumber(value: number): string {
+  if (!Number.isFinite(value)) return "0"
+  return String(Math.round(value * 1000) / 1000)
+}
+
+function appendHashByte(hash: number, byte: number): number {
+  let next = hash ^ byte
+  next = Math.imul(next, 16777619)
+  return next >>> 0
+}
+
+function appendHashText(hash: number, value: string): number {
+  let next = hash
+  for (let index = 0; index < value.length; index += 1) {
+    next = appendHashByte(next, value.charCodeAt(index))
+  }
+  return appendHashByte(next, 124)
+}
+
+function buildGuideFormObjectKey(
+  guideGroup: PageExportGuideGroup,
+  transformFingerprint: string,
+): string {
+  let hash = 2166136261
+  hash = appendHashText(hash, guideGroup.id)
+  hash = appendHashText(hash, transformFingerprint)
+  hash = appendHashText(hash, `${guideGroup.strokeColor.r},${guideGroup.strokeColor.g},${guideGroup.strokeColor.b}`)
+  hash = appendHashText(hash, formatCacheNumber(guideGroup.strokeWidth))
+  hash = appendHashText(hash, guideGroup.clipToPage ? "clip" : "no-clip")
+  hash = appendHashText(hash, guideGroup.dashPattern.map(formatCacheNumber).join(","))
+
+  for (const rect of guideGroup.rects) {
+    hash = appendHashText(hash, [
+      formatCacheNumber(rect.x),
+      formatCacheNumber(rect.y),
+      formatCacheNumber(rect.width),
+      formatCacheNumber(rect.height),
+    ].join(","))
+  }
+
+  for (const line of guideGroup.lines) {
+    hash = appendHashText(hash, [
+      formatCacheNumber(line.x1),
+      formatCacheNumber(line.y1),
+      formatCacheNumber(line.x2),
+      formatCacheNumber(line.y2),
+    ].join(","))
+  }
+
+  return `swiss_guides_${guideGroup.id}_${hash.toString(36)}`
+}
+
+function isRenderableTextFragment(text: string): boolean {
+  return text.replace(/\s+/g, "").length > 0
 }
 
 function getPdfFontFamily(fontFamily: FontFamily, fontWeight: number): string {
@@ -166,11 +224,7 @@ function setFillColor(pdf: jsPDF, color: RgbColor, colorMode: PdfExportColorMode
   setFillColorRgb(pdf, color)
 }
 
-function isRenderableTextFragment(text: string): boolean {
-  return text.replace(/\s+/g, "").length > 0
-}
-
-function renderSwissGridVectorPdfInternal({
+async function renderSwissGridVectorPdfInternal({
   pdf,
   width,
   height,
@@ -191,8 +245,9 @@ function renderSwissGridVectorPdfInternal({
   showImagePlaceholders,
   showTypography,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
-}: ExportVectorPdfOptions): void {
-  const exportPlan = buildPageExportPlan({
+  exportPlan: providedExportPlan,
+}: ExportVectorPdfOptions): Promise<void> {
+  const exportPlan = providedExportPlan ?? buildPageExportPlan({
     result,
     layout,
     documentVariableContext,
@@ -219,6 +274,15 @@ function renderSwissGridVectorPdfInternal({
   const theta = (rotation * Math.PI) / 180
   const cos = Math.cos(theta)
   const sin = Math.sin(theta)
+  const guideTransformFingerprint = [
+    formatCacheNumber(sourceWidth),
+    formatCacheNumber(sourceHeight),
+    formatCacheNumber(width),
+    formatCacheNumber(height),
+    formatCacheNumber(originX),
+    formatCacheNumber(originY),
+    formatCacheNumber(rotation),
+  ].join(":")
 
   const transformPoint = (x: number, y: number) => {
     const scaledX = originX + x * sx
@@ -406,59 +470,62 @@ function renderSwissGridVectorPdfInternal({
     rotationOriginX: number
     rotationOriginY: number
   }) => {
-    setFillColor(pdf, imagePlan.fillColor, colorMode)
-    setPdfOpacity(imagePlan.opacity)
-    if (Math.abs(imagePlan.rotation) <= 0.0001) {
-      drawFilledRect(imagePlan.x, imagePlan.y, imagePlan.width, imagePlan.height)
-      setPdfOpacity(1)
-      return
+    pdf.saveGraphicsState()
+    try {
+      setFillColor(pdf, imagePlan.fillColor, colorMode)
+      setPdfOpacity(imagePlan.opacity)
+      if (Math.abs(imagePlan.rotation) <= 0.0001) {
+        drawFilledRect(imagePlan.x, imagePlan.y, imagePlan.width, imagePlan.height)
+        return
+      }
+      const topLeft = rotatePointAround(
+        imagePlan.x,
+        imagePlan.y,
+        imagePlan.rotationOriginX,
+        imagePlan.rotationOriginY,
+        imagePlan.rotation,
+      )
+      const topRight = rotatePointAround(
+        imagePlan.x + imagePlan.width,
+        imagePlan.y,
+        imagePlan.rotationOriginX,
+        imagePlan.rotationOriginY,
+        imagePlan.rotation,
+      )
+      const bottomRight = rotatePointAround(
+        imagePlan.x + imagePlan.width,
+        imagePlan.y + imagePlan.height,
+        imagePlan.rotationOriginX,
+        imagePlan.rotationOriginY,
+        imagePlan.rotation,
+      )
+      const bottomLeft = rotatePointAround(
+        imagePlan.x,
+        imagePlan.y + imagePlan.height,
+        imagePlan.rotationOriginX,
+        imagePlan.rotationOriginY,
+        imagePlan.rotation,
+      )
+      const transformed = [topLeft, topRight, bottomRight, bottomLeft].map((point) => transformPoint(point.x, point.y))
+      pdf.lines(
+        [
+          [transformed[1]!.x - transformed[0]!.x, transformed[1]!.y - transformed[0]!.y],
+          [transformed[2]!.x - transformed[1]!.x, transformed[2]!.y - transformed[1]!.y],
+          [transformed[3]!.x - transformed[2]!.x, transformed[3]!.y - transformed[2]!.y],
+          [transformed[0]!.x - transformed[3]!.x, transformed[0]!.y - transformed[3]!.y],
+        ],
+        transformed[0]!.x,
+        transformed[0]!.y,
+        [1, 1],
+        "F",
+        true,
+      )
+    } finally {
+      pdf.restoreGraphicsState()
     }
-    const topLeft = rotatePointAround(
-      imagePlan.x,
-      imagePlan.y,
-      imagePlan.rotationOriginX,
-      imagePlan.rotationOriginY,
-      imagePlan.rotation,
-    )
-    const topRight = rotatePointAround(
-      imagePlan.x + imagePlan.width,
-      imagePlan.y,
-      imagePlan.rotationOriginX,
-      imagePlan.rotationOriginY,
-      imagePlan.rotation,
-    )
-    const bottomRight = rotatePointAround(
-      imagePlan.x + imagePlan.width,
-      imagePlan.y + imagePlan.height,
-      imagePlan.rotationOriginX,
-      imagePlan.rotationOriginY,
-      imagePlan.rotation,
-    )
-    const bottomLeft = rotatePointAround(
-      imagePlan.x,
-      imagePlan.y + imagePlan.height,
-      imagePlan.rotationOriginX,
-      imagePlan.rotationOriginY,
-      imagePlan.rotation,
-    )
-    const transformed = [topLeft, topRight, bottomRight, bottomLeft].map((point) => transformPoint(point.x, point.y))
-    pdf.lines(
-      [
-        [transformed[1]!.x - transformed[0]!.x, transformed[1]!.y - transformed[0]!.y],
-        [transformed[2]!.x - transformed[1]!.x, transformed[2]!.y - transformed[1]!.y],
-        [transformed[3]!.x - transformed[2]!.x, transformed[3]!.y - transformed[2]!.y],
-        [transformed[0]!.x - transformed[3]!.x, transformed[0]!.y - transformed[3]!.y],
-      ],
-      transformed[0]!.x,
-      transformed[0]!.y,
-      [1, 1],
-      "F",
-      true,
-    )
-    setPdfOpacity(1)
   }
   for (const guideGroup of exportPlan.guideGroups) {
-    drawGuideGroup(`swiss_guides_${guideGroup.id}`, () => {
+    drawGuideGroup(buildGuideFormObjectKey(guideGroup, guideTransformFingerprint), () => {
       setDrawColor(pdf, guideGroup.strokeColor, colorMode)
       pdf.setLineWidth(Math.max(guideGroup.strokeWidth * scale, minHairlinePt))
       pdf.setLineDashPattern(guideGroup.dashPattern.map((value) => value * scale), 0)
@@ -483,8 +550,9 @@ function renderSwissGridVectorPdfInternal({
 
   const imagePlans = new Map(exportPlan.imagePlans.map((plan) => [plan.key, plan] as const))
   const textPlans = new Map(exportPlan.textPlans.map((plan) => [plan.key, plan] as const))
+  const shouldRenderTypography = showTypography && textPlans.size > 0
 
-  if (!showTypography) {
+  if (!shouldRenderTypography) {
     for (const key of exportPlan.orderedLayerKeys) {
       const imagePlan = imagePlans.get(key)
       if (imagePlan) drawImagePlan(imagePlan)
@@ -494,6 +562,7 @@ function renderSwissGridVectorPdfInternal({
 
   setDrawColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
   setTextColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
+  setFillColor(pdf, { r: 31, g: 41, b: 55 }, colorMode)
 
   for (const key of exportPlan.orderedLayerKeys) {
     const imagePlan = imagePlans.get(key)
@@ -503,62 +572,95 @@ function renderSwissGridVectorPdfInternal({
     }
     const plan = textPlans.get(key)
     if (!plan) continue
-    const blockFont = plan.fontFamily
-    const blockFontWeight = plan.fontWeight
-    const blockIsItalic = plan.italic
-    pdf.setFont(getPdfFontFamily(blockFont, blockFontWeight), blockIsItalic ? "italic" : "normal")
-    pdf.setFontSize(plan.fontSize * scale)
     const rotationOrigin = { x: plan.rotationOriginX, y: plan.rotationOriginY }
-    if (plan.graphemeLines.length > 0) {
-      for (const graphemes of plan.graphemeLines) {
-        for (const grapheme of graphemes) {
-          if (!isRenderableTextFragment(grapheme.text)) continue
-          setTextColor(pdf, parseHexColor(grapheme.color) ?? plan.textColor, colorMode)
+    pdf.saveGraphicsState()
+    try {
+      setPdfOpacity(1)
+      if (plan.graphemeLines.length > 0) {
+        for (const graphemes of plan.graphemeLines) {
+          for (const grapheme of graphemes) {
+            if (!isRenderableTextFragment(grapheme.text)) continue
+            setTextColor(pdf, parseHexColor(grapheme.color) ?? plan.textColor, colorMode)
+            pdf.setFont(
+              getPdfFontFamily(grapheme.fontFamily, grapheme.fontWeight),
+              grapheme.italic ? "italic" : "normal",
+            )
+            pdf.setFontSize(grapheme.fontSize * scale)
+            drawText(
+              grapheme.text,
+              grapheme.x,
+              grapheme.y,
+              "left",
+              0,
+              grapheme.fontSize,
+              plan.blockRotation,
+              rotationOrigin,
+            )
+          }
+        }
+        continue
+      }
+
+      for (const segments of plan.segmentLines) {
+        if (segments.length === 0) continue
+        for (const segment of segments) {
+          if (!isRenderableTextFragment(segment.text)) continue
+          setTextColor(pdf, parseHexColor(segment.color) ?? plan.textColor, colorMode)
           pdf.setFont(
-            getPdfFontFamily(grapheme.fontFamily, grapheme.fontWeight),
-            grapheme.italic ? "italic" : "normal",
+            getPdfFontFamily(segment.fontFamily, segment.fontWeight),
+            segment.italic ? "italic" : "normal",
           )
-          pdf.setFontSize(grapheme.fontSize * scale)
+          pdf.setFontSize(segment.fontSize * scale)
           drawText(
-            grapheme.text,
-            grapheme.x,
-            grapheme.y,
+            segment.text,
+            segment.x,
+            segment.y,
             "left",
-            0,
-            grapheme.fontSize,
+            segment.trackingScale,
+            segment.fontSize,
             plan.blockRotation,
             rotationOrigin,
           )
         }
       }
-      continue
+    } finally {
+      pdf.restoreGraphicsState()
     }
-    for (const segments of plan.segmentLines) {
-      if (segments.length === 0) continue
-      for (const segment of segments) {
-        setTextColor(pdf, parseHexColor(segment.color) ?? plan.textColor, colorMode)
+    if (plan.graphemeLines.length > 0) continue
+
+    if (plan.segmentLines.length === 0) {
+      pdf.saveGraphicsState()
+      try {
+        setPdfOpacity(1)
+        setTextColor(pdf, plan.textColor, colorMode)
         pdf.setFont(
-          getPdfFontFamily(segment.fontFamily, segment.fontWeight),
-          segment.italic ? "italic" : "normal",
+          getPdfFontFamily(plan.fontFamily, plan.fontWeight),
+          plan.italic ? "italic" : "normal",
         )
-        pdf.setFontSize(segment.fontSize * scale)
-        drawText(
-          segment.text,
-          segment.x,
-          segment.y,
-          "left",
-          segment.trackingScale,
-          segment.fontSize,
-          plan.blockRotation,
-          rotationOrigin,
-        )
+        pdf.setFontSize(plan.fontSize * scale)
+        for (const command of plan.commands) {
+          const renderedText = getRenderedTextDrawCommandText(command)
+          if (!isRenderableTextFragment(renderedText)) continue
+          drawText(
+            renderedText,
+            command.x,
+            command.y,
+            plan.textAlign,
+            plan.trackingScale,
+            plan.fontSize,
+            plan.blockRotation,
+            rotationOrigin,
+          )
+        }
+      } finally {
+        pdf.restoreGraphicsState()
       }
     }
   }
 }
 
-export function renderSwissGridVectorPdf(options: ExportVectorPdfOptions): void {
-  return measureLayoutPerformance(
+export async function renderSwissGridVectorPdf(options: ExportVectorPdfOptions): Promise<void> {
+  return measureLayoutPerformanceAsync(
     "pdf.renderSwissGridVectorPdf",
     () => renderSwissGridVectorPdfInternal(options),
     {

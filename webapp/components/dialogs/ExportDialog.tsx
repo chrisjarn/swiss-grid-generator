@@ -1,5 +1,5 @@
 import { ChevronUp, Image as ImageIcon, LayoutGrid, Rows3, SquareDashed, Type } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
@@ -104,6 +104,21 @@ export function ExportDialog({
   exportProgress,
 }: Props) {
   const [isMetadataOpen, setIsMetadataOpen] = useState(false)
+  const [exportStartedAt, setExportStartedAt] = useState<number | null>(null)
+  const [elapsedMs, setElapsedMs] = useState(0)
+  useEffect(() => {
+    if (!exportProgress) {
+      setExportStartedAt(null)
+      setElapsedMs(0)
+      return
+    }
+    const startedAt = exportStartedAt ?? performance.now()
+    if (exportStartedAt === null) setExportStartedAt(startedAt)
+    const updateElapsed = () => setElapsedMs(performance.now() - startedAt)
+    updateElapsed()
+    const interval = window.setInterval(updateElapsed, 250)
+    return () => window.clearInterval(interval)
+  }, [exportProgress, exportStartedAt])
   if (!isOpen) return null
 
   const compactInputClassName = getPopupInputClassName(isDarkUi, "rounded-sm px-2 py-1 text-[12px]")
@@ -123,6 +138,15 @@ export function ExportDialog({
   const totalProgressPercent = exportProgress
     ? Math.max(0, Math.min(100, Math.round((exportProgress.completedSteps / Math.max(1, exportProgress.totalSteps)) * 100)))
     : 0
+  const elapsedSeconds = Math.max(0, Math.floor(elapsedMs / 1000))
+  const elapsedLabel = `${String(Math.floor(elapsedSeconds / 60)).padStart(2, "0")}:${String(elapsedSeconds % 60).padStart(2, "0")}`
+  const exportProgressTitle = exportProgress
+    ? exportProgress.phase === "preparing"
+      ? `${exportProgress.format.toUpperCase()} prepare`
+      : exportProgress.phase === "packaging"
+        ? `${exportProgress.format.toUpperCase()} finalize`
+        : `${exportProgress.format.toUpperCase()} render pages ${exportProgress.completedSteps} / ${Math.max(1, exportProgress.totalSteps)}`
+    : ""
 
   return (
     <div
@@ -255,13 +279,16 @@ export function ExportDialog({
                 <div className="flex items-baseline justify-between gap-3">
                   <div className="min-w-0">
                     <div className="text-sm font-medium">
-                      {exportProgress.phase === "packaging" ? "Finalizing export" : `Rendering page ${exportProgress.currentPageNumber} of ${Math.max(1, exportProgress.totalSteps)}`}
+                      {exportProgressTitle}
                     </div>
                     <div className={`truncate text-xs ${getPopupMutedTextClassName(isDarkUi)}`}>
                       {exportProgress.currentLabel}
                     </div>
                   </div>
-                  <div className="shrink-0 text-xs font-medium">{totalProgressPercent}%</div>
+                  <div className="shrink-0 text-right text-xs font-medium">
+                    <div>{totalProgressPercent}%</div>
+                    <div className={getPopupMutedTextClassName(isDarkUi)}>{elapsedLabel}</div>
+                  </div>
                 </div>
                 <div className={cn("h-2 overflow-hidden rounded-sm", isDarkUi ? "bg-[#313A47]" : "bg-gray-200")}>
                   <div

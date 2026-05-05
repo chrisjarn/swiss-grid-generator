@@ -11,16 +11,16 @@ function readText(relPath) {
 
 test("idml export rebuilds each project page through the shared resolver and page export plan", () => {
   const source = readText("lib/idml-export.ts")
+  const plannedSource = readText("lib/planned-page-export-source.ts")
   assert.match(source, /for\s*\(const\s+\[index,\s*page\]\s+of\s+project\.pages\.entries\(\)\)/)
   assert.match(source, /buildResolvedProjectPageExportSource\(page,\s*sourcePath,\s*\{/)
-  assert.match(source, /buildPageExportPlan\(\{/)
+  assert.match(source, /buildPlannedProjectPageExportSource\(resolved,\s*layoutEngine\)/)
   assert.match(source, /layoutEngine:\s*LayoutEngineContract/)
-  assert.match(source, /layoutEngine,/)
-  assert.match(source, /showBaselines:\s*resolved\.uiSettings\.showBaselines/)
-  assert.match(source, /showModules:\s*resolved\.uiSettings\.showModules/)
-  assert.match(source, /showMargins:\s*resolved\.uiSettings\.showMargins/)
-  assert.match(source, /showImagePlaceholders:\s*resolved\.uiSettings\.showImagePlaceholders/)
-  assert.match(source, /showTypography:\s*resolved\.uiSettings\.showTypography/)
+  assert.match(plannedSource, /buildPageExportPlan\(\{[\s\S]*?showBaselines:\s*source\.uiSettings\.showBaselines/)
+  assert.match(plannedSource, /showModules:\s*source\.uiSettings\.showModules/)
+  assert.match(plannedSource, /showMargins:\s*source\.uiSettings\.showMargins/)
+  assert.match(plannedSource, /showImagePlaceholders:\s*source\.uiSettings\.showImagePlaceholders/)
+  assert.match(plannedSource, /showTypography:\s*source\.uiSettings\.showTypography/)
 })
 
 test("idml package builder writes a packaged document with resources, spreads, and a backing story", () => {
@@ -76,14 +76,17 @@ test("idml preferences do not predeclare document pages when spreads already def
   assert.match(source, /FacingPages:\s*false/)
 })
 
-test("idml builder converts grapheme export geometry into outlined polygon items", () => {
+test("idml builder converts shared vector outline geometry into outlined polygon items", () => {
   const source = readText("lib/idml/builder.ts")
-  assert.match(source, /if\s*\(textPlan\.graphemeLines\.length\s*===\s*0\)\s*continue/)
-  assert.match(source, /loadOutlineFont\(grapheme\.fontFamily,\s*grapheme\.fontWeight,\s*grapheme\.italic\)/)
-  assert.match(source, /font\.getPath\(\s*grapheme\.text,\s*grapheme\.x,\s*grapheme\.y,\s*grapheme\.fontSize/)
-  assert.match(source, /convertOpenTypeCommandsToGeometryPaths\(/)
+  const outlineSource = readText("lib/vector-text-outline.ts")
+  assert.match(source, /preloadTextPlanOutlineFonts\(page\.exportPlan\.textPlans\)/)
+  assert.match(source, /resolveTextPlanVectorShapes\(textPlan\)/)
+  assert.match(source, /for\s*\(const\s+\[shapeIndex,\s*shape\]\s+of\s+outlineShapes\.entries\(\)\)/)
+  assert.match(source, /convertOpenTypeCommandsToGeometryPaths\(shape\.commands\)/)
   assert.match(source, /renderIdmlElement\(\s*"Polygon"/)
   assert.match(source, /renderPathGeometry\(geometryPaths\)/)
+  assert.match(outlineSource, /loadOutlineFont\(fontFamily,\s*fontWeight,\s*italic\)/)
+  assert.match(outlineSource, /outlineFont\.getPath\(/)
 })
 
 test("idml styles still include paragraph families plus per-character vector export resources", () => {

@@ -4,6 +4,9 @@
 # Env
 .env
 
+# Tmp
+tmp/
+
 # AI
 .claude/
 CLAUDE.md
