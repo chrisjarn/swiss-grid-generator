@@ -478,15 +478,15 @@ layerOrderModel = explicit-layer-order-v1
 
 This contract is part of the layout semantics. Future layout math changes must branch or migrate through this field instead of silently changing how existing saved files are interpreted.
 
-### PDF Font Embedding Parity
+### Export Outline Typography
 
-PDF export embeds selected local font assets before layout/draw:
-- only font faces actually used by the selected export pages are registered;
+Preview and export resolve typography from verified local font assets before drawing:
+- only font faces used by the selected export pages are warmed or loaded;
 - font files come from `public/fonts/google/<slug>/<weight>[italic].ttf`;
 - missing configured font files are build-time verification errors via `npm run fonts:verify`;
 - runtime export does not discover or download remote Google Fonts repository sources.
 
-The export plan is computed before drawing with the same deterministic metrics pipeline as live preview. PDF then renders vector text from that plan; SVG and IDML freeze typography to outline geometry for downstream fidelity.
+The export plan is computed before drawing with the same deterministic metrics pipeline as live preview. PDF, SVG, and IDML then render typography from shared glyph-outline geometry so paragraph positioning, inline runs, optical alignment, tracking, rotation, and baseline placement stay tied to the same planned coordinates.
 
 PDF, SVG, and IDML are entered through the shared project export runner. The runner resolves selected project pages, page numbers, document variables, root `visibilitySettings`, and font warmup inputs once, then hands canonical planned pages to the format renderers.
 
@@ -501,9 +501,7 @@ Export rendering note:
 - `webapp/tests/export-box-contract.test.mjs` includes a real PDF/SVG/IDML export fixture that checks shared export-box coordinates, crop marks, page identity, metadata, and one-time planning timing against emitted output.
 - When bleed is enabled, exporters include the bleed box as production area, clip visible page/export geometry to that bleed box, add a fixed white crop-mark canvas outside it, and add black crop marks aimed at the trim corners. This shifts the export origin only; trim coordinates, grid modules, paragraph positions, and bleed width remain unchanged. No dashed bleed guide is exported.
 - In IDML, line-based export geometry stays line-based: crop marks and guide lines are emitted as stroked `GraphicLine` items, while module and margin guide boxes remain rectangle outlines.
-- Use `SVG` or `IDML` when typography must be frozen as non-live geometry.
-- `SVG` and `IDML` resolve typography to frozen outline geometry for downstream fidelity.
-- `PDF` keeps vector text drawing aligned with the deterministic export plan rather than forcing all text into outlines.
+- PDF, SVG, and IDML resolve typography to frozen outline geometry for downstream fidelity; exported text is not live-editable in the normal vector path.
 
 ---
 

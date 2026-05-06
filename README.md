@@ -144,6 +144,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - `PDF`, `SVG`, and `IDML` all export the selected page range using each page's stored document size
 - All export formats are vector-based rather than raster screenshot captures
 - `PDF`, `SVG`, and `IDML` share one deterministic export engine fed by the same project snapshot and `PageExportPlan` pipeline
+- `PDF`, `SVG`, and `IDML` render typography from the same shared glyph-outline geometry, so exported text is frozen as vector shapes in the normal export path
 - Long exports use deterministic worker-backed paths: PDF runs in a cancellable browser worker, and SVG/IDML render page-set artifacts through one shared browser-worker scheduler before ordered assembly
 - Repeated SVG/IDML page-set artifacts can be reused from a bounded exact-request cache; IDML cache entries are cloned before worker packaging to avoid detached-buffer reuse
 - Export format labels, filename extensions, bleed capability, and browser vector-export action setup are centralized so PDF/SVG/IDML enter the shared runner consistently
@@ -152,8 +153,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - `Esc` closes the export dialog when idle and cancels a running export; PDF cancellation terminates its worker even during final byte serialization
 - Shared vector bleed option for `PDF`, `SVG`, and `IDML`, disabled by default with `3mm` as the standard activation width, using one export box for trim/bleed/media/crop/guide-clip geometry with visible production geometry extended through bleed plus a fixed white crop-mark canvas and black crop marks outside bleed
 - PDF export uses RGB vector geometry with an embedded sRGB output intent
-- PDF export embeds verified local font assets only; configured font files are checked during asset generation
-- Use `SVG` or `IDML` when you need typography frozen as non-live geometry
+- Configured font files are checked during asset generation and used for deterministic metrics plus glyph-outline extraction
 - `SVG` converts typography to exact glyph outlines, so exported text is not live-editable
 - `IDML` separates **Guides**, **Typography**, and **Placeholders** into distinct layers and freezes typography geometry
 - `IDML` keeps crop marks and guide lines as stroked `GraphicLine` items while preserving rectangle guide outlines as rectangle geometry

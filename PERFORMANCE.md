@@ -175,7 +175,7 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added `webapp/lib/project-export-runner.ts` so both browser export and `npm run export` enter export with the same project snapshot, page range, metadata, visibility state, shared vector bleed config, and layout engine.
 - Added `webapp/lib/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
 - Added `webapp/lib/export-box.ts` as the shared trim/bleed/media/crop geometry model. PDF, SVG, and IDML now consume the same `ExportBox` instead of duplicating bleed conversion, crop-mark offsets, media-canvas math, and guide clipping per format.
-- Added `webapp/lib/vector-text-outline.ts` so SVG and IDML share glyph-outline conversion.
+- Added `webapp/lib/vector-text-outline.ts` so PDF, SVG, and IDML share glyph-outline conversion.
 - IDML now serializes crop marks and guide lines as stroked `GraphicLine` items instead of thin filled rectangle approximations; rectangle guide outlines remain rectangle page items.
 - Added export-engine page sets as the shared artifact boundary for long exports. IDML renders deterministic spread XML page sets in workers, SVG renders page-set files in workers, and browser archive/package assembly is worker-backed where the format allows it. SVG and IDML now share the same worker scheduler for dispatch, cancellation, progress, ordered result collection, and single-worker packaging handoff.
 - IDML package compression uses the fast deflate level to reduce packaging time without changing XML geometry or rendering semantics.
@@ -201,9 +201,9 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added a real export parity fixture that runs PDF, SVG, and IDML from one project export call and verifies shared export-box coordinates, crop marks, page identity, metadata, and one-time planning timing against emitted output.
 - Centralized browser vector export actions so PDF, SVG, and IDML share filename/base-name normalization, SVG ZIP packaging selection, progress forcing, and download handoff before entering the shared project export runner.
 - Added bounded page-set artifact caches for SVG and IDML. Cache hits require an exact serialized request match; entries are LRU-capped, and IDML artifacts are cloned on store/read so worker transfer cannot detach cached buffers. This prepares warm repeated exports without changing planner math or emitted geometry.
-- PDF font registration now uses verified local font assets only. Runtime Google Fonts repository discovery was removed from export.
+- PDF no longer depends on live text positioning for normal typography; it renders the same shared outline geometry as SVG and IDML, while the narrow fallback font path uses verified local font assets only.
 - Added `npm run fonts:verify` and wired it into `assets:generate`, so build/dev/lint fail if configured local font assets are missing.
-- Added document-used font warmup in `webapp/lib/export-font-warmup.ts`. The app warms only required metric/PDF font faces after project changes and when the export dialog opens, keyed by a font-face signature.
+- Added document-used font warmup in `webapp/lib/export-font-warmup.ts`. The app warms only required metric and fallback/export font faces after project changes and when the export dialog opens, keyed by a font-face signature.
 
 ### Measured Improvements
 

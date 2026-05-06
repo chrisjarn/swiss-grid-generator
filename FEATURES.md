@@ -197,6 +197,7 @@ Current capability inventory for Swiss Grid Generator.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.
 - PDF, SVG, and IDML are run through the shared `ProjectExportRunner` / `ExportEngine` path, so they consume the same resolved project pages and canonical `PageExportPlan` data.
+- PDF, SVG, and IDML render typography from shared glyph-outline geometry, so exported text is frozen as non-live vector geometry in the normal export path.
 - Browser vector export actions share one wrapper for PDF, SVG, and IDML filename/base-name resolution, progress rules, and download handoff.
 - The export engine partitions long exports into deterministic page sets; SVG and IDML use one shared worker scheduler for page-set artifact generation, cancellation, progress, and ordered assembly.
 - SVG and IDML page-set artifacts can be reused from a bounded exact-request cache for repeated exports without re-rendering unchanged page sets.
@@ -208,10 +209,9 @@ Current capability inventory for Swiss Grid Generator.
   - visible export geometry extends through the production bleed area; a fixed white crop-mark canvas and black crop marks are added outside it
   - no dashed bleed guide is exported
 - PDF exports RGB vector geometry with an embedded `sRGB IEC61966-2.1` output intent.
-- PDF font embedding uses verified local font assets only; missing configured assets fail `npm run fonts:verify` during asset generation.
+- Configured local font assets are verified during asset generation and used for deterministic metrics plus glyph-outline extraction.
 - PDF guide groups exported as separate form objects for margins, modules, and baselines.
 - PDF exports preserve available project metadata (`title`, `description`, `author`, `createdAt`) where the format supports it.
-- Use `SVG` or `IDML` when typography must be frozen as non-live geometry.
 - Single-page SVG exports a vector file with exact glyph-outline typography, guides, placeholders, and optional bleed plus crop-mark canvas bounds and marks.
 - Multi-page SVG exports a ZIP with one SVG per page.
 - SVG exports embed available project metadata in the file metadata block.
