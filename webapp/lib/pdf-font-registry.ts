@@ -19,13 +19,6 @@ const KNOWN_FONT_FAMILIES = new Set<FontFamily>(FONT_DEFINITIONS.map((entry) => 
 
 type PdfWithRegistry = jsPDF & {
   __sggRegisteredFonts?: Set<string>
-  getFont?: (fontName?: string, fontStyle?: string) => {
-    fontName?: string
-    metadata?: {
-      postscriptName?: string
-      name?: { postscriptName?: string }
-    }
-  } | undefined
 }
 
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -63,6 +56,8 @@ function getPdfEmbeddedFamilyName(fontFamily: FontFamily): string {
 }
 
 function getPdfEmbeddedWeightFamilyName(fontFamily: FontFamily, weight: number): string {
+  // Keep weight in the PDF resource name because some local static font files
+  // carry generic internal names such as "Inter-Regular" across all weights.
   return `${getPdfEmbeddedFamilyName(fontFamily)}_${weight}`
 }
 
@@ -106,18 +101,6 @@ function getLocalFontAsset(face: PdfFontRegistrationFace): FontAsset {
   }
 }
 
-function applyPdfPostScriptFontName(
-  pdf: PdfWithRegistry,
-  pdfFamily: string,
-  fontStyle: "normal" | "italic",
-): void {
-  const fontEntry = pdf.getFont?.(pdfFamily, fontStyle)
-  if (!fontEntry) return
-  const postScriptName = fontEntry?.metadata?.name?.postscriptName ?? fontEntry?.metadata?.postscriptName
-  if (typeof postScriptName !== "string" || postScriptName.trim().length === 0) return
-  fontEntry.fontName = postScriptName.trim()
-}
-
 async function registerFontFace(pdf: PdfWithRegistry, face: PdfFontRegistrationFace): Promise<void> {
   const resolved = resolvePdfFontFace(face)
   if (!KNOWN_FONT_FAMILIES.has(resolved.fontFamily)) return
@@ -136,7 +119,6 @@ async function registerFontFace(pdf: PdfWithRegistry, face: PdfFontRegistrationF
   const fontBase64 = await fetchFontBase64(asset.url)
   addFileToVFS(asset.vfsName, fontBase64)
   addFont(asset.vfsName, pdfFamily, fontStyle)
-  applyPdfPostScriptFontName(pdf, pdfFamily, fontStyle)
   markFontRegistered(pdf, registrationKey)
 }
 
