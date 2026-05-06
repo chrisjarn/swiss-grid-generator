@@ -79,6 +79,7 @@ import {
   createResolvedFontFilePairAdvanceMeasure,
 } from "@/lib/font-file-text-metrics-engine"
 import type { TextMetricsEngineFactory } from "@/lib/text-metrics-engine"
+import type { TextMeasureContext } from "@/lib/text-metrics-engine"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   resolveLayoutTextMetricsEngineFactory,
@@ -705,10 +706,45 @@ function buildPageExportImagePlans({
   return imagePlans
 }
 
-function createTextMeasureContext(): CanvasRenderingContext2D | null {
-  if (typeof document === "undefined") return null
+function createFallbackTextMetrics(text: string, font: string): TextMetrics {
+  const match = font.match(/(\d+(?:\.\d+)?)px/)
+  const fontSize = match ? Number(match[1]) : 16
+  const safeFontSize = Number.isFinite(fontSize) && fontSize > 0 ? fontSize : 16
+  const width = text.length * safeFontSize * 0.56
+  return {
+    width,
+    actualBoundingBoxAscent: safeFontSize * 0.8,
+    actualBoundingBoxDescent: safeFontSize * 0.2,
+    actualBoundingBoxLeft: 0,
+    actualBoundingBoxRight: width,
+    fontBoundingBoxAscent: safeFontSize * 0.8,
+    fontBoundingBoxDescent: safeFontSize * 0.2,
+    emHeightAscent: safeFontSize * 0.8,
+    emHeightDescent: safeFontSize * 0.2,
+    hangingBaseline: safeFontSize * 0.8,
+    alphabeticBaseline: 0,
+    ideographicBaseline: -safeFontSize * 0.2,
+  } as TextMetrics
+}
+
+function createTextMeasureContext(): TextMeasureContext {
+  if (typeof document === "undefined") {
+    return {
+      font: "",
+      fontKerning: "none",
+      measureText(text: string) {
+        return createFallbackTextMetrics(text, this.font)
+      },
+    }
+  }
   const canvas = document.createElement("canvas")
-  return canvas.getContext("2d")
+  return canvas.getContext("2d") ?? {
+    font: "",
+    fontKerning: "none",
+    measureText(text: string) {
+      return createFallbackTextMetrics(text, this.font)
+    },
+  }
 }
 
 function reconcileLayerOrder(
@@ -1493,7 +1529,6 @@ function buildPageExportPlanInternal({
       textFormatAccumulator,
       () => {
         for (const textPlan of textPlans) {
-          if (!textMeasureContext) continue
           const blockPlan = getResolvedBlockPlan(textPlan.key)
           const canvasFont = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
           const formatRuns = resolvedFormatRunsByBlock.get(textPlan.key) ?? []

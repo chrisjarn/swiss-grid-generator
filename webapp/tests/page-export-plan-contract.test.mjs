@@ -4,12 +4,55 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 
+import { preloadFontFileMetricFaces } from "../lib/font-file-text-metrics-engine.ts"
 import { buildPageExportPlan } from "../lib/page-export-plan.ts"
 import { buildResolvedProjectPageExportSource } from "../lib/project-page-export-source.ts"
 import { createStressPagePlanArgs } from "./helpers/page-export-plan-fixtures.mjs"
 
 const ROOT = process.cwd()
-const EXPECTED_STRESS_PLAN_HASH = "411b50fa89e1ba91b1afbd135bb9b6d1568c0ce9244b336d078e8bdc75a175ed"
+const PUBLIC_ROOT = path.join(ROOT, "public")
+const EXPECTED_STRESS_PLAN_HASH = "eb4a18f028c5b4688b6f3bfa7d748974e18701751b801852a4fff450000a09bd"
+
+function installLocalAssetFetch() {
+  const originalFetch = globalThis.fetch?.bind(globalThis)
+  if (typeof globalThis.btoa !== "function") {
+    globalThis.btoa = (value) => Buffer.from(value, "binary").toString("base64")
+  }
+
+  globalThis.fetch = async (input, init) => {
+    const rawUrl = typeof input === "string"
+      ? input
+      : input instanceof URL
+        ? input.href
+        : input?.url
+
+    if (typeof rawUrl === "string" && rawUrl.startsWith("/")) {
+      const localPath = path.resolve(PUBLIC_ROOT, `.${rawUrl}`)
+      if (!localPath.startsWith(PUBLIC_ROOT + path.sep) && localPath !== PUBLIC_ROOT) {
+        return new Response("Forbidden", { status: 403 })
+      }
+      try {
+        const bytes = await fs.promises.readFile(localPath)
+        return new Response(bytes, { status: 200 })
+      } catch {
+        return new Response("Not found", { status: 404 })
+      }
+    }
+
+    if (typeof originalFetch === "function") return originalFetch(input, init)
+    throw new Error(`No fetch implementation available for ${String(rawUrl ?? input)}`)
+  }
+}
+
+installLocalAssetFetch()
+await preloadFontFileMetricFaces([
+  { fontFamily: "Inter", fontWeight: 100, italic: false },
+  { fontFamily: "Inter", fontWeight: 200, italic: false },
+  { fontFamily: "Inter", fontWeight: 400, italic: false },
+  { fontFamily: "Inter", fontWeight: 400, italic: true },
+  { fontFamily: "Inter", fontWeight: 700, italic: false },
+  { fontFamily: "Inter", fontWeight: 700, italic: true },
+])
 
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
@@ -47,6 +90,9 @@ test("page export plan is deterministic for the stress fixture", () => {
   assert.ok(first.guideGroups.some((group) => group.id === "baselines"))
   assert.ok(first.imagePlans.length >= 5)
   assert.ok(first.textPlans.length >= 10)
+  assert.ok(first.textPlans.every((plan) => plan.graphemeLines.length === plan.commands.length))
+  assert.ok(first.textPlans.some((plan) => plan.graphemeLines.some((line) => line.length > 1)))
+  assert.ok(first.textPlans.some((plan) => plan.segmentLines.some((line) => line.length > 0)))
   assert.ok(first.orderedLayerKeys.length >= first.imagePlans.length + first.textPlans.length)
   assert.equal(hashPlan(first), EXPECTED_STRESS_PLAN_HASH)
 })
