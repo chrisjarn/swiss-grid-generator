@@ -14,10 +14,16 @@ import {
   DEFAULT_TRACKING_SCALE,
   getTrackingLetterSpacing,
 } from "@/lib/text-rendering"
-import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
+import {
+  preloadTextPlanOutlineFonts,
+  quadraticToCubic,
+  resolveTextPlanVectorShapes,
+  type OutlineTextShape,
+} from "@/lib/vector-text-outline"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
-import { parseHexColor, type RgbColor } from "@/lib/export-colors"
+import type { RgbColor } from "@/lib/export-colors"
+import type { OpenTypePathCommand } from "@/lib/font-outline"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
@@ -124,10 +130,6 @@ function buildGuideFormObjectKey(
   }
 
   return `swiss_guides_${guideGroup.id}_${hash.toString(36)}`
-}
-
-function isRenderableTextFragment(text: string): boolean {
-  return text.replace(/\s+/g, "").length > 0
 }
 
 function getPdfFontFamily(fontFamily: FontFamily, fontWeight: number): string {
@@ -351,6 +353,73 @@ async function renderSwissGridVectorPdfInternal({
       rotationDirection: 0,
     })
   }
+  const transformTextOutlinePoint = (
+    x: number,
+    y: number,
+    blockRotation = 0,
+    rotationOrigin?: { x: number; y: number },
+  ) => {
+    const localPoint = rotationOrigin && Math.abs(blockRotation) > 0.0001
+      ? rotatePointAround(x, y, rotationOrigin.x, rotationOrigin.y, blockRotation)
+      : { x, y }
+    return transformPoint(localPoint.x, localPoint.y)
+  }
+  const drawTextOutlineCommand = (
+    command: OpenTypePathCommand,
+    blockRotation = 0,
+    rotationOrigin?: { x: number; y: number },
+    previousPoint?: { x: number; y: number },
+  ) => {
+    switch (command.type) {
+      case "M": {
+        const point = transformTextOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
+        pdf.moveTo(point.x, point.y)
+        return { x: command.x, y: command.y }
+      }
+      case "L": {
+        const point = transformTextOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
+        pdf.lineTo(point.x, point.y)
+        return { x: command.x, y: command.y }
+      }
+      case "C": {
+        const control1 = transformTextOutlinePoint(command.x1, command.y1, blockRotation, rotationOrigin)
+        const control2 = transformTextOutlinePoint(command.x2, command.y2, blockRotation, rotationOrigin)
+        const point = transformTextOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
+        pdf.curveTo(control1.x, control1.y, control2.x, control2.y, point.x, point.y)
+        return { x: command.x, y: command.y }
+      }
+      case "Q": {
+        if (!previousPoint) return previousPoint
+        const cubic = quadraticToCubic(
+          previousPoint,
+          { x: command.x1, y: command.y1 },
+          { x: command.x, y: command.y },
+        )
+        const control1 = transformTextOutlinePoint(cubic.control1.x, cubic.control1.y, blockRotation, rotationOrigin)
+        const control2 = transformTextOutlinePoint(cubic.control2.x, cubic.control2.y, blockRotation, rotationOrigin)
+        const point = transformTextOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
+        pdf.curveTo(control1.x, control1.y, control2.x, control2.y, point.x, point.y)
+        return { x: command.x, y: command.y }
+      }
+      case "Z":
+        pdf.close()
+        return previousPoint
+      default:
+        return previousPoint
+    }
+  }
+  const drawTextOutlineShape = (
+    shape: OutlineTextShape,
+    blockRotation = 0,
+    rotationOrigin?: { x: number; y: number },
+  ) => {
+    setFillColor(pdf, shape.color)
+    let previousPoint: { x: number; y: number } | undefined
+    for (const command of shape.commands) {
+      previousPoint = drawTextOutlineCommand(command, blockRotation, rotationOrigin, previousPoint)
+    }
+    pdf.fill()
+  }
   const minHairlinePt = 0.25
 
   pdf.setLineCap("butt")
@@ -478,6 +547,8 @@ async function renderSwissGridVectorPdfInternal({
     return
   }
 
+  await preloadTextPlanOutlineFonts(exportPlan.textPlans)
+
   setDrawColor(pdf, { r: 31, g: 41, b: 55 })
   setTextColor(pdf, { r: 31, g: 41, b: 55 })
   setFillColor(pdf, { r: 31, g: 41, b: 55 })
@@ -494,48 +565,25 @@ async function renderSwissGridVectorPdfInternal({
     pdf.saveGraphicsState()
     try {
       setPdfOpacity(1)
-      if (plan.graphemeLines.length > 0) {
-        for (const graphemes of plan.graphemeLines) {
-          for (const grapheme of graphemes) {
-            if (!isRenderableTextFragment(grapheme.text)) continue
-            setTextColor(pdf, parseHexColor(grapheme.color) ?? plan.textColor)
-            pdf.setFont(
-              getPdfFontFamily(grapheme.fontFamily, grapheme.fontWeight),
-              grapheme.italic ? "italic" : "normal",
-            )
-            pdf.setFontSize(grapheme.fontSize * scale)
-            drawText(
-              grapheme.text,
-              grapheme.x,
-              grapheme.y,
-              "left",
-              0,
-              grapheme.fontSize,
-              plan.blockRotation,
-              rotationOrigin,
-            )
-          }
-        }
-        continue
+      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(plan)
+      for (const shape of outlineShapes) {
+        drawTextOutlineShape(shape, plan.blockRotation, rotationOrigin)
       }
-
-      for (const segments of plan.segmentLines) {
-        if (segments.length === 0) continue
-        for (const segment of segments) {
-          if (!isRenderableTextFragment(segment.text)) continue
-          setTextColor(pdf, parseHexColor(segment.color) ?? plan.textColor)
+      if (fallbackTextShapes.length > 0) {
+        for (const shape of fallbackTextShapes) {
+          setTextColor(pdf, shape.color)
           pdf.setFont(
-            getPdfFontFamily(segment.fontFamily, segment.fontWeight),
-            segment.italic ? "italic" : "normal",
+            getPdfFontFamily(shape.fontFamily, shape.fontWeight),
+            shape.italic ? "italic" : "normal",
           )
-          pdf.setFontSize(segment.fontSize * scale)
+          pdf.setFontSize(shape.fontSize * scale)
           drawText(
-            segment.text,
-            segment.x,
-            segment.y,
+            shape.text,
+            shape.x,
+            shape.y,
             "left",
-            segment.trackingScale,
-            segment.fontSize,
+            shape.trackingScale,
+            shape.fontSize,
             plan.blockRotation,
             rotationOrigin,
           )
@@ -543,36 +591,6 @@ async function renderSwissGridVectorPdfInternal({
       }
     } finally {
       pdf.restoreGraphicsState()
-    }
-    if (plan.graphemeLines.length > 0) continue
-
-    if (plan.segmentLines.length === 0) {
-      pdf.saveGraphicsState()
-      try {
-        setPdfOpacity(1)
-        setTextColor(pdf, plan.textColor)
-        pdf.setFont(
-          getPdfFontFamily(plan.fontFamily, plan.fontWeight),
-          plan.italic ? "italic" : "normal",
-        )
-        pdf.setFontSize(plan.fontSize * scale)
-        for (const command of plan.commands) {
-          const renderedText = getRenderedTextDrawCommandText(command)
-          if (!isRenderableTextFragment(renderedText)) continue
-          drawText(
-            renderedText,
-            command.x,
-            command.y,
-            plan.textAlign,
-            plan.trackingScale,
-            plan.fontSize,
-            plan.blockRotation,
-            rotationOrigin,
-          )
-        }
-      } finally {
-        pdf.restoreGraphicsState()
-      }
     }
   }
 }
