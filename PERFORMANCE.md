@@ -271,6 +271,32 @@ Fresh single-format CLI IDML measurements on May 6, 2026, with `--bleed-mm 3`:
 
 Remaining IDML bottleneck: ZIP compression still has to deflate about `2.29GB` of raw spread XML for the 1000-page fixture. Resource XML is only about `1.19MB`, so further large wins need either precompressed page-set artifacts, a faster ZIP backend, or a safe reduction in `PathPointType` payload size.
 
+Final confirmation run on May 6, 2026, after the IDML optimization commit:
+
+```text
+500 pages:
+  planning                 0.48s
+  idml render page sets   12.23s
+  idml page xml           11.50s raw=1141.83MB
+  idml page encode         0.34s
+  idml package            16.16s
+  idml package resources   0.06s raw=1.10MB
+  idml package zip        16.10s raw=1142.94MB
+  idml write               0.34s size=174.62MB
+  total                   29.53s
+
+1000 pages:
+  planning                 1.00s
+  idml render page sets   25.12s
+  idml page xml           23.57s raw=2285.38MB
+  idml page encode         0.92s
+  idml package            32.89s
+  idml package resources   0.08s raw=1.19MB
+  idml package zip        32.81s raw=2286.57MB
+  idml write               0.71s size=349.94MB
+  total                   59.99s
+```
+
 Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the shared export-path centralization:
 
 ```text
@@ -305,6 +331,7 @@ Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the sha
 The kept checkpoints from this pass were validated with:
 
 - `npm run fonts:verify`
+- `npm run test:export-box`
 - `npm run test:pdf`
 - `npm run test:svg`
 - `npm run test:idml`
