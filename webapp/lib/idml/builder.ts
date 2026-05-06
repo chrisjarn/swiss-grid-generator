@@ -66,6 +66,17 @@ type IdmlZipCompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 
 export type SwissGridIdmlPackageOptions = {
   compressionLevel?: number
+  onDiagnostics?: (diagnostics: SwissGridIdmlPackageDiagnostics) => void
+}
+
+export type SwissGridIdmlPackageDiagnostics = {
+  resourceXmlMs: number
+  zipMs: number
+  components: Array<{
+    path: string
+    bytes: number
+  }>
+  pageSets: Array<NonNullable<IdmlPageSetArtifacts["diagnostics"]>>
 }
 
 const DOCUMENT_ID = "d"
@@ -80,6 +91,13 @@ const COLOR_BLACK_ID = "Color/Black"
 const COLOR_PAPER_ID = "Color/Paper"
 
 const IDENTITY_MATRIX: Matrix = [1, 0, 0, 1, 0, 0]
+const MAX_IDML_POLYGON_PATHS_PER_ITEM = 512
+
+function nowMs(): number {
+  return typeof performance !== "undefined" && typeof performance.now === "function"
+    ? performance.now()
+    : Date.now()
+}
 
 function isIdentityMatrix(matrix: Matrix): boolean {
   return matrix.every((value, index) => Math.abs(value - IDENTITY_MATRIX[index]) <= 0.000001)
@@ -145,30 +163,18 @@ function buildPageItemTransform(pageWidth: number, pageHeight: number, pageRotat
 }
 
 function renderPathGeometry(paths: GeometryPath[]): string {
-  return renderIdmlElement(
-    "Properties",
-    {},
-    renderIdmlElement(
-      "PathGeometry",
-      {},
-      paths.map((path) => renderIdmlElement(
-        "GeometryPathType",
-        {
-          GeometryPathType: "NormalPath",
-          PathOpen: path.open,
-        },
-        renderIdmlElement(
-          "PathPointArray",
-          {},
-          path.points.map((point) => renderIdmlElement("PathPointType", {
-            Anchor: formatPoint(point.anchor.x, point.anchor.y),
-            LeftDirection: formatPoint(point.left.x, point.left.y),
-            RightDirection: formatPoint(point.right.x, point.right.y),
-          })),
-        ),
-      )),
-    ),
-  )
+  let xml = "<Properties><PathGeometry>"
+  for (const path of paths) {
+    xml += `<GeometryPathType GeometryPathType="NormalPath" PathOpen="${path.open}"><PathPointArray>`
+    for (const point of path.points) {
+      const anchor = formatPoint(point.anchor.x, point.anchor.y)
+      const left = formatPoint(point.left.x, point.left.y)
+      const right = formatPoint(point.right.x, point.right.y)
+      xml += `<PathPointType Anchor="${anchor}" LeftDirection="${left}" RightDirection="${right}" />`
+    }
+    xml += "</PathPointArray></GeometryPathType>"
+  }
+  return `${xml}</PathGeometry></Properties>`
 }
 
 function renderRectPathGeometry(
@@ -204,6 +210,10 @@ function buildColorId(color: RgbColor): string {
 
 function buildColorName(color: RgbColor): string {
   return `SGG RGB ${String(color.r).padStart(3, "0")} ${String(color.g).padStart(3, "0")} ${String(color.b).padStart(3, "0")}`
+}
+
+function getColorSignature(color: RgbColor): string {
+  return `${color.r},${color.g},${color.b}`
 }
 
 function createDocumentUuid(prefix: "xmp.did" | "xmp.iid", seed: string): string {
@@ -448,6 +458,35 @@ function renderCropMarkLines({
   )
 }
 
+function renderPolygonItem({
+  itemId,
+  itemName,
+  itemMatrix,
+  fillColorId,
+  geometryPaths,
+}: {
+  itemId: string
+  itemName: string
+  itemMatrix: Matrix
+  fillColorId: string
+  geometryPaths: GeometryPath[]
+}): string {
+  return renderIdmlElement(
+    "Polygon",
+    {
+      Self: itemId,
+      Name: itemName,
+      ItemLayer: LAYER_TYPOGRAPHY_ID,
+      ItemTransform: isIdentityMatrix(itemMatrix) ? undefined : formatMatrix(itemMatrix),
+      Visible: true,
+      FillColor: fillColorId,
+      StrokeColor: SWATCH_NONE_ID,
+      StrokeWeight: 0,
+    },
+    renderPathGeometry(geometryPaths),
+  )
+}
+
 async function buildSpreadAndStories(
   document: SwissGridIdmlDocument,
   colorIdBySignature: Map<string, string>,
@@ -607,28 +646,46 @@ async function buildSpreadAndStories(
       if (fallbackTextShapes.length > 0) {
         throw new Error(`Unable to resolve outline font for IDML export: ${textPlan.key}`)
       }
+      let groupedPaths: GeometryPath[] = []
+      let groupedColorSignature = ""
+      let groupedStartIndex = 0
+      let groupedLastIndex = 0
+      const flushGroupedTextPaths = () => {
+        if (groupedPaths.length === 0) return
+        localItemSequence += 1
+        const itemId = `sggGlyph_${String(globalPageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
+        const rangeLabel = groupedStartIndex === groupedLastIndex
+          ? `glyph ${groupedStartIndex + 1}`
+          : `glyphs ${groupedStartIndex + 1}-${groupedLastIndex + 1}`
+        textItems.push(renderPolygonItem({
+          itemId,
+          itemName: `${page.name} / ${textPlan.key} / ${rangeLabel}`,
+          itemMatrix,
+          fillColorId: colorIdBySignature.get(groupedColorSignature) ?? COLOR_BLACK_ID,
+          geometryPaths: groupedPaths,
+        }))
+        groupedPaths = []
+      }
+
       for (const [shapeIndex, shape] of outlineShapes.entries()) {
         const geometryPaths = convertOpenTypeCommandsToGeometryPaths(shape.commands)
         if (geometryPaths.length === 0) continue
-        localItemSequence += 1
-        const itemId = `sggGlyph_${String(globalPageIndex + 1).padStart(3, "0")}_${String(localItemSequence).padStart(4, "0")}`
-        const itemName = `${page.name} / ${textPlan.key} / glyph ${shapeIndex + 1}`
-        const colorSignature = `${shape.color.r},${shape.color.g},${shape.color.b}`
-        textItems.push(renderIdmlElement(
-          "Polygon",
-          {
-            Self: itemId,
-            Name: itemName,
-            ItemLayer: LAYER_TYPOGRAPHY_ID,
-            ItemTransform: isIdentityMatrix(itemMatrix) ? undefined : formatMatrix(itemMatrix),
-            Visible: true,
-            FillColor: colorIdBySignature.get(colorSignature) ?? COLOR_BLACK_ID,
-            StrokeColor: SWATCH_NONE_ID,
-            StrokeWeight: 0,
-          },
-          renderPathGeometry(geometryPaths),
-        ))
+        const colorSignature = getColorSignature(shape.color)
+        if (
+          groupedPaths.length > 0
+          && (colorSignature !== groupedColorSignature
+            || groupedPaths.length + geometryPaths.length > MAX_IDML_POLYGON_PATHS_PER_ITEM)
+        ) {
+          flushGroupedTextPaths()
+        }
+        if (groupedPaths.length === 0) {
+          groupedColorSignature = colorSignature
+          groupedStartIndex = shapeIndex
+        }
+        groupedPaths.push(...geometryPaths)
+        groupedLastIndex = shapeIndex
       }
+      flushGroupedTextPaths()
     }
 
     spreads.push({
@@ -1441,12 +1498,15 @@ export async function buildSwissGridIdmlPageSetArtifacts(
     ["255,255,255", COLOR_PAPER_ID],
     ...customSwatches.map((swatch) => [`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id] as const),
   ])
+  const xmlStartedAt = nowMs()
   const { spreads, stories } = await buildSpreadAndStories(
     document,
     colorIdBySignature,
     options.startPageIndex ?? 0,
   )
-  return {
+  const xmlGenerationMs = nowMs() - xmlStartedAt
+  const encodeStartedAt = nowMs()
+  const artifacts: IdmlPageSetArtifacts = {
     startPageIndex: options.startPageIndex ?? 0,
     pageCount: document.pages.length,
     spreads: spreads.map((spread): IdmlSpreadArtifact => ({
@@ -1460,6 +1520,16 @@ export async function buildSwissGridIdmlPageSetArtifacts(
       bytes: strToU8(story.xml),
     })),
   }
+  const encodeMs = nowMs() - encodeStartedAt
+  artifacts.diagnostics = {
+    xmlGenerationMs,
+    encodeMs,
+    spreadBytes: artifacts.spreads.reduce((total, spread) => total + spread.bytes.byteLength, 0),
+    storyBytes: artifacts.stories.reduce((total, story) => total + story.bytes.byteLength, 0),
+    spreadCount: artifacts.spreads.length,
+    storyCount: artifacts.stories.length,
+  }
+  return artifacts
 }
 
 export async function buildSwissGridIdmlPackageFromPageSets(
@@ -1471,6 +1541,7 @@ export async function buildSwissGridIdmlPackageFromPageSets(
     throw new Error("Cannot export IDML without project pages.")
   }
 
+  const resourceStartedAt = nowMs()
   const customSwatches = buildColorSwatches(document)
   const fontCatalog = await buildFontCatalog(document)
   const fonts = [...new Map(fontCatalog.values().map((font) => [`${font.family}|${font.styleName}`, font] as const)).values()]
@@ -1489,31 +1560,57 @@ export async function buildSwissGridIdmlPackageFromPageSets(
   const spreads = orderedPageSets.flatMap((set) => set.spreads)
   const stories = orderedPageSets.flatMap((set) => set.stories)
   const designMapXml = buildDesignMapXml(document, customSwatches, spreads, stories)
-
-  return zipSync({
+  const resources: Array<{ path: string; bytes: Uint8Array }> = [
+    {
+      path: "META-INF/container.xml",
+      bytes: strToU8([
+        `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`,
+        `<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">`,
+        `<rootfiles>`,
+        `<rootfile full-path="designmap.xml" media-type="text/xml"></rootfile>`,
+        `</rootfiles>`,
+        `</container>`,
+      ].join("")),
+    },
+    { path: "META-INF/metadata.xml", bytes: strToU8(buildMetadataXml(document)) },
+    { path: "Resources/Graphic.xml", bytes: strToU8(buildGraphicXml(customSwatches)) },
+    { path: "Resources/Fonts.xml", bytes: strToU8(buildFontsXml(fonts)) },
+    {
+      path: "Resources/Styles.xml",
+      bytes: strToU8(buildStylesXml(
+        paragraphStyleKeys,
+        characterStyles,
+        fonts[0]?.family ?? document.pages[0]?.baseFont ?? "Inter",
+      )),
+    },
+    { path: "Resources/Preferences.xml", bytes: strToU8(buildPreferencesXml(document)) },
+    { path: "MasterSpreads/MasterSpread_sggMaster.xml", bytes: strToU8(buildMasterSpreadXml(document)) },
+    { path: "XML/BackingStory.xml", bytes: strToU8(buildBackingStoryXml()) },
+    { path: "XML/Tags.xml", bytes: strToU8(buildTagsXml()) },
+    { path: "designmap.xml", bytes: strToU8(designMapXml) },
+  ]
+  const resourceXmlMs = nowMs() - resourceStartedAt
+  const entries: Record<string, Uint8Array | [Uint8Array, { level: IdmlZipCompressionLevel }]> = {
     mimetype: [strToU8(IDML_MIMETYPE), { level: 0 }],
-    "META-INF/container.xml": strToU8([
-      `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`,
-      `<container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container">`,
-      `<rootfiles>`,
-      `<rootfile full-path="designmap.xml" media-type="text/xml"></rootfile>`,
-      `</rootfiles>`,
-      `</container>`,
-    ].join("")),
-    "META-INF/metadata.xml": strToU8(buildMetadataXml(document)),
-    "Resources/Graphic.xml": strToU8(buildGraphicXml(customSwatches)),
-    "Resources/Fonts.xml": strToU8(buildFontsXml(fonts)),
-    "Resources/Styles.xml": strToU8(buildStylesXml(
-      paragraphStyleKeys,
-      characterStyles,
-      fonts[0]?.family ?? document.pages[0]?.baseFont ?? "Inter",
-    )),
-    "Resources/Preferences.xml": strToU8(buildPreferencesXml(document)),
-    "MasterSpreads/MasterSpread_sggMaster.xml": strToU8(buildMasterSpreadXml(document)),
-    "XML/BackingStory.xml": strToU8(buildBackingStoryXml()),
-    "XML/Tags.xml": strToU8(buildTagsXml()),
-    "designmap.xml": strToU8(designMapXml),
-    ...Object.fromEntries(spreads.map((spread) => [spread.filePath, spread.bytes])),
-    ...Object.fromEntries(stories.map((story) => [story.filePath, story.bytes])),
-  }, { level: normalizeIdmlZipCompressionLevel(options.compressionLevel) })
+  }
+  const components = [
+    { path: "mimetype", bytes: IDML_MIMETYPE.length },
+    ...resources.map((resource) => ({ path: resource.path, bytes: resource.bytes.byteLength })),
+    ...spreads.map((spread) => ({ path: spread.filePath, bytes: spread.bytes.byteLength })),
+    ...stories.map((story) => ({ path: story.filePath, bytes: story.bytes.byteLength })),
+  ]
+  for (const resource of resources) entries[resource.path] = resource.bytes
+  for (const spread of spreads) entries[spread.filePath] = spread.bytes
+  for (const story of stories) entries[story.filePath] = story.bytes
+
+  const compressionLevel = normalizeIdmlZipCompressionLevel(options.compressionLevel)
+  const zipStartedAt = nowMs()
+  const bytes = zipSync(entries, { level: compressionLevel })
+  options.onDiagnostics?.({
+    resourceXmlMs,
+    zipMs: nowMs() - zipStartedAt,
+    components,
+    pageSets: orderedPageSets.flatMap((set) => set.diagnostics ? [set.diagnostics] : []),
+  })
+  return bytes
 }

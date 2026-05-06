@@ -32,6 +32,8 @@ export type FallbackTextShape = {
   trackingScale: number
 }
 
+type TextShapeFragment = FallbackTextShape
+
 function clonePoint(point: { x: number; y: number }) {
   return { x: point.x, y: point.y }
 }
@@ -50,6 +52,10 @@ function pointsEqual(left: { x: number; y: number }, right: { x: number; y: numb
 
 export function isRenderableTextFragment(text: string): boolean {
   return text.replace(/\s+/g, "").length > 0
+}
+
+function loadFragmentOutlineFont(fontFamily: FontFamily, fontWeight: number, italic: boolean) {
+  return loadOutlineFont(fontFamily, fontWeight, italic)
 }
 
 export function quadraticToCubic(
@@ -196,8 +202,9 @@ export async function resolveTextPlanVectorShapes(
 ): Promise<{ outlineShapes: OutlineTextShape[]; fallbackTextShapes: FallbackTextShape[] }> {
   const outlineShapes: OutlineTextShape[] = []
   const fallbackTextShapes: FallbackTextShape[] = []
+  const fragments: TextShapeFragment[] = []
 
-  const pushResolvedShape = async ({
+  const pushFragment = ({
     text,
     x,
     y,
@@ -207,41 +214,65 @@ export async function resolveTextPlanVectorShapes(
     fontSize,
     color,
     trackingScale,
-  }: FallbackTextShape) => {
+  }: TextShapeFragment) => {
     if (!isRenderableTextFragment(text)) return
-    const outlineFont = await loadOutlineFont(fontFamily, fontWeight, italic)
-    if (!outlineFont) {
-      fallbackTextShapes.push({
-        text,
-        x,
-        y,
-        color,
-        fontFamily,
-        fontWeight,
-        italic,
-        fontSize,
-        trackingScale,
-      })
-      return
-    }
-    const commands = outlineFont.getPath(
+    fragments.push({
       text,
       x,
       y,
+      color,
+      fontFamily,
+      fontWeight,
+      italic,
       fontSize,
-      {
-        kerning: false,
-        hinting: false,
-      },
-    ).commands
-    if (commands.length === 0) return
-    outlineShapes.push({ commands, color })
+      trackingScale,
+    })
+  }
+
+  const resolveFragments = async () => {
+    const fontTasks = new Map<string, ReturnType<typeof loadOutlineFont>>()
+    for (const fragment of fragments) {
+      const key = `${fragment.fontFamily}:${fragment.fontWeight}:${fragment.italic ? "italic" : "normal"}`
+      if (!fontTasks.has(key)) {
+        fontTasks.set(key, loadFragmentOutlineFont(fragment.fontFamily, fragment.fontWeight, fragment.italic))
+      }
+    }
+    const fonts = new Map<string, Awaited<ReturnType<typeof loadOutlineFont>>>()
+    await Promise.all([...fontTasks].map(async ([key, task]) => {
+      fonts.set(key, await task)
+    }))
+
+    for (const fragment of fragments) {
+      const fontKey = `${fragment.fontFamily}:${fragment.fontWeight}:${fragment.italic ? "italic" : "normal"}`
+      const outlineFont = fonts.get(fontKey)
+      if (!outlineFont) {
+        fallbackTextShapes.push(fragment)
+        continue
+      }
+      const commands = outlineFont.getPath(
+        fragment.text,
+        fragment.x,
+        fragment.y,
+        fragment.fontSize,
+        {
+          kerning: false,
+          hinting: false,
+        },
+      ).commands
+      if (commands.length === 0) continue
+      outlineShapes.push({ commands, color: fragment.color })
+    }
+  }
+
+  const finish = async () => {
+    await resolveFragments()
+    return { outlineShapes, fallbackTextShapes }
   }
 
   if (textPlan.graphemeLines.length > 0) {
     for (const graphemes of textPlan.graphemeLines) {
       for (const grapheme of graphemes) {
-        await pushResolvedShape({
+        pushFragment({
           text: grapheme.text,
           x: grapheme.x,
           y: grapheme.y,
@@ -254,13 +285,13 @@ export async function resolveTextPlanVectorShapes(
         })
       }
     }
-    return { outlineShapes, fallbackTextShapes }
+    return finish()
   }
 
   if (textPlan.segmentLines.length > 0) {
     for (const segments of textPlan.segmentLines) {
       for (const segment of segments) {
-        await pushResolvedShape({
+        pushFragment({
           text: segment.text,
           x: segment.x,
           y: segment.y,
@@ -273,11 +304,11 @@ export async function resolveTextPlanVectorShapes(
         })
       }
     }
-    return { outlineShapes, fallbackTextShapes }
+    return finish()
   }
 
   for (const command of textPlan.commands) {
-    await pushResolvedShape({
+    pushFragment({
       text: getRenderedTextDrawCommandText(command),
       x: command.x,
       y: command.y,
@@ -290,5 +321,5 @@ export async function resolveTextPlanVectorShapes(
     })
   }
 
-  return { outlineShapes, fallbackTextShapes }
+  return finish()
 }

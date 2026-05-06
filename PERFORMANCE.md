@@ -224,6 +224,53 @@ On the 1000-page performance fixture via CLI IDML export:
 - CLI 1000-page IDML export measured about `30.62s`: `0.35s` font preload, `0.38s` planning, `17.85s` IDML page-set rendering, `11.83s` IDML package assembly, and `0.18s` write time.
 - A 100-page IDML compression check measured level `1` at `3.06s` / `12.26MB` and level `6` at `3.96s` / `11.48MB`; the production default therefore stays at the fast level because geometry/rendering is identical and large-document export latency is the limiting factor.
 
+Follow-up IDML export optimization kept the `PageExportPlan` contract and focused on XML/render/package cost:
+
+- Shared outline resolution now batches font promise resolution once per text plan instead of awaiting font lookup per emitted glyph fragment. SVG and IDML consume the same resolved outline sequence, so this does not split format behavior.
+- IDML text geometry now groups consecutive same-fill outline paths into bounded compound `Polygon` items. Geometry paths, coordinates, transforms, layers, bleed, crop marks, and document metadata remain driven by the same planned page data.
+- IDML path XML uses a specialized deterministic serializer for `PathGeometry` / `PathPointType` instead of the generic XML element helper inside the hottest loop.
+- IDML page-set artifacts and package assembly now report XML generation, UTF-8 encoding, resource XML, ZIP compression, and raw component sizes. This exposes the dominant raw spread payload and keeps file writing as a separate CLI timing.
+
+Fresh single-format CLI IDML measurements on May 6, 2026, with `--bleed-mm 3`:
+
+```text
+500 pages before:
+  planning                 0.50s
+  idml render page sets   23.81s
+  idml package            16.46s
+  idml write               0.38s size=176.53MB
+  total                   41.45s
+
+500 pages after:
+  planning                 0.47s
+  idml render page sets   11.68s
+  idml page xml           11.09s raw=1141.83MB
+  idml page encode         0.25s
+  idml package            16.17s
+  idml package zip        16.11s raw=1142.94MB
+  idml write               0.59s size=174.62MB
+  total                   29.19s
+
+1000 pages before:
+  planning                 0.88s
+  idml render page sets   45.10s
+  idml package            33.43s
+  idml write               0.58s size=353.76MB
+  total                   80.25s
+
+1000 pages after:
+  planning                 0.88s
+  idml render page sets   23.73s
+  idml page xml           22.84s raw=2285.38MB
+  idml page encode         0.46s
+  idml package            32.11s
+  idml package zip        32.02s raw=2286.57MB
+  idml write               0.26s size=349.94MB
+  total                   57.30s
+```
+
+Remaining IDML bottleneck: ZIP compression still has to deflate about `2.29GB` of raw spread XML for the 1000-page fixture. Resource XML is only about `1.19MB`, so further large wins need either precompressed page-set artifacts, a faster ZIP backend, or a safe reduction in `PathPointType` payload size.
+
 Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the shared export-path centralization:
 
 ```text

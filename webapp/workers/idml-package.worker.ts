@@ -1,4 +1,4 @@
-import { buildSwissGridIdmlPackageFromPageSets } from "@/lib/idml/builder"
+import { buildSwissGridIdmlPackageFromPageSets, type SwissGridIdmlPackageDiagnostics } from "@/lib/idml/builder"
 import type { IdmlPageSetArtifacts, SwissGridIdmlDocument } from "@/lib/idml/types"
 
 type IdmlPackageWorkerRequest = {
@@ -13,6 +13,7 @@ type IdmlPackageWorkerResponse =
       id: number
       ok: true
       bytes: Uint8Array
+      diagnostics?: SwissGridIdmlPackageDiagnostics
     }
   | {
       id: number
@@ -29,14 +30,19 @@ const workerScope = self as unknown as IdmlPackageWorkerScope
 
 workerScope.onmessage = (event: MessageEvent<IdmlPackageWorkerRequest>) => {
   const request = event.data
+  let diagnostics: SwissGridIdmlPackageDiagnostics | undefined
   void buildSwissGridIdmlPackageFromPageSets(request.document, request.pageSets, {
     compressionLevel: request.compressionLevel,
+    onDiagnostics: (value) => {
+      diagnostics = value
+    },
   })
     .then((bytes) => {
       workerScope.postMessage({
         id: request.id,
         ok: true,
         bytes,
+        diagnostics,
       }, [bytes.buffer])
     })
     .catch((error: unknown) => {

@@ -39,4 +39,12 @@ export type IdmlPageSetArtifacts = {
   pageCount: number
   spreads: IdmlSpreadArtifact[]
   stories: IdmlStoryArtifact[]
+  diagnostics?: {
+    xmlGenerationMs: number
+    encodeMs: number
+    spreadBytes: number
+    storyBytes: number
+    spreadCount: number
+    storyCount: number
+  }
 }

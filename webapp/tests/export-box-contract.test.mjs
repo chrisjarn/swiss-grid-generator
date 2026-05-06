@@ -146,7 +146,7 @@ test("pdf svg and idml all consume shared export box and guide clipping geometry
   assert.match(engineSource, /buildExportBox\(\{[\s\S]*?bleed:\s*bleedConfig/)
   assert.match(engineSource, /renderSwissGridVectorPdf\(\{[\s\S]*?exportBox,/)
   assert.match(svgPageSetSource, /renderSwissGridVectorSvg\(\{[\s\S]*?exportBox,/)
-  assert.match(engineSource, /packageIdml\(options,\s*plannedPages,\s*pageSets\)/)
+  assert.match(engineSource, /packageIdml\(options,\s*plannedPages,\s*pageSets/)
   assert.match(pdfSource, /getExportGuideClipRect\(exportBox,\s*guideGroup\.clipToPage\)/)
   assert.match(svgSource, /getExportGuideClipRect\(exportBox,\s*true\)\s*\?\?\s*exportBox\.trim/)
   assert.match(idmlSource, /buildExportBox\(\{[\s\S]*?bleed:\s*documentBleed/)

@@ -16,6 +16,7 @@ import {
 import {
   buildSwissGridIdmlPackageFromPageSets,
   buildSwissGridIdmlPageSetArtifacts,
+  type SwissGridIdmlPackageDiagnostics,
 } from "@/lib/idml/builder"
 import type { IdmlPageSetArtifacts } from "@/lib/idml/types"
 import {
@@ -198,6 +199,7 @@ function cloneIdmlPageSetArtifacts(artifacts: IdmlPageSetArtifacts): IdmlPageSet
       ...story,
       bytes: cloneUint8Array(story.bytes),
     })),
+    diagnostics: artifacts.diagnostics ? { ...artifacts.diagnostics } : undefined,
   }
 }
 
@@ -209,6 +211,12 @@ const JsPDFConstructor = (
 
 function toUint8Array(buffer: ArrayBuffer): Uint8Array {
   return new Uint8Array(buffer)
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(2)}MB`
+  if (bytes >= 1024) return `${(bytes / 1024).toFixed(2)}KB`
+  return `${bytes}B`
 }
 
 export type ExportPageSet<TPage> = {
@@ -951,6 +959,7 @@ type IdmlPackageWorkerResponse =
       id: number
       ok: true
       bytes: Uint8Array
+      diagnostics?: SwissGridIdmlPackageDiagnostics
     }
   | {
       id: number
@@ -1054,7 +1063,7 @@ async function renderIdmlPageSetArtifacts(
   const bleedMm = bleedConfig.enabled ? bleedConfig.widthMm : 0
   const pageSets = buildExportPageSets(plannedPages)
   const workerCount = getBrowserExportWorkerCount(pageSets.length)
-  return record.measure(
+  const artifacts = await record.measure(
     "idml render page sets",
     async () => {
       if (workerCount > 1) {
@@ -1066,12 +1075,27 @@ async function renderIdmlPageSetArtifacts(
     },
     `sets=${pageSets.length}${workerCount > 1 ? ` workers=${workerCount}` : ""}`,
   )
+  const diagnostics = artifacts.flatMap((pageSet) => pageSet.diagnostics ? [pageSet.diagnostics] : [])
+  if (diagnostics.length > 0) {
+    record.record(
+      "idml page xml",
+      diagnostics.reduce((total, entry) => total + entry.xmlGenerationMs, 0),
+      `spreads=${diagnostics.reduce((total, entry) => total + entry.spreadCount, 0)} raw=${formatBytes(diagnostics.reduce((total, entry) => total + entry.spreadBytes + entry.storyBytes, 0))}`,
+    )
+    record.record(
+      "idml page encode",
+      diagnostics.reduce((total, entry) => total + entry.encodeMs, 0),
+      `bytes=${formatBytes(diagnostics.reduce((total, entry) => total + entry.spreadBytes + entry.storyBytes, 0))}`,
+    )
+  }
+  return artifacts
 }
 
 async function packageIdmlWithBrowserWorker(
   options: ExportEngineOptions,
   plannedPages: readonly PlannedProjectPageExportSource[],
   pageSets: IdmlPageSetArtifacts[],
+  onDiagnostics?: (diagnostics: SwissGridIdmlPackageDiagnostics) => void,
 ): Promise<Uint8Array> {
   const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
   const request: IdmlPackageWorkerRequest = {
@@ -1096,6 +1120,7 @@ async function packageIdmlWithBrowserWorker(
     errorLabel: "IDML package",
     readResult: (response) => {
       if (!response.ok) throw new Error(response.error)
+      if (response.diagnostics) onDiagnostics?.(response.diagnostics)
       return response.bytes
     },
   })
@@ -1105,11 +1130,12 @@ async function packageIdml(
   options: ExportEngineOptions,
   plannedPages: readonly PlannedProjectPageExportSource[],
   pageSets: IdmlPageSetArtifacts[],
+  onDiagnostics?: (diagnostics: SwissGridIdmlPackageDiagnostics) => void,
 ): Promise<Uint8Array> {
   const bleedConfig = options.bleed ?? DEFAULT_BLEED_CONFIG
   if (typeof Worker !== "undefined" && pageSets.length > 1) {
     options.onLog?.("idml: packaging in worker")
-    return packageIdmlWithBrowserWorker(options, plannedPages, pageSets)
+    return packageIdmlWithBrowserWorker(options, plannedPages, pageSets, onDiagnostics)
   }
   return buildSwissGridIdmlPackageFromPageSets({
     metadata: options.metadata,
@@ -1117,6 +1143,7 @@ async function packageIdml(
     bleedMm: bleedConfig.enabled ? bleedConfig.widthMm : 0,
   }, pageSets, {
     compressionLevel: options.idmlCompressionLevel,
+    onDiagnostics,
   })
 }
 
@@ -1126,7 +1153,31 @@ async function exportIdml(
   record: ReturnType<typeof createTimingRecorder>,
 ): Promise<ExportEngineOutput> {
   const pageSets = await renderIdmlPageSetArtifacts(options, plannedPages, record)
-  const bytes = await record.measure("idml package", () => packageIdml(options, plannedPages, pageSets), `pages=${plannedPages.length}`)
+  const packageDiagnosticsRef: { current: SwissGridIdmlPackageDiagnostics | null } = { current: null }
+  const bytes = await record.measure(
+    "idml package",
+    () => packageIdml(options, plannedPages, pageSets, (diagnostics) => {
+      packageDiagnosticsRef.current = diagnostics
+    }),
+    `pages=${plannedPages.length}`,
+  )
+  const packageDiagnostics = packageDiagnosticsRef.current
+  if (packageDiagnostics) {
+    const spreadBytes = packageDiagnostics.components
+      .filter((component) => component.path.startsWith("Spreads/"))
+      .reduce((total, component) => total + component.bytes, 0)
+    const resourceBytes = packageDiagnostics.components
+      .filter((component) => !component.path.startsWith("Spreads/") && !component.path.startsWith("Stories/"))
+      .reduce((total, component) => total + component.bytes, 0)
+    const largestComponents = [...packageDiagnostics.components]
+      .sort((left, right) => right.bytes - left.bytes)
+      .slice(0, 3)
+      .map((component) => `${component.path}=${formatBytes(component.bytes)}`)
+      .join(" ")
+    record.record("idml package resources", packageDiagnostics.resourceXmlMs, `raw=${formatBytes(resourceBytes)}`)
+    record.record("idml package zip", packageDiagnostics.zipMs, `raw=${formatBytes(packageDiagnostics.components.reduce((total, component) => total + component.bytes, 0))}`)
+    record.record("idml component sizes", 0, `spreads=${formatBytes(spreadBytes)} resources=${formatBytes(resourceBytes)} top=${largestComponents}`)
+  }
   await publishProgress(options, {
     format: "idml",
     completedSteps: plannedPages.length,
