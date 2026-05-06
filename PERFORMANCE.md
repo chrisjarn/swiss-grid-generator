@@ -325,6 +325,7 @@ Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the sha
 
 - PDF export runs in a cancellable browser worker so `Esc`/Cancel can terminate the active export even when final PDF byte serialization is busy. SVG page-set rendering, SVG ZIP packaging, IDML page-set XML generation, and IDML package assembly can also run worker-backed in the browser; final artifact order remains deterministic.
 - Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI default is off and restores `3mm` as the standard activation width; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
+- Cross-format outline precision is locked by `webapp/tests/export-geometry-parity.test.mjs`, which parses PDF content streams, SVG path data, and IDML `PathPointType` geometry from the same exported specimen and compares them against the planned glyph outline coordinates.
 
 ### Validation
 
@@ -332,6 +333,7 @@ The kept checkpoints from this pass were validated with:
 
 - `npm run fonts:verify`
 - `npm run test:export-box`
+- `npm run test:export-geometry`
 - `npm run test:pdf`
 - `npm run test:svg`
 - `npm run test:idml`
