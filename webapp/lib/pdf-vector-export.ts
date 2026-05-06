@@ -17,14 +17,14 @@ import {
 import {
   isRenderableTextFragment,
   preloadTextPlanOutlineFonts,
-  quadraticToCubic,
   resolveTextPlanVectorShapes,
+  transformOpenTypeCommandsToCubicCommands,
+  type CubicOpenTypePathCommand,
   type OutlineTextShape,
 } from "@/lib/vector-text-outline"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
 import type { RgbColor } from "@/lib/export-colors"
-import type { OpenTypePathCommand } from "@/lib/font-outline"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
@@ -359,74 +359,47 @@ async function renderSwissGridVectorPdfInternal({
     })
   }
   const transformOutlinePoint = (
-    x: number,
-    y: number,
+    point: { x: number; y: number },
     blockRotation = 0,
     rotationOrigin?: { x: number; y: number },
   ) => {
     const rotated = rotationOrigin && Math.abs(blockRotation) > 0.0001
-      ? rotatePointAround(x, y, rotationOrigin.x, rotationOrigin.y, blockRotation)
-      : { x, y }
+      ? rotatePointAround(point.x, point.y, rotationOrigin.x, rotationOrigin.y, blockRotation)
+      : point
     return transformPoint(rotated.x, rotated.y)
   }
-  const buildPdfOutlinePath = (
-    commands: readonly OpenTypePathCommand[],
-    blockRotation = 0,
-    rotationOrigin?: { x: number; y: number },
-  ): PdfPathCommand[] => {
-    const path: PdfPathCommand[] = []
-    let previousPoint: { x: number; y: number } | undefined
+  const buildPdfPathCommands = (commands: readonly CubicOpenTypePathCommand[]): PdfPathCommand[] => {
+    const pathCommands: PdfPathCommand[] = []
     for (const command of commands) {
       switch (command.type) {
-        case "M": {
-          const point = transformOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
-          path.push({ op: "m", c: [point.x, point.y] })
-          previousPoint = { x: command.x, y: command.y }
+        case "M":
+          pathCommands.push({ op: "m", c: [command.x, command.y] })
           break
-        }
-        case "L": {
-          const point = transformOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
-          path.push({ op: "l", c: [point.x, point.y] })
-          previousPoint = { x: command.x, y: command.y }
+        case "L":
+          pathCommands.push({ op: "l", c: [command.x, command.y] })
           break
-        }
-        case "C": {
-          const control1 = transformOutlinePoint(command.x1, command.y1, blockRotation, rotationOrigin)
-          const control2 = transformOutlinePoint(command.x2, command.y2, blockRotation, rotationOrigin)
-          const point = transformOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
-          path.push({ op: "c", c: [control1.x, control1.y, control2.x, control2.y, point.x, point.y] })
-          previousPoint = { x: command.x, y: command.y }
+        case "C":
+          pathCommands.push({ op: "c", c: [command.x1, command.y1, command.x2, command.y2, command.x, command.y] })
           break
-        }
-        case "Q": {
-          if (!previousPoint) break
-          const cubic = quadraticToCubic(
-            previousPoint,
-            { x: command.x1, y: command.y1 },
-            { x: command.x, y: command.y },
-          )
-          const control1 = transformOutlinePoint(cubic.control1.x, cubic.control1.y, blockRotation, rotationOrigin)
-          const control2 = transformOutlinePoint(cubic.control2.x, cubic.control2.y, blockRotation, rotationOrigin)
-          const point = transformOutlinePoint(command.x, command.y, blockRotation, rotationOrigin)
-          path.push({ op: "c", c: [control1.x, control1.y, control2.x, control2.y, point.x, point.y] })
-          previousPoint = { x: command.x, y: command.y }
-          break
-        }
         case "Z":
-          path.push({ op: "h", c: [] })
+          pathCommands.push({ op: "h", c: [] })
           break
         default:
           break
       }
     }
-    return path
+    return pathCommands
   }
   const drawTextOutlineShape = (
     shape: OutlineTextShape,
     blockRotation = 0,
     rotationOrigin?: { x: number; y: number },
   ) => {
-    const path = buildPdfOutlinePath(shape.commands, blockRotation, rotationOrigin)
+    const transformedCommands = transformOpenTypeCommandsToCubicCommands(
+      shape.commands,
+      (point) => transformOutlinePoint(point, blockRotation, rotationOrigin),
+    )
+    const path = buildPdfPathCommands(transformedCommands)
     if (path.length === 0) return
     setFillColor(pdf, shape.color)
     pdf.path(path).fill()

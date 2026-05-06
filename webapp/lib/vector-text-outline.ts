@@ -20,6 +20,12 @@ export type OutlineTextShape = {
   color: RgbColor
 }
 
+export type CubicOpenTypePathCommand =
+  | { type: "M"; x: number; y: number }
+  | { type: "L"; x: number; y: number }
+  | { type: "C"; x1: number; y1: number; x2: number; y2: number; x: number; y: number }
+  | { type: "Z" }
+
 export type FallbackTextShape = {
   text: string
   x: number
@@ -101,6 +107,76 @@ export function buildSvgPathDataFromCommands(
         return ""
     }
   }).filter(Boolean).join("")
+}
+
+export function transformOpenTypeCommandsToCubicCommands(
+  commands: readonly OpenTypePathCommand[],
+  transformPoint: (point: { x: number; y: number }) => { x: number; y: number },
+): CubicOpenTypePathCommand[] {
+  const transformed: CubicOpenTypePathCommand[] = []
+  let previousPoint: { x: number; y: number } | undefined
+
+  for (const command of commands) {
+    switch (command.type) {
+      case "M": {
+        const point = transformPoint({ x: command.x, y: command.y })
+        transformed.push({ type: "M", x: point.x, y: point.y })
+        previousPoint = { x: command.x, y: command.y }
+        break
+      }
+      case "L": {
+        const point = transformPoint({ x: command.x, y: command.y })
+        transformed.push({ type: "L", x: point.x, y: point.y })
+        previousPoint = { x: command.x, y: command.y }
+        break
+      }
+      case "C": {
+        const control1 = transformPoint({ x: command.x1, y: command.y1 })
+        const control2 = transformPoint({ x: command.x2, y: command.y2 })
+        const point = transformPoint({ x: command.x, y: command.y })
+        transformed.push({
+          type: "C",
+          x1: control1.x,
+          y1: control1.y,
+          x2: control2.x,
+          y2: control2.y,
+          x: point.x,
+          y: point.y,
+        })
+        previousPoint = { x: command.x, y: command.y }
+        break
+      }
+      case "Q": {
+        if (!previousPoint) break
+        const cubic = quadraticToCubic(
+          previousPoint,
+          { x: command.x1, y: command.y1 },
+          { x: command.x, y: command.y },
+        )
+        const control1 = transformPoint(cubic.control1)
+        const control2 = transformPoint(cubic.control2)
+        const point = transformPoint({ x: command.x, y: command.y })
+        transformed.push({
+          type: "C",
+          x1: control1.x,
+          y1: control1.y,
+          x2: control2.x,
+          y2: control2.y,
+          x: point.x,
+          y: point.y,
+        })
+        previousPoint = { x: command.x, y: command.y }
+        break
+      }
+      case "Z":
+        transformed.push({ type: "Z" })
+        break
+      default:
+        break
+    }
+  }
+
+  return transformed
 }
 
 export function convertOpenTypeCommandsToGeometryPaths(commands: readonly OpenTypePathCommand[]): GeometryPath[] {

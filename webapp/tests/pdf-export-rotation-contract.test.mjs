@@ -153,12 +153,16 @@ test("pdf export isolates placeholder opacity from later typography fills", () =
 
 test("pdf export renders typography from the shared glyph-outline resolver", () => {
   const source = readText("lib/pdf-vector-export.ts")
+  const outlineSource = readText("lib/vector-text-outline.ts")
   assert.match(source, /preloadTextPlanOutlineFonts\(exportPlan\.textPlans\)/)
   assert.match(source, /resolveTextPlanVectorShapes\(plan\)/)
+  assert.match(source, /transformOpenTypeCommandsToCubicCommands\(/)
+  assert.match(outlineSource, /export\s+function\s+transformOpenTypeCommandsToCubicCommands/)
   assert.match(source, /for\s*\(const\s+shape\s+of\s+outlineShapes\)[\s\S]*?drawTextOutlineShape\(shape,\s*plan\.blockRotation,\s*rotationOrigin\)/)
   assert.match(source, /pdf\.path\(path\)\.fill\(\)/)
   assert.match(source, /for\s*\(const\s+shape\s+of\s+fallbackTextShapes\)[\s\S]*?drawText\(\s*shape\.text,[\s\S]*?shape\.trackingScale,/)
   assert.doesNotMatch(source, /pdf\.path\(path,\s*"F"\)/)
+  assert.doesNotMatch(source, /quadraticToCubic/)
   assert.doesNotMatch(source, /getRenderedTextDrawCommandText/)
 })
 
