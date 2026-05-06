@@ -143,23 +143,23 @@ test("vector text outlines use pre-positioned tracking segments with explicit le
   assert.match(source, /for\s*\(const\s+segments\s+of\s+textPlan\.segmentLines\)/)
 })
 
-test("pdf export isolates placeholder opacity from later live text fills", () => {
+test("pdf export isolates placeholder opacity from later typography fills", () => {
   const source = readText("lib/pdf-vector-export.ts")
   assert.match(source, /const\s+drawImagePlan\s*=\s*\(imagePlan:[\s\S]*?\)\s*=>\s*\{[\s\S]*?pdf\.saveGraphicsState\(\)/)
   assert.match(source, /try\s*\{[\s\S]*?setPdfOpacity\(imagePlan\.opacity\)[\s\S]*?drawFilledRect/)
   assert.match(source, /finally\s*\{[\s\S]*?pdf\.restoreGraphicsState\(\)/)
-  assert.match(source, /const\s+rotationOrigin\s*=\s*\{\s*x:\s*plan\.rotationOriginX,\s*y:\s*plan\.rotationOriginY\s*\}[\s\S]*?pdf\.saveGraphicsState\(\)[\s\S]*?setPdfOpacity\(1\)[\s\S]*?setTextColor\(pdf,[\s\S]*?finally\s*\{[\s\S]*?pdf\.restoreGraphicsState\(\)/)
+  assert.match(source, /const\s+rotationOrigin\s*=\s*\{\s*x:\s*plan\.rotationOriginX,\s*y:\s*plan\.rotationOriginY\s*\}[\s\S]*?pdf\.saveGraphicsState\(\)[\s\S]*?setPdfOpacity\(1\)[\s\S]*?drawTextOutlineShape\(shape,[\s\S]*?finally\s*\{[\s\S]*?pdf\.restoreGraphicsState\(\)/)
 })
 
-test("pdf export uses positioned live text segments instead of a second glyph-outline renderer", () => {
+test("pdf export renders typography from the shared glyph-outline resolver", () => {
   const source = readText("lib/pdf-vector-export.ts")
-  assert.match(source, /if\s*\(plan\.graphemeLines\.length\s*>\s*0\)/)
-  assert.match(source, /for\s*\(const\s+graphemes\s+of\s+plan\.graphemeLines\)/)
-  assert.match(source, /drawText\(\s*grapheme\.text,\s*grapheme\.x,\s*grapheme\.y,\s*"left",\s*0,/)
-  assert.match(source, /for\s*\(const\s+segments\s+of\s+plan\.segmentLines\)/)
-  assert.match(source, /drawText\(\s*segment\.text,\s*segment\.x,\s*segment\.y,\s*"left",\s*segment\.trackingScale,/)
-  assert.doesNotMatch(source, /resolveTextPlanVectorShapes\(plan\)/)
+  assert.match(source, /preloadTextPlanOutlineFonts\(exportPlan\.textPlans\)/)
+  assert.match(source, /resolveTextPlanVectorShapes\(plan\)/)
+  assert.match(source, /for\s*\(const\s+shape\s+of\s+outlineShapes\)[\s\S]*?drawTextOutlineShape\(shape,\s*plan\.blockRotation,\s*rotationOrigin\)/)
+  assert.match(source, /pdf\.path\(path\)\.fill\(\)/)
+  assert.match(source, /for\s*\(const\s+shape\s+of\s+fallbackTextShapes\)[\s\S]*?drawText\(\s*shape\.text,[\s\S]*?shape\.trackingScale,/)
   assert.doesNotMatch(source, /pdf\.path\(path,\s*"F"\)/)
+  assert.doesNotMatch(source, /getRenderedTextDrawCommandText/)
 })
 
 test("pdf export action forwards placeholder visibility and active image color scheme", () => {
