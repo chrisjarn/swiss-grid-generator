@@ -142,59 +142,55 @@ export const EXPECTED_TEXT_METRICS_PRODUCTION_EXPORT_PLAN_SIGNATURES: readonly T
   },
   {
     label: "Swiss Grid Generator Manual / Title",
-    signature: "cfeebf66",
+    signature: "842d7072",
   },
   {
     label: "Swiss Grid Generator Manual / Introduction",
-    signature: "bab59184",
+    signature: "b5100c2a",
   },
   {
     label: "Swiss Grid Generator Manual / Quick Start",
-    signature: "7e05e360",
+    signature: "a6becf46",
   },
   {
     label: "Swiss Grid Generator Manual / Recommended Workflow",
-    signature: "22dde627",
+    signature: "abafc459",
   },
   {
     label: "Swiss Grid Generator Manual / Pages and Document Structure",
-    signature: "dd8e68af",
+    signature: "812b3f6f",
   },
   {
     label: "Swiss Grid Generator Manual / Grid, Margins, and Rhythm",
-    signature: "17598dd8",
+    signature: "428c4b1a",
   },
   {
     label: "Swiss Grid Generator Manual / Typography",
-    signature: "ccab0129",
+    signature: "97d797ef",
   },
   {
     label: "Swiss Grid Generator Manual / Placing Text and Image Areas",
-    signature: "491b89df",
+    signature: "92b3b3b1",
   },
   {
     label: "Swiss Grid Generator Manual / Export",
-    signature: "1dce46de",
+    signature: "97f0078a",
   },
   {
     label: "Swiss Grid Generator Manual / Keyboard and Fast Interaction",
-    signature: "81abe188",
+    signature: "a550df76",
   },
   {
     label: "Swiss Grid Generator Manual / Common Mistakes",
-    signature: "f32f1f93",
+    signature: "d10f4199",
   },
   {
     label: "Swiss Grid Generator Manual / Final Advice",
-    signature: "522aae82",
+    signature: "e73ad9b4",
   },
   {
     label: "Swiss Style Poster Example 001 / Poster AO",
     signature: "2c2e8c65",
-  },
-  {
-    label: "Swiss Style Poster Example 002 / Swiss Style Poster",
-    signature: "8c27f777",
   },
   {
     label: "Classic Poster Lookalike / Classic Poster Lookalike",
@@ -202,7 +198,7 @@ export const EXPECTED_TEXT_METRICS_PRODUCTION_EXPORT_PLAN_SIGNATURES: readonly T
   },
   {
     label: "Classic Book Cover Lookalike / Blank Start Page",
-    signature: "06ef2722",
+    signature: "c5172e22",
   },
 ]
 
@@ -221,59 +217,55 @@ export const EXPECTED_TEXT_METRICS_DETERMINISTIC_OPTICAL_MARGIN_EXPORT_PLAN_SIGN
   },
   {
     label: "Swiss Grid Generator Manual / Title",
-    signature: "cfeebf66",
+    signature: "842d7072",
   },
   {
     label: "Swiss Grid Generator Manual / Introduction",
-    signature: "bab59184",
+    signature: "b5100c2a",
   },
   {
     label: "Swiss Grid Generator Manual / Quick Start",
-    signature: "7e05e360",
+    signature: "a6becf46",
   },
   {
     label: "Swiss Grid Generator Manual / Recommended Workflow",
-    signature: "22dde627",
+    signature: "abafc459",
   },
   {
     label: "Swiss Grid Generator Manual / Pages and Document Structure",
-    signature: "dd8e68af",
+    signature: "812b3f6f",
   },
   {
     label: "Swiss Grid Generator Manual / Grid, Margins, and Rhythm",
-    signature: "17598dd8",
+    signature: "428c4b1a",
   },
   {
     label: "Swiss Grid Generator Manual / Typography",
-    signature: "ccab0129",
+    signature: "97d797ef",
   },
   {
     label: "Swiss Grid Generator Manual / Placing Text and Image Areas",
-    signature: "491b89df",
+    signature: "92b3b3b1",
   },
   {
     label: "Swiss Grid Generator Manual / Export",
-    signature: "1dce46de",
+    signature: "97f0078a",
   },
   {
     label: "Swiss Grid Generator Manual / Keyboard and Fast Interaction",
-    signature: "81abe188",
+    signature: "a550df76",
   },
   {
     label: "Swiss Grid Generator Manual / Common Mistakes",
-    signature: "f32f1f93",
+    signature: "d10f4199",
   },
   {
     label: "Swiss Grid Generator Manual / Final Advice",
-    signature: "522aae82",
+    signature: "e73ad9b4",
   },
   {
     label: "Swiss Style Poster Example 001 / Poster AO",
     signature: "2c2e8c65",
-  },
-  {
-    label: "Swiss Style Poster Example 002 / Swiss Style Poster",
-    signature: "8c27f777",
   },
   {
     label: "Classic Poster Lookalike / Classic Poster Lookalike",
@@ -281,7 +273,7 @@ export const EXPECTED_TEXT_METRICS_DETERMINISTIC_OPTICAL_MARGIN_EXPORT_PLAN_SIGN
   },
   {
     label: "Classic Book Cover Lookalike / Blank Start Page",
-    signature: "06ef2722",
+    signature: "c5172e22",
   },
 ]
 

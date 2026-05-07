@@ -1,4 +1,9 @@
-import { isFontFamily, type FontFamily } from "@/lib/config/fonts"
+import {
+  FONT_DEFINITIONS,
+  getFontVariants,
+  isFontFamily,
+  type FontFamily,
+} from "@/lib/config/fonts"
 import {
   getResolvedOutlineFontFace,
   loadOutlineFont,
@@ -288,6 +293,16 @@ export function collectFontFileMetricFacesFromBlocks<StyleKey extends string>(
   }
 
   return [...faces.values()]
+}
+
+export function collectAllRegisteredFontFileMetricFaces(): FontFileMetricFace[] {
+  return FONT_DEFINITIONS.flatMap(({ value }) => (
+    getFontVariants(value).map((variant) => ({
+      fontFamily: value,
+      fontWeight: variant.weight,
+      italic: variant.italic,
+    }))
+  ))
 }
 
 export async function preloadFontFileMetricFaces(faces: Iterable<FontFileMetricFace>): Promise<void> {

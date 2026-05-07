@@ -12,7 +12,7 @@ import {
   resolveFontVariant,
 } from "@/lib/config/fonts"
 import {
-  collectFontFileMetricFacesFromCanvasFonts,
+  collectAllRegisteredFontFileMetricFaces,
   createDeterministicFontFileOpticalMarginTextMetricsEngine,
   createDeterministicFontFileTextMetricsEngine,
   createFontFileRangeCalibrationClassCorrectionTextMetricsEngine,
@@ -2768,7 +2768,7 @@ export async function runPresetTextMetricsParityReport({
   const samples = collectTextMetricsPresetSamples({ sampleLimit, maxTextLength })
   const canvasFonts = samples.map((sample) => sample.canvasFont)
   await preloadBrowserFontSpecs(collectBrowserFontSpecs(canvasFonts))
-  await preloadFontFileMetricFaces(collectFontFileMetricFacesFromCanvasFonts(canvasFonts))
+  await preloadFontFileMetricFaces(collectAllRegisteredFontFileMetricFaces())
 
   const context = createMeasurementContext()
   const deltas = compareTextMetricsEngines<TypographyStyleKey, FontFamily>({

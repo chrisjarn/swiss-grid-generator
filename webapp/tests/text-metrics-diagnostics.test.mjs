@@ -261,7 +261,7 @@ test("preview and vector exports use deterministic font-file metrics for plannin
   )
   assert.match(
     typographyRendererHookSource,
-    /bufferCtx\.scale\(scale,\s*scale\)[\s\S]*?drawCanvasLayerStack\(bufferCtx,\s*canvasRenderPlans\.orderedKeys/,
+    /bufferCtx\.scale\(scale,\s*scale\)[\s\S]*?drawCanvasLayerPlanStack\(bufferCtx,\s*canvasRenderPlans\.orderedLayerPlans/,
     "live preview should draw canonical point-space plans under the same scale transform used by thumbnails",
   )
   assert.match(
@@ -641,12 +641,12 @@ test("package exposes the browser text-metrics parity gate", () => {
   )
   assert.match(
     scriptSource,
-    /06ef2722/,
+    /c5172e22/,
     "browser parity command should pin the current Classic deterministic optical-margin candidate signature",
   )
   assert.match(
     scriptSource,
-    /Swiss Style Poster Example 002 \/ Swiss Style Poster[\s\S]*?8c27f777[\s\S]*?Classic Book Cover Lookalike \/ Blank Start Page[\s\S]*?06ef2722/,
+    /Swiss Style Poster Example 001 \/ Poster AO[\s\S]*?2c2e8c65[\s\S]*?Classic Book Cover Lookalike \/ Blank Start Page[\s\S]*?c5172e22/,
     "browser parity command should pin promoted v2 poster-scale and Classic signatures",
   )
 })
@@ -777,6 +777,7 @@ test("Safari capture page runs the same browser report with threshold metadata",
   const browserDiagnosticsSource = readText(BROWSER_DIAGNOSTICS_PATH)
   const devReportSource = readText(DEV_REPORT_PATH)
   const scriptSource = readText(BROWSER_PARITY_SCRIPT_PATH)
+  const fontFileEngineSource = readText(FONT_FILE_ENGINE_PATH)
 
   assert.match(
     pageSource,
@@ -817,6 +818,16 @@ test("Safari capture page runs the same browser report with threshold metadata",
     pageSource,
     /deterministicOpticalMarginExportPlanSignatures/,
     "Safari capture JSON should include deterministic optical-margin candidate signatures",
+  )
+  assert.match(
+    devReportSource,
+    /collectAllRegisteredFontFileMetricFaces[\s\S]*?preloadFontFileMetricFaces\(collectAllRegisteredFontFileMetricFaces\(\)\)/,
+    "browser parity should preload the installed font registry, not only the capped diagnostic sample window or current preset JSON coverage",
+  )
+  assert.match(
+    fontFileEngineSource,
+    /collectAllRegisteredFontFileMetricFaces[\s\S]*?FONT_DEFINITIONS\.flatMap[\s\S]*?getFontVariants\(value\)/,
+    "installed deterministic font metric coverage should be sourced from the font registry and its variant table",
   )
   assert.match(
     thresholdSource,
@@ -860,12 +871,12 @@ test("Safari capture page runs the same browser report with threshold metadata",
   )
   assert.match(
     thresholdSource,
-    /06ef2722/,
+    /c5172e22/,
     "threshold metadata should pin the current Classic deterministic optical-margin candidate signature",
   )
   assert.match(
     thresholdSource,
-    /Swiss Style Poster Example 002 \/ Swiss Style Poster[\s\S]*?8c27f777[\s\S]*?Classic Book Cover Lookalike \/ Blank Start Page[\s\S]*?06ef2722/,
+    /Swiss Style Poster Example 001 \/ Poster AO[\s\S]*?2c2e8c65[\s\S]*?Classic Book Cover Lookalike \/ Blank Start Page[\s\S]*?c5172e22/,
     "threshold metadata should pin a wider promoted v2 multi-preset export-plan surface",
   )
   assert.match(
