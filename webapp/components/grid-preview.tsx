@@ -80,6 +80,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -299,6 +300,7 @@ export const GridPreview = memo(function GridPreview({
   const typographyBufferRef = useRef<HTMLCanvasElement | null>(null)
   const previousPlansRef = useRef<Map<BlockId, BlockRenderPlan<BlockId>>>(new Map())
   const typographyBufferTransformRef = useRef("")
+  const previewSurfaceSignatureRef = useRef<string | null>(null)
   const lastHistoryResetTokenRef = useRef(historyResetToken)
   const smartTextZoomGeometrySignatureRef = useRef<string | null>(null)
   const lastAppliedSmartTextZoomGeometrySignatureRef = useRef<string | null>(null)
@@ -560,6 +562,54 @@ export const GridPreview = memo(function GridPreview({
     layoutEngine,
     scale,
   })
+
+  const previewSurfaceSignature = useMemo(() => JSON.stringify({
+    initialLayoutToken,
+    pageWidthPx,
+    pageHeightPx,
+    scale,
+    pixelRatio,
+    rotation,
+    canvasBackground,
+    showBaselines,
+    showMargins,
+    showModules,
+    showTypography,
+    showImagePlaceholders,
+    fontRenderEpoch,
+    pageSize: result.pageSizePt,
+    grid: {
+      margins: result.grid.margins,
+      gridUnit: result.grid.gridUnit,
+      gridMarginHorizontal: result.grid.gridMarginHorizontal,
+      gridMarginVertical: result.grid.gridMarginVertical,
+    },
+    module: result.module,
+    gridRows: result.settings.gridRows,
+    gridCols: result.settings.gridCols,
+  }), [
+    canvasBackground,
+    fontRenderEpoch,
+    initialLayoutToken,
+    pageHeightPx,
+    pageWidthPx,
+    pixelRatio,
+    result.grid.gridMarginHorizontal,
+    result.grid.gridMarginVertical,
+    result.grid.gridUnit,
+    result.grid.margins,
+    result.module,
+    result.pageSizePt,
+    result.settings.gridCols,
+    result.settings.gridRows,
+    rotation,
+    scale,
+    showBaselines,
+    showImagePlaceholders,
+    showMargins,
+    showModules,
+    showTypography,
+  ])
 
   const {
     pushHistory,
@@ -1448,19 +1498,28 @@ export const GridPreview = memo(function GridPreview({
     onHoverLayerChange?.(hoverState?.key ?? hoverImageKey ?? null)
   }, [hoverImageKey, hoverState?.key, onHoverLayerChange])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
+    if (previewSurfaceSignatureRef.current === previewSurfaceSignature) return
+    previewSurfaceSignatureRef.current = previewSurfaceSignature
+    setLayoutDisplayReady(false)
+    blockRectsRef.current = {} as Record<BlockId, BlockRect>
+    imageRectsRef.current = {} as Record<BlockId, BlockRect>
+    previousPlansRef.current.clear()
+    setOverflowLinesByBlock({})
+  }, [blockRectsRef, imageRectsRef, previewSurfaceSignature, previousPlansRef])
+
+  useLayoutEffect(() => {
     if (layoutEmissionFrameRef.current !== null) {
       window.cancelAnimationFrame(layoutEmissionFrameRef.current)
       layoutEmissionFrameRef.current = null
     }
     if (initialLayoutToken === 0) {
       setLayoutEmissionEnabled(true)
-      setLayoutDisplayReady(true)
       return
     }
     setLayoutEmissionEnabled(false)
-    setLayoutDisplayReady(false)
-  }, [initialLayoutToken])
+    clearHover()
+  }, [clearHover, initialLayoutToken])
 
   useEffect(() => {
     if (initialLayoutToken === 0) return
@@ -1507,14 +1566,6 @@ export const GridPreview = memo(function GridPreview({
       }
     }
   ), [])
-
-  useEffect(() => {
-    if (initialLayoutToken === 0) return
-    blockRectsRef.current = {} as Record<BlockId, BlockRect>
-    imageRectsRef.current = {} as Record<BlockId, BlockRect>
-    previousPlansRef.current.clear()
-    clearHover()
-  }, [clearHover, imageRectsRef, initialLayoutToken, previousPlansRef])
 
   usePreviewDocumentLifecycle<TypographyStyleKey, BlockId, typeof dragState, NonNullable<typeof editorState>, typeof imageEditorState>({
     historyResetToken,
@@ -1942,7 +1993,7 @@ export const GridPreview = memo(function GridPreview({
     <div
       ref={previewContainerRef}
       data-tooltip-boundary="preview-workspace"
-      className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg transition-opacity ${
+      className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg ${
         isDarkMode ? "bg-[#161A22]" : "bg-gray-100"
       }`}
       style={{ opacity: layoutDisplayReady ? 1 : 0 }}

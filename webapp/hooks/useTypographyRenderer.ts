@@ -19,7 +19,7 @@ import {
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
 import { measureLayoutPerformance } from "@/lib/layout-performance"
-import { buildPageExportPlan } from "@/lib/page-export-plan"
+import { buildPageExportPlan, type PageExportPlan } from "@/lib/page-export-plan"
 import type { BlockRect, BlockRenderPlan } from "@/lib/preview-types"
 import type { ModulePosition } from "@/lib/types/layout-primitives"
 import type { PreviewLayoutState } from "@/lib/types/preview-layout"
@@ -30,6 +30,81 @@ type DragState<BlockId extends string> = {
   key: BlockId
   preview: ModulePosition
   copyOnDrop: boolean
+}
+
+const MAX_PREVIEW_PAGE_EXPORT_PLAN_CACHE_ENTRIES = 12
+
+type PreviewPageExportPlanCacheEntry = {
+  exportPlan: PageExportPlan
+}
+
+function readPreviewPageExportPlanCache(
+  cache: Map<string, PreviewPageExportPlanCacheEntry>,
+  key: string,
+): PageExportPlan | null {
+  const entry = cache.get(key)
+  if (!entry) return null
+  cache.delete(key)
+  cache.set(key, entry)
+  return entry.exportPlan
+}
+
+function writePreviewPageExportPlanCache(
+  cache: Map<string, PreviewPageExportPlanCacheEntry>,
+  key: string,
+  exportPlan: PageExportPlan,
+): void {
+  cache.set(key, { exportPlan })
+  while (cache.size > MAX_PREVIEW_PAGE_EXPORT_PLAN_CACHE_ENTRIES) {
+    const oldestKey = cache.keys().next().value
+    if (!oldestKey) break
+    cache.delete(oldestKey)
+  }
+}
+
+function buildPreviewPageExportPlanCacheKey<StyleKey extends string, BlockId extends string>({
+  result,
+  layout,
+  documentVariableContext,
+  baseFont,
+  imageColorScheme,
+  rotation,
+  showImagePlaceholders,
+  showTypography,
+  layoutEngine,
+  rawDocumentVariableBlockKey,
+  fontRenderEpoch,
+}: {
+  result: GridResult
+  layout: PreviewLayoutState<StyleKey, FontFamily, BlockId>
+  documentVariableContext: DocumentVariableContext | null
+  baseFont: FontFamily
+  imageColorScheme: ImageColorSchemeId
+  rotation: number
+  showImagePlaceholders: boolean
+  showTypography: boolean
+  layoutEngine: LayoutEngineContract
+  rawDocumentVariableBlockKey: BlockId | null
+  fontRenderEpoch: number
+}): string | null {
+  try {
+    return JSON.stringify({
+      result,
+      layout,
+      documentVariableContext,
+      baseFont,
+      imageColorScheme,
+      rotation,
+      showImagePlaceholders,
+      showTypography,
+      includeGraphemeLines: true,
+      layoutEngine,
+      rawDocumentVariableBlockKey,
+      fontRenderEpoch,
+    })
+  } catch {
+    return null
+  }
 }
 
 function scaleRect(rect: BlockRect, factor: number): BlockRect {
@@ -189,6 +264,7 @@ export function useTypographyRenderer<BlockId extends string>({
     }
   }
   const textMetricsService = textMetricsServiceRef.current.service
+  const pageExportPlanCacheRef = useRef(new Map<string, PreviewPageExportPlanCacheEntry>())
 
   useEffect(() => {
     const canvas = canvasRef.current
@@ -244,7 +320,25 @@ export function useTypographyRenderer<BlockId extends string>({
       const exportLayout = dragState && !dragState.copyOnDrop
         ? buildLayoutWithDragPreviewPosition(baseLayout, dragState, rowStartsInBaselines, blockOrder, imageOrder)
         : baseLayout
-      const exportPlan = buildPageExportPlan({
+      const pageExportPlanCacheKey = dragState
+        ? null
+        : buildPreviewPageExportPlanCacheKey({
+            result,
+            layout: exportLayout,
+            documentVariableContext,
+            baseFont,
+            imageColorScheme,
+            rotation,
+            showImagePlaceholders,
+            showTypography,
+            layoutEngine,
+            rawDocumentVariableBlockKey,
+            fontRenderEpoch,
+          })
+      const cachedExportPlan = pageExportPlanCacheKey
+        ? readPreviewPageExportPlanCache(pageExportPlanCacheRef.current, pageExportPlanCacheKey)
+        : null
+      const exportPlan = cachedExportPlan ?? buildPageExportPlan({
         result,
         layout: exportLayout,
         documentVariableContext,
@@ -262,6 +356,9 @@ export function useTypographyRenderer<BlockId extends string>({
         rawDocumentVariableBlockKey,
         textMetricsService,
       })
+      if (!cachedExportPlan && pageExportPlanCacheKey) {
+        writePreviewPageExportPlanCache(pageExportPlanCacheRef.current, pageExportPlanCacheKey, exportPlan)
+      }
       const canvasRenderPlans = measureLayoutPerformance(
         "canvas.buildRenderPlansFromPageExportPlan",
         () => buildCanvasRenderPlansFromPageExportPlan(exportPlan, { signatureMode: "key" }),
@@ -332,6 +429,7 @@ export function useTypographyRenderer<BlockId extends string>({
       onOverflowLinesChange?.(overflowByBlock)
 
       if (!showTypography && imagePlans.size === 0) {
+        onPlansCommit?.()
         endDrawMark()
         recordPerfMetric("drawMs", performance.now() - drawStartedAt)
         return
