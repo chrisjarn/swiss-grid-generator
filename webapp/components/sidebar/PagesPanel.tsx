@@ -18,6 +18,7 @@ import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
 type TransientExpandedReason = "editor" | "page-navigation" | "paragraph" | "preview-hover"
+export type PagePanelListItem = Pick<ProjectPage<PreviewLayoutState>, "id" | "name" | "layoutMode">
 
 const PAGE_VIRTUALIZATION_THRESHOLD = 80
 const PAGE_VIRTUALIZATION_OVERSCAN = 8
@@ -26,7 +27,7 @@ const DEFAULT_EXPANDED_PAGE_CARD_HEIGHT = 320
 const PAGE_HEADER_SCROLL_TOP_OFFSET_PX = 0
 
 type Props = {
-  pages: readonly ProjectPage<PreviewLayoutState>[]
+  pages: readonly PagePanelListItem[]
   activePage: ProjectPage<PreviewLayoutState> | null
   activePageId: string
   onSelectPage: (pageId: string) => void
@@ -413,7 +414,7 @@ export function PagesPanel({
     )
     : 0
 
-  const beginRename = (page: ProjectPage<PreviewLayoutState>) => {
+  const beginRename = (page: PagePanelListItem) => {
     setEditingPageId(page.id)
     setPageNameDraft(page.name)
   }
@@ -506,13 +507,13 @@ export function PagesPanel({
     clearDragState()
   }
 
-  const renderPageCard = (page: ProjectPage<PreviewLayoutState>) => {
-    const resolvedPage = activePage?.id === page.id ? activePage : page
+  const renderPageCard = (page: PagePanelListItem) => {
+    const resolvedPage = activePage?.id === page.id ? activePage : null
     const isActive = page.id === activePageId
     const isEditing = page.id === editingPageId
     const isExpanded = expandedPageId === page.id
     const pageTitleToneClassName = isActive ? tone.accent : ""
-    const isFacingPage = resolvedPage.layoutMode === "facing"
+    const isFacingPage = page.layoutMode === "facing"
     const deleteDisabled = pages.length <= 1
     const stationaryIndex = stationaryIndexByPageId.get(page.id) ?? null
 
@@ -702,7 +703,7 @@ export function PagesPanel({
               <div className="mt-2">
                 <ProjectPageLayersList
                   pageId={page.id}
-                  layout={resolvedPage.previewLayout}
+                  layout={resolvedPage?.previewLayout ?? null}
                   baseFont={baseFont}
                   imageColorScheme={imageColorScheme}
                   selectedLayerKey={isActive ? selectedLayerKey : null}

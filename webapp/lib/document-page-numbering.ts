@@ -24,7 +24,7 @@ export function getProjectPagePhysicalPageNumberAtIndex<Layout>(
 }
 
 export function getProjectPagePhysicalPageNumber<Layout>(
-  pages: readonly ProjectPage<Layout>[],
+  pages: readonly Pick<ProjectPage<Layout>, "id" | "layoutMode">[],
   pageId: string,
 ): number {
   const pageIndex = pages.findIndex((page) => page.id === pageId)

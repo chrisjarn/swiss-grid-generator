@@ -701,6 +701,13 @@ export default function Home() {
     activePageId,
     pages: projectPages,
   })
+  const sidebarProjectPageItems = useMemo(() => (
+    sidebarProjectPages.map((page) => ({
+      id: page.id,
+      name: page.name,
+      layoutMode: page.layoutMode,
+    }))
+  ), [sidebarProjectPages])
   const projectTour = project.tour ?? null
   const activePageLayoutMode = activePage?.layoutMode ?? "single"
   const sidebarControlsUseLivePage = sidebarActivePageId === activePageId && !isPageGuiSettling
@@ -1787,7 +1794,8 @@ export default function Home() {
       activeCloudConflictDetails={activeCloudConflictDetails}
       authError={authError}
       authMessage={authMessage}
-      projectPages={sidebarProjectPages}
+      projectPages={sidebarProjectPageItems}
+      projectInfoPages={projectPages}
       activeProjectPage={activePage}
       activePageId={activePageId}
       sidebarActiveProjectPage={sidebarActivePage}

@@ -8,7 +8,7 @@ import { FeedbackPanel } from "@/components/sidebar/FeedbackPanel"
 import { HelpPanel } from "@/components/sidebar/HelpPanel"
 import { LegalNoticePanel } from "@/components/sidebar/LegalNoticePanel"
 import { AccountPanel } from "@/components/sidebar/AccountPanel"
-import { PagesPanel } from "@/components/sidebar/PagesPanel"
+import { PagesPanel, type PagePanelListItem } from "@/components/sidebar/PagesPanel"
 import { PresetLayoutsPanel } from "@/components/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/components/sidebar/ProjectTitleSection"
 import { HeaderIconButton } from "@/components/ui/header-icon-button"
@@ -39,6 +39,7 @@ import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 type PreviewProjectPage = ProjectPage<PreviewLayoutState>
+type PreviewProjectPageListItem = PagePanelListItem
 
 const MAX_GUI_PROJECT_PAGES = 100
 
@@ -99,7 +100,8 @@ type Props = {
   } | null
   authError: string | null
   authMessage: string | null
-  projectPages: readonly PreviewProjectPage[]
+  projectPages: readonly PreviewProjectPageListItem[]
+  projectInfoPages: readonly PreviewProjectPage[]
   activeProjectPage: PreviewProjectPage | null
   activePageId: string
   sidebarActiveProjectPage: PreviewProjectPage | null
@@ -263,6 +265,7 @@ export function PreviewWorkspace({
   authError,
   authMessage,
   projectPages,
+  projectInfoPages,
   activeProjectPage,
   activePageId,
   sidebarActiveProjectPage,
@@ -450,12 +453,12 @@ export function PreviewWorkspace({
 
   const totalLayerCount = useMemo(() => {
     if (!showProjectInfo) return 0
-    return projectPages.reduce((sum, page) => (
+    return projectInfoPages.reduce((sum, page) => (
       sum
       + (page.previewLayout?.blockOrder.length ?? 0)
       + (page.previewLayout?.imageOrder?.length ?? 0)
     ), 0)
-  }, [projectPages, showProjectInfo])
+  }, [projectInfoPages, showProjectInfo])
 
   const projectInfoStats = useMemo(() => {
     if (!showProjectInfo) {
@@ -471,7 +474,7 @@ export function PreviewWorkspace({
     let wordCount = 0
     let characterCount = 0
 
-    projectPages.forEach((page) => {
+    projectInfoPages.forEach((page) => {
       const layout = page.previewLayout
       if (!layout) return
 
@@ -510,7 +513,7 @@ export function PreviewWorkspace({
       wordCount,
       characterCount,
     }
-  }, [projectPages, showProjectInfo])
+  }, [projectInfoPages, showProjectInfo])
 
   const formattedProjectCreatedAt = useMemo(() => {
     if (!projectCreatedAt) return null
