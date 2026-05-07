@@ -435,6 +435,14 @@ export function PreviewWorkspace({
   const activePageNumber = useMemo(() => {
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
   }, [activePageId, projectPages])
+  const documentVariablePageCount = useMemo(
+    () => getProjectPhysicalPageCount(projectPages),
+    [projectPages],
+  )
+  const documentPagePosition = Math.min(Math.max(activePageNumber, 1), documentVariablePageCount)
+  const documentPagePositionPercent = documentVariablePageCount <= 1
+    ? 100
+    : (documentPagePosition - 1) / (documentVariablePageCount - 1) * 100
 
   useEffect(() => {
     const previousEditorMode = previousEditorModeRef.current
@@ -446,10 +454,6 @@ export function PreviewWorkspace({
   const activePageTitle = useMemo(() => {
     return activeProjectPage?.name?.trim() || `Page ${activePageNumber}`
   }, [activePageNumber, activeProjectPage])
-  const documentVariablePageCount = useMemo(
-    () => getProjectPhysicalPageCount(projectPages),
-    [projectPages],
-  )
 
   const totalLayerCount = useMemo(() => {
     if (!showProjectInfo) return 0
@@ -620,6 +624,21 @@ export function PreviewWorkspace({
             editorMode ? uiTheme.previewContentEdit : uiTheme.previewContent
           }`}
         >
+          {!showPresetsBrowser ? (
+            <div
+              className={`pointer-events-none sticky top-0 z-30 h-px w-full shrink-0 overflow-hidden ${isDarkUi ? "bg-[#313A47]" : "bg-gray-200"}`}
+              aria-label={`Page position ${documentPagePosition} of ${documentVariablePageCount}`}
+              role="progressbar"
+              aria-valuemin={1}
+              aria-valuemax={documentVariablePageCount}
+              aria-valuenow={documentPagePosition}
+            >
+              <div
+                className="h-full bg-swiss-orange"
+                style={{ width: `${documentPagePositionPercent}%` }}
+              />
+            </div>
+          ) : null}
           {!showPresetsBrowser && tourState ? (
             <ProjectTourOverlay
               title={tourState.title}
@@ -813,10 +832,12 @@ export function PreviewWorkspace({
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mt-3 rounded-md pt-2 pb-1">
+                  <div className="mt-3 mb-1 rounded-md pt-2 pb-1">
                     <SectionHeaderRow
                       label="Pages"
+                      value={`${documentPagePosition} / ${documentVariablePageCount}`}
                       labelClassName={uiTheme.sidebarHeading}
+                      valueClassName={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}
                       actions={(
                         <div className="flex shrink-0 items-center gap-1">
                           {renderPageActionButton({
