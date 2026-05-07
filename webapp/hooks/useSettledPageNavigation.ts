@@ -30,7 +30,7 @@ export function useSettledPageNavigation<TPage extends PageIdentity>({
     settleTimeoutRef.current = null
   }, [])
 
-  const settleGuiPageNow = useCallback((pageId = activePageId) => {
+  const commitSettledPage = useCallback((pageId = activePageId) => {
     clearSettleTimeout()
     pendingSettledPageTargetRef.current = null
     setSettlingPageId(null)
@@ -60,8 +60,8 @@ export function useSettledPageNavigation<TPage extends PageIdentity>({
 
   useEffect(() => {
     if (pendingSettledPageTargetRef.current === activePageId) return
-    settleGuiPageNow(activePageId)
-  }, [activePageId, settleGuiPageNow])
+    commitSettledPage(activePageId)
+  }, [activePageId, commitSettledPage])
 
   useEffect(() => {
     const latestPageIds = new Set(pages.map((page) => page.id))

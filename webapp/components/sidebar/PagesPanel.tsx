@@ -252,6 +252,13 @@ export function PagesPanel({
   const pageMetrics = useMemo(() => {
     const offsets = new Map<string, number>()
     const heights = new Map<string, number>()
+    if (!renderPageList) {
+      return {
+        offsets,
+        heights,
+        totalHeight: 0,
+      }
+    }
     let runningTop = 0
     for (const page of pages) {
       const measuredHeight = measuredPageHeights[page.id]
@@ -267,7 +274,7 @@ export function PagesPanel({
       heights,
       totalHeight: runningTop,
     }
-  }, [expandedPageId, measuredPageHeights, pages])
+  }, [expandedPageId, measuredPageHeights, pages, renderPageList])
 
   useEffect(() => {
     const pendingScrollTarget = pendingScrollTargetRef.current
