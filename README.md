@@ -95,11 +95,12 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 ### Project & Layers
 - Full **Project → Pages → inline Layers** architecture
 - Multiple pages with independent settings
-- Project rail uses full-width page rows with inline open/close layer stacks for faster long-document navigation
+- Project rail uses a compact `Page` header with list-view access, physical page navigation, and full-width page rows with inline layer stacks for faster long-document navigation
 - Opened page rows expose a one-way `Facing pages` control above `Layers`, converting the page into a facing spread with mirrored inner/outer margins and a zero-gap preview seam
 - Facing spreads stay a single project page and double the effective column space so layers and text reflow can extend across both sides
-- `Add Page` always creates a new single page, even when the active page is a facing spread
+- `+` always creates a new single page after the active page, even when the active page is a facing spread; `Shift` + `+` duplicates the active page with content
 - Project page creation is capped at `1000` pages per document
+- The `Page` counter shows the current physical page and total physical pages; double-click the current page number to jump to a page number up to the total page count
 - `Page Up` / `Page Down` step to the previous or next project page when multiple pages are present, and `Home` / `End` jump to the first or last page
 - Text and image layers with stable grid-based positioning
 - Drag to move

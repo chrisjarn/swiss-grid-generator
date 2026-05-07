@@ -691,6 +691,13 @@ export default function Home() {
     onApplyPage: handleApplyProjectPage,
     onPageLimitReached: handleProjectPageLimitReached,
   })
+  const liveProjectPages = useMemo(() => {
+    if (!activePage) return projectPages
+    return projectPages.map((page) => (
+      page.id === activePage.id ? activePage : page
+    ))
+  }, [activePage, projectPages])
+
   const {
     isGuiSettling: isPageGuiSettling,
     requestSettledPageFocus,
@@ -699,7 +706,7 @@ export default function Home() {
     settledPages: sidebarProjectPages,
   } = useSettledPageNavigation({
     activePageId,
-    pages: projectPages,
+    pages: liveProjectPages,
   })
   const sidebarProjectPageItems = useMemo(() => (
     sidebarProjectPages.map((page) => ({

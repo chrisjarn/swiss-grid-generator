@@ -90,7 +90,7 @@ Single-click a layer card to select it, then use arrow keys to nudge it. This ke
 Lock layers once their position and role are resolved. Locked layers still show rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked.
 
 ### Use Page Rows For Document Rhythm {#tooltip-page-cards}
-Use page rows to activate, rename, reorder, and inspect pages. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy.
+Use the `Page` header or list icon to return from a page's layer stack to the page list. Single-click a page row to activate and display it while staying in the list; double-click the row, or click its open toggle, to inspect its layers. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy.
 
 ### Use Facing Pages Only For Real Spreads {#tooltip-facing-pages}
 Use `Facing pages` when two physical pages need one continuous editorial field. A facing spread remains one project page, doubles the effective column field, mirrors inner and outer margins, and affects physical page variables.

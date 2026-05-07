@@ -46,7 +46,7 @@ export function ProjectTitleSection({
   }
 
   return (
-    <div className="mt-4">
+    <div className="mt-1">
       <div className="flex min-h-[18px] items-center justify-between gap-2">
         <button
           type="button"

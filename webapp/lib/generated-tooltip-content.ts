@@ -239,7 +239,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use page rows to activate, rename, reorder, and inspect pages. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy."
+        "text": "Use the `Page` header or list icon to return from a page's layer stack to the page list. Single-click a page row to activate and display it while staying in the list; double-click the row, or click its open toggle, to inspect its layers. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy."
       }
     ]
   },

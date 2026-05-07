@@ -111,7 +111,7 @@ Current capability inventory for Swiss Grid Generator.
 - Paragraph hover guides follow the configured `rows + baselines` height rather than only the rendered text bounds.
 - Paragraph hover edit affordance is anchored at the paragraph's top-left origin so shallow frames remain reachable.
 - Preview rollover stays active while editing, so clicking another existing unlocked paragraph or image placeholder retargets the already open editor instead of leaving edit mode.
-- Project panel supports page switching, full-width page rows with open/close toggles and inline layer lists, reordering, renaming, deletion, and split page-creation controls for clean-copy and full-duplicate insertion.
+- Project panel supports page switching, a compact `Page` header with list-view access and physical page navigation, full-width page rows with inline layer lists, reordering, renaming, deletion, and one `+` page-creation control.
 - Hovering an active-page layer card in the Project panel temporarily makes it the keyboard nudge target without changing the committed selection.
 - Project panel includes a compact project-title row showing the real project title plus an edit/close button.
 - Double-clicking the compact project-title row toggles the metadata section; opening it focuses and selects the `Title` field immediately.
@@ -122,10 +122,11 @@ Current capability inventory for Swiss Grid Generator.
 - `Page Up` and `Page Down` step through project pages when multiple pages are present, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page.
 - Keyboard page navigation keeps the active page row in view, waits briefly before moving the row, and only opens inline layers after a longer pause so fast paging stays lightweight.
 - Facing spreads stay a single project page and keep the normal layer editing workflow inside one continuous spread space.
-- `+` inserts a new single page after the active page, preserving that page's settings and layout mode but starting without copied layer content.
-- `++` inserts a full duplicate of the active page with its content.
+- `+` inserts a new single page after the active page, preserving that page's settings and layout mode but starting without copied layer content; `Shift` + `+` inserts a full duplicate of the active page with its content.
 - Projects are capped at `1000` pages.
-- Single-clicking a page row selects it; double-clicking toggles its inline layer list and aligns opened pages to the top of the panel.
+- The `Page` header and list icon return from an inline page submenu to the page list.
+- The physical page counter shows current page and total physical pages; double-clicking the current number opens an inline jump field capped by the total page count.
+- Single-clicking a page row in list view selects and displays it while keeping list view open; double-clicking a page row, or clicking its open toggle, opens that page's inline layer list.
 - Expanded page rows expose rename, delete, facing-pages, and inline layer-management controls.
 - Newly added pages open automatically.
 - Project JSON supports an optional `tour` definition for quick onboarding tied to real pages and layers.

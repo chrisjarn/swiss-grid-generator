@@ -218,15 +218,17 @@ Default: `swiss`
 - Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
 - The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
-- `Pages`: single-click to select, double-click to open or close inline layers, drag to reorder, rename/delete as needed. `+` inserts a clean page copy after the active page, preserving page settings/layout mode without copied layer content; `++` inserts a full duplicate with content.
+- `Page`: the header label and list icon return from an inline page submenu to the page list. The counter shows current physical page and total physical pages; double-clicking the current number opens an inline jump field capped by the total page count.
+- In page list view, single-clicking a page row selects and displays it while keeping the list open. Double-clicking a page row, or clicking its open toggle, opens that page's inline layer list. Page rows can be dragged to reorder and expose rename/delete controls when opened.
+- `+` inserts a clean page after the active page, preserving page settings/layout mode without copied layer content; `Shift` + `+` inserts a full duplicate with content.
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.
 - Loading or switching to another page keeps the previous preview hidden until the target page snapshot and first final plan commit are complete, so partial intermediate geometry is never shown.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
-- Single-clicking a page row selects that page.
-- Double-clicking a page row toggles its inline layer list and aligns opened pages to the top of the panel.
-- Each page row also has an open/close toggle that reveals that page's layers inline.
+- Single-clicking a page row in list view selects that page without leaving list view.
+- Double-clicking a page row opens its inline layer list and aligns the opened page to the top of the panel. Closing it returns to the page list at the same page position.
+- Each page row also has an open toggle that opens that page's layers inline.
 - Newly added pages open automatically.
 - Every page stores its own settings payload plus preview layout state.
 - Project JSON can also carry an optional `tour` block for guided onboarding that steps through pages, layers, help, and editor targets.
@@ -239,10 +241,10 @@ Default: `swiss`
 - Hovered image placeholders expose a `+` affordance for duplication.
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
 - Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
-- Layer cards include a lock toggle to the left of delete. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
+- Layer cards include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
 - Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel.
 - Deleting from the panel removes the layer from the active page and saved project JSON.
-- `Pages` section header single-clicks to collapse.
+- `Page` section header single-clicks to show the page list.
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
 - Left settings and editor panels use one shared move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state.
 

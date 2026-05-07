@@ -1,7 +1,7 @@
 "use client"
 
-import { Info, Plus, X } from "lucide-react"
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, Plus, X } from "lucide-react"
+import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
 import { GridPreview } from "@/components/grid-preview"
 import { FeedbackPanel } from "@/components/sidebar/FeedbackPanel"
@@ -32,6 +32,7 @@ import { LayoutOpenTooltipOverlay } from "@/components/preview/LayoutOpenTooltip
 import { buildGridResultFromUiSettings, resolveUiSettingsSnapshot } from "@/lib/ui-settings-resolver"
 import {
   getProjectPagePhysicalPageNumber,
+  getProjectPagePhysicalPageSpan,
   getProjectPhysicalPageCount,
 } from "@/lib/document-page-numbering"
 import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
@@ -339,6 +340,12 @@ export function PreviewWorkspace({
   const [previewEditorOpenToken, setPreviewEditorOpenToken] = useState(0)
   const [previewParagraphCreateToken, setPreviewParagraphCreateToken] = useState(0)
   const [showProjectInfo, setShowProjectInfo] = useState(false)
+  const [pageListRequestToken, setPageListRequestToken] = useState(0)
+  const [pageAddHovered, setPageAddHovered] = useState(false)
+  const [pageAddShiftActive, setPageAddShiftActive] = useState(false)
+  const [pageNumberEditing, setPageNumberEditing] = useState(false)
+  const [pageNumberDraft, setPageNumberDraft] = useState("")
+  const pageNumberInputRef = useRef<HTMLInputElement | null>(null)
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
@@ -365,6 +372,7 @@ export function PreviewWorkspace({
       pages={projectPages}
       activePage={sidebarActiveProjectPage}
       activePageId={sidebarActivePageId}
+      pageListRequestToken={pageListRequestToken}
       onSelectPage={onPageSelect}
       onFacingPageToggle={onPageFacingToggle}
       onRenamePage={onPageRename}
@@ -404,12 +412,13 @@ export function PreviewWorkspace({
     onPageSelect,
     onRequestNotice,
     onSelectedLayerKeyChange,
+    pageListRequestToken,
     projectPages,
     sidebarActivePageId,
     sidebarActiveProjectPage,
   ])
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
-  const pageActionButtonClassName = `inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
+  const pageActionButtonClassName = `inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${
     isDarkUi
       ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
       : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
@@ -432,6 +441,19 @@ export function PreviewWorkspace({
     setPreviewHoveredLayerKey(null)
   }, [showPresetsBrowser])
 
+  useEffect(() => {
+    if (!pageAddHovered) return
+    const updatePageAddIntent = (event: KeyboardEvent) => {
+      setPageAddShiftActive(event.shiftKey)
+    }
+    window.addEventListener("keydown", updatePageAddIntent)
+    window.addEventListener("keyup", updatePageAddIntent)
+    return () => {
+      window.removeEventListener("keydown", updatePageAddIntent)
+      window.removeEventListener("keyup", updatePageAddIntent)
+    }
+  }, [pageAddHovered])
+
   const activePageNumber = useMemo(() => {
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
   }, [activePageId, projectPages])
@@ -443,6 +465,208 @@ export function PreviewWorkspace({
   const documentPagePositionPercent = documentVariablePageCount <= 1
     ? 100
     : (documentPagePosition - 1) / (documentVariablePageCount - 1) * 100
+
+  useEffect(() => {
+    if (!pageNumberEditing) return
+    window.requestAnimationFrame(() => {
+      pageNumberInputRef.current?.focus()
+      pageNumberInputRef.current?.select()
+    })
+  }, [pageNumberEditing])
+
+  useEffect(() => {
+    if (pageNumberEditing) return
+    setPageNumberDraft(String(documentPagePosition))
+  }, [documentPagePosition, pageNumberEditing])
+
+  function resolveProjectPageIdForPhysicalPage(pageNumber: number): string | null {
+    let physicalStart = 1
+    for (const page of projectPages) {
+      const physicalEnd = physicalStart + getProjectPagePhysicalPageSpan(page) - 1
+      if (pageNumber >= physicalStart && pageNumber <= physicalEnd) {
+        return page.id
+      }
+      physicalStart = physicalEnd + 1
+    }
+    return projectPages[0]?.id ?? null
+  }
+
+  function beginPageNumberEdit() {
+    setPageNumberDraft(String(documentPagePosition))
+    setPageNumberEditing(true)
+  }
+
+  function cancelPageNumberEdit() {
+    setPageNumberDraft(String(documentPagePosition))
+    setPageNumberEditing(false)
+  }
+
+  function commitPageNumberEdit() {
+    const parsedValue = Number.parseInt(pageNumberDraft, 10)
+    if (!Number.isFinite(parsedValue)) {
+      cancelPageNumberEdit()
+      return
+    }
+    const targetPageNumber = Math.min(Math.max(parsedValue, 1), documentVariablePageCount)
+    const targetPageId = resolveProjectPageIdForPhysicalPage(targetPageNumber)
+    setPageNumberEditing(false)
+    setPageNumberDraft(String(targetPageNumber))
+    if (!targetPageId || targetPageId === activePageId) return
+    onPageSelect(targetPageId)
+  }
+
+  function selectPhysicalPage(pageNumber: number) {
+    const targetPageNumber = Math.min(Math.max(pageNumber, 1), documentVariablePageCount)
+    const targetPageId = resolveProjectPageIdForPhysicalPage(targetPageNumber)
+    setPageNumberEditing(false)
+    setPageNumberDraft(String(targetPageNumber))
+    if (!targetPageId || targetPageId === activePageId) return
+    onPageSelect(targetPageId)
+  }
+
+  const pagesHeadlineLabel = (
+    <HoverTooltip
+      inline
+      label={"Show page list\nClick Page or the list icon to return from a page submenu to the page list."}
+      tooltipClassName="w-64 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+      horizontalAlign="start"
+    >
+      <button
+        type="button"
+        aria-label="Show pages list"
+        className={`inline-flex items-center gap-1.5 leading-none transition-colors ${
+          isDarkUi ? "hover:text-[#F4F6F8]" : "hover:text-gray-900"
+        }`}
+        onClick={() => setPageListRequestToken((current) => current + 1)}
+      >
+        <List className="h-3 w-3" strokeWidth={1.9} />
+        <span>Page</span>
+      </button>
+    </HoverTooltip>
+  )
+
+  const pageNavigationButtonClassName = (disabled: boolean) => `inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm transition-colors ${
+    disabled
+      ? isDarkUi
+        ? "cursor-not-allowed text-[#5D6878]"
+        : "cursor-not-allowed text-gray-300"
+      : isDarkUi
+        ? "text-[#A8B1BF] hover:text-[#F4F6F8]"
+        : "text-gray-500 hover:text-gray-900"
+  }`
+
+  const renderPageNavigationButton = (
+    label: string,
+    targetPageNumber: number,
+    disabled: boolean,
+    icon: ReactNode,
+  ) => (
+    <button
+      type="button"
+      aria-label={label}
+      disabled={disabled}
+      onClick={() => selectPhysicalPage(targetPageNumber)}
+      className={pageNavigationButtonClassName(disabled)}
+    >
+      {icon}
+    </button>
+  )
+
+  const pageNavigationControlsBefore = (
+    <span className="mr-1 inline-flex items-center gap-0.5">
+      {renderPageNavigationButton(
+        "First page",
+        1,
+        documentPagePosition <= 1,
+        <ChevronsLeft className="h-3 w-3" strokeWidth={1.9} />,
+      )}
+      {renderPageNavigationButton(
+        "Previous page",
+        documentPagePosition - 1,
+        documentPagePosition <= 1,
+        <ChevronLeft className="h-3 w-3" strokeWidth={1.9} />,
+      )}
+    </span>
+  )
+
+  const pageNavigationControlsAfter = (
+    <span className="ml-1 inline-flex items-center gap-0.5">
+      {renderPageNavigationButton(
+        "Next page",
+        documentPagePosition + 1,
+        documentPagePosition >= documentVariablePageCount,
+        <ChevronRight className="h-3 w-3" strokeWidth={1.9} />,
+      )}
+      {renderPageNavigationButton(
+        "Last page",
+        documentVariablePageCount,
+        documentPagePosition >= documentVariablePageCount,
+        <ChevronsRight className="h-3 w-3" strokeWidth={1.9} />,
+      )}
+    </span>
+  )
+
+  const pagePositionValue = pageNumberEditing ? (
+    <span className="inline-flex min-w-0 items-center gap-1">
+      {pageNavigationControlsBefore}
+      <input
+        ref={pageNumberInputRef}
+        type="text"
+        inputMode="numeric"
+        aria-label="Page number"
+        value={pageNumberDraft}
+        onChange={(event) => {
+          const nextValue = event.target.value
+          if (/^\d*$/.test(nextValue)) {
+            setPageNumberDraft(nextValue)
+          }
+        }}
+        onBlur={commitPageNumberEdit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") {
+            event.preventDefault()
+            commitPageNumberEdit()
+          }
+          if (event.key === "Escape") {
+            event.preventDefault()
+            cancelPageNumberEdit()
+          }
+        }}
+        className={`h-4 w-9 rounded-sm border px-1 text-right text-[11px] leading-none outline-none ${
+          isDarkUi
+            ? "border-[#4A5566] bg-[#232A35] text-[#F4F6F8] focus:border-swiss-orange"
+          : "border-gray-300 bg-white text-gray-900 focus:border-swiss-orange"
+        }`}
+      />
+      <span className="px-1 text-swiss-orange-soft">of</span>
+      <span className={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}>{documentVariablePageCount}</span>
+      {pageNavigationControlsAfter}
+    </span>
+  ) : (
+    <span className="inline-flex min-w-0 items-center gap-1">
+      {pageNavigationControlsBefore}
+      <HoverTooltip
+        inline
+        label={`Page ${documentPagePosition} of ${documentVariablePageCount}\nDouble-click the current page number to jump to a page.`}
+        tooltipClassName="w-56 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] leading-snug text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        horizontalAlign="end"
+      >
+        <button
+          type="button"
+          aria-label={`Edit page number, currently ${documentPagePosition} of ${documentVariablePageCount}`}
+          onDoubleClick={beginPageNumberEdit}
+          className={`inline-flex min-w-0 items-center leading-none transition-colors ${
+            isDarkUi ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
+          }`}
+        >
+          {documentPagePosition}
+        </button>
+      </HoverTooltip>
+      <span className="px-1 text-swiss-orange-soft">of</span>
+      <span className={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}>{documentVariablePageCount}</span>
+      {pageNavigationControlsAfter}
+    </span>
+  )
 
   useEffect(() => {
     const previousEditorMode = previousEditorModeRef.current
@@ -558,35 +782,55 @@ export function PreviewWorkspace({
     now: previewVariableNow,
   }), [activePageNumber, activePageTitle, documentVariablePageCount, previewVariableNow, projectTitle])
 
-  function renderPageActionButton({
-    ariaLabel,
-    tooltip,
-    onClick,
-    children,
-    disabled = false,
-  }: {
-    ariaLabel: string
-    tooltip: string
-    onClick: () => void
-    children: ReactNode
-    disabled?: boolean
-  }) {
+  function handlePageAddClick(event: MouseEvent<HTMLButtonElement>) {
+    if (pageAddDisabled) return
+    if (event.shiftKey) {
+      onPageAddWithContent()
+      return
+    }
+    onPageAdd()
+  }
+
+  function renderPageAddActions() {
+    const addShiftActive = pageAddShiftActive && pageAddHovered
+    const pageAddButtonActiveClassName = addShiftActive
+      ? isDarkUi
+        ? "border-swiss-orange-soft bg-swiss-orange text-white hover:brightness-110"
+        : "border-swiss-orange bg-swiss-orange text-white hover:brightness-95"
+      : ""
+    const tooltip = pageAddDisabled
+      ? `Maximum ${MAX_GUI_PROJECT_PAGES} pages reached.`
+      : "Add page with layout only\nShift-click duplicates page with content"
+
     return (
-      <HoverTooltip
-        inline
-        label={tooltip}
-        tooltipClassName="w-max whitespace-pre-line text-center border-gray-200 bg-gray-100/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
-      >
-        <button
-          type="button"
-          aria-label={ariaLabel}
-          disabled={disabled}
-          onClick={disabled ? undefined : onClick}
-          className={`${pageActionButtonClassName} ${disabled ? "cursor-not-allowed opacity-45 hover:text-inherit" : ""}`}
+      <div className="flex shrink-0 items-center gap-1.5">
+        <HoverTooltip
+          inline
+          label={tooltip}
+          tooltipClassName="w-max whitespace-pre-line text-center border-gray-200 bg-gray-100/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
         >
-          {children}
-        </button>
-      </HoverTooltip>
+          <button
+            type="button"
+            aria-label={addShiftActive ? "Duplicate page with content" : "Add clean copy page"}
+            disabled={pageAddDisabled}
+            onMouseEnter={(event) => {
+              setPageAddHovered(true)
+              setPageAddShiftActive(event.shiftKey)
+            }}
+            onMouseMove={(event) => setPageAddShiftActive(event.shiftKey)}
+            onMouseLeave={() => {
+              setPageAddHovered(false)
+              setPageAddShiftActive(false)
+            }}
+            onClick={handlePageAddClick}
+            className={`${pageActionButtonClassName} ${pageAddButtonActiveClassName} ${
+              pageAddDisabled ? "cursor-not-allowed opacity-45 hover:text-inherit" : ""
+            }`}
+          >
+            <Plus className="h-2 w-2" />
+          </button>
+        </HoverTooltip>
+      </div>
     )
   }
 
@@ -772,11 +1016,11 @@ export function PreviewWorkspace({
             {activeSidebarPanel === "layers" && (
               <div
                 aria-disabled={!sidebarControlsUseLivePage}
-                className={`grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] transition-opacity ${
+                className={`grid h-full min-h-0 grid-rows-[max-content_minmax(0,1fr)] transition-opacity ${
                   sidebarControlsUseLivePage ? "" : "pointer-events-none opacity-50"
                 }`}
               >
-                <div className="px-4 pt-4 md:px-6 md:pt-6">
+                <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6">
                   <div className="rounded-md py-2">
                     <SectionHeaderRow
                       label="P R O J E C T"
@@ -832,72 +1076,25 @@ export function PreviewWorkspace({
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mt-3 mb-1 rounded-md pt-2 pb-1">
+                  <div className="mb-2 mt-2 rounded-md pb-1">
                     <SectionHeaderRow
-                      label="Pages"
-                      value={`${documentPagePosition} / ${documentVariablePageCount}`}
+                      label={pagesHeadlineLabel}
+                      value={pagePositionValue}
                       labelClassName={uiTheme.sidebarHeading}
-                      valueClassName={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}
-                      actions={(
-                        <div className="flex shrink-0 items-center gap-1">
-                          {renderPageActionButton({
-                            ariaLabel: "Add clean copy page",
-                            tooltip: pageAddDisabled ? `+\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "+\nAdd page with layout only",
-                            onClick: onPageAdd,
-                            disabled: pageAddDisabled,
-                            children: <Plus className="h-2 w-2" />,
-                          })}
-                          {renderPageActionButton({
-                            ariaLabel: "Add page copy with content",
-                            tooltip: pageAddDisabled ? `++\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "++\nDuplicate page with content",
-                            onClick: onPageAddWithContent,
-                            disabled: pageAddDisabled,
-                            children: (
-                              <span className="inline-flex h-full items-center gap-[1px]">
-                                <Plus className="h-2 w-2" />
-                                <Plus className="h-2 w-2" />
-                              </span>
-                            ),
-                          })}
-                        </div>
-                      )}
+                      valueClassName=""
+                      actions={renderPageAddActions()}
                     />
                   </div>
+                  <div
+                    aria-hidden="true"
+                    className={`-mx-4 mt-1 h-px md:-mx-6 ${isDarkUi ? "bg-[#313A47]" : "bg-gray-200"}`}
+                  />
                 </div>
                 <div
                   data-help-scroll-root="true"
-                  className="min-h-0 overflow-y-auto overscroll-contain pt-5 md:pt-6"
+                  className="min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
                 >
                   {pagesPanelElement}
-                </div>
-                <div className={`shrink-0 border-t px-4 py-3 text-[11px] md:px-6 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
-                  <SectionHeaderRow
-                    label="Add Page"
-                    labelClassName={uiTheme.sidebarHeading}
-                    actions={(
-                      <div className="flex shrink-0 items-center gap-1">
-                        {renderPageActionButton({
-                          ariaLabel: "Add clean copy page",
-                          tooltip: pageAddDisabled ? `+\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "+\nAdd page with layout only",
-                          onClick: onPageAdd,
-                          disabled: pageAddDisabled,
-                          children: <Plus className="h-2 w-2" />,
-                        })}
-                        {renderPageActionButton({
-                          ariaLabel: "Add page copy with content",
-                          tooltip: pageAddDisabled ? `++\nMaximum ${MAX_GUI_PROJECT_PAGES} pages` : "++\nDuplicate page with content",
-                          onClick: onPageAddWithContent,
-                          disabled: pageAddDisabled,
-                          children: (
-                            <span className="inline-flex h-full items-center gap-[1px]">
-                              <Plus className="h-2 w-2" />
-                              <Plus className="h-2 w-2" />
-                            </span>
-                          ),
-                        })}
-                      </div>
-                    )}
-                  />
                 </div>
               </div>
             )}

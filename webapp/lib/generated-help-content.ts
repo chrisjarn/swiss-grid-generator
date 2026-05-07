@@ -645,13 +645,14 @@ export const HELP_CONTENT_GROUPS = [
               "The expanded metadata section contains `Title`, `Subject`, and `Author`.",
               "The `Subject` field is vertically resizable in the current session.",
               "The document info text summarizes pages, layers, fonts, cuts, words, characters, author, and creation date when metadata exists.",
-              "Single-click a page row to activate it. Double-click it to open or close its inline layer list.",
+              "The `Page` header and list icon return from an inline page submenu to the page list.",
+              "The page counter shows current physical page and total physical pages. Double-click the current page number to enter a page number up to the total page count.",
+              "Single-click a page row in list view to activate and display it while keeping the list open. Double-click a page row, or click its open toggle, to open its inline layer list.",
               "`Page Up` / `Page Down` move through project pages, `Shift` + `Page Up` / `Page Down` jump by `10`, and the active page row is brought into view before its inline layers open.",
               "Drag collapsed page rows to reorder the project.",
               "Page rows include rename and delete controls. The last remaining page cannot be deleted.",
               "`Facing pages` converts a page into a spread inside the same page record.",
-              "`+` inserts a new single page after the active page, preserving its page settings and layout mode but starting without copied layer content.",
-              "`++` inserts a full duplicate of the active page with its content.",
+              "`+` inserts a new single page after the active page, preserving its page settings and layout mode but starting without copied layer content. `Shift` + `+` inserts a full duplicate of the active page with its content.",
               "A project can contain up to `1000` pages.",
               "`Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.",
               "Active-page layer cards mirror preview hover/guides.",
@@ -660,7 +661,7 @@ export const HELP_CONTENT_GROUPS = [
               "Drag unlocked layer cards to reorder z-index.",
               "Layer cards include lock and delete controls.",
               "Single-click a layer card to select it. Double-click an unlocked layer card to open or retarget its corresponding text or image editor.",
-              "Double-click a layer card's lock toggle to apply the same lock state to every layer on that page.",
+              "Click a layer card's lock toggle to lock or unlock that layer. Double-click the lock toggle to apply the same lock state to every layer on that page.",
               "Locked layers stay visible and selectable, and their preview rollover remains available for guides and unlocking, but move, edit, duplicate, delete, and editor retarget/open actions stay disabled until unlocked."
             ]
           }

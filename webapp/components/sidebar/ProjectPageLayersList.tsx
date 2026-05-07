@@ -62,7 +62,7 @@ const STYLE_LABELS: Record<string, string> = {
   caption: "Caption",
 }
 
-const LOCK_BUTTON_CLICK_DELAY_MS = 180
+const LOCK_BUTTON_DOUBLE_CLICK_WINDOW_MS = 320
 
 function toLabel(value: string): string {
   return STYLE_LABELS[value] ?? (value ? value.charAt(0).toUpperCase() + value.slice(1) : "Body")
@@ -123,7 +123,7 @@ export function ProjectPageLayersList({
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const dropIndicatorIndexRef = useRef<number | null>(null)
   const selectionLockCleanupRef = useRef<(() => void) | null>(null)
-  const lockButtonClickTimeoutRef = useRef<number | null>(null)
+  const lastLockButtonClickRef = useRef<{ key: string; targetLocked: boolean; timeStamp: number } | null>(null)
   const layerScrollFrameRef = useRef<number | null>(null)
 
   const blockOrder = useMemo(() => layout?.blockOrder ?? [], [layout?.blockOrder])
@@ -251,10 +251,6 @@ export function ProjectPageLayersList({
 
   useEffect(() => (
     () => {
-      if (lockButtonClickTimeoutRef.current !== null) {
-        window.clearTimeout(lockButtonClickTimeoutRef.current)
-        lockButtonClickTimeoutRef.current = null
-      }
       if (layerScrollFrameRef.current !== null) {
         window.cancelAnimationFrame(layerScrollFrameRef.current)
         layerScrollFrameRef.current = null
@@ -507,23 +503,26 @@ export function ProjectPageLayersList({
                       } ${isLocked ? "" : "hover:text-swiss-orange-soft"}`}
                       onClick={(event) => {
                         event.stopPropagation()
-                        if (lockButtonClickTimeoutRef.current !== null) {
-                          window.clearTimeout(lockButtonClickTimeoutRef.current)
-                        }
-                        lockButtonClickTimeoutRef.current = window.setTimeout(() => {
+                        const previousClick = lastLockButtonClickRef.current
+                        const isRepeatedLockClick = previousClick?.key === thumb.key
+                          && event.timeStamp - previousClick.timeStamp <= LOCK_BUTTON_DOUBLE_CLICK_WINDOW_MS
+                        if (event.detail >= 2 || isRepeatedLockClick) {
                           onHoverLayerChange(null)
-                          onToggleLock(thumb.key, !isLocked)
-                          lockButtonClickTimeoutRef.current = null
-                        }, LOCK_BUTTON_CLICK_DELAY_MS)
+                          onToggleAllLocks(pageId, previousClick?.targetLocked ?? !isLocked)
+                          lastLockButtonClickRef.current = null
+                          return
+                        }
+                        const targetLocked = !isLocked
+                        lastLockButtonClickRef.current = {
+                          key: thumb.key,
+                          targetLocked,
+                          timeStamp: event.timeStamp,
+                        }
+                        onHoverLayerChange(null)
+                        onToggleLock(thumb.key, targetLocked)
                       }}
                       onDoubleClick={(event) => {
                         event.stopPropagation()
-                        if (lockButtonClickTimeoutRef.current !== null) {
-                          window.clearTimeout(lockButtonClickTimeoutRef.current)
-                          lockButtonClickTimeoutRef.current = null
-                        }
-                        onHoverLayerChange(null)
-                        onToggleAllLocks(pageId, !isLocked)
                       }}
                     >
                       {isLocked ? <Lock className="h-3.5 w-3.5" /> : <LockOpen className="h-3.5 w-3.5" />}
