@@ -340,6 +340,8 @@ export function PreviewWorkspace({
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
   const liveLayerPanelState = {
+    baseFont,
+    imageColorScheme,
     selectedLayerKey,
     hoveredLayerKey,
     previewHoveredLayerKey,
@@ -355,6 +357,54 @@ export function PreviewWorkspace({
   const layerPanelState = sidebarControlsUseLivePage
     ? liveLayerPanelState
     : settledLayerPanelStateRef.current
+  const pagesPanelElement = useMemo(() => (
+    <PagesPanel
+      pages={projectPages}
+      activePage={sidebarActiveProjectPage}
+      activePageId={sidebarActivePageId}
+      onSelectPage={onPageSelect}
+      onFacingPageToggle={onPageFacingToggle}
+      onRenamePage={onPageRename}
+      onDeletePage={onPageDelete}
+      onRequestNotice={onRequestNotice}
+      onPageOrderChange={onPageOrderChange}
+      baseFont={layerPanelState.baseFont}
+      imageColorScheme={layerPanelState.imageColorScheme}
+      selectedLayerKey={layerPanelState.selectedLayerKey}
+      hoveredLayerKey={layerPanelState.hoveredLayerKey}
+      previewHoveredLayerKey={layerPanelState.previewHoveredLayerKey}
+      editingLayerKey={layerPanelState.editingLayerKey}
+      editorMode={layerPanelState.editorMode}
+      previewEditorOpenToken={layerPanelState.previewEditorOpenToken}
+      previewParagraphCreateToken={layerPanelState.previewParagraphCreateToken}
+      onLayerOrderChange={onLayerOrderChange}
+      onSelectedLayerKeyChange={onSelectedLayerKeyChange}
+      onHoverLayerChange={setLayerPanelHoveredLayerKey}
+      onLayerEditorToggle={onLayerEditorToggle}
+      onLayerLockToggle={onLayerLockToggle}
+      onPageLayerLockToggle={onPageLayerLockToggle}
+      onLayerDelete={onLayerDelete}
+      isDarkMode={isDarkUi}
+    />
+  ), [
+    isDarkUi,
+    layerPanelState,
+    onLayerDelete,
+    onLayerEditorToggle,
+    onLayerLockToggle,
+    onLayerOrderChange,
+    onPageDelete,
+    onPageFacingToggle,
+    onPageLayerLockToggle,
+    onPageOrderChange,
+    onPageRename,
+    onPageSelect,
+    onRequestNotice,
+    onSelectedLayerKeyChange,
+    projectPages,
+    sidebarActivePageId,
+    sidebarActiveProjectPage,
+  ])
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const pageActionButtonClassName = `inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
     isDarkUi
@@ -795,34 +845,7 @@ export function PreviewWorkspace({
                     data-help-scroll-root="true"
                     className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
                   >
-                    <PagesPanel
-                      pages={projectPages}
-                      activePage={sidebarActiveProjectPage}
-                      activePageId={sidebarActivePageId}
-                      onSelectPage={onPageSelect}
-                      onFacingPageToggle={onPageFacingToggle}
-                      onRenamePage={onPageRename}
-                      onDeletePage={onPageDelete}
-                      onRequestNotice={onRequestNotice}
-                      onPageOrderChange={onPageOrderChange}
-                      baseFont={baseFont}
-                      imageColorScheme={imageColorScheme}
-                      selectedLayerKey={layerPanelState.selectedLayerKey}
-                      hoveredLayerKey={layerPanelState.hoveredLayerKey}
-                      previewHoveredLayerKey={layerPanelState.previewHoveredLayerKey}
-                      editingLayerKey={layerPanelState.editingLayerKey}
-                      editorMode={layerPanelState.editorMode}
-                      previewEditorOpenToken={layerPanelState.previewEditorOpenToken}
-                      previewParagraphCreateToken={layerPanelState.previewParagraphCreateToken}
-                      onLayerOrderChange={onLayerOrderChange}
-                      onSelectedLayerKeyChange={onSelectedLayerKeyChange}
-                      onHoverLayerChange={setLayerPanelHoveredLayerKey}
-                      onLayerEditorToggle={onLayerEditorToggle}
-                      onLayerLockToggle={onLayerLockToggle}
-                      onPageLayerLockToggle={onPageLayerLockToggle}
-                      onLayerDelete={onLayerDelete}
-                      isDarkMode={isDarkUi}
-                    />
+                    {pagesPanelElement}
                   </div>
                 </div>
                 <div className={`shrink-0 border-t px-4 py-3 text-[11px] md:px-6 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
