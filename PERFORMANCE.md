@@ -321,6 +321,37 @@ Full 1000-page CLI run exporting PDF, SVG files, and IDML together after the sha
 [+ 161.8s]   total                   161.76s
 ```
 
+May 7 follow-up kept browser packaging on fflate and added a Node-only IDML ZIP writer for CLI exports. The ZIP entry set, XML bytes, page ordering, and compression level boundary stay the same; the CLI path uses Node's native `zlib.deflateRawSync` for compressed entries when available, while browser export falls back to fflate.
+
+Measured on the 1000-page performance fixture:
+
+```text
+IDML only, CLI, production compression:
+  planning                 16.12s
+  idml render page sets    31.73s
+  idml page xml            29.09s raw=2611.70MB
+  idml page encode          0.54s
+  idml package             18.13s
+  idml package zip         17.99s raw=2612.88MB
+  idml write                1.00s size=455.80MB
+  total                    67.28s
+
+Full PDF, SVG files, and IDML CLI run:
+  planning                 16.09s
+  pdf render pages         23.16s
+  pdf finalize              8.28s
+  svg render pages         18.70s
+  idml render page sets    41.63s
+  idml package             22.04s
+  idml package zip         21.88s raw=2612.88MB
+  pdf write                 0.30s size=27.15MB
+  svg write files           1.47s files=1000
+  idml write                2.20s size=455.80MB
+  total                   134.51s
+```
+
+Tradeoff: Node zlib level `1` is much faster than fflate level `1` on the CLI but produced a larger compressed IDML in this fixture (`455.80MB` versus roughly `399MB` in recent fflate runs). Browser output and browser compression behavior remain unchanged.
+
 ### Current Boundaries
 
 - PDF export runs in a cancellable browser worker so `Esc`/Cancel can terminate the active export even when final PDF byte serialization is busy. SVG page-set rendering, SVG ZIP packaging, IDML page-set XML generation, and IDML package assembly can also run worker-backed in the browser; final artifact order remains deterministic.

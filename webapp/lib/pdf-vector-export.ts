@@ -61,6 +61,8 @@ type PdfWithFormObjects = jsPDF & {
   GState?: PdfGraphicsStateConstructor
   addGState?: (key: string, gState: PdfGraphicsState) => jsPDF
   setGState?: (gState: string | PdfGraphicsState) => jsPDF
+  __sggGuideFormKeys?: Set<string>
+  __sggTextOutlineFormKeys?: Set<string>
 }
 type ExportVectorPdfOptions = {
   pdf: jsPDF
@@ -135,6 +137,42 @@ function buildGuideFormObjectKey(
   }
 
   return `swiss_guides_${guideGroup.id}_${hash.toString(36)}`
+}
+
+function buildTextOutlineFormObjectKey(shape: OutlineTextShape): string {
+  let hash = 2166136261
+  if (shape.relativeCommandsKey) {
+    hash = appendHashText(hash, shape.relativeCommandsKey)
+    return `swiss_glyph_${hash.toString(36)}`
+  }
+  hash = appendHashText(hash, shape.text ?? "")
+  hash = appendHashText(hash, shape.fontFamily ?? "")
+  hash = appendHashText(hash, String(shape.fontWeight ?? ""))
+  hash = appendHashText(hash, shape.italic ? "italic" : "normal")
+  hash = appendHashText(hash, formatCacheNumber(shape.fontSize ?? 0))
+  for (const command of shape.relativeCommands ?? []) {
+    hash = appendHashText(hash, command.type)
+    if (command.type === "M" || command.type === "L") {
+      hash = appendHashText(hash, `${formatCacheNumber(command.x)},${formatCacheNumber(command.y)}`)
+    } else if (command.type === "C") {
+      hash = appendHashText(hash, [
+        formatCacheNumber(command.x1),
+        formatCacheNumber(command.y1),
+        formatCacheNumber(command.x2),
+        formatCacheNumber(command.y2),
+        formatCacheNumber(command.x),
+        formatCacheNumber(command.y),
+      ].join(","))
+    } else if (command.type === "Q") {
+      hash = appendHashText(hash, [
+        formatCacheNumber(command.x1),
+        formatCacheNumber(command.y1),
+        formatCacheNumber(command.x),
+        formatCacheNumber(command.y),
+      ].join(","))
+    }
+  }
+  return `swiss_glyph_${hash.toString(36)}`
 }
 
 function getPdfFontFamily(fontFamily: FontFamily, fontWeight: number): string {
@@ -254,9 +292,13 @@ async function renderSwissGridVectorPdfInternal({
 
     const identityMatrix = new formPdf.Matrix(1, 0, 0, 1, 0, 0)
     formPdf.advancedAPI(() => {
-      formPdf.beginFormObject(0, 0, pageWidth, pageHeight, identityMatrix)
-      draw()
-      formPdf.endFormObject(key)
+      if (!formPdf.__sggGuideFormKeys) formPdf.__sggGuideFormKeys = new Set<string>()
+      if (!formPdf.__sggGuideFormKeys.has(key)) {
+        formPdf.beginFormObject(0, 0, pageWidth, pageHeight, identityMatrix)
+        draw()
+        formPdf.endFormObject(key)
+        formPdf.__sggGuideFormKeys.add(key)
+      }
       formPdf.doFormObject(key, identityMatrix)
     })
   }
@@ -390,7 +432,80 @@ async function renderSwissGridVectorPdfInternal({
     }
     return pathCommands
   }
-  const drawTextOutlineShape = (
+  const getPathBounds = (path: readonly PdfPathCommand[]) => {
+    let minX = Number.POSITIVE_INFINITY
+    let minY = Number.POSITIVE_INFINITY
+    let maxX = Number.NEGATIVE_INFINITY
+    let maxY = Number.NEGATIVE_INFINITY
+    const includePoint = (x: number, y: number) => {
+      minX = Math.min(minX, x)
+      minY = Math.min(minY, y)
+      maxX = Math.max(maxX, x)
+      maxY = Math.max(maxY, y)
+    }
+    for (const command of path) {
+      if (command.op === "m" || command.op === "l") {
+        includePoint(command.c[0] ?? 0, command.c[1] ?? 0)
+      } else if (command.op === "c") {
+        includePoint(command.c[0] ?? 0, command.c[1] ?? 0)
+        includePoint(command.c[2] ?? 0, command.c[3] ?? 0)
+        includePoint(command.c[4] ?? 0, command.c[5] ?? 0)
+      }
+    }
+    if (!Number.isFinite(minX) || !Number.isFinite(minY) || !Number.isFinite(maxX) || !Number.isFinite(maxY)) {
+      return null
+    }
+    const padding = 1
+    return {
+      x: minX - padding,
+      y: minY - padding,
+      width: Math.max(1, maxX - minX + padding * 2),
+      height: Math.max(1, maxY - minY + padding * 2),
+    }
+  }
+  const drawTextOutlineFormShape = (
+    shape: OutlineTextShape,
+  ): boolean => {
+    const formPdf = pdf as PdfWithFormObjects
+    if (
+      typeof formPdf.advancedAPI !== "function"
+      || typeof formPdf.beginFormObject !== "function"
+      || typeof formPdf.endFormObject !== "function"
+      || typeof formPdf.doFormObject !== "function"
+      || typeof formPdf.Matrix !== "function"
+      || !shape.relativeCommands
+      || typeof shape.x !== "number"
+      || typeof shape.y !== "number"
+    ) {
+      return false
+    }
+
+    const relativePath = buildPdfPathCommands(transformOpenTypeCommandsToCubicCommands(
+      shape.relativeCommands,
+      (point) => ({ x: point.x * sx, y: point.y * sy }),
+    ))
+    if (relativePath.length === 0) return true
+    const bounds = getPathBounds(relativePath)
+    if (!bounds) return true
+
+    const key = `${buildTextOutlineFormObjectKey(shape)}_${formatCacheNumber(sx)}_${formatCacheNumber(sy)}`
+    const identityMatrix = new formPdf.Matrix(1, 0, 0, 1, 0, 0)
+    const origin = transformPoint(shape.x, shape.y)
+    const placementMatrix = new formPdf.Matrix(1, 0, 0, 1, origin.x, origin.y)
+    setFillColor(pdf, shape.color)
+    formPdf.advancedAPI(() => {
+      if (!formPdf.__sggTextOutlineFormKeys) formPdf.__sggTextOutlineFormKeys = new Set<string>()
+      if (!formPdf.__sggTextOutlineFormKeys.has(key)) {
+        formPdf.beginFormObject(bounds.x, bounds.y, bounds.width, bounds.height, identityMatrix)
+        pdf.path(relativePath).fill()
+        formPdf.endFormObject(key)
+        formPdf.__sggTextOutlineFormKeys.add(key)
+      }
+      formPdf.doFormObject(key, placementMatrix)
+    })
+    return true
+  }
+  const drawTextOutlinePathDirect = (
     shape: OutlineTextShape,
     blockRotation = 0,
     rotationOrigin?: { x: number; y: number },
@@ -403,6 +518,20 @@ async function renderSwissGridVectorPdfInternal({
     if (path.length === 0) return
     setFillColor(pdf, shape.color)
     pdf.path(path).fill()
+  }
+  const drawTextOutlineShape = (
+    shape: OutlineTextShape,
+    blockRotation = 0,
+    rotationOrigin?: { x: number; y: number },
+  ) => {
+    if (
+      Math.abs(rotation) <= 0.0001
+      && Math.abs(blockRotation) <= 0.0001
+      && drawTextOutlineFormShape(shape)
+    ) {
+      return
+    }
+    drawTextOutlinePathDirect(shape, blockRotation, rotationOrigin)
   }
   const minHairlinePt = 0.25
 
@@ -549,8 +678,16 @@ async function renderSwissGridVectorPdfInternal({
     pdf.saveGraphicsState()
     try {
       setPdfOpacity(1)
-      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(plan)
+      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(plan, {
+        includeRelativeCommands: true,
+      })
+      let shouldAnchorInlinePdfPath = true
       for (const shape of outlineShapes) {
+        if (shouldAnchorInlinePdfPath) {
+          drawTextOutlinePathDirect(shape, plan.blockRotation, rotationOrigin)
+          shouldAnchorInlinePdfPath = false
+          continue
+        }
         drawTextOutlineShape(shape, plan.blockRotation, rotationOrigin)
       }
 

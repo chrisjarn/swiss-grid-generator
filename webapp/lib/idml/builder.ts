@@ -63,6 +63,11 @@ type IdmlPathPoint = {
 const IDML_MIMETYPE = "application/vnd.adobe.indesign-idml-package"
 const IDML_ZIP_COMPRESSION_LEVEL = 1
 type IdmlZipCompressionLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+type IdmlZipEntry = {
+  path: string
+  bytes: Uint8Array
+  level?: IdmlZipCompressionLevel
+}
 
 export type SwissGridIdmlPackageOptions = {
   compressionLevel?: number
@@ -72,6 +77,7 @@ export type SwissGridIdmlPackageOptions = {
 export type SwissGridIdmlPackageDiagnostics = {
   resourceXmlMs: number
   zipMs: number
+  zipEngine: "fflate" | "node-zlib"
   components: Array<{
     path: string
     bytes: number
@@ -1467,6 +1473,124 @@ function normalizeIdmlZipCompressionLevel(level: number | undefined): IdmlZipCom
   return Math.max(0, Math.min(9, Math.round(level))) as IdmlZipCompressionLevel
 }
 
+const CRC32_TABLE = (() => {
+  const table = new Uint32Array(256)
+  for (let index = 0; index < table.length; index += 1) {
+    let value = index
+    for (let bit = 0; bit < 8; bit += 1) {
+      value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1
+    }
+    table[index] = value >>> 0
+  }
+  return table
+})()
+
+function computeCrc32(bytes: Uint8Array): number {
+  let crc = 0xffffffff
+  for (let index = 0; index < bytes.length; index += 1) {
+    crc = CRC32_TABLE[(crc ^ (bytes[index] ?? 0)) & 0xff]! ^ (crc >>> 8)
+  }
+  return (crc ^ 0xffffffff) >>> 0
+}
+
+function getDosDateTime(date = new Date()): { date: number; time: number } {
+  const year = Math.max(1980, Math.min(2107, date.getFullYear()))
+  return {
+    date: ((year - 1980) << 9) | ((date.getMonth() + 1) << 5) | date.getDate(),
+    time: (date.getHours() << 11) | (date.getMinutes() << 5) | Math.floor(date.getSeconds() / 2),
+  }
+}
+
+function isNodeRuntime(): boolean {
+  return typeof (globalThis as { process?: { versions?: { node?: string } } }).process?.versions?.node === "string"
+}
+
+async function tryZipIdmlEntriesWithNodeZlib(
+  zipEntries: readonly IdmlZipEntry[],
+  compressionLevel: IdmlZipCompressionLevel,
+): Promise<{ bytes: Uint8Array; engine: "node-zlib" } | null> {
+  if (!isNodeRuntime()) return null
+
+  const loadNodeZlib = new Function("return import('node:zlib')") as () => Promise<{
+    deflateRawSync: (bytes: Uint8Array, options: { level: number }) => Uint8Array
+  }>
+  const { deflateRawSync } = await loadNodeZlib()
+  const chunks: Uint8Array[] = []
+  const centralDirectory: Uint8Array[] = []
+  const { date, time } = getDosDateTime()
+  let offset = 0
+
+  for (const entry of zipEntries) {
+    const entryLevel = entry.level ?? compressionLevel
+    const compressionMethod = entryLevel === 0 ? 0 : 8
+    const pathBytes = strToU8(entry.path)
+    const compressedBytes = compressionMethod === 0
+      ? entry.bytes
+      : deflateRawSync(entry.bytes, { level: entryLevel })
+    const crc = computeCrc32(entry.bytes)
+    const localHeader = new Uint8Array(30 + pathBytes.length)
+    const local = new DataView(localHeader.buffer)
+    local.setUint32(0, 0x04034b50, true)
+    local.setUint16(4, 20, true)
+    local.setUint16(6, pathBytes.length === entry.path.length ? 0 : 0x0800, true)
+    local.setUint16(8, compressionMethod, true)
+    local.setUint16(10, time, true)
+    local.setUint16(12, date, true)
+    local.setUint32(14, crc, true)
+    local.setUint32(18, compressedBytes.byteLength, true)
+    local.setUint32(22, entry.bytes.byteLength, true)
+    local.setUint16(26, pathBytes.length, true)
+    localHeader.set(pathBytes, 30)
+    chunks.push(localHeader, compressedBytes)
+
+    const centralHeader = new Uint8Array(46 + pathBytes.length)
+    const central = new DataView(centralHeader.buffer)
+    central.setUint32(0, 0x02014b50, true)
+    central.setUint16(4, 20, true)
+    central.setUint16(6, 20, true)
+    central.setUint16(8, pathBytes.length === entry.path.length ? 0 : 0x0800, true)
+    central.setUint16(10, compressionMethod, true)
+    central.setUint16(12, time, true)
+    central.setUint16(14, date, true)
+    central.setUint32(16, crc, true)
+    central.setUint32(20, compressedBytes.byteLength, true)
+    central.setUint32(24, entry.bytes.byteLength, true)
+    central.setUint16(28, pathBytes.length, true)
+    central.setUint32(42, offset, true)
+    centralHeader.set(pathBytes, 46)
+    centralDirectory.push(centralHeader)
+    offset += localHeader.byteLength + compressedBytes.byteLength
+  }
+
+  const centralDirectorySize = centralDirectory.reduce((total, chunk) => total + chunk.byteLength, 0)
+  const end = new Uint8Array(22)
+  const endView = new DataView(end.buffer)
+  endView.setUint32(0, 0x06054b50, true)
+  endView.setUint16(8, zipEntries.length, true)
+  endView.setUint16(10, zipEntries.length, true)
+  endView.setUint32(12, centralDirectorySize, true)
+  endView.setUint32(16, offset, true)
+  const totalSize = offset + centralDirectorySize + end.byteLength
+
+  if (typeof Buffer !== "undefined") {
+    return {
+      bytes: Buffer.concat(
+      [...chunks, ...centralDirectory, end].map((chunk) => Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)),
+      totalSize,
+      ),
+      engine: "node-zlib",
+    }
+  }
+
+  const output = new Uint8Array(totalSize)
+  let writeOffset = 0
+  for (const chunk of [...chunks, ...centralDirectory, end]) {
+    output.set(chunk, writeOffset)
+    writeOffset += chunk.byteLength
+  }
+  return { bytes: output, engine: "node-zlib" }
+}
+
 export async function buildSwissGridIdmlPackage(
   document: SwissGridIdmlDocument,
   options: SwissGridIdmlPackageOptions = {},
@@ -1590,25 +1714,37 @@ export async function buildSwissGridIdmlPackageFromPageSets(
     { path: "designmap.xml", bytes: strToU8(designMapXml) },
   ]
   const resourceXmlMs = nowMs() - resourceStartedAt
-  const entries: Record<string, Uint8Array | [Uint8Array, { level: IdmlZipCompressionLevel }]> = {
-    mimetype: [strToU8(IDML_MIMETYPE), { level: 0 }],
-  }
+  const zipEntries: IdmlZipEntry[] = [
+    { path: "mimetype", bytes: strToU8(IDML_MIMETYPE), level: 0 },
+  ]
   const components = [
     { path: "mimetype", bytes: IDML_MIMETYPE.length },
     ...resources.map((resource) => ({ path: resource.path, bytes: resource.bytes.byteLength })),
     ...spreads.map((spread) => ({ path: spread.filePath, bytes: spread.bytes.byteLength })),
     ...stories.map((story) => ({ path: story.filePath, bytes: story.bytes.byteLength })),
   ]
-  for (const resource of resources) entries[resource.path] = resource.bytes
-  for (const spread of spreads) entries[spread.filePath] = spread.bytes
-  for (const story of stories) entries[story.filePath] = story.bytes
+  for (const resource of resources) zipEntries.push({ path: resource.path, bytes: resource.bytes })
+  for (const spread of spreads) zipEntries.push({ path: spread.filePath, bytes: spread.bytes })
+  for (const story of stories) zipEntries.push({ path: story.filePath, bytes: story.bytes })
 
   const compressionLevel = normalizeIdmlZipCompressionLevel(options.compressionLevel)
   const zipStartedAt = nowMs()
-  const bytes = zipSync(entries, { level: compressionLevel })
+  const nativeZip = await tryZipIdmlEntriesWithNodeZlib(zipEntries, compressionLevel)
+  const zipResult = nativeZip ?? {
+    bytes: zipSync(
+      Object.fromEntries(zipEntries.map((entry) => [
+        entry.path,
+        entry.level === undefined ? entry.bytes : [entry.bytes, { level: entry.level }],
+      ])) as Record<string, Uint8Array | [Uint8Array, { level: IdmlZipCompressionLevel }]>,
+      { level: compressionLevel },
+    ),
+    engine: "fflate" as const,
+  }
+  const bytes = zipResult.bytes
   options.onDiagnostics?.({
     resourceXmlMs,
     zipMs: nowMs() - zipStartedAt,
+    zipEngine: zipResult.engine,
     components,
     pageSets: orderedPageSets.flatMap((set) => set.diagnostics ? [set.diagnostics] : []),
   })

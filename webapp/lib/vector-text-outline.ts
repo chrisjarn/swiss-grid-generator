@@ -17,7 +17,16 @@ export type GeometryPath = {
 
 export type OutlineTextShape = {
   commands: readonly OpenTypePathCommand[]
+  relativeCommands?: readonly OpenTypePathCommand[]
+  relativeCommandsKey?: string
   color: RgbColor
+  text?: string
+  x?: number
+  y?: number
+  fontFamily?: FontFamily
+  fontWeight?: number
+  italic?: boolean
+  fontSize?: number
 }
 
 export type CubicOpenTypePathCommand =
@@ -39,6 +48,22 @@ export type FallbackTextShape = {
 }
 
 type TextShapeFragment = FallbackTextShape
+
+export type ResolveTextPlanVectorShapesOptions = {
+  includeRelativeCommands?: boolean
+}
+
+function getRelativeOutlineCommandCacheKey(
+  fragment: Pick<TextShapeFragment, "text" | "fontFamily" | "fontWeight" | "italic" | "fontSize">,
+): string {
+  return [
+    fragment.fontFamily,
+    fragment.fontWeight,
+    fragment.italic ? "italic" : "normal",
+    fragment.fontSize,
+    fragment.text,
+  ].join("\u0001")
+}
 
 function clonePoint(point: { x: number; y: number }) {
   return { x: point.x, y: point.y }
@@ -275,6 +300,7 @@ export async function preloadTextPlanOutlineFonts(textPlans: readonly PageExport
 
 export async function resolveTextPlanVectorShapes(
   textPlan: PageExportTextPlan,
+  options: ResolveTextPlanVectorShapesOptions = {},
 ): Promise<{ outlineShapes: OutlineTextShape[]; fallbackTextShapes: FallbackTextShape[] }> {
   const outlineShapes: OutlineTextShape[] = []
   const fallbackTextShapes: FallbackTextShape[] = []
@@ -336,7 +362,34 @@ export async function resolveTextPlanVectorShapes(
         },
       ).commands
       if (commands.length === 0) continue
-      outlineShapes.push({ commands, color: fragment.color })
+      const relativeCommandsKey = options.includeRelativeCommands
+        ? getRelativeOutlineCommandCacheKey(fragment)
+        : undefined
+      const relativeCommands = relativeCommandsKey
+        ? outlineFont.getPath(
+            fragment.text,
+            0,
+            0,
+            fragment.fontSize,
+            {
+              kerning: false,
+              hinting: false,
+            },
+          ).commands
+        : undefined
+      outlineShapes.push({
+        commands,
+        relativeCommands,
+        relativeCommandsKey,
+        color: fragment.color,
+        text: fragment.text,
+        x: fragment.x,
+        y: fragment.y,
+        fontFamily: fragment.fontFamily,
+        fontWeight: fragment.fontWeight,
+        italic: fragment.italic,
+        fontSize: fragment.fontSize,
+      })
     }
   }
 

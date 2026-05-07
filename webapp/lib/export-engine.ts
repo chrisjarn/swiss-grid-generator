@@ -1175,7 +1175,7 @@ async function exportIdml(
       .map((component) => `${component.path}=${formatBytes(component.bytes)}`)
       .join(" ")
     record.record("idml package resources", packageDiagnostics.resourceXmlMs, `raw=${formatBytes(resourceBytes)}`)
-    record.record("idml package zip", packageDiagnostics.zipMs, `raw=${formatBytes(packageDiagnostics.components.reduce((total, component) => total + component.bytes, 0))}`)
+    record.record("idml package zip", packageDiagnostics.zipMs, `engine=${packageDiagnostics.zipEngine} raw=${formatBytes(packageDiagnostics.components.reduce((total, component) => total + component.bytes, 0))}`)
     record.record("idml component sizes", 0, `spreads=${formatBytes(spreadBytes)} resources=${formatBytes(resourceBytes)} top=${largestComponents}`)
   }
   await publishProgress(options, {
