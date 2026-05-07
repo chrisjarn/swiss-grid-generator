@@ -699,10 +699,7 @@ export function PagesPanel({
                 </button>
               </div>
               <SectionHeaderRow label="Layers" className="mt-3" />
-              <div
-                data-page-layers-scroll-root="true"
-                className="mt-2 max-h-[min(60vh,28rem)] overflow-y-auto overscroll-contain pr-1"
-              >
+              <div className="mt-2">
                 <ProjectPageLayersList
                   pageId={page.id}
                   layout={resolvedPage.previewLayout}

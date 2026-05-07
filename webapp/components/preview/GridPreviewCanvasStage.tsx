@@ -13,11 +13,18 @@ type Props<StyleKey extends string> = {
   imageCanvasRef: RefObject<HTMLCanvasElement | null>
   canvasRef: RefObject<HTMLCanvasElement | null>
   overlayCanvasRef: RefObject<HTMLCanvasElement | null>
+  heldFrameCanvasRef: RefObject<HTMLCanvasElement | null>
   textareaRef: RefObject<HTMLTextAreaElement | null>
   pageWidthCss: number
   pageHeightCss: number
   pageWidthPx: number
   pageHeightPx: number
+  heldFrameVisible: boolean
+  heldFrameWidthCss: number
+  heldFrameHeightCss: number
+  heldFrameWidthPx: number
+  heldFrameHeightPx: number
+  interactionsPaused: boolean
   canvasCursorClass: string
   canvasCursorStyle?: CSSProperties
   handlePreviewPointerDown: PointerEventHandler<HTMLCanvasElement>
@@ -50,11 +57,18 @@ export function GridPreviewCanvasStage<StyleKey extends string>({
   imageCanvasRef,
   canvasRef,
   overlayCanvasRef,
+  heldFrameCanvasRef,
   textareaRef,
   pageWidthCss,
   pageHeightCss,
   pageWidthPx,
   pageHeightPx,
+  heldFrameVisible,
+  heldFrameWidthCss,
+  heldFrameHeightCss,
+  heldFrameWidthPx,
+  heldFrameHeightPx,
+  interactionsPaused,
   canvasCursorClass,
   canvasCursorStyle,
   handlePreviewPointerDown,
@@ -107,15 +121,15 @@ export function GridPreviewCanvasStage<StyleKey extends string>({
         width={pageWidthPx}
         height={pageHeightPx}
         style={{ width: pageWidthCss, height: pageHeightCss, ...canvasCursorStyle }}
-        className={`absolute inset-0 block touch-none ${canvasCursorClass}`}
-        onPointerDown={handlePreviewPointerDown}
-        onPointerMove={handleCanvasPointerMove}
-        onPointerUp={handleCanvasPointerUp}
-        onPointerCancel={handleCanvasPointerCancel}
-        onLostPointerCapture={handleCanvasLostPointerCapture}
-        onMouseMove={handleCanvasMouseMove}
-        onMouseLeave={handleCanvasMouseLeave}
-        onDoubleClick={handleCanvasDoubleClick}
+        className={`absolute inset-0 block touch-none ${interactionsPaused ? "pointer-events-none" : canvasCursorClass}`}
+        onPointerDown={interactionsPaused ? undefined : handlePreviewPointerDown}
+        onPointerMove={interactionsPaused ? undefined : handleCanvasPointerMove}
+        onPointerUp={interactionsPaused ? undefined : handleCanvasPointerUp}
+        onPointerCancel={interactionsPaused ? undefined : handleCanvasPointerCancel}
+        onLostPointerCapture={interactionsPaused ? undefined : handleCanvasLostPointerCapture}
+        onMouseMove={interactionsPaused ? undefined : handleCanvasMouseMove}
+        onMouseLeave={interactionsPaused ? undefined : handleCanvasMouseLeave}
+        onDoubleClick={interactionsPaused ? undefined : handleCanvasDoubleClick}
       />
       <canvas
         ref={overlayCanvasRef}
@@ -123,6 +137,18 @@ export function GridPreviewCanvasStage<StyleKey extends string>({
         height={pageHeightPx}
         style={{ width: pageWidthCss, height: pageHeightCss }}
         className="pointer-events-none absolute inset-0 block"
+      />
+      <canvas
+        ref={heldFrameCanvasRef}
+        width={heldFrameWidthPx}
+        height={heldFrameHeightPx}
+        aria-hidden="true"
+        style={{
+          width: heldFrameWidthCss,
+          height: heldFrameHeightCss,
+          opacity: heldFrameVisible ? 1 : 0,
+        }}
+        className="pointer-events-none absolute left-0 top-0 z-20 block"
       />
       {showDocumentHelpIndicator ? <HelpIndicatorLine /> : null}
       <InlineBlockTextarea

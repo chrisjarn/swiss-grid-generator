@@ -53,6 +53,8 @@ test("page navigation centralizes the settled GUI page separately from immediate
   assert.match(workspaceSource, /const\s+pagesPanelElement\s*=\s*useMemo\(\(\)\s*=>\s*\(/)
   assert.match(workspaceSource, /baseFont,\s*[\r\n]\s*imageColorScheme,\s*[\r\n]\s*selectedLayerKey,/)
   assert.match(workspaceSource, /aria-disabled=\{!sidebarControlsUseLivePage\}/)
+  assert.match(workspaceSource, /grid\s+h-full\s+min-h-0\s+grid-rows-\[auto_minmax\(0,1fr\)_auto\]/)
+  assert.match(workspaceSource, /data-help-scroll-root="true"[\s\S]*?className="min-h-0 overflow-y-auto overscroll-contain/)
   assert.match(workspaceSource, /sidebarControlsUseLivePage\s*\?\s*""\s*:\s*"pointer-events-none opacity-50"/)
   assert.match(workspaceSource, /baseFont=\{layerPanelState\.baseFont\}/)
   assert.match(workspaceSource, /imageColorScheme=\{layerPanelState\.imageColorScheme\}/)
@@ -72,6 +74,7 @@ test("page navigation centralizes the settled GUI page separately from immediate
   assert.match(panelSource, /if\s*\(lastPanelActivePageIdRef\.current\s*===\s*activePageId\)\s*return/)
   assert.match(panelSource, /setTransientExpandedPageId\(activePageId\)/)
   assert.match(panelSource, /selectedLayerKey=\{isActive\s*\?\s*selectedLayerKey\s*:\s*null\}/)
+  assert.doesNotMatch(panelSource, /data-page-layers-scroll-root|max-h-\[min\(60vh,28rem\)\]/)
   assert.match(layerListSource, /if\s*\(!selectedLayerKey\s*\|\|\s*!isActivePage\)\s*return/)
   assert.match(layerListSource, /const\s+allowLayerInteractions\s*=\s*isActivePage\s*&&\s*!isLocked/)
 

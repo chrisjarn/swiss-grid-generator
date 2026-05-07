@@ -115,6 +115,14 @@ type PendingLayerDuplicate =
       rotation: number
     }
 
+type HeldPreviewFrame = {
+  widthCss: number
+  heightCss: number
+  widthPx: number
+  heightPx: number
+  visible: boolean
+}
+
 function unionRects(rects: BlockRect[]): BlockRect | null {
   if (rects.length === 0) return null
   const left = Math.min(...rects.map((rect) => rect.x))
@@ -282,6 +290,7 @@ export const GridPreview = memo(function GridPreview({
   const imageCanvasRef = useRef<HTMLCanvasElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const overlayCanvasRef = useRef<HTMLCanvasElement>(null)
+  const heldFrameCanvasRef = useRef<HTMLCanvasElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const blockRectsRef = useRef<Record<BlockId, BlockRect>>({})
   const imageRectsRef = useRef<Record<BlockId, BlockRect>>({})
@@ -314,6 +323,7 @@ export const GridPreview = memo(function GridPreview({
   const [pendingLayerDuplicate, setPendingLayerDuplicate] = useState<PendingLayerDuplicate | null>(null)
   const [layoutEmissionEnabled, setLayoutEmissionEnabled] = useState(initialLayoutToken === 0)
   const [layoutDisplayReady, setLayoutDisplayReady] = useState(initialLayoutToken === 0)
+  const [heldPreviewFrame, setHeldPreviewFrame] = useState<HeldPreviewFrame | null>(null)
   const [pendingLayerEditorMode, setPendingLayerEditorMode] = useState<"text" | "image" | null>(null)
   const [activeTextZoomTarget, setActiveTextZoomTarget] = useState<BlockId | null>(null)
   const [smartTextZoomTargetVersion, setSmartTextZoomTargetVersion] = useState(0)
@@ -1498,15 +1508,50 @@ export const GridPreview = memo(function GridPreview({
     onHoverLayerChange?.(hoverState?.key ?? hoverImageKey ?? null)
   }, [hoverImageKey, hoverState?.key, onHoverLayerChange])
 
+  const captureCommittedPreviewFrame = useCallback((visible: boolean) => {
+    const targetCanvas = heldFrameCanvasRef.current
+    const staticCanvas = staticCanvasRef.current
+    const layerCanvas = canvasRef.current
+    if (!targetCanvas || !staticCanvas || !layerCanvas) return
+
+    const widthPx = Math.max(staticCanvas.width, layerCanvas.width, 1)
+    const heightPx = Math.max(staticCanvas.height, layerCanvas.height, 1)
+    if (targetCanvas.width !== widthPx) targetCanvas.width = widthPx
+    if (targetCanvas.height !== heightPx) targetCanvas.height = heightPx
+
+    const ctx = targetCanvas.getContext("2d")
+    if (!ctx) return
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.clearRect(0, 0, widthPx, heightPx)
+    ctx.drawImage(staticCanvas, 0, 0, widthPx, heightPx)
+    if (imageCanvasRef.current) {
+      ctx.drawImage(imageCanvasRef.current, 0, 0, widthPx, heightPx)
+    }
+    ctx.drawImage(layerCanvas, 0, 0, widthPx, heightPx)
+
+    setHeldPreviewFrame({
+      widthCss: pageWidthCss,
+      heightCss: pageHeightCss,
+      widthPx,
+      heightPx,
+      visible,
+    })
+  }, [pageHeightCss, pageWidthCss])
+
+  const showHeldPreviewFrame = useCallback(() => {
+    setHeldPreviewFrame((current) => (current ? { ...current, visible: true } : current))
+  }, [])
+
   useLayoutEffect(() => {
     if (previewSurfaceSignatureRef.current === previewSurfaceSignature) return
     previewSurfaceSignatureRef.current = previewSurfaceSignature
     setLayoutDisplayReady(false)
+    showHeldPreviewFrame()
     blockRectsRef.current = {} as Record<BlockId, BlockRect>
     imageRectsRef.current = {} as Record<BlockId, BlockRect>
     previousPlansRef.current.clear()
     setOverflowLinesByBlock({})
-  }, [blockRectsRef, imageRectsRef, previewSurfaceSignature, previousPlansRef])
+  }, [blockRectsRef, imageRectsRef, previewSurfaceSignature, previousPlansRef, showHeldPreviewFrame])
 
   useLayoutEffect(() => {
     if (layoutEmissionFrameRef.current !== null) {
@@ -1677,9 +1722,10 @@ export const GridPreview = memo(function GridPreview({
   const [typographyPlanVersion, setTypographyPlanVersion] = useState(0)
   const handleTypographyPlanCommit = useCallback(() => {
     setTypographyPlanVersion((version) => version + 1)
+    if (!dragState) captureCommittedPreviewFrame(false)
     setLayoutDisplayReady(true)
     onPreviewPlansCommit?.()
-  }, [onPreviewPlansCommit])
+  }, [captureCommittedPreviewFrame, dragState, onPreviewPlansCommit])
 
   useEffect(() => {
     if (!smartTextEditZoomEnabled || !editorState?.target) {
@@ -1989,6 +2035,9 @@ export const GridPreview = memo(function GridPreview({
     }
   ), [onEditorModeChange])
 
+  const heldFrameVisible = heldPreviewFrame?.visible === true
+  const previewDisplayReady = layoutDisplayReady || heldFrameVisible
+
   return (
     <div
       ref={previewContainerRef}
@@ -1996,7 +2045,7 @@ export const GridPreview = memo(function GridPreview({
       className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg ${
         isDarkMode ? "bg-[#161A22]" : "bg-gray-100"
       }`}
-      style={{ opacity: layoutDisplayReady ? 1 : 0 }}
+      style={{ opacity: previewDisplayReady ? 1 : 0 }}
       onPointerDown={handlePreviewWorkspacePointerDown}
     >
       <div
@@ -2013,11 +2062,18 @@ export const GridPreview = memo(function GridPreview({
           imageCanvasRef={imageCanvasRef}
           canvasRef={canvasRef}
           overlayCanvasRef={overlayCanvasRef}
+          heldFrameCanvasRef={heldFrameCanvasRef}
           textareaRef={textareaRef}
           pageWidthCss={pageWidthCss}
           pageHeightCss={pageHeightCss}
           pageWidthPx={pageWidthPx}
           pageHeightPx={pageHeightPx}
+          heldFrameVisible={heldFrameVisible}
+          heldFrameWidthCss={heldPreviewFrame?.widthCss ?? pageWidthCss}
+          heldFrameHeightCss={heldPreviewFrame?.heightCss ?? pageHeightCss}
+          heldFrameWidthPx={heldPreviewFrame?.widthPx ?? pageWidthPx}
+          heldFrameHeightPx={heldPreviewFrame?.heightPx ?? pageHeightPx}
+          interactionsPaused={!layoutDisplayReady}
           canvasCursorClass={canvasCursorClass}
           canvasCursorStyle={canvasCursorStyle}
           handlePreviewPointerDown={handlePreviewPointerDown}

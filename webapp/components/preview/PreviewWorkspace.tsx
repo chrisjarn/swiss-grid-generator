@@ -750,11 +750,11 @@ export function PreviewWorkspace({
             {activeSidebarPanel === "layers" && (
               <div
                 aria-disabled={!sidebarControlsUseLivePage}
-                className={`flex h-full min-h-0 flex-col transition-opacity ${
+                className={`grid h-full min-h-0 grid-rows-[auto_minmax(0,1fr)_auto] transition-opacity ${
                   sidebarControlsUseLivePage ? "" : "pointer-events-none opacity-50"
                 }`}
               >
-                <div className="mb-3 shrink-0 px-4 pt-4 md:px-6 md:pt-6">
+                <div className="px-4 pt-4 md:px-6 md:pt-6">
                   <div className="rounded-md py-2">
                     <SectionHeaderRow
                       label="P R O J E C T"
@@ -840,13 +840,11 @@ export function PreviewWorkspace({
                     />
                   </div>
                 </div>
-                <div className="flex min-h-0 flex-1 flex-col pt-2 md:pt-3">
-                  <div
-                    data-help-scroll-root="true"
-                    className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
-                  >
-                    {pagesPanelElement}
-                  </div>
+                <div
+                  data-help-scroll-root="true"
+                  className="min-h-0 overflow-y-auto overscroll-contain pt-5 md:pt-6"
+                >
+                  {pagesPanelElement}
                 </div>
                 <div className={`shrink-0 border-t px-4 py-3 text-[11px] md:px-6 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
                   <SectionHeaderRow

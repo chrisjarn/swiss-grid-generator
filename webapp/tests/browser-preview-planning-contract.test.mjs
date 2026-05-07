@@ -24,15 +24,25 @@ test("browser preview caches only exact canonical page plans, not mutable canvas
   assert.doesNotMatch(cacheEntryMatch[0], /canvasRenderPlans/)
 })
 
-test("browser preview invalidates visible canvas geometry before paint until a fresh plan commits", () => {
+test("browser preview holds the previous complete frame until a fresh plan commits", () => {
   const previewSource = readText("components/grid-preview.tsx")
   const rendererSource = readText("hooks/useTypographyRenderer.ts")
+  const stageSource = readText("components/preview/GridPreviewCanvasStage.tsx")
 
   assert.match(previewSource, /useLayoutEffect/)
   assert.match(previewSource, /const\s+previewSurfaceSignatureRef\s*=\s*useRef<string\s*\|\s*null>\(null\)/)
+  assert.match(previewSource, /const\s+\[heldPreviewFrame,\s*setHeldPreviewFrame\]\s*=\s*useState<HeldPreviewFrame\s*\|\s*null>\(null\)/)
   assert.match(previewSource, /const\s+previewSurfaceSignature\s*=\s*useMemo\(\(\)\s*=>\s*JSON\.stringify\(\{[\s\S]*?initialLayoutToken,[\s\S]*?scale,[\s\S]*?pixelRatio,[\s\S]*?rotation,[\s\S]*?showTypography,[\s\S]*?showImagePlaceholders,[\s\S]*?fontRenderEpoch/)
-  assert.match(previewSource, /useLayoutEffect\(\(\)\s*=>\s*\{[\s\S]*?previewSurfaceSignatureRef\.current\s*===\s*previewSurfaceSignature[\s\S]*?setLayoutDisplayReady\(false\)[\s\S]*?blockRectsRef\.current\s*=\s*\{\}[\s\S]*?imageRectsRef\.current\s*=\s*\{\}[\s\S]*?previousPlansRef\.current\.clear\(\)[\s\S]*?setOverflowLinesByBlock\(\{\}\)/)
-  assert.match(previewSource, /style=\{\{\s*opacity:\s*layoutDisplayReady\s*\?\s*1\s*:\s*0\s*\}\}/)
+  assert.match(previewSource, /const\s+captureCommittedPreviewFrame\s*=\s*useCallback\(\(visible:\s*boolean\)/)
+  assert.match(previewSource, /ctx\.drawImage\(staticCanvas,\s*0,\s*0,\s*widthPx,\s*heightPx\)[\s\S]*?ctx\.drawImage\(layerCanvas,\s*0,\s*0,\s*widthPx,\s*heightPx\)/)
+  assert.match(previewSource, /const\s+showHeldPreviewFrame\s*=\s*useCallback\(\(\)\s*=>\s*\{/)
+  assert.match(previewSource, /useLayoutEffect\(\(\)\s*=>\s*\{[\s\S]*?previewSurfaceSignatureRef\.current\s*===\s*previewSurfaceSignature[\s\S]*?setLayoutDisplayReady\(false\)[\s\S]*?showHeldPreviewFrame\(\)[\s\S]*?blockRectsRef\.current\s*=\s*\{\}[\s\S]*?imageRectsRef\.current\s*=\s*\{\}[\s\S]*?previousPlansRef\.current\.clear\(\)[\s\S]*?setOverflowLinesByBlock\(\{\}\)/)
+  assert.match(previewSource, /const\s+previewDisplayReady\s*=\s*layoutDisplayReady\s*\|\|\s*heldFrameVisible/)
+  assert.match(previewSource, /style=\{\{\s*opacity:\s*previewDisplayReady\s*\?\s*1\s*:\s*0\s*\}\}/)
+  assert.match(previewSource, /interactionsPaused=\{!layoutDisplayReady\}/)
+  assert.match(stageSource, /heldFrameCanvasRef/)
+  assert.match(stageSource, /heldFrameVisible\s*\?\s*1\s*:\s*0/)
+  assert.match(stageSource, /onPointerDown=\{interactionsPaused\s*\?\s*undefined\s*:\s*handlePreviewPointerDown\}/)
   assert.doesNotMatch(previewSource, /rounded-lg\s+transition-opacity/)
   assert.match(rendererSource, /if\s*\(!showTypography\s*&&\s*imagePlans\.size\s*===\s*0\)\s*\{[\s\S]*?onPlansCommit\?\.\(\)/)
 })
