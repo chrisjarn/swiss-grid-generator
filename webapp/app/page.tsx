@@ -28,7 +28,7 @@ import { useUiSettingsPreview } from "@/hooks/useUiSettingsPreview"
 import { useProjectTourController } from "@/hooks/useProjectTourController"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { useCloudProjectSync } from "@/hooks/useCloudProjectSync"
-import { useSettledPageKeyboardNavigation } from "@/hooks/useSettledPageKeyboardNavigation"
+import { useSettledPageNavigation } from "@/hooks/useSettledPageNavigation"
 import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage, type ProjectVisibilitySettings } from "@/lib/document-session"
 import { type FontFamily } from "@/lib/config/fonts"
 import { BASELINE_OPTIONS } from "@/lib/config/defaults"
@@ -692,19 +692,18 @@ export default function Home() {
     onPageLimitReached: handleProjectPageLimitReached,
   })
   const {
-    focusRequest: activePageFocusRequest,
-    isGuiSettling: isPageKeyboardGuiSettling,
-    requestKeyboardPageFocus,
-    settleGuiPageNow,
+    isGuiSettling: isPageGuiSettling,
+    requestSettledPageFocus,
     settledPage: sidebarActivePage,
     settledPageId: sidebarActivePageId,
-  } = useSettledPageKeyboardNavigation({
+    settledPages: sidebarProjectPages,
+  } = useSettledPageNavigation({
     activePageId,
     pages: projectPages,
   })
   const projectTour = project.tour ?? null
   const activePageLayoutMode = activePage?.layoutMode ?? "single"
-  const sidebarControlsUseLivePage = sidebarActivePageId === activePageId && !isPageKeyboardGuiSettling
+  const sidebarControlsUseLivePage = sidebarActivePageId === activePageId && !isPageGuiSettling
   const sidebarControlLayoutMode = sidebarControlsUseLivePage
     ? activePageLayoutMode
     : sidebarActivePage?.layoutMode ?? activePageLayoutMode
@@ -1166,9 +1165,9 @@ export default function Home() {
       "previous",
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleSelectNextProjectPage = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1177,9 +1176,9 @@ export default function Home() {
       "next",
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleSelectPreviousProjectPageJump = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1189,9 +1188,9 @@ export default function Home() {
       10,
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleSelectNextProjectPageJump = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1201,9 +1200,9 @@ export default function Home() {
       10,
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleSelectFirstProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
@@ -1212,9 +1211,9 @@ export default function Home() {
       "first",
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleSelectLastProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
@@ -1223,14 +1222,15 @@ export default function Home() {
       "last",
     )
     if (!nextPageId) return
-    requestKeyboardPageFocus(nextPageId)
+    requestSettledPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+  }, [activePageId, projectPages, requestSettledPageFocus, selectPage])
 
   const handleDirectProjectPageSelect = useCallback((pageId: string) => {
-    settleGuiPageNow(pageId)
+    if (pageId === activePageId) return
+    requestSettledPageFocus(pageId)
     selectPage(pageId)
-  }, [selectPage, settleGuiPageNow])
+  }, [activePageId, requestSettledPageFocus, selectPage])
 
   const handleCommittedLayerOrderChange = useCallback((nextLayerOrder: string[]) => {
     preferCommittedPreviewLayoutRef.current = true
@@ -1787,12 +1787,12 @@ export default function Home() {
       activeCloudConflictDetails={activeCloudConflictDetails}
       authError={authError}
       authMessage={authMessage}
-      projectPages={projectPages}
+      projectPages={sidebarProjectPages}
       activeProjectPage={activePage}
       activePageId={activePageId}
       sidebarActiveProjectPage={sidebarActivePage}
       sidebarActivePageId={sidebarActivePageId}
-      activePageFocusRequest={activePageFocusRequest}
+      sidebarControlsUseLivePage={sidebarControlsUseLivePage}
       loadedPreviewLayout={loadedPreviewLayout}
       layoutEngine={project.layoutEngine}
       requestedLayerOrderState={requestedLayerOrderState}

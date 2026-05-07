@@ -99,15 +99,12 @@ type Props = {
   } | null
   authError: string | null
   authMessage: string | null
-  projectPages: PreviewProjectPage[]
+  projectPages: readonly PreviewProjectPage[]
   activeProjectPage: PreviewProjectPage | null
   activePageId: string
   sidebarActiveProjectPage: PreviewProjectPage | null
   sidebarActivePageId: string
-  activePageFocusRequest?: {
-    token: number
-    pageId: string | null
-  }
+  sidebarControlsUseLivePage: boolean
   loadedPreviewLayout: { token: number; layout: PreviewLayoutState } | null
   layoutEngine: LayoutEngineContract
   requestedLayerOrderState: { token: number; order: string[] } | null
@@ -270,7 +267,7 @@ export function PreviewWorkspace({
   activePageId,
   sidebarActiveProjectPage,
   sidebarActivePageId,
-  activePageFocusRequest = { token: 0, pageId: null },
+  sidebarControlsUseLivePage,
   loadedPreviewLayout,
   layoutEngine,
   requestedLayerOrderState,
@@ -342,6 +339,22 @@ export function PreviewWorkspace({
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
+  const liveLayerPanelState = {
+    selectedLayerKey,
+    hoveredLayerKey,
+    previewHoveredLayerKey,
+    editingLayerKey: editorMode ? selectedLayerKey : null,
+    editorMode,
+    previewEditorOpenToken,
+    previewParagraphCreateToken,
+  }
+  const settledLayerPanelStateRef = useRef(liveLayerPanelState)
+  if (sidebarControlsUseLivePage) {
+    settledLayerPanelStateRef.current = liveLayerPanelState
+  }
+  const layerPanelState = sidebarControlsUseLivePage
+    ? liveLayerPanelState
+    : settledLayerPanelStateRef.current
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const pageActionButtonClassName = `inline-flex h-3.5 min-w-3.5 items-center justify-center rounded-full border px-1 transition-colors ${
     isDarkUi
@@ -685,7 +698,12 @@ export function PreviewWorkspace({
               />
             )}
             {activeSidebarPanel === "layers" && (
-              <div className="flex h-full min-h-0 flex-col">
+              <div
+                aria-disabled={!sidebarControlsUseLivePage}
+                className={`flex h-full min-h-0 flex-col transition-opacity ${
+                  sidebarControlsUseLivePage ? "" : "pointer-events-none opacity-50"
+                }`}
+              >
                 <div className="mb-3 shrink-0 px-4 pt-4 md:px-6 md:pt-6">
                   <div className="rounded-md py-2">
                     <SectionHeaderRow
@@ -781,7 +799,6 @@ export function PreviewWorkspace({
                       pages={projectPages}
                       activePage={sidebarActiveProjectPage}
                       activePageId={sidebarActivePageId}
-                      activePageFocusRequest={activePageFocusRequest}
                       onSelectPage={onPageSelect}
                       onFacingPageToggle={onPageFacingToggle}
                       onRenamePage={onPageRename}
@@ -790,13 +807,13 @@ export function PreviewWorkspace({
                       onPageOrderChange={onPageOrderChange}
                       baseFont={baseFont}
                       imageColorScheme={imageColorScheme}
-                      selectedLayerKey={selectedLayerKey}
-                      hoveredLayerKey={hoveredLayerKey}
-                      previewHoveredLayerKey={previewHoveredLayerKey}
-                      editingLayerKey={editorMode ? selectedLayerKey : null}
-                      editorMode={editorMode}
-                      previewEditorOpenToken={previewEditorOpenToken}
-                      previewParagraphCreateToken={previewParagraphCreateToken}
+                      selectedLayerKey={layerPanelState.selectedLayerKey}
+                      hoveredLayerKey={layerPanelState.hoveredLayerKey}
+                      previewHoveredLayerKey={layerPanelState.previewHoveredLayerKey}
+                      editingLayerKey={layerPanelState.editingLayerKey}
+                      editorMode={layerPanelState.editorMode}
+                      previewEditorOpenToken={layerPanelState.previewEditorOpenToken}
+                      previewParagraphCreateToken={layerPanelState.previewParagraphCreateToken}
                       onLayerOrderChange={onLayerOrderChange}
                       onSelectedLayerKeyChange={onSelectedLayerKeyChange}
                       onHoverLayerChange={setLayerPanelHoveredLayerKey}

@@ -178,7 +178,6 @@ export function ProjectPageLayersList({
     () => new Map(stationaryVisibleOrder.map((key, index) => [key, index])),
     [stationaryVisibleOrder],
   )
-
   const scrollLayerCardIntoView = useCallback((layerKey: string, align: ScrollLogicalPosition = "nearest") => {
     const target = cardRefs.current[layerKey]
     if (!target) return
@@ -387,7 +386,6 @@ export function ProjectPageLayersList({
         const isLocked = layout?.lockedLayers?.[thumb.key] === true
         const stationaryIndex = stationaryIndexByKey.get(thumb.key) ?? null
         const allowLayerInteractions = isActivePage && !isLocked
-        const showLayerActions = isActivePage
         const showPreviewHighlight = isSelected || isHovered || isEditing
         const previewHighlightClassName = showPreviewHighlight
           ? "bg-swiss-orange-soft/20 shadow-[inset_1px_0_0_0_var(--swiss-orange-soft),inset_0_1px_0_0_var(--swiss-orange-soft)]"
@@ -430,10 +428,12 @@ export function ProjectPageLayersList({
               onMouseEnter={allowLayerInteractions ? () => onHoverLayerChange(thumb.key) : undefined}
               onMouseLeave={allowLayerInteractions ? () => onHoverLayerChange(null) : undefined}
               onClick={() => {
+                if (!isActivePage) return
                 onSelectPage(pageId)
                 onSelectLayer(thumb.key)
               }}
               onDoubleClick={() => {
+                if (!isActivePage) return
                 onSelectPage(pageId)
                 onSelectLayer(thumb.key)
                 if (!allowLayerInteractions) return
@@ -493,7 +493,7 @@ export function ProjectPageLayersList({
                     </div>
                   </div>
                 </div>
-                {showLayerActions ? (
+                {isActivePage ? (
                   <div className="flex items-center gap-1">
                     <button
                       type="button"
