@@ -9,6 +9,7 @@ import {
 } from "@/lib/layout-engine-contract"
 import type { PlannedProjectPageExportSource } from "@/lib/planned-page-export-source"
 import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
+import type { VectorTextOutlineResolver } from "@/lib/vector-text-outline"
 
 export type SvgPageSetMetadata = {
   title: string
@@ -30,6 +31,7 @@ export type SvgPageSetRenderOptions = {
   pageNumbers?: readonly number[]
   bleed?: ExportBleedOptions
   layoutEngine?: LayoutEngineContract
+  outlineResolver?: VectorTextOutlineResolver
 }
 
 function normalizeFilenameSegment(value: string): string {
@@ -49,6 +51,7 @@ export async function renderSvgPageSetFiles({
   pageNumbers,
   bleed = DEFAULT_EXPORT_BLEED_OPTIONS,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  outlineResolver,
 }: SvgPageSetRenderOptions): Promise<SvgExportFile[]> {
   const files: SvgExportFile[] = []
   for (const [index, page] of pages.entries()) {
@@ -84,6 +87,7 @@ export async function renderSvgPageSetFiles({
       creatorTool: "Swiss Grid Generator",
       exportPlan: page.exportPlan,
       exportBox,
+      outlineResolver,
     })
     files.push({
       filename: `${baseName}_page_${String(pageNumber).padStart(3, "0")}_${pageSlug}.svg`,

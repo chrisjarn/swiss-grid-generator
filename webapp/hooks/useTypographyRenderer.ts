@@ -9,7 +9,8 @@ import {
   buildCanvasRenderPlansFromPageExportPlan,
   drawCanvasImagePlan,
   drawCanvasTextPlan,
-  drawCanvasLayerStack,
+  drawCanvasLayerPlanStack,
+  type CanvasLayerRenderPlan,
   type CanvasImageRenderPlan,
 } from "@/lib/canvas-page-renderer"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
@@ -263,7 +264,7 @@ export function useTypographyRenderer<BlockId extends string>({
       })
       const canvasRenderPlans = measureLayoutPerformance(
         "canvas.buildRenderPlansFromPageExportPlan",
-        () => buildCanvasRenderPlansFromPageExportPlan(exportPlan),
+        () => buildCanvasRenderPlansFromPageExportPlan(exportPlan, { signatureMode: "key" }),
         {
           textPlans: exportPlan.textPlans.length,
           imagePlans: exportPlan.imagePlans.length,
@@ -318,7 +319,7 @@ export function useTypographyRenderer<BlockId extends string>({
         })
         const duplicateCanvasPlans = measureLayoutPerformance(
           "canvas.buildDragPreviewRenderPlansFromPageExportPlan",
-          () => buildCanvasRenderPlansFromPageExportPlan(duplicateExportPlan),
+          () => buildCanvasRenderPlansFromPageExportPlan(duplicateExportPlan, { signatureMode: "key" }),
           {
             textPlans: duplicateExportPlan.textPlans.length,
             imagePlans: duplicateExportPlan.imagePlans.length,
@@ -372,7 +373,7 @@ export function useTypographyRenderer<BlockId extends string>({
       bufferCtx.scale(scale, scale)
       measureLayoutPerformance(
         "canvas.drawLayerStack",
-        () => drawCanvasLayerStack(bufferCtx, canvasRenderPlans.orderedKeys as BlockId[], imagePlans, draftPlans),
+        () => drawCanvasLayerPlanStack(bufferCtx, canvasRenderPlans.orderedLayerPlans as CanvasLayerRenderPlan<BlockId>[]),
         {
           layers: canvasRenderPlans.orderedKeys.length,
           textPlans: draftPlans.size,

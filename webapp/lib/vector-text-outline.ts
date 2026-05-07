@@ -53,6 +53,19 @@ export type ResolveTextPlanVectorShapesOptions = {
   includeRelativeCommands?: boolean
 }
 
+export type ResolvedTextPlanVectorShapes = {
+  outlineShapes: OutlineTextShape[]
+  fallbackTextShapes: FallbackTextShape[]
+}
+
+export type VectorTextOutlineResolver = (
+  textPlan: PageExportTextPlan,
+  options?: ResolveTextPlanVectorShapesOptions,
+) => Promise<ResolvedTextPlanVectorShapes>
+
+const RELATIVE_OUTLINE_COMMAND_CACHE_MAX_ENTRIES = 4096
+const relativeOutlineCommandCache = new Map<string, readonly OpenTypePathCommand[]>()
+
 function getRelativeOutlineCommandCacheKey(
   fragment: Pick<TextShapeFragment, "text" | "fontFamily" | "fontWeight" | "italic" | "fontSize">,
 ): string {
@@ -63,6 +76,62 @@ function getRelativeOutlineCommandCacheKey(
     fragment.fontSize,
     fragment.text,
   ].join("\u0001")
+}
+
+function cacheRelativeOutlineCommands(key: string, commands: readonly OpenTypePathCommand[]): readonly OpenTypePathCommand[] {
+  if (relativeOutlineCommandCache.has(key)) relativeOutlineCommandCache.delete(key)
+  relativeOutlineCommandCache.set(key, commands)
+  while (relativeOutlineCommandCache.size > RELATIVE_OUTLINE_COMMAND_CACHE_MAX_ENTRIES) {
+    const oldestKey = relativeOutlineCommandCache.keys().next().value
+    if (!oldestKey) break
+    relativeOutlineCommandCache.delete(oldestKey)
+  }
+  return commands
+}
+
+function translateOpenTypeCommands(
+  commands: readonly OpenTypePathCommand[],
+  x: number,
+  y: number,
+): OpenTypePathCommand[] {
+  const translated = new Array<OpenTypePathCommand>(commands.length)
+  for (let index = 0; index < commands.length; index += 1) {
+    const command = commands[index]!
+    switch (command.type) {
+      case "M":
+        translated[index] = { type: "M", x: command.x + x, y: command.y + y }
+        break
+      case "L":
+        translated[index] = { type: "L", x: command.x + x, y: command.y + y }
+        break
+      case "C":
+        translated[index] = {
+          type: "C",
+          x1: command.x1 + x,
+          y1: command.y1 + y,
+          x2: command.x2 + x,
+          y2: command.y2 + y,
+          x: command.x + x,
+          y: command.y + y,
+        }
+        break
+      case "Q":
+        translated[index] = {
+          type: "Q",
+          x1: command.x1 + x,
+          y1: command.y1 + y,
+          x: command.x + x,
+          y: command.y + y,
+        }
+        break
+      case "Z":
+        translated[index] = command
+        break
+      default:
+        translated[index] = command
+    }
+  }
+  return translated
 }
 
 function clonePoint(point: { x: number; y: number }) {
@@ -116,22 +185,29 @@ export function buildSvgPathDataFromCommands(
     return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(precision).replace(/\.?0+$/, "")
   }
 
-  return commands.map((command) => {
+  let pathData = ""
+  for (const command of commands) {
     switch (command.type) {
       case "M":
-        return `M${format(command.x)} ${format(command.y)}`
+        pathData += `M${format(command.x)} ${format(command.y)}`
+        break
       case "L":
-        return `L${format(command.x)} ${format(command.y)}`
+        pathData += `L${format(command.x)} ${format(command.y)}`
+        break
       case "C":
-        return `C${format(command.x1)} ${format(command.y1)} ${format(command.x2)} ${format(command.y2)} ${format(command.x)} ${format(command.y)}`
+        pathData += `C${format(command.x1)} ${format(command.y1)} ${format(command.x2)} ${format(command.y2)} ${format(command.x)} ${format(command.y)}`
+        break
       case "Q":
-        return `Q${format(command.x1)} ${format(command.y1)} ${format(command.x)} ${format(command.y)}`
+        pathData += `Q${format(command.x1)} ${format(command.y1)} ${format(command.x)} ${format(command.y)}`
+        break
       case "Z":
-        return "Z"
+        pathData += "Z"
+        break
       default:
-        return ""
+        break
     }
-  }).filter(Boolean).join("")
+  }
+  return pathData
 }
 
 export function transformOpenTypeCommandsToCubicCommands(
@@ -276,32 +352,55 @@ export function convertOpenTypeCommandsToGeometryPaths(commands: readonly OpenTy
   }
 
   finalizeCurrent(true)
-  return paths.filter((path) => path.points.length > 0)
+  return paths
 }
 
 export async function preloadTextPlanOutlineFonts(textPlans: readonly PageExportTextPlan[]): Promise<void> {
-  await Promise.all(textPlans.flatMap((textPlan) => {
+  const fontTasks = new Map<string, ReturnType<typeof loadOutlineFont>>()
+  const queueFont = (fontFamily: FontFamily, fontWeight: number, italic: boolean) => {
+    const key = `${fontFamily}:${fontWeight}:${italic ? "italic" : "normal"}`
+    if (!fontTasks.has(key)) {
+      fontTasks.set(key, loadOutlineFont(fontFamily, fontWeight, italic))
+    }
+  }
+
+  for (const textPlan of textPlans) {
     if (textPlan.graphemeLines.length > 0) {
-      return textPlan.graphemeLines.flatMap((line) => line
-        .filter((grapheme) => isRenderableTextFragment(grapheme.text))
-        .map((grapheme) => loadOutlineFont(grapheme.fontFamily, grapheme.fontWeight, grapheme.italic)))
+      for (const line of textPlan.graphemeLines) {
+        for (const grapheme of line) {
+          if (isRenderableTextFragment(grapheme.text)) {
+            queueFont(grapheme.fontFamily, grapheme.fontWeight, grapheme.italic)
+          }
+        }
+      }
+      continue
     }
     if (textPlan.segmentLines.length > 0) {
-      return textPlan.segmentLines.flatMap((line) => line
-        .filter((segment) => isRenderableTextFragment(segment.text))
-        .map((segment) => loadOutlineFont(segment.fontFamily, segment.fontWeight, segment.italic)))
+      for (const line of textPlan.segmentLines) {
+        for (const segment of line) {
+          if (isRenderableTextFragment(segment.text)) {
+            queueFont(segment.fontFamily, segment.fontWeight, segment.italic)
+          }
+        }
+      }
+      continue
     }
-    return textPlan.commands
-      .map((command) => getRenderedTextDrawCommandText(command))
-      .filter((text) => isRenderableTextFragment(text))
-      .map(() => loadOutlineFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic))
-  }))
+    for (const command of textPlan.commands) {
+      if (isRenderableTextFragment(getRenderedTextDrawCommandText(command))) {
+        queueFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic)
+      }
+    }
+  }
+
+  const pending: Promise<unknown>[] = []
+  for (const task of fontTasks.values()) pending.push(task)
+  await Promise.all(pending)
 }
 
 export async function resolveTextPlanVectorShapes(
   textPlan: PageExportTextPlan,
   options: ResolveTextPlanVectorShapesOptions = {},
-): Promise<{ outlineShapes: OutlineTextShape[]; fallbackTextShapes: FallbackTextShape[] }> {
+): Promise<ResolvedTextPlanVectorShapes> {
   const outlineShapes: OutlineTextShape[] = []
   const fallbackTextShapes: FallbackTextShape[] = []
   const fragments: TextShapeFragment[] = []
@@ -340,9 +439,13 @@ export async function resolveTextPlanVectorShapes(
       }
     }
     const fonts = new Map<string, Awaited<ReturnType<typeof loadOutlineFont>>>()
-    await Promise.all([...fontTasks].map(async ([key, task]) => {
-      fonts.set(key, await task)
-    }))
+    const pendingFonts: Promise<void>[] = []
+    for (const [key, task] of fontTasks) {
+      pendingFonts.push(task.then((font) => {
+        fonts.set(key, font)
+      }))
+    }
+    await Promise.all(pendingFonts)
 
     for (const fragment of fragments) {
       const fontKey = `${fragment.fontFamily}:${fragment.fontWeight}:${fragment.italic ? "italic" : "normal"}`
@@ -351,36 +454,29 @@ export async function resolveTextPlanVectorShapes(
         fallbackTextShapes.push(fragment)
         continue
       }
-      const commands = outlineFont.getPath(
-        fragment.text,
-        fragment.x,
-        fragment.y,
-        fragment.fontSize,
-        {
-          kerning: false,
-          hinting: false,
-        },
-      ).commands
-      if (commands.length === 0) continue
-      const relativeCommandsKey = options.includeRelativeCommands
-        ? getRelativeOutlineCommandCacheKey(fragment)
-        : undefined
-      const relativeCommands = relativeCommandsKey
-        ? outlineFont.getPath(
-            fragment.text,
-            0,
-            0,
-            fragment.fontSize,
-            {
-              kerning: false,
-              hinting: false,
-            },
-          ).commands
-        : undefined
+      const relativeCommandsKey = getRelativeOutlineCommandCacheKey(fragment)
+      const cachedRelativeCommands = relativeOutlineCommandCache.get(relativeCommandsKey)
+      const relativeCommands = cachedRelativeCommands
+        ? cacheRelativeOutlineCommands(relativeCommandsKey, cachedRelativeCommands)
+        : cacheRelativeOutlineCommands(
+            relativeCommandsKey,
+            outlineFont.getPath(
+              fragment.text,
+              0,
+              0,
+              fragment.fontSize,
+              {
+                kerning: false,
+                hinting: false,
+              },
+            ).commands,
+          )
+      if (relativeCommands.length === 0) continue
+      const commands = translateOpenTypeCommands(relativeCommands, fragment.x, fragment.y)
       outlineShapes.push({
         commands,
-        relativeCommands,
-        relativeCommandsKey,
+        relativeCommands: options.includeRelativeCommands ? relativeCommands : undefined,
+        relativeCommandsKey: options.includeRelativeCommands ? relativeCommandsKey : undefined,
         color: fragment.color,
         text: fragment.text,
         x: fragment.x,

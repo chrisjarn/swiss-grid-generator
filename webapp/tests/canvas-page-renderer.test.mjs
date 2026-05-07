@@ -76,3 +76,13 @@ test("canvas text drawing consumes positioned glyph plans without measuring", ()
     "canvas output should paint prepositioned glyphs instead of measuring text while drawing",
   )
 })
+
+test("live preview canvas adapter uses ordered layer plans and skips full signatures", () => {
+  const canvasSource = readText("lib/canvas-page-renderer.ts")
+  const rendererSource = readText("hooks/useTypographyRenderer.ts")
+
+  assert.match(canvasSource, /export type CanvasLayerRenderPlan/)
+  assert.match(canvasSource, /export function drawCanvasLayerPlanStack/)
+  assert.match(rendererSource, /buildCanvasRenderPlansFromPageExportPlan\(exportPlan,\s*\{\s*signatureMode:\s*"key"\s*\}\)/)
+  assert.match(rendererSource, /drawCanvasLayerPlanStack\(bufferCtx,\s*canvasRenderPlans\.orderedLayerPlans/)
+})

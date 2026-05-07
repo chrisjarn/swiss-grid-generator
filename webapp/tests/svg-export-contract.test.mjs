@@ -65,7 +65,7 @@ test("svg export embeds project metadata in a dedicated rdf block", () => {
 test("svg export converts positioned graphemes through the shared vector outline resolver", () => {
   const svgSource = readText("lib/svg-vector-export.ts")
   const outlineSource = readText("lib/vector-text-outline.ts")
-  assert.match(svgSource, /resolveTextPlanVectorShapes\(textPlan\)/)
+  assert.match(svgSource, /\(outlineResolver \?\? resolveTextPlanVectorShapes\)\(textPlan\)/)
   assert.match(svgSource, /buildSvgPathDataFromCommands\(shape\.commands\)/)
   assert.match(outlineSource, /import\s+\{\s*loadOutlineFont,[\s\S]*?\}\s+from\s+"@\/lib\/font-outline"/)
   assert.match(outlineSource, /loadOutlineFont\(fontFamily,\s*fontWeight,\s*italic\)/)
@@ -75,6 +75,14 @@ test("svg export converts positioned graphemes through the shared vector outline
   assert.match(outlineSource, /outlineFont\.getPath\(/)
   assert.match(outlineSource, /kerning:\s*false/)
   assert.match(outlineSource, /hinting:\s*false/)
+})
+
+test("vector exports cache exact relative outline paths without touching preview rendering", () => {
+  const outlineSource = readText("lib/vector-text-outline.ts")
+  const previewSource = readText("hooks/useTypographyRenderer.ts")
+  assert.match(outlineSource, /relativeOutlineCommandCache = new Map<string,\s*readonly OpenTypePathCommand\[\]>\(\)/)
+  assert.match(outlineSource, /translateOpenTypeCommands\(relativeCommands,\s*fragment\.x,\s*fragment\.y\)/)
+  assert.doesNotMatch(previewSource, /createVectorTextOutlineResolver|resolveTextPlanVectorShapes/)
 })
 
 test("svg export keeps block and page rotation explicit in svg transforms", () => {

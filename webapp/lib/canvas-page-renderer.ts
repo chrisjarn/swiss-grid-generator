@@ -55,6 +55,14 @@ export type CanvasImageRenderPlan = {
   rotationOriginY: number
 }
 
+export type CanvasLayerRenderPlan<Key extends string> =
+  | { kind: "image"; key: Key; plan: CanvasImageRenderPlan }
+  | { kind: "text"; key: Key; plan: BlockRenderPlan<Key> }
+
+type CanvasRenderPlanBuildOptions = {
+  signatureMode?: "full" | "key"
+}
+
 type ImageDragState<Key extends string> = {
   key: Key
   preview: ModulePosition
@@ -857,19 +865,22 @@ export function buildOrderedCanvasLayerKeys<Key extends string>(
 
 export function buildCanvasTextRenderPlanFromPageExportPlan(
   textPlan: PageExportTextPlan,
+  options: CanvasRenderPlanBuildOptions = {},
 ): BlockRenderPlan<string> {
   const textColor = formatSvgColor(textPlan.textColor)
   const font = buildCanvasFont(textPlan.fontFamily, textPlan.fontWeight, textPlan.italic, textPlan.fontSize)
   const renderedSegmentLines = textPlan.graphemeLines.length > 0
     ? textPlan.graphemeLines
     : textPlan.segmentLines
-  const signature = buildCanvasTextPlanSignature({
-    key: textPlan.key,
-    font,
-    textColor,
-    commands: textPlan.commands,
-    segmentLines: renderedSegmentLines,
-  })
+  const signature = options.signatureMode === "key"
+    ? textPlan.key
+    : buildCanvasTextPlanSignature({
+        key: textPlan.key,
+        font,
+        textColor,
+        commands: textPlan.commands,
+        segmentLines: renderedSegmentLines,
+      })
   return {
     key: textPlan.key,
     rect: textPlan.rect,
@@ -917,21 +928,48 @@ export function buildCanvasImageRenderPlanFromPageExportPlan(
 
 export function buildCanvasRenderPlansFromPageExportPlan(
   exportPlan: PageExportPlan,
+  options: CanvasRenderPlanBuildOptions = {},
 ): {
   orderedKeys: string[]
+  orderedLayerPlans: CanvasLayerRenderPlan<string>[]
   imagePlans: Map<string, CanvasImageRenderPlan>
   textPlans: Map<string, BlockRenderPlan<string>>
 } {
+  const imagePlans = new Map(exportPlan.imagePlans.map((imagePlan) => [
+    imagePlan.key,
+    buildCanvasImageRenderPlanFromPageExportPlan(imagePlan),
+  ]))
+  const textPlans = new Map(exportPlan.textPlans.map((textPlan) => [
+    textPlan.key,
+    buildCanvasTextRenderPlanFromPageExportPlan(textPlan, options),
+  ]))
+  const orderedLayerPlans = exportPlan.orderedLayerKeys.flatMap((key): CanvasLayerRenderPlan<string>[] => {
+    const imagePlan = imagePlans.get(key)
+    if (imagePlan) return [{ kind: "image", key, plan: imagePlan }]
+    const textPlan = textPlans.get(key)
+    if (textPlan) return [{ kind: "text", key, plan: textPlan }]
+    return []
+  })
+
   return {
     orderedKeys: exportPlan.orderedLayerKeys,
-    imagePlans: new Map(exportPlan.imagePlans.map((imagePlan) => [
-      imagePlan.key,
-      buildCanvasImageRenderPlanFromPageExportPlan(imagePlan),
-    ])),
-    textPlans: new Map(exportPlan.textPlans.map((textPlan) => [
-      textPlan.key,
-      buildCanvasTextRenderPlanFromPageExportPlan(textPlan),
-    ])),
+    orderedLayerPlans,
+    imagePlans,
+    textPlans,
+  }
+}
+
+export function drawCanvasLayerPlanStack<Key extends string>(
+  ctx: CanvasRenderingContext2D,
+  layerPlans: readonly CanvasLayerRenderPlan<Key>[],
+): void {
+  ctx.textBaseline = "alphabetic"
+  for (const layer of layerPlans) {
+    if (layer.kind === "image") {
+      drawCanvasImagePlan(ctx, layer.plan)
+      continue
+    }
+    drawCanvasTextPlan(ctx, layer.plan)
   }
 }
 

@@ -21,6 +21,7 @@ import {
   transformOpenTypeCommandsToCubicCommands,
   type CubicOpenTypePathCommand,
   type OutlineTextShape,
+  type VectorTextOutlineResolver,
 } from "@/lib/vector-text-outline"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
@@ -85,6 +86,7 @@ type ExportVectorPdfOptions = {
   showTypography: boolean
   layoutEngine?: LayoutEngineContract
   exportPlan?: PageExportPlan
+  outlineResolver?: VectorTextOutlineResolver
 }
 
 function formatCacheNumber(value: number): string {
@@ -214,6 +216,7 @@ async function renderSwissGridVectorPdfInternal({
   showTypography,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
   exportPlan: providedExportPlan,
+  outlineResolver,
 }: ExportVectorPdfOptions): Promise<void> {
   const exportPlan = providedExportPlan ?? buildPageExportPlan({
     result,
@@ -678,7 +681,7 @@ async function renderSwissGridVectorPdfInternal({
     pdf.saveGraphicsState()
     try {
       setPdfOpacity(1)
-      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(plan, {
+      const { outlineShapes, fallbackTextShapes } = await (outlineResolver ?? resolveTextPlanVectorShapes)(plan, {
         includeRelativeCommands: true,
       })
       let shouldAnchorInlinePdfPath = true

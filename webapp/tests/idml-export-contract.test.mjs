@@ -147,7 +147,7 @@ test("idml builder converts shared vector outline geometry into outlined polygon
   const source = readText("lib/idml/builder.ts")
   const outlineSource = readText("lib/vector-text-outline.ts")
   assert.match(source, /preloadTextPlanOutlineFonts\(page\.exportPlan\.textPlans\)/)
-  assert.match(source, /resolveTextPlanVectorShapes\(textPlan\)/)
+  assert.match(source, /\(outlineResolver \?\? resolveTextPlanVectorShapes\)\(textPlan\)/)
   assert.match(source, /for\s*\(const\s+\[shapeIndex,\s*shape\]\s+of\s+outlineShapes\.entries\(\)\)/)
   assert.match(source, /convertOpenTypeCommandsToGeometryPaths\(shape\.commands\)/)
   assert.match(source, /renderIdmlElement\(\s*"Polygon"/)

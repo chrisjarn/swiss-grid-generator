@@ -21,6 +21,7 @@ import {
   preloadTextPlanOutlineFonts,
   type GeometryPath,
   resolveTextPlanVectorShapes,
+  type VectorTextOutlineResolver,
 } from "@/lib/vector-text-outline"
 
 type Matrix = readonly [number, number, number, number, number, number]
@@ -399,20 +400,26 @@ function buildGuideRectanglesXml(
     name: string
   }>,
 ): string[] {
-  return rects.map((rect, index) => renderIdmlElement(
-    "Rectangle",
-    {
-      Self: `${rect.key}_${index + 1}`,
-      Name: rect.name,
-      ItemLayer: rect.layerId,
-      ItemTransform: isIdentityMatrix(pageTransformMatrix) ? undefined : formatMatrix(pageTransformMatrix),
-      Visible: true,
-      FillColor: rect.fillColorId ?? SWATCH_NONE_ID,
-      StrokeColor: rect.strokeColorId ?? SWATCH_NONE_ID,
-      StrokeWeight: rect.strokeWeight !== undefined ? formatIdmlNumber(rect.strokeWeight) : 0,
-    },
-    renderRectPathGeometry(rect.x, rect.y, rect.width, rect.height),
-  ))
+  const xml = new Array<string>(rects.length)
+  const itemTransform = isIdentityMatrix(pageTransformMatrix) ? undefined : formatMatrix(pageTransformMatrix)
+  for (let index = 0; index < rects.length; index += 1) {
+    const rect = rects[index]!
+    xml[index] = renderIdmlElement(
+      "Rectangle",
+      {
+        Self: `${rect.key}_${index + 1}`,
+        Name: rect.name,
+        ItemLayer: rect.layerId,
+        ItemTransform: itemTransform,
+        Visible: true,
+        FillColor: rect.fillColorId ?? SWATCH_NONE_ID,
+        StrokeColor: rect.strokeColorId ?? SWATCH_NONE_ID,
+        StrokeWeight: rect.strokeWeight !== undefined ? formatIdmlNumber(rect.strokeWeight) : 0,
+      },
+      renderRectPathGeometry(rect.x, rect.y, rect.width, rect.height),
+    )
+  }
+  return xml
 }
 
 function buildGuideLinesXml(
@@ -426,20 +433,26 @@ function buildGuideLinesXml(
     name: string
   }>,
 ): string[] {
-  return lines.map((line, index) => renderIdmlElement(
-    "GraphicLine",
-    {
-      Self: `${line.key}_${index + 1}`,
-      Name: line.name,
-      ItemLayer: line.layerId,
-      ItemTransform: isIdentityMatrix(pageTransformMatrix) ? undefined : formatMatrix(pageTransformMatrix),
-      Visible: true,
-      FillColor: SWATCH_NONE_ID,
-      StrokeColor: line.strokeColorId,
-      StrokeWeight: formatIdmlNumber(line.strokeWeight),
-    },
-    renderLinePathGeometry(line.line),
-  ))
+  const xml = new Array<string>(lines.length)
+  const itemTransform = isIdentityMatrix(pageTransformMatrix) ? undefined : formatMatrix(pageTransformMatrix)
+  for (let index = 0; index < lines.length; index += 1) {
+    const line = lines[index]!
+    xml[index] = renderIdmlElement(
+      "GraphicLine",
+      {
+        Self: `${line.key}_${index + 1}`,
+        Name: line.name,
+        ItemLayer: line.layerId,
+        ItemTransform: itemTransform,
+        Visible: true,
+        FillColor: SWATCH_NONE_ID,
+        StrokeColor: line.strokeColorId,
+        StrokeWeight: formatIdmlNumber(line.strokeWeight),
+      },
+      renderLinePathGeometry(line.line),
+    )
+  }
+  return xml
 }
 
 function renderCropMarkLines({
@@ -451,17 +464,26 @@ function renderCropMarkLines({
   pageTransformMatrix: Matrix
   pageIndex: number
 }): string[] {
-  return buildGuideLinesXml(
-    pageTransformMatrix,
-    cropMarkLines.map((line, lineIndex) => ({
+  const lines = new Array<{
+    key: string
+    line: ExportLine
+    strokeColorId: string
+    strokeWeight: number
+    layerId: string
+    name: string
+  }>(cropMarkLines.length)
+  for (let lineIndex = 0; lineIndex < cropMarkLines.length; lineIndex += 1) {
+    const line = cropMarkLines[lineIndex]!
+    lines[lineIndex] = {
       key: `sggCropMark_${pageIndex + 1}_${lineIndex + 1}`,
       line,
       strokeColorId: COLOR_BLACK_ID,
       strokeWeight: 0.35,
       layerId: LAYER_GUIDES_ID,
       name: `Crop mark ${lineIndex + 1}`,
-    })),
-  )
+    }
+  }
+  return buildGuideLinesXml(pageTransformMatrix, lines)
 }
 
 function renderPolygonItem({
@@ -497,6 +519,7 @@ async function buildSpreadAndStories(
   document: SwissGridIdmlDocument,
   colorIdBySignature: Map<string, string>,
   startPageIndex = 0,
+  outlineResolver?: VectorTextOutlineResolver,
 ): Promise<{
   spreads: SpreadExportRecord[]
   stories: StoryExportRecord[]
@@ -648,7 +671,7 @@ async function buildSpreadAndStories(
         textPlan.rotationOriginY,
       )
       const itemMatrix = multiplyMatrices(pageTransformMatrix, blockRotationMatrix)
-      const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(textPlan)
+      const { outlineShapes, fallbackTextShapes } = await (outlineResolver ?? resolveTextPlanVectorShapes)(textPlan)
       if (fallbackTextShapes.length > 0) {
         throw new Error(`Unable to resolve outline font for IDML export: ${textPlan.key}`)
       }
@@ -1573,21 +1596,34 @@ async function tryZipIdmlEntriesWithNodeZlib(
   const totalSize = offset + centralDirectorySize + end.byteLength
 
   if (typeof Buffer !== "undefined") {
+    const buffers = new Array<Buffer>(chunks.length + centralDirectory.length + 1)
+    let bufferIndex = 0
+    for (const chunk of chunks) {
+      buffers[bufferIndex] = Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+      bufferIndex += 1
+    }
+    for (const chunk of centralDirectory) {
+      buffers[bufferIndex] = Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)
+      bufferIndex += 1
+    }
+    buffers[bufferIndex] = Buffer.from(end.buffer, end.byteOffset, end.byteLength)
     return {
-      bytes: Buffer.concat(
-      [...chunks, ...centralDirectory, end].map((chunk) => Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength)),
-      totalSize,
-      ),
+      bytes: Buffer.concat(buffers, totalSize),
       engine: "node-zlib",
     }
   }
 
   const output = new Uint8Array(totalSize)
   let writeOffset = 0
-  for (const chunk of [...chunks, ...centralDirectory, end]) {
+  for (const chunk of chunks) {
     output.set(chunk, writeOffset)
     writeOffset += chunk.byteLength
   }
+  for (const chunk of centralDirectory) {
+    output.set(chunk, writeOffset)
+    writeOffset += chunk.byteLength
+  }
+  output.set(end, writeOffset)
   return { bytes: output, engine: "node-zlib" }
 }
 
@@ -1605,7 +1641,7 @@ export async function buildSwissGridIdmlPackage(
 
 export async function buildSwissGridIdmlPageSetArtifacts(
   document: SwissGridIdmlDocument,
-  options: { startPageIndex?: number } = {},
+  options: { startPageIndex?: number; outlineResolver?: VectorTextOutlineResolver } = {},
 ): Promise<IdmlPageSetArtifacts> {
   if (!document.pages.length) {
     return {
@@ -1620,13 +1656,16 @@ export async function buildSwissGridIdmlPageSetArtifacts(
   const colorIdBySignature = new Map<string, string>([
     ["0,0,0", COLOR_BLACK_ID],
     ["255,255,255", COLOR_PAPER_ID],
-    ...customSwatches.map((swatch) => [`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id] as const),
   ])
+  for (const swatch of customSwatches) {
+    colorIdBySignature.set(`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id)
+  }
   const xmlStartedAt = nowMs()
   const { spreads, stories } = await buildSpreadAndStories(
     document,
     colorIdBySignature,
     options.startPageIndex ?? 0,
+    options.outlineResolver,
   )
   const xmlGenerationMs = nowMs() - xmlStartedAt
   const encodeStartedAt = nowMs()
@@ -1668,12 +1707,18 @@ export async function buildSwissGridIdmlPackageFromPageSets(
   const resourceStartedAt = nowMs()
   const customSwatches = buildColorSwatches(document)
   const fontCatalog = await buildFontCatalog(document)
-  const fonts = [...new Map(fontCatalog.values().map((font) => [`${font.family}|${font.styleName}`, font] as const)).values()]
+  const fontBySignature = new Map<string, IdmlFontMetadata>()
+  for (const font of fontCatalog.values()) {
+    fontBySignature.set(`${font.family}|${font.styleName}`, font)
+  }
+  const fonts = Array.from(fontBySignature.values())
   const colorIdBySignature = new Map<string, string>([
     ["0,0,0", COLOR_BLACK_ID],
     ["255,255,255", COLOR_PAPER_ID],
-    ...customSwatches.map((swatch) => [`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id] as const),
   ])
+  for (const swatch of customSwatches) {
+    colorIdBySignature.set(`${swatch.color.r},${swatch.color.g},${swatch.color.b}`, swatch.id)
+  }
   const { styles: characterStyles } = await buildCharacterStyles(
     document,
     colorIdBySignature,
@@ -1730,12 +1775,15 @@ export async function buildSwissGridIdmlPackageFromPageSets(
   const compressionLevel = normalizeIdmlZipCompressionLevel(options.compressionLevel)
   const zipStartedAt = nowMs()
   const nativeZip = await tryZipIdmlEntriesWithNodeZlib(zipEntries, compressionLevel)
+  const fflateEntries: Record<string, Uint8Array | [Uint8Array, { level: IdmlZipCompressionLevel }]> = {}
+  if (!nativeZip) {
+    for (const entry of zipEntries) {
+      fflateEntries[entry.path] = entry.level === undefined ? entry.bytes : [entry.bytes, { level: entry.level }]
+    }
+  }
   const zipResult = nativeZip ?? {
     bytes: zipSync(
-      Object.fromEntries(zipEntries.map((entry) => [
-        entry.path,
-        entry.level === undefined ? entry.bytes : [entry.bytes, { level: entry.level }],
-      ])) as Record<string, Uint8Array | [Uint8Array, { level: IdmlZipCompressionLevel }]>,
+      fflateEntries,
       { level: compressionLevel },
     ),
     engine: "fflate" as const,

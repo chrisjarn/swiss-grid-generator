@@ -352,11 +352,53 @@ Full PDF, SVG files, and IDML CLI run:
 
 Tradeoff: Node zlib level `1` is much faster than fflate level `1` on the CLI but produced a larger compressed IDML in this fixture (`455.80MB` versus roughly `399MB` in recent fflate runs). Browser output and browser compression behavior remain unchanged.
 
+May 7 browser-first pass kept canonical layout math and export serialization precision unchanged, reduced live-preview adapter churn, and moved outline reuse to a bounded exact relative glyph-path cache instead of retaining full page outline geometry. An attempted unbounded page-level outline cache was rejected after it OOMed during the 1000-page PDF phase; full page/vector outline artifacts are too large to retain across an entire 1000-page multi-format run.
+
+Measured after the bounded glyph-path cache and preview adapter change:
+
+```text
+Full PDF, SVG files, and IDML CLI run:
+  planning                 16.06s
+  pdf render pages         18.45s
+  pdf finalize              7.30s
+  svg render pages         23.08s
+  idml render page sets    41.63s
+  idml package             21.47s
+  idml package zip         21.27s raw=2612.88MB
+  pdf write                 0.33s size=27.15MB
+  svg write files           4.06s files=1000
+  idml write                2.01s size=455.80MB
+  total                   135.06s
+```
+
+May 7 allocation pass kept the same canonical plan, glyph-outline cache, export precision, and native Node ZIP path, then replaced hot-path `map`/`flatMap`/spread assembly with direct loops in outline translation, SVG path/string generation, IDML guide/crop XML, font preload collection, and ZIP buffer assembly. This is intentionally mechanical: fewer temporary arrays and objects, no changed layout inputs, no changed formatter, no changed export commands.
+
+Measured after the allocation pass:
+
+```text
+Full PDF, SVG files, and IDML CLI run:
+  planning                 16.64s
+  pdf render pages         18.08s
+  pdf finalize              7.63s
+  svg render pages         16.43s
+  idml render page sets    37.85s
+  idml page xml            31.67s raw=2611.70MB
+  idml page encode          1.56s
+  idml package             21.74s
+  idml package zip         21.52s engine=node-zlib raw=2612.88MB
+  pdf write                 0.36s size=27.15MB
+  svg write files           2.93s files=1000
+  idml write                1.84s size=455.80MB
+  total                   124.22s
+```
+
 ### Current Boundaries
 
 - PDF export runs in a cancellable browser worker so `Esc`/Cancel can terminate the active export even when final PDF byte serialization is busy. SVG page-set rendering, SVG ZIP packaging, IDML page-set XML generation, and IDML package assembly can also run worker-backed in the browser; final artifact order remains deterministic.
 - Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI default is off and restores `3mm` as the standard activation width; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
 - Cross-format outline precision is locked by `webapp/tests/export-geometry-parity.test.mjs`, which parses PDF content streams, SVG path data, and IDML `PathPointType` geometry from the same exported specimen and compares them against the planned glyph outline coordinates.
+- Live preview consumes `PageExportPlan` through the canvas adapter, draws from ordered layer render plans, and avoids export-only outline resolution on the interaction path.
+- Export hot paths avoid high-volume temporary collection chains where a direct ordered loop preserves the same serialization and geometry.
 
 ### Validation
 
@@ -368,5 +410,6 @@ The kept checkpoints from this pass were validated with:
 - `npm run test:pdf`
 - `npm run test:svg`
 - `npm run test:idml`
+- `npm run test:canvas-renderer`
 - `npm run lint`
 - `npx tsc --noEmit`

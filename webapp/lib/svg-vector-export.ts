@@ -17,6 +17,7 @@ import {
   buildSvgPathDataFromCommands,
   preloadTextPlanOutlineFonts,
   resolveTextPlanVectorShapes,
+  type VectorTextOutlineResolver,
 } from "@/lib/vector-text-outline"
 import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
 
@@ -46,6 +47,7 @@ type ExportVectorSvgOptions = {
   creatorTool?: string
   exportBox: ExportBox
   exportPlan?: PageExportPlan
+  outlineResolver?: VectorTextOutlineResolver
 }
 
 function formatNumber(value: number): string {
@@ -129,6 +131,7 @@ async function renderSwissGridVectorSvgInternal({
   creatorTool = "Swiss Grid Generator",
   exportBox,
   exportPlan: providedExportPlan,
+  outlineResolver,
 }: ExportVectorSvgOptions): Promise<string> {
   const exportPlan = providedExportPlan ?? buildPageExportPlan({
     result,
@@ -146,8 +149,10 @@ async function renderSwissGridVectorSvgInternal({
     layoutEngine,
   })
 
-  const imagePlans = new Map(exportPlan.imagePlans.map((plan) => [plan.key, plan] as const))
-  const textPlans = new Map(exportPlan.textPlans.map((plan) => [plan.key, plan] as const))
+  const imagePlans = new Map<string, PageExportPlan["imagePlans"][number]>()
+  for (const plan of exportPlan.imagePlans) imagePlans.set(plan.key, plan)
+  const textPlans = new Map<string, PageExportPlan["textPlans"][number]>()
+  for (const plan of exportPlan.textPlans) textPlans.set(plan.key, plan)
   const documentWidth = exportBox.media.width
   const documentHeight = exportBox.media.height
   const viewBoxX = exportBox.media.x
@@ -162,24 +167,25 @@ async function renderSwissGridVectorSvgInternal({
 
   await preloadTextPlanOutlineFonts(exportPlan.textPlans)
 
-  const guideMarkup = exportPlan.guideGroups.map((guideGroup) => {
+  let guideMarkup = ""
+  for (const guideGroup of exportPlan.guideGroups) {
     const stroke = formatSvgColor(guideGroup.strokeColor)
     const dashAttr = guideGroup.dashPattern.length
       ? ` stroke-dasharray="${guideGroup.dashPattern.map(formatNumber).join(" ")}"`
       : ""
-    const body = [
-      ...guideGroup.rects.map((rect) => (
-        `<rect x="${formatNumber(rect.x)}" y="${formatNumber(rect.y)}" width="${formatNumber(rect.width)}" height="${formatNumber(rect.height)}" fill="none" />`
-      )),
-      ...guideGroup.lines.map((line) => (
-        `<line x1="${formatNumber(line.x1)}" y1="${formatNumber(line.y1)}" x2="${formatNumber(line.x2)}" y2="${formatNumber(line.y2)}" />`
-      )),
-    ].join("")
+    let body = ""
+    for (const rect of guideGroup.rects) {
+      body += `<rect x="${formatNumber(rect.x)}" y="${formatNumber(rect.y)}" width="${formatNumber(rect.width)}" height="${formatNumber(rect.height)}" fill="none" />`
+    }
+    for (const line of guideGroup.lines) {
+      body += `<line x1="${formatNumber(line.x1)}" y1="${formatNumber(line.y1)}" x2="${formatNumber(line.x2)}" y2="${formatNumber(line.y2)}" />`
+    }
     const clipAttr = guideGroup.clipToPage ? ` clip-path="url(#${pageClipId})"` : ""
-    return `<g id="guides-${guideGroup.id}"${clipAttr} fill="none" stroke="${stroke}" stroke-width="${formatNumber(guideGroup.strokeWidth)}"${dashAttr}>${body}</g>`
-  }).join("")
+    guideMarkup += `<g id="guides-${guideGroup.id}"${clipAttr} fill="none" stroke="${stroke}" stroke-width="${formatNumber(guideGroup.strokeWidth)}"${dashAttr}>${body}</g>`
+  }
 
-  const layerMarkup = (await Promise.all(exportPlan.orderedLayerKeys.map(async (key) => {
+  let layerMarkup = ""
+  for (const key of exportPlan.orderedLayerKeys) {
     const imagePlan = imagePlans.get(key)
     if (imagePlan) {
       const opacityAttr = imagePlan.opacity < 0.999 ? ` fill-opacity="${formatNumber(imagePlan.opacity)}"` : ""
@@ -188,11 +194,12 @@ async function renderSwissGridVectorSvgInternal({
         imagePlan.rotationOriginX,
         imagePlan.rotationOriginY,
       )
-      return `<rect id="image-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" x="${formatNumber(imagePlan.x)}" y="${formatNumber(imagePlan.y)}" width="${formatNumber(imagePlan.width)}" height="${formatNumber(imagePlan.height)}" fill="${formatSvgColor(imagePlan.fillColor)}"${opacityAttr}${rotationTransform} />`
+      layerMarkup += `<rect id="image-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" x="${formatNumber(imagePlan.x)}" y="${formatNumber(imagePlan.y)}" width="${formatNumber(imagePlan.width)}" height="${formatNumber(imagePlan.height)}" fill="${formatSvgColor(imagePlan.fillColor)}"${opacityAttr}${rotationTransform} />`
+      continue
     }
 
     const textPlan = textPlans.get(key)
-    if (!textPlan) return ""
+    if (!textPlan) continue
 
     const rotationTransform = renderRotationTransform(
       textPlan.blockRotation,
@@ -200,22 +207,26 @@ async function renderSwissGridVectorSvgInternal({
       textPlan.rotationOriginY,
     )
 
-    const { outlineShapes, fallbackTextShapes } = await resolveTextPlanVectorShapes(textPlan)
-    const outlinedMarkup = outlineShapes.map((shape) => {
+    const { outlineShapes, fallbackTextShapes } = await (outlineResolver ?? resolveTextPlanVectorShapes)(textPlan)
+    let outlinedMarkup = ""
+    for (const shape of outlineShapes) {
       const pathData = buildSvgPathDataFromCommands(shape.commands).trim()
-      if (!pathData) return ""
-      return `<path d="${quoteAttr(pathData)}" fill="${formatSvgColor(shape.color)}" />`
-    }).join("")
+      if (pathData) {
+        outlinedMarkup += `<path d="${quoteAttr(pathData)}" fill="${formatSvgColor(shape.color)}" />`
+      }
+    }
     if (outlinedMarkup) {
-      return `<g id="text-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" data-style-key="${quoteAttr(textPlan.styleKey)}" data-text-rendering="glyph-outline"${rotationTransform}>${outlinedMarkup}</g>`
+      layerMarkup += `<g id="text-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" data-style-key="${quoteAttr(textPlan.styleKey)}" data-text-rendering="glyph-outline"${rotationTransform}>${outlinedMarkup}</g>`
+      continue
     }
 
-    const fallbackLines = fallbackTextShapes.map((shape) => {
-      return `<text x="${formatNumber(shape.x)}" y="${formatNumber(shape.y)}" fill="${formatSvgColor(shape.color)}" font-family="${quoteAttr(shape.fontFamily)}" font-size="${formatNumber(shape.fontSize)}" font-weight="${shape.fontWeight}" font-style="${shape.italic ? "italic" : "normal"}" xml:space="preserve">${escapeXml(shape.text)}</text>`
-    }).join("")
+    let fallbackLines = ""
+    for (const shape of fallbackTextShapes) {
+      fallbackLines += `<text x="${formatNumber(shape.x)}" y="${formatNumber(shape.y)}" fill="${formatSvgColor(shape.color)}" font-family="${quoteAttr(shape.fontFamily)}" font-size="${formatNumber(shape.fontSize)}" font-weight="${shape.fontWeight}" font-style="${shape.italic ? "italic" : "normal"}" xml:space="preserve">${escapeXml(shape.text)}</text>`
+    }
 
-    return `<g id="text-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" data-style-key="${quoteAttr(textPlan.styleKey)}" data-text-rendering="text-fallback"${rotationTransform}>${fallbackLines}</g>`
-  }))).join("")
+    layerMarkup += `<g id="text-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" data-style-key="${quoteAttr(textPlan.styleKey)}" data-text-rendering="text-fallback"${rotationTransform}>${fallbackLines}</g>`
+  }
 
   const exportCanvasMarkup = exportBox.exportCanvasMarginPt > 0
     ? `<rect x="${formatNumber(exportBox.media.x)}" y="${formatNumber(exportBox.media.y)}" width="${formatNumber(exportBox.media.width)}" height="${formatNumber(exportBox.media.height)}" fill="#ffffff" />`
@@ -229,12 +240,14 @@ async function renderSwissGridVectorSvgInternal({
     : ""
   const cropMarkMarkup = exportBox.cropMarkLines.length > 0
     ? (() => {
-        const line = (x1: number, y1: number, x2: number, y2: number) => (
+      const line = (x1: number, y1: number, x2: number, y2: number) => (
           `<line x1="${formatNumber(x1)}" y1="${formatNumber(y1)}" x2="${formatNumber(x2)}" y2="${formatNumber(y2)}" />`
         )
-        return `<g id="crop-marks" fill="none" stroke="#141414" stroke-width="0.35">` + exportBox.cropMarkLines
-          .map((cropMarkLine) => line(cropMarkLine.x1, cropMarkLine.y1, cropMarkLine.x2, cropMarkLine.y2))
-          .join("") + `</g>`
+        let cropLines = ""
+        for (const cropMarkLine of exportBox.cropMarkLines) {
+          cropLines += line(cropMarkLine.x1, cropMarkLine.y1, cropMarkLine.x2, cropMarkLine.y2)
+        }
+        return `<g id="crop-marks" fill="none" stroke="#141414" stroke-width="0.35">` + cropLines + `</g>`
       })()
     : ""
   const metadataMarkup = buildSvgMetadataMarkup({
