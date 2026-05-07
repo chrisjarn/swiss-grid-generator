@@ -11,7 +11,7 @@ import { FontSelect } from "@/components/ui/font-select"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
 import { TYPOGRAPHY_SCALE_LABELS } from "@/lib/grid-calculator"
 import type { GridResult } from "@/lib/grid-calculator"
-import { FONT_OPTIONS, type FontFamily } from "@/lib/config/fonts"
+import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/lib/config/fonts"
 import type { TypographyScale } from "@/lib/config/defaults"
 import { PanelCard } from "@/components/settings/PanelCard"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
@@ -104,8 +104,11 @@ export const TypographyPanel = memo(function TypographyPanel({
             value={baseFont}
             onValueChange={(value) => baseFontSelectPreview.handleValueChange(value as FontFamily)}
             options={FONT_OPTIONS}
+            renderTriggerValue={baseFont}
+            triggerValueStyle={{ fontFamily: getFontFamilyCss(baseFont) }}
             onOpenChange={baseFontSelectPreview.handleOpenChange}
             onContentPointerLeave={baseFontSelectPreview.handleContentPointerLeave}
+            getItemStyle={(option) => ({ fontFamily: getFontFamilyCss(option.value as FontFamily) })}
             getItemPreviewProps={(value) => baseFontSelectPreview.getItemPreviewProps(value as FontFamily)}
           />
         </LabeledControlRow>
