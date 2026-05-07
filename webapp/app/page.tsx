@@ -28,6 +28,7 @@ import { useUiSettingsPreview } from "@/hooks/useUiSettingsPreview"
 import { useProjectTourController } from "@/hooks/useProjectTourController"
 import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
 import { useCloudProjectSync } from "@/hooks/useCloudProjectSync"
+import { useSettledPageKeyboardNavigation } from "@/hooks/useSettledPageKeyboardNavigation"
 import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage, type ProjectVisibilitySettings } from "@/lib/document-session"
 import { type FontFamily } from "@/lib/config/fonts"
 import { BASELINE_OPTIONS } from "@/lib/config/defaults"
@@ -45,6 +46,7 @@ import {
 import {
   buildGridResultFromUiSettings,
   buildSerializableUiSettingsSnapshot,
+  resolveUiSettingsSnapshot,
 } from "@/lib/ui-settings-resolver"
 import { useProjectState } from "@/hooks/useProjectState"
 import { resolveCurrentPreviewLayout } from "@/lib/current-preview-layout"
@@ -203,10 +205,6 @@ export default function Home() {
   } | null>(null)
   const [noticeState, setNoticeState] = useState<NoticeState>(null)
   const [gridReductionWarningToast, setGridReductionWarningToast] = useState<GridReductionWarningToastState>(null)
-  const [activePageFocusRequest, setActivePageFocusRequest] = useState<{
-    token: number
-    pageId: string | null
-  }>({ token: 0, pageId: null })
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
@@ -501,18 +499,6 @@ export default function Home() {
     link: uiTheme.link,
   }), [uiTheme.bodyText, uiTheme.leftPanel, uiTheme.leftPanelEdit, uiTheme.link, uiTheme.subtleBorder])
 
-  const maxBaseline = useMemo(() => {
-    const customMarginUnits = useCustomMargins
-      ? baselineMultiple * (customMarginMultipliers.top + customMarginMultipliers.bottom)
-      : undefined
-    return getMaxBaseline(result.pageSizePt.height, marginMethod, baselineMultiple, customMarginUnits)
-  }, [result.pageSizePt.height, marginMethod, baselineMultiple, useCustomMargins, customMarginMultipliers])
-
-  const availableBaselineOptions = useMemo(
-    () => BASELINE_OPTIONS.filter((val) => val <= maxBaseline),
-    [maxBaseline],
-  )
-
   const baseFilename = useMemo(() => {
     const baselineStr = customBaseline
       ? customBaseline.toFixed(3)
@@ -705,9 +691,64 @@ export default function Home() {
     onApplyPage: handleApplyProjectPage,
     onPageLimitReached: handleProjectPageLimitReached,
   })
+  const {
+    focusRequest: activePageFocusRequest,
+    isGuiSettling: isPageKeyboardGuiSettling,
+    requestKeyboardPageFocus,
+    settleGuiPageNow,
+    settledPage: sidebarActivePage,
+    settledPageId: sidebarActivePageId,
+  } = useSettledPageKeyboardNavigation({
+    activePageId,
+    pages: projectPages,
+  })
   const projectTour = project.tour ?? null
   const activePageLayoutMode = activePage?.layoutMode ?? "single"
-  const effectiveGridCols = activePageLayoutMode === "facing" ? gridCols * 2 : gridCols
+  const sidebarControlsUseLivePage = sidebarActivePageId === activePageId && !isPageKeyboardGuiSettling
+  const sidebarControlLayoutMode = sidebarControlsUseLivePage
+    ? activePageLayoutMode
+    : sidebarActivePage?.layoutMode ?? activePageLayoutMode
+  const sidebarControlUi = useMemo<UiSettingsSnapshot>(() => {
+    if (sidebarControlsUseLivePage) return currentDocumentUiSnapshot
+    if (!sidebarActivePage?.uiSettings) return currentDocumentUiSnapshot
+    return resolveUiSettingsSnapshot(sidebarActivePage.uiSettings)
+  }, [currentDocumentUiSnapshot, sidebarActivePage, sidebarControlsUseLivePage])
+  const sidebarControlResult = useMemo(
+    () => (
+      sidebarControlsUseLivePage
+        ? result
+        : buildGridResultFromUiSettings(sidebarControlUi, { layoutMode: sidebarControlLayoutMode })
+    ),
+    [result, sidebarControlLayoutMode, sidebarControlUi, sidebarControlsUseLivePage],
+  )
+  const sidebarControlGridUnit = sidebarControlUi.customBaseline ?? DEFAULT_A4_BASELINE
+  const sidebarControlEffectiveGridCols = sidebarControlLayoutMode === "facing"
+    ? sidebarControlUi.gridCols * 2
+    : sidebarControlUi.gridCols
+  const sidebarControlMaxBaseline = useMemo(() => {
+    const customMarginUnits = sidebarControlUi.useCustomMargins
+      ? sidebarControlUi.baselineMultiple * (
+        sidebarControlUi.customMarginMultipliers.top
+        + sidebarControlUi.customMarginMultipliers.bottom
+      )
+      : undefined
+    return getMaxBaseline(
+      sidebarControlResult.pageSizePt.height,
+      sidebarControlUi.marginMethod,
+      sidebarControlUi.baselineMultiple,
+      customMarginUnits,
+    )
+  }, [
+    sidebarControlResult.pageSizePt.height,
+    sidebarControlUi.baselineMultiple,
+    sidebarControlUi.customMarginMultipliers,
+    sidebarControlUi.marginMethod,
+    sidebarControlUi.useCustomMargins,
+  ])
+  const sidebarAvailableBaselineOptions = useMemo(
+    () => BASELINE_OPTIONS.filter((val) => val <= sidebarControlMaxBaseline),
+    [sidebarControlMaxBaseline],
+  )
   const {
     previewUi,
     previewResult,
@@ -1125,12 +1166,9 @@ export default function Home() {
       "previous",
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
 
   const handleSelectNextProjectPage = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1139,12 +1177,9 @@ export default function Home() {
       "next",
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
 
   const handleSelectPreviousProjectPageJump = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1154,12 +1189,9 @@ export default function Home() {
       10,
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
 
   const handleSelectNextProjectPageJump = useCallback(() => {
     const nextPageId = resolveAdjacentProjectPageId(
@@ -1169,12 +1201,9 @@ export default function Home() {
       10,
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
 
   const handleSelectFirstProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
@@ -1183,12 +1212,9 @@ export default function Home() {
       "first",
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
 
   const handleSelectLastProjectPage = useCallback(() => {
     const nextPageId = resolveProjectPageBoundaryId(
@@ -1197,12 +1223,14 @@ export default function Home() {
       "last",
     )
     if (!nextPageId) return
-    setActivePageFocusRequest((current) => ({
-      token: current.token + 1,
-      pageId: nextPageId,
-    }))
+    requestKeyboardPageFocus(nextPageId)
     selectPage(nextPageId)
-  }, [activePageId, projectPages, selectPage])
+  }, [activePageId, projectPages, requestKeyboardPageFocus, selectPage])
+
+  const handleDirectProjectPageSelect = useCallback((pageId: string) => {
+    settleGuiPageNow(pageId)
+    selectPage(pageId)
+  }, [selectPage, settleGuiPageNow])
 
   const handleCommittedLayerOrderChange = useCallback((nextLayerOrder: string[]) => {
     preferCommittedPreviewLayoutRef.current = true
@@ -1762,6 +1790,8 @@ export default function Home() {
       projectPages={projectPages}
       activeProjectPage={activePage}
       activePageId={activePageId}
+      sidebarActiveProjectPage={sidebarActivePage}
+      sidebarActivePageId={sidebarActivePageId}
       activePageFocusRequest={activePageFocusRequest}
       loadedPreviewLayout={loadedPreviewLayout}
       layoutEngine={project.layoutEngine}
@@ -1810,7 +1840,7 @@ export default function Home() {
       onSendSignInCode={sendSignInCode}
       onVerifySignInCode={verifySignInCode}
       onSignOut={signOut}
-      onPageSelect={selectPage}
+      onPageSelect={handleDirectProjectPageSelect}
       onPageAdd={addPage}
       onPageAddWithContent={addPageWithContent}
       onPageFacingToggle={setFacingPageEnabled}
@@ -1863,87 +1893,75 @@ export default function Home() {
       collapsed={collapsed}
       showSectionHelpIcons={showSectionHelpIcons}
       showRolloverInfo={false}
-      interactionsDisabled={showPresetsBrowser}
+      interactionsDisabled={showPresetsBrowser || !sidebarControlsUseLivePage}
       onHelpNavigate={handleSectionHelpNavigate}
       onSectionHeaderClick={handleSectionHeaderClick}
       onSectionHeaderDoubleClick={handleSectionHeaderDoubleClick}
-      canvasRatio={canvasRatio}
+      canvasRatio={sidebarControlUi.canvasRatio}
       onCanvasRatioChange={setCanvasRatio}
       onCanvasRatioPreviewChange={handleCanvasRatioPreviewChange}
-      customRatioWidth={customRatioWidth}
+      customRatioWidth={sidebarControlUi.customRatioWidth}
       onCustomRatioWidthChange={setCustomRatioWidth}
-      customRatioHeight={customRatioHeight}
+      customRatioHeight={sidebarControlUi.customRatioHeight}
       onCustomRatioHeightChange={setCustomRatioHeight}
-      orientation={orientation}
+      orientation={sidebarControlUi.orientation}
       onOrientationChange={setOrientation}
       onOrientationPreviewChange={handleOrientationPreviewChange}
-      rotation={rotation}
+      rotation={sidebarControlUi.rotation}
       onRotationChange={setRotation}
-      customBaseline={customBaseline}
-      availableBaselineOptions={availableBaselineOptions}
+      customBaseline={sidebarControlUi.customBaseline}
+      availableBaselineOptions={sidebarAvailableBaselineOptions}
       onCustomBaselineChange={setCustomBaseline}
-      marginMethod={marginMethod}
+      marginMethod={sidebarControlUi.marginMethod}
       onMarginMethodChange={setMarginMethod}
       onMarginMethodPreviewChange={handleMarginMethodPreviewChange}
-      baselineMultiple={baselineMultiple}
+      baselineMultiple={sidebarControlUi.baselineMultiple}
       onBaselineMultipleChange={setBaselineMultiple}
-      useCustomMargins={useCustomMargins}
+      useCustomMargins={sidebarControlUi.useCustomMargins}
       onUseCustomMarginsChange={setUseCustomMargins}
-      customMarginMultipliers={customMarginMultipliers}
+      customMarginMultipliers={sidebarControlUi.customMarginMultipliers}
       onCustomMarginMultipliersChange={setCustomMarginMultipliers}
-      currentMargins={result.grid.margins}
-      gridUnit={gridUnit}
-      gridCols={effectiveGridCols}
+      currentMargins={sidebarControlResult.grid.margins}
+      gridUnit={sidebarControlGridUnit}
+      gridCols={sidebarControlEffectiveGridCols}
       onGridColsChange={handleEffectiveGridColsChange}
-      gridRows={gridRows}
+      gridRows={sidebarControlUi.gridRows}
       onGridRowsChange={handleGridRowsChange}
-      gutterMultiple={gutterMultiple}
+      gutterMultiple={sidebarControlUi.gutterMultiple}
       onGutterMultipleChange={setGutterMultiple}
-      rhythm={rhythm}
+      rhythm={sidebarControlUi.rhythm}
       onRhythmChange={setRhythm}
       onRhythmPreviewChange={handleRhythmPreviewChange}
-      rhythmRowsEnabled={rhythmRowsEnabled}
+      rhythmRowsEnabled={sidebarControlUi.rhythmRowsEnabled}
       onRhythmRowsEnabledChange={setRhythmRowsEnabled}
-      rhythmRowsDirection={rhythmRowsDirection}
+      rhythmRowsDirection={sidebarControlUi.rhythmRowsDirection}
       onRhythmRowsDirectionChange={setRhythmRowsDirection}
       onRhythmRowsDirectionPreviewChange={handleRhythmRowsDirectionPreviewChange}
-      rhythmColsEnabled={rhythmColsEnabled}
+      rhythmColsEnabled={sidebarControlUi.rhythmColsEnabled}
       onRhythmColsEnabledChange={setRhythmColsEnabled}
-      rhythmColsDirection={rhythmColsDirection}
+      rhythmColsDirection={sidebarControlUi.rhythmColsDirection}
       onRhythmColsDirectionChange={setRhythmColsDirection}
       onRhythmColsDirectionPreviewChange={handleRhythmColsDirectionPreviewChange}
-      typographyScale={typographyScale}
+      typographyScale={sidebarControlUi.typographyScale}
       onTypographyScaleChange={setTypographyScale}
       onTypographyScalePreviewChange={handleTypographyScalePreviewChange}
-      typographyStyles={result.typography.styles}
-      baseFont={baseFont}
+      typographyStyles={sidebarControlResult.typography.styles}
+      baseFont={sidebarControlUi.baseFont}
       onBaseFontChange={setBaseFont}
       onBaseFontPreviewChange={handleBaseFontPreviewChange}
-      colorScheme={imageColorScheme}
+      colorScheme={sidebarControlUi.imageColorScheme}
       onColorSchemeChange={setImageColorScheme}
       onColorSchemePreviewChange={handleColorSchemePreviewChange}
-      canvasBackground={canvasBackground}
+      canvasBackground={sidebarControlUi.canvasBackground}
       onCanvasBackgroundChange={setCanvasBackground}
       onCanvasBackgroundPreviewChange={handleCanvasBackgroundPreviewChange}
       isDarkMode={isDarkUi}
     />
   ), [
-    availableBaselineOptions,
-    baseFont,
-    canvasBackground,
-    canvasRatio,
     collapsed,
-    customBaseline,
-    customMarginMultipliers,
-    customRatioHeight,
-    customRatioWidth,
-    effectiveGridCols,
-    gridRows,
-    gridUnit,
-    gutterMultiple,
     handleBaseFontPreviewChange,
-    handleCanvasRatioPreviewChange,
     handleCanvasBackgroundPreviewChange,
+    handleCanvasRatioPreviewChange,
     handleColorSchemePreviewChange,
     handleEffectiveGridColsChange,
     handleGridRowsChange,
@@ -1956,18 +1974,8 @@ export default function Home() {
     handleSectionHeaderDoubleClick,
     handleSectionHelpNavigate,
     handleTypographyScalePreviewChange,
-    imageColorScheme,
     isDarkUi,
-    marginMethod,
-    orientation,
-    result.grid.margins,
-    result.typography.styles,
-    rhythm,
-    rhythmColsDirection,
-    rhythmColsEnabled,
-    rhythmRowsDirection,
-    rhythmRowsEnabled,
-    rotation,
+    setBaselineMultiple,
     setBaseFont,
     setCanvasBackground,
     setCanvasRatio,
@@ -1987,12 +1995,15 @@ export default function Home() {
     setRotation,
     setTypographyScale,
     setUseCustomMargins,
-    showPresetsBrowser,
     showSectionHelpIcons,
-    typographyScale,
-    useCustomMargins,
-    baselineMultiple,
-    setBaselineMultiple,
+    showPresetsBrowser,
+    sidebarAvailableBaselineOptions,
+    sidebarControlEffectiveGridCols,
+    sidebarControlGridUnit,
+    sidebarControlResult.grid.margins,
+    sidebarControlResult.typography.styles,
+    sidebarControlsUseLivePage,
+    sidebarControlUi,
   ])
 
   if (isSmartphone) {

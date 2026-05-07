@@ -14,6 +14,7 @@ import {
 } from "@/lib/sidebar-card-drag"
 import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { SectionHeaderRow } from "@/components/ui/section-header-row"
+import { PAGE_KEYBOARD_GUI_SETTLE_DELAY_MS } from "@/hooks/useSettledPageKeyboardNavigation"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
@@ -23,7 +24,7 @@ const PAGE_VIRTUALIZATION_THRESHOLD = 80
 const PAGE_VIRTUALIZATION_OVERSCAN = 8
 const DEFAULT_PAGE_CARD_HEIGHT = 50
 const DEFAULT_EXPANDED_PAGE_CARD_HEIGHT = 320
-const KEYBOARD_PAGE_SETTLE_DELAY_MS = 100
+const KEYBOARD_PAGE_SETTLE_DELAY_MS = PAGE_KEYBOARD_GUI_SETTLE_DELAY_MS
 const KEYBOARD_PAGE_EXPAND_DELAY_MS = 500
 const PAGE_HEADER_SCROLL_TOP_OFFSET_PX = 0
 

@@ -29,7 +29,7 @@ import {
 } from "@/lib/pdf-font-registry"
 import { renderSwissGridVectorPdf } from "@/lib/pdf-vector-export"
 import {
-  buildPlannedProjectPageExportSources,
+  buildPlannedProjectPageExportSource,
   type PlannedProjectPageExportSource,
 } from "@/lib/planned-page-export-source"
 import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
@@ -116,6 +116,7 @@ export type ExportEngineOptions = {
 
 const DEFAULT_BLEED_CONFIG: ExportEngineBleedConfig = DEFAULT_EXPORT_BLEED_OPTIONS
 const DEFAULT_EXPORT_PAGE_SET_SIZE = 25
+const PLANNING_PROGRESS_PAGE_INTERVAL = DEFAULT_EXPORT_PAGE_SET_SIZE
 const MAX_BROWSER_EXPORT_WORKERS = 4
 const MAX_EXPORT_PAGE_SET_CACHE_ENTRIES = 48
 const EXPORT_CACHE_KEY_PREVIEW_LENGTH = 48
@@ -151,6 +152,11 @@ async function yieldForMainThreadCancellation(): Promise<void> {
   await new Promise<void>((resolve) => {
     setTimeout(resolve, 0)
   })
+}
+
+async function yieldForBrowserPlanningProgress(): Promise<void> {
+  if (typeof window === "undefined") return
+  await yieldForMainThreadCancellation()
 }
 
 function readPageSetCache<TResult>(
@@ -528,6 +534,51 @@ async function publishPhaseProgress(
   })
 }
 
+function shouldPublishPlanningProgress(
+  completed: number,
+  total: number,
+  shouldLogPage: ExportEngineOptions["shouldLogPage"],
+): boolean {
+  return completed === 1
+    || completed === total
+    || completed % PLANNING_PROGRESS_PAGE_INTERVAL === 0
+    || shouldLogPage?.(completed, total) === true
+}
+
+async function buildPlannedPagesWithProgress(
+  options: ExportEngineOptions,
+  layoutEngine: LayoutEngineContract,
+): Promise<PlannedProjectPageExportSource[]> {
+  const plannedPages: PlannedProjectPageExportSource[] = []
+  const total = options.pages.length
+  const progressFormat = options.formats[0] ?? "pdf"
+
+  for (const [index, source] of options.pages.entries()) {
+    options.assertNotCancelled?.()
+    const planned = buildPlannedProjectPageExportSource(source, layoutEngine)
+    plannedPages.push(planned)
+
+    const completed = index + 1
+    if (options.shouldLogPage?.(completed, total)) {
+      options.onLog?.(`plan pages: ${completed}/${total}`)
+    }
+
+    if (shouldPublishPlanningProgress(completed, total, options.shouldLogPage)) {
+      await publishProgress(options, {
+        format: progressFormat,
+        completedSteps: completed,
+        totalSteps: total,
+        currentPageNumber: options.pageNumbers?.[index] ?? (options.startPageNumber ?? 1) + index,
+        currentLabel: `Planning ${completed}/${total}`,
+        phase: "preparing",
+      })
+      await yieldForBrowserPlanningProgress()
+    }
+  }
+
+  return plannedPages
+}
+
 async function exportPdf(
   options: ExportEngineOptions,
   plannedPages: readonly PlannedProjectPageExportSource[],
@@ -659,14 +710,14 @@ async function exportPdf(
       })
       const completed = index + 1
       if (options.shouldLogPage?.(completed, plannedPages.length)) {
-        options.onLog?.(`pdf: ${completed}/${plannedPages.length} ${page.name || `Page ${completed}`}`)
+        options.onLog?.(`pdf: ${completed}/${plannedPages.length}`)
       }
       await publishProgress(options, {
         format: "pdf",
         completedSteps: completed,
         totalSteps: plannedPages.length,
         currentPageNumber: options.pageNumbers?.[index] ?? completed,
-        currentLabel: page.name || `Page ${completed}`,
+        currentLabel: `Rendering PDF ${completed}/${plannedPages.length}`,
         phase: "rendering",
       })
       if (completed % PDF_CANCEL_CHECK_PAGE_INTERVAL === 0) {
@@ -1218,16 +1269,7 @@ export async function runExportEngine(options: ExportEngineOptions): Promise<Exp
   await publishPhaseProgress(options, options.formats[0] ?? "pdf", `Planning ${options.pages.length} pages`)
   const plannedPages = await record.measure(
     "planning",
-    async () => buildPlannedProjectPageExportSources(
-      options.pages,
-      layoutEngine,
-      (planned, index, total) => {
-        const completed = index + 1
-        if (options.shouldLogPage?.(completed, total)) {
-          options.onLog?.(`plan pages: ${completed}/${total} ${planned.name || `Page ${completed}`}`)
-        }
-      },
-    ),
+    () => buildPlannedPagesWithProgress(options, layoutEngine),
     `pages=${options.pages.length}`,
   )
   options.onLog?.("plan pages: done")

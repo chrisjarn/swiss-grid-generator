@@ -102,6 +102,8 @@ type Props = {
   projectPages: PreviewProjectPage[]
   activeProjectPage: PreviewProjectPage | null
   activePageId: string
+  sidebarActiveProjectPage: PreviewProjectPage | null
+  sidebarActivePageId: string
   activePageFocusRequest?: {
     token: number
     pageId: string | null
@@ -266,6 +268,8 @@ export function PreviewWorkspace({
   projectPages,
   activeProjectPage,
   activePageId,
+  sidebarActiveProjectPage,
+  sidebarActivePageId,
   activePageFocusRequest = { token: 0, pageId: null },
   loadedPreviewLayout,
   layoutEngine,
@@ -775,8 +779,8 @@ export function PreviewWorkspace({
                   >
                     <PagesPanel
                       pages={projectPages}
-                      activePage={activeProjectPage}
-                      activePageId={activePageId}
+                      activePage={sidebarActiveProjectPage}
+                      activePageId={sidebarActivePageId}
                       activePageFocusRequest={activePageFocusRequest}
                       onSelectPage={onPageSelect}
                       onFacingPageToggle={onPageFacingToggle}

@@ -80,6 +80,16 @@ test("idml builder exposes deterministic page-set artifacts for export-engine wo
   assert.match(cliSource, /idmlCompressionLevel/)
 })
 
+test("export CLI defaults to planning-only performance output when no format is passed", () => {
+  const cliSource = readText("scripts/export-project.mjs")
+  assert.match(cliSource, /--format\s+Comma-separated formats: pdf, svg, idml\. Omit to run planning only\./)
+  assert.match(cliSource, /function parseFormats\(value\)[\s\S]*?if \(value === undefined\) return \[\]/)
+  assert.match(cliSource, /const planningOnly = formats\.length === 0/)
+  assert.match(cliSource, /log\(planningOnly \? "mode: planning only" : `formats: \$\{formats\.join\(", "\)\}`\)/)
+  assert.match(cliSource, /if \(!planningOnly\) \{[\s\S]*?await fs\.promises\.mkdir\(outDir/)
+  assert.match(cliSource, /if \(!planningOnly\) \{[\s\S]*?for \(const output of result\.outputs\)/)
+})
+
 test("idml builder separates guides, typography, and placeholders on dedicated layers", () => {
   const source = readText("lib/idml/builder.ts")
   assert.match(source, /const\s+LAYER_PLACEHOLDERS_ID\s*=\s*"sggLayerPlaceholders"/)

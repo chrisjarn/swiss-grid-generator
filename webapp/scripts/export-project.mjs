@@ -72,21 +72,23 @@ function readArgs(argv) {
 function usage() {
   return [
     "Usage:",
+    "  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000",
     "  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --out ../tmp/export-debug",
     "",
     "Options:",
     "  --layout   Path to a Swiss Grid Generator layout JSON.",
     "  --range    1-based page range. Supports comma lists and spans. Default: all pages.",
-    "  --format   Comma-separated formats: pdf, svg, idml. Default: pdf.",
+    "  --format   Comma-separated formats: pdf, svg, idml. Omit to run planning only.",
     `  --bleed-mm Optional vector bleed width in millimeters. Default: ${DEFAULT_EXPORT_BLEED_OPTIONS.widthMm}.`,
     "  --idml-compression-level Optional IDML ZIP compression level 0-9. Default: production fast level.",
-    "  --out      Output directory. Default: ../tmp/export-debug.",
+    "  --out      Output directory for generated formats. Default: ../tmp/export-debug.",
     "  --log-every  Progress interval in pages. Default: 25.",
   ].join("\n")
 }
 
 function parseFormats(value) {
-  const formats = String(value || "pdf")
+  if (value === undefined) return []
+  const formats = String(value)
     .split(",")
     .map((format) => format.trim().toLowerCase())
     .filter(Boolean)
@@ -200,6 +202,7 @@ async function main() {
   }
 
   const formats = parseFormats(args.get("format"))
+  const planningOnly = formats.length === 0
   const pageNumbers = parsePageNumbers(args.get("range"), project.pages.length)
   const logEvery = parsePositiveInteger(args.get("log-every"), DEFAULT_LOG_EVERY)
   const bleed = normalizeExportBleedOptions({
@@ -212,15 +215,17 @@ async function main() {
   const metadata = buildMetadata(project, layoutPath)
   const baseName = normalizeFilenameSegment(metadata.title || path.basename(layoutPath, path.extname(layoutPath)))
   log(`layout: ${layoutPath}`)
-  log(`output: ${outDir}`)
-  log(`formats: ${formats.join(", ")}`)
+  if (!planningOnly) log(`output: ${outDir}`)
+  log(planningOnly ? "mode: planning only" : `formats: ${formats.join(", ")}`)
   log(`bleed: ${bleed.enabled ? `${bleed.widthMm} mm` : "off"}`)
   if (formats.includes("idml")) {
     log(`idml compression: ${idmlCompressionLevel ?? "production default"}`)
   }
   log(`pages: ${pageNumbers.length} selected from ${project.pages.length}`)
 
-  await fs.promises.mkdir(outDir, { recursive: true })
+  if (!planningOnly) {
+    await fs.promises.mkdir(outDir, { recursive: true })
+  }
 
   const totalStartedAt = performance.now()
   const result = await runProjectExport({
@@ -237,32 +242,34 @@ async function main() {
     shouldLogPage: (completed, total) => shouldLogPage(completed, total, logEvery),
   })
 
-  for (const output of result.outputs) {
-    if (output.format === "svg" && output.packaging === "files") {
-      const svgDir = path.join(outDir, output.directoryName)
-      const startedAt = performance.now()
-      await fs.promises.mkdir(svgDir, { recursive: true })
-      for (const file of output.files) {
-        await fs.promises.writeFile(path.join(svgDir, file.filename), file.text, "utf8")
+  if (!planningOnly) {
+    for (const output of result.outputs) {
+      if (output.format === "svg" && output.packaging === "files") {
+        const svgDir = path.join(outDir, output.directoryName)
+        const startedAt = performance.now()
+        await fs.promises.mkdir(svgDir, { recursive: true })
+        for (const file of output.files) {
+          await fs.promises.writeFile(path.join(svgDir, file.filename), file.text, "utf8")
+        }
+        result.timings.push({
+          label: "svg write files",
+          durationMs: performance.now() - startedAt,
+          extra: `files=${output.files.length}`,
+        })
+        log(`svg: done ${svgDir}`)
+        continue
       }
+      const outputPath = path.join(outDir, output.filename)
+      const startedAt = performance.now()
+      await fs.promises.writeFile(outputPath, Buffer.from(output.bytes))
+      const stat = await fs.promises.stat(outputPath)
       result.timings.push({
-        label: "svg write files",
+        label: `${output.format} write`,
         durationMs: performance.now() - startedAt,
-        extra: `files=${output.files.length}`,
+        extra: `size=${(stat.size / 1024 / 1024).toFixed(2)}MB`,
       })
-      log(`svg: done ${svgDir}`)
-      continue
+      log(`${output.format}: done ${outputPath}`)
     }
-    const outputPath = path.join(outDir, output.filename)
-    const startedAt = performance.now()
-    await fs.promises.writeFile(outputPath, Buffer.from(output.bytes))
-    const stat = await fs.promises.stat(outputPath)
-    result.timings.push({
-      label: `${output.format} write`,
-      durationMs: performance.now() - startedAt,
-      extra: `size=${(stat.size / 1024 / 1024).toFixed(2)}MB`,
-    })
-    log(`${output.format}: done ${outputPath}`)
   }
 
   log("performance summary:")
