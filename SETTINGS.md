@@ -147,21 +147,21 @@ Default: `swiss`
 - Settings-panel dropdowns open upward.
 - Font dropdown groups: `Sans-Serif`, `Serif`, `Poster` (same grouping in left panel and popup editor).
 - Available fonts:
-  - Sans-Serif: [Inter](https://fonts.google.com/specimen/Inter), [Work Sans](https://fonts.google.com/specimen/Work+Sans), [Jost](https://fonts.google.com/specimen/Jost), [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Libre Franklin](https://fonts.google.com/specimen/Libre+Franklin)
-  - Serif: [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [Besley](https://fonts.google.com/specimen/Besley)
-  - Poster: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono)
+  - Sans-Serif: [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Inter](https://fonts.google.com/specimen/Inter), [Jost](https://fonts.google.com/specimen/Jost), [Libre Franklin](https://fonts.google.com/specimen/Libre+Franklin), [Work Sans](https://fonts.google.com/specimen/Work+Sans)
+  - Serif: [Besley](https://fonts.google.com/specimen/Besley), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville)
+  - Poster: [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono), [Playfair Display](https://fonts.google.com/specimen/Playfair+Display)
 
 ### Color
 
 - Selects the global base scheme for image placeholders.
-- `Base`: uses a full-width always-open list with palette preview swatches on the right; list items preview live on rollover before click commit.
+- `BASE SCHEME`: uses a full-width always-open list with palette preview swatches on the right; list items preview live on rollover before click commit.
 - `Background`: applies a page background color from the selected scheme using clickable swatches; clicking the active swatch toggles the background off. This setting is stored per page.
 - `Background` swatches preview live on rollover before commit.
 - Available schemes:
   - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#f54123`
   - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`
   - `Fresh Contrast`: `#fef9f7`, `#1aa9bc`, `#457c39`, `#ffeb00`
-- The same selector appears in the image editor Color section and defaults to the current global selection.
+- The text editor and image editor Color controls show the active color swatches first, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
 - Image placeholders can also override swatch color and transparency directly in that Color section.
 
 ## Preview Header

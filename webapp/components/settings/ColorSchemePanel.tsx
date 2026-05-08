@@ -83,10 +83,10 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Base</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>BASE SCHEME</Label>
         <div
           role="listbox"
-          aria-label="Base color scheme"
+          aria-label="Base scheme"
           className={colorSchemeListClassName}
           onMouseLeave={clearColorSchemePreview}
         >

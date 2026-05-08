@@ -1,14 +1,11 @@
 "use client"
 
 import { Label } from "@/components/ui/label"
-import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  TopSelectContent,
-} from "@/components/ui/select"
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 type PreviewItemHandlers = {
   onFocus?: () => void
@@ -27,7 +24,6 @@ type ColorSchemeOption = {
 type Props = {
   schemes: readonly ColorSchemeOption[]
   schemeValue: string
-  onSchemeOpenChange: (open: boolean) => void
   onSchemeValueChange: (value: string) => void
   onSchemeContentPointerLeave: () => void
   getSchemeItemPreviewProps: (value: string) => PreviewItemHandlers
@@ -35,16 +31,12 @@ type Props = {
   selectedColor: string
   onColorSelect: (value: string) => void
   isDarkMode: boolean
-  labelClassName: string
-  triggerClassName?: string
-  selectContentClassName?: string
   ringOffsetClassName?: string
 }
 
 export function EditorColorSchemeControls({
   schemes,
   schemeValue,
-  onSchemeOpenChange,
   onSchemeValueChange,
   onSchemeContentPointerLeave,
   getSchemeItemPreviewProps,
@@ -52,41 +44,12 @@ export function EditorColorSchemeControls({
   selectedColor,
   onColorSelect,
   isDarkMode,
-  labelClassName,
-  triggerClassName,
-  selectContentClassName,
   ringOffsetClassName = "",
 }: Props) {
+  const colorSchemeListClassName = getSettingsOpenListClassName(isDarkMode)
+
   return (
     <>
-      <div className="space-y-2">
-        <LabeledControlRow label={<Label className={labelClassName}>Color Scheme</Label>}>
-        <Select
-          value={schemeValue}
-          onOpenChange={onSchemeOpenChange}
-          onValueChange={onSchemeValueChange}
-        >
-          <SelectTrigger className={triggerClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent
-            className={selectContentClassName}
-            onPointerLeave={onSchemeContentPointerLeave}
-          >
-            {schemes.map((scheme) => (
-              <SelectItem
-                key={scheme.id}
-                value={scheme.id}
-                {...getSchemeItemPreviewProps(scheme.id)}
-              >
-                {scheme.label}
-              </SelectItem>
-            ))}
-          </TopSelectContent>
-        </Select>
-        </LabeledControlRow>
-      </div>
-
       <div className="grid grid-cols-4 gap-2">
         {displayedColors.map((color, index) => {
           const selected = selectedColor.toLowerCase() === color.toLowerCase()
@@ -111,6 +74,56 @@ export function EditorColorSchemeControls({
             </div>
           )
         })}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>BASE SCHEME</Label>
+        <div
+          role="listbox"
+          aria-label="Base scheme"
+          className={colorSchemeListClassName}
+          onMouseLeave={onSchemeContentPointerLeave}
+          onPointerLeave={onSchemeContentPointerLeave}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+              onSchemeContentPointerLeave()
+            }
+          }}
+        >
+          {schemes.map((scheme) => {
+            const previewProps = getSchemeItemPreviewProps(scheme.id)
+            return (
+              <button
+                key={scheme.id}
+                type="button"
+                role="option"
+                aria-selected={schemeValue === scheme.id}
+                className={getSettingsOpenListOptionClassName(isDarkMode, schemeValue === scheme.id)}
+                onFocus={previewProps.onFocus}
+                onMouseEnter={previewProps.onMouseEnter ?? previewProps.onMouseMove}
+                onMouseMove={previewProps.onMouseMove}
+                onPointerEnter={previewProps.onPointerEnter ?? previewProps.onPointerMove}
+                onPointerMove={previewProps.onPointerMove}
+                onClick={() => {
+                  onSchemeValueChange(scheme.id)
+                  onSchemeContentPointerLeave()
+                }}
+              >
+                <span className="min-w-0 truncate">{scheme.label}</span>
+                <span className="ml-auto flex shrink-0 items-center gap-1 pl-3">
+                  {scheme.colors.map((color, index) => (
+                    <span
+                      key={`${scheme.id}-${index}-${color}`}
+                      className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
+                      style={{ backgroundColor: color }}
+                      title={color}
+                    />
+                  ))}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
     </>
   )

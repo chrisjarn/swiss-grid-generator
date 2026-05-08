@@ -453,9 +453,6 @@ export function ImageEditorDialog({
           <EditorColorSchemeControls
             schemes={colorSchemes}
             schemeValue={editorColorScheme}
-            onSchemeOpenChange={(open) => {
-              if (!open) setPreviewColorScheme(null)
-            }}
             onSchemeValueChange={(value) => {
               setEditorColorScheme(value as ImageColorSchemeId)
               setPreviewColorScheme(null)
@@ -469,9 +466,6 @@ export function ImageEditorDialog({
             selectedColor={editorState.draftColor}
             onColorSelect={(color) => setEditorState((prev) => (prev ? { ...prev, draftColor: color } : prev))}
             isDarkMode={isDarkMode}
-            labelClassName={sectionLabelClassName}
-            triggerClassName={triggerClassName}
-            selectContentClassName={tone.selectContent}
             ringOffsetClassName={tone.ringOffset}
           />
 

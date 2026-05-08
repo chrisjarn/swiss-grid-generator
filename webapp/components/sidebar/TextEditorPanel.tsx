@@ -1201,9 +1201,6 @@ export function TextEditorPanel<StyleKey extends string>({
           <EditorColorSchemeControls
             schemes={controls.colorSchemes}
             schemeValue={editorColorScheme}
-            onSchemeOpenChange={(open) => {
-              if (!open) setPreviewColorScheme(null)
-            }}
             onSchemeValueChange={(value) => {
               setEditorColorScheme(value as ImageColorSchemeId)
               setPreviewColorScheme(null)
@@ -1219,9 +1216,6 @@ export function TextEditorPanel<StyleKey extends string>({
               applySelectionTextFormat({ color })
             }}
             isDarkMode={isDarkMode}
-            labelClassName={sectionLabelClassName}
-            triggerClassName={triggerClassName}
-            selectContentClassName={tone.selectContent}
             ringOffsetClassName={tone.ringOffset}
           />
         </EditorSidebarSection>
