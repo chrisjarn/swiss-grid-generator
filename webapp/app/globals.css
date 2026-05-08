@@ -86,4 +86,21 @@
       background-color: #161A22;
     }
   }
+
+  button:has(svg),
+  span:has(> svg) {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  button:has(svg):hover,
+  span:has(> svg):hover {
+    background-color: transparent !important;
+  }
+
+  button[aria-pressed="true"]:has(svg),
+  button[class*="text-white"]:has(svg) {
+    color: var(--swiss-orange) !important;
+  }
 }

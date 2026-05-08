@@ -30,10 +30,18 @@ export function PanelCard({
   children,
 }: Props) {
   const { showHelpIcons, showRolloverInfo, interactionsDisabled, onNavigate } = useSettingsHelpNavigation()
+  const openSectionBackgroundClassName = collapsed
+    ? ""
+    : isDarkMode
+      ? "bg-[#232A35]"
+      : "bg-gray-200"
+  const sectionDividerClassName = isDarkMode
+    ? "border-[#1D232D]"
+    : "border-gray-100"
 
   return (
     <section
-      className={`mb-3 pb-3 pt-4 last:mb-0 last:pb-0 ${
+      className={`-mx-4 border-t-4 px-4 pb-3 pt-4 first:border-t-0 md:-mx-6 md:px-6 ${sectionDividerClassName} ${openSectionBackgroundClassName} ${
         isDarkMode
           ? "text-gray-100"
           : "text-gray-900"
