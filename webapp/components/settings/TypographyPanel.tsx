@@ -1,8 +1,8 @@
-import { memo } from "react"
+import { memo, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { FontSelect } from "@/components/ui/font-select"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
-import { TYPOGRAPHY_SCALE_LABELS } from "@/lib/grid-calculator"
+import { generateTypographyStyles, TYPOGRAPHY_SCALE_LABELS } from "@/lib/grid-calculator"
 import type { GridResult } from "@/lib/grid-calculator"
 import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/lib/config/fonts"
 import type { TypographyScale } from "@/lib/config/defaults"
@@ -35,6 +35,7 @@ type Props = {
   onTypographyScaleChange: (value: TypographyScale) => void
   onTypographyScalePreviewChange?: (value: TypographyScale | null) => void
   typographyStyles: GridResult["typography"]["styles"]
+  gridUnit: number
   baseFont: FontFamily
   onBaseFontChange: (value: FontFamily) => void
   onBaseFontPreviewChange?: (value: FontFamily | null) => void
@@ -49,11 +50,13 @@ export const TypographyPanel = memo(function TypographyPanel({
   onTypographyScaleChange,
   onTypographyScalePreviewChange,
   typographyStyles,
+  gridUnit,
   baseFont,
   onBaseFontChange,
   onBaseFontPreviewChange,
   isDarkMode,
 }: Props) {
+  const [previewTypographyScale, setPreviewTypographyScale] = useState<TypographyScale | null>(null)
   const baseFontSelectPreview = useSelectRolloverPreview<FontFamily>({
     value: baseFont,
     onCommitValue: onBaseFontChange,
@@ -75,15 +78,26 @@ export const TypographyPanel = memo(function TypographyPanel({
       }
   const controlClassName = getSettingsControlClassName(isDarkMode)
   const typographyRhythmListClassName = getSettingsOpenListClassName(isDarkMode)
+  const displayedTypographyStyles = previewTypographyScale
+    ? generateTypographyStyles(1, gridUnit, "A4", previewTypographyScale).styles
+    : typographyStyles
+  const handleTypographyScalePreview = (value: TypographyScale) => {
+    setPreviewTypographyScale(value)
+    onTypographyScalePreviewChange?.(value)
+  }
+  const clearTypographyScalePreview = () => {
+    setPreviewTypographyScale(null)
+    onTypographyScalePreviewChange?.(null)
+  }
 
   const hierarchyRows = PREVIEW_STYLE_OPTIONS
     .filter((option) => option.value !== "fx")
-    .filter((option) => typographyStyles[option.value])
+    .filter((option) => displayedTypographyStyles[option.value])
     .map((option) => ({
       key: option.value,
       label: option.label,
-      size: typographyStyles[option.value].size,
-      leading: typographyStyles[option.value].leading,
+      size: displayedTypographyStyles[option.value].size,
+      leading: displayedTypographyStyles[option.value].leading,
     }))
 
   return (
@@ -118,7 +132,7 @@ export const TypographyPanel = memo(function TypographyPanel({
             role="listbox"
             aria-label="Type rhythm"
             className={typographyRhythmListClassName}
-            onMouseLeave={() => onTypographyScalePreviewChange?.(null)}
+            onMouseLeave={clearTypographyScalePreview}
           >
             {TYPOGRAPHY_SCALE_OPTIONS.map((option) => {
               const displayLabel = splitParentheticalLabel(option.label)
@@ -129,9 +143,9 @@ export const TypographyPanel = memo(function TypographyPanel({
                   role="option"
                   aria-selected={typographyScale === option.value}
                   className={getSettingsOpenListOptionClassName(isDarkMode, typographyScale === option.value)}
-                  onFocus={() => onTypographyScalePreviewChange?.(option.value)}
-                  onBlur={() => onTypographyScalePreviewChange?.(null)}
-                  onMouseEnter={() => onTypographyScalePreviewChange?.(option.value)}
+                  onFocus={() => handleTypographyScalePreview(option.value)}
+                  onBlur={clearTypographyScalePreview}
+                  onMouseEnter={() => handleTypographyScalePreview(option.value)}
                   onClick={() => onTypographyScaleChange(option.value)}
                 >
                   <span className="min-w-0 truncate">{displayLabel.label}</span>

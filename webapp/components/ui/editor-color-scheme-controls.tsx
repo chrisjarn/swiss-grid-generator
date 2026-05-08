@@ -50,30 +50,33 @@ export function EditorColorSchemeControls({
 
   return (
     <>
-      <div className="grid grid-cols-4 gap-2">
-        {displayedColors.map((color, index) => {
-          const selected = selectedColor.toLowerCase() === color.toLowerCase()
-          return (
-            <div
-              key={`${schemeValue}-${index}-${color}`}
-              className="flex flex-col items-start gap-1"
-            >
-              <button
-                type="button"
-                onClick={() => onColorSelect(color)}
-                className={`h-5 w-full rounded-sm border ${
-                  isDarkMode ? "border-gray-700" : "border-gray-200"
-                } ${selected ? `ring-2 ring-gray-500 ring-offset-1 ${ringOffsetClassName}` : ""}`}
-                style={{ backgroundColor: color }}
-                aria-label={`Select ${color}`}
-                title={color}
-              />
-              <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-                {color.toLowerCase()}
-              </span>
-            </div>
-          )
-        })}
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>COLOR</Label>
+        <div className="grid grid-cols-4 gap-2">
+          {displayedColors.map((color, index) => {
+            const selected = selectedColor.toLowerCase() === color.toLowerCase()
+            return (
+              <div
+                key={`${schemeValue}-${index}-${color}`}
+                className="flex flex-col items-start gap-1"
+              >
+                <button
+                  type="button"
+                  onClick={() => onColorSelect(color)}
+                  className={`h-5 w-full rounded-sm border ${
+                    isDarkMode ? "border-gray-700" : "border-gray-200"
+                  } ${selected ? `ring-2 ring-gray-500 ring-offset-1 ${ringOffsetClassName}` : ""}`}
+                  style={{ backgroundColor: color }}
+                  aria-label={`Select ${color}`}
+                  title={color}
+                />
+                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  {color.toLowerCase()}
+                </span>
+              </div>
+            )
+          })}
+        </div>
       </div>
 
       <div className="space-y-1.5">

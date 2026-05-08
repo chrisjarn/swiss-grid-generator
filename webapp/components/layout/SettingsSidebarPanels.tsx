@@ -268,6 +268,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
             onTypographyScaleChange={onTypographyScaleChange}
             onTypographyScalePreviewChange={onTypographyScalePreviewChange}
             typographyStyles={typographyStyles}
+            gridUnit={gridUnit}
             baseFont={baseFont}
             onBaseFontChange={onBaseFontChange}
             onBaseFontPreviewChange={onBaseFontPreviewChange}

@@ -396,14 +396,15 @@ const TYPOGRAPHY_RATIOS_FIFTH: TypographyRatios = {
   display:  { sizeRatio: (10 * P5 ** 4) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
 };
 
-// Fibonacci sizes (A4 baseline reference): 8, 13, 21, 34, 55 pt
+// Fibonacci sizes normalized so 21 maps to the A4 body reference of 10pt.
+const FIBONACCI_BODY_REFERENCE = 21;
 const TYPOGRAPHY_RATIOS_FIBONACCI: TypographyRatios = {
-  fx:       { sizeRatio: 89 / 12,  leadingMult: 8, bodyLines: 8, weight: "Bold" },
-  caption:  { sizeRatio: 8 / 12,   leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
-  body:     { sizeRatio: 13 / 12,  leadingMult: 1, bodyLines: 1, weight: "Regular" },
-  subhead:  { sizeRatio: 21 / 12,  leadingMult: 2, bodyLines: 2, weight: "Regular" },
-  headline: { sizeRatio: 34 / 12,  leadingMult: 3, bodyLines: 3, weight: "Bold" },
-  display:  { sizeRatio: 55 / 12,  leadingMult: 6, bodyLines: 6, weight: "Bold" },
+  fx:       { sizeRatio: (10 * 144 / FIBONACCI_BODY_REFERENCE) / 12,  leadingMult: 8, bodyLines: 8, weight: "Bold" },
+  caption:  { sizeRatio: (10 * 13 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
+  body:     { sizeRatio: 10 / 12,                                      leadingMult: 1, bodyLines: 1, weight: "Regular" },
+  subhead:  { sizeRatio: (10 * 34 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 2, bodyLines: 2, weight: "Regular" },
+  headline: { sizeRatio: (10 * 55 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 3, bodyLines: 3, weight: "Bold" },
+  display:  { sizeRatio: (10 * 89 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
 };
 
 const TYPOGRAPHY_SCALE_MAP: Record<string, TypographyRatios> = {
@@ -417,10 +418,23 @@ const TYPOGRAPHY_SCALE_MAP: Record<string, TypographyRatios> = {
 export const TYPOGRAPHY_SCALE_LABELS: Record<string, string> = {
   swiss: "Swiss (Hand-tuned)",
   golden: "Golden Ratio (φ)",
-  fibonacci: "Fibonacci (8, 13, 21, 34, 55)",
+  fibonacci: "Fibonacci (13, 21, 34, 55, 89)",
   fourth: "Perfect Fourth (4:3 ♪)",
   fifth: "Perfect Fifth (3:2 ♪)",
 };
+
+function resolveTypographyLeadingMultiplier(
+  style: TypographyRatios[string],
+  gridUnit: number,
+  flooredSize: number,
+  typographyScale: string,
+): number {
+  if (typographyScale !== "fibonacci") return style.leadingMult;
+  if (!Number.isFinite(gridUnit) || gridUnit <= 0) return style.leadingMult;
+
+  const minimumBaselineMultiple = Math.ceil(flooredSize / gridUnit);
+  return Math.max(style.leadingMult, minimumBaselineMultiple);
+}
 
 const MARGIN_METHOD_LABELS: Record<number, string> = {
   1: "Progressive (1:2:2:3)",
@@ -635,7 +649,7 @@ function calculateScaleFactor(
   return Math.min(w / a4.width, h / a4.height);
 }
 
-function generateTypographyStyles(
+export function generateTypographyStyles(
   scaleFactor: number,
   gridUnit: number,
   formatName: string,
@@ -647,9 +661,10 @@ function generateTypographyStyles(
   for (const [styleName, style] of Object.entries(ratios)) {
     // Font size = baseline × ratio (proportional across all formats)
     const scaledSize = gridUnit * style.sizeRatio;
-    // Leading = baseline × multiplier (always baseline-aligned)
-    const scaledLeading = gridUnit * style.leadingMult;
     const flooredSize = Math.max(1, Math.floor(scaledSize));
+    const leadingMult = resolveTypographyLeadingMultiplier(style, gridUnit, flooredSize, typographyScale);
+    // Leading = baseline × multiplier (always baseline-aligned)
+    const scaledLeading = gridUnit * leadingMult;
 
     scaledStyles[styleName] = {
       size: flooredSize,
@@ -657,8 +672,8 @@ function generateTypographyStyles(
       weight: style.weight,
       blockItalic: style.blockItalic === true,
       alignment: "Left",
-      baselineMultiplier: style.leadingMult,
-      bodyLines: style.bodyLines,
+      baselineMultiplier: leadingMult,
+      bodyLines: Math.max(style.bodyLines, leadingMult),
     };
   }
 

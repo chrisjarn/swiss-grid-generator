@@ -348,7 +348,7 @@ The hierarchy method selects the **size ratios** used for each style. All leadin
 Available methods:
 - Swiss (Hand-tuned)
 - Golden Ratio (φ)
-- Fibonacci (8, 13, 21, 34, 55)
+- Fibonacci (13, 21, 34, 55, 89)
 - Perfect Fourth (4:3)
 - Perfect Fifth (3:2)
 
@@ -360,7 +360,9 @@ Formulas below are expressed as A4 reference sizes (pt) and converted to ratios 
 | Golden Ratio (φ = 1.618) | 10/φ, 10, 10φ, 10φ^2, 10φ^4, 10φ^5 |
 | Perfect Fourth (P4 = 4/3) | 10/P4, 10, 10P4^2, 10P4^3, 10P4^6, 10P4^7 |
 | Perfect Fifth (P5 = 3/2) | 10/P5, 10, 10P5, 10P5^2, 10P5^4, 10P5^5 |
-| Fibonacci | 8, 13, 21, 34, 55, 89 |
+| Fibonacci | 10×13/21, 10, 10×34/21, 10×55/21, 10×89/21, 10×144/21 |
+
+For the Fibonacci method, the sequence starts at `13` and is normalized so `21` maps to the `10pt` body reference. On the A4 12pt reference grid the resulting floored sizes are `6, 10, 16, 26, 42, 68` for `Caption`, `Body`, `Subhead`, `Headline`, `Display`, and `FX`. Leading is checked after font-size flooring. If a style's baseline-derived leading would be smaller than its font size, the leading multiplier is raised to the next whole baseline multiple.
 
 ### Scaling to Other Formats
 
@@ -376,7 +378,7 @@ Leading is always an integer multiple of the baseline:
 
 ```
 scaledLeading = gridUnit × leadingMult
-baselineMultiplier = leadingMult  // constant per style
+baselineMultiplier = leadingMult
 ```
 
 #### Example: A3 with 16.971pt Baseline (Swiss)

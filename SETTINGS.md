@@ -21,11 +21,13 @@ Current, implementation-accurate reference for all user-facing options and defau
 |---|---|
 | `swiss` | Swiss (Hand-tuned) |
 | `golden` | Golden Ratio (phi) |
-| `fibonacci` | Fibonacci (8, 13, 21, 34, 55) |
+| `fibonacci` | Fibonacci (13, 21, 34, 55, 89) |
 | `fourth` | Perfect Fourth (4:3) |
 | `fifth` | Perfect Fifth (3:2) |
 
 Default: `swiss`
+
+Fibonacci maps the sequence `13, 21, 34, 55, 89` to `Caption`, `Body`, `Subhead`, `Headline`, and `Display`, with `21` normalized to the `10pt` body reference. It promotes leading to the next baseline multiple whenever the initial baseline multiple would be smaller than the font size.
 
 ## Settings Panel (Left)
 
@@ -125,7 +127,7 @@ Default: `swiss`
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
 - `Rhythm` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
-- Hierarchy overview: shows current `size/leading` for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale.
+- Hierarchy overview: shows current `size/leading` for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale, and previews the hovered `Rhythm` preset while the list is active.
 - Swiss on the A4 12pt reference baseline:
   - `Display`: `64pt / 72pt`
   - `Headline`: `30pt / 36pt`
@@ -161,7 +163,7 @@ Default: `swiss`
   - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#f54123`
   - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`
   - `Fresh Contrast`: `#fef9f7`, `#1aa9bc`, `#457c39`, `#ffeb00`
-- The text editor and image editor Color controls show the active color swatches first, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
+- The text editor and image editor Color controls show a `COLOR` headline above the active color swatches, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
 - Image placeholders can also override swatch color and transparency directly in that Color section.
 
 ## Preview Header

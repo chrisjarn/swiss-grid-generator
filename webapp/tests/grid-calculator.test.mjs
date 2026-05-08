@@ -218,6 +218,32 @@ test("typography styles stay baseline-aligned across all scales", () => {
   }
 })
 
+test("fibonacci typography leading is never smaller than font size", () => {
+  const result = generateSwissGrid({
+    format: "A4",
+    orientation: "portrait",
+    marginMethod: 1,
+    gridCols: 6,
+    gridRows: 8,
+    baseline: 12,
+    typographyScale: "fibonacci",
+  })
+
+  for (const [key, style] of Object.entries(result.typography.styles)) {
+    assert.ok(style.leading >= style.size, `fibonacci "${key}" leading should be >= size`)
+  }
+
+  assert.equal(result.typography.styles.caption.size, 6)
+  assert.equal(result.typography.styles.body.size, 10)
+  assert.equal(result.typography.styles.subhead.size, 16)
+  assert.equal(result.typography.styles.headline.size, 26)
+  assert.equal(result.typography.styles.display.size, 42)
+  assert.equal(result.typography.styles.fx.size, 68)
+  assert.equal(result.typography.styles.body.leading, 12)
+  assert.equal(result.typography.styles.body.baselineMultiplier, 1)
+  assert.equal(result.typography.styles.body.bodyLines, 1)
+})
+
 test("non-repetitive rhythm row heights are baseline-aligned per module", () => {
   const rhythms = ["fibonacci", "golden", "fourth", "fifth"]
 
