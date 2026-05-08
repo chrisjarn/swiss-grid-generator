@@ -35,13 +35,11 @@ export function PanelCard({
     : isDarkMode
       ? "bg-[#232A35]"
       : "bg-gray-200"
-  const sectionDividerClassName = isDarkMode
-    ? "border-[#1D232D]"
-    : "border-gray-100"
+  const sectionDividerSpacingClassName = collapsed ? "mt-3" : ""
 
   return (
     <section
-      className={`-mx-4 border-t-4 px-4 pb-3 pt-4 first:border-t-0 md:-mx-6 md:px-6 ${sectionDividerClassName} ${openSectionBackgroundClassName} ${
+      className={`-mx-4 px-4 pb-0 pt-4 md:-mx-6 md:px-6 ${openSectionBackgroundClassName} ${
         isDarkMode
           ? "text-gray-100"
           : "text-gray-900"
@@ -93,6 +91,7 @@ export function PanelCard({
           {children}
         </div>
       )}
+      <hr className={`-mx-4 h-px border-0 bg-[#f3f4f6] md:-mx-6 dark:bg-[#1D232D] ${sectionDividerSpacingClassName}`} />
     </section>
   )
 }
