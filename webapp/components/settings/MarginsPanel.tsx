@@ -1,18 +1,26 @@
 import { memo } from "react"
 import { Label } from "@/components/ui/label"
-import { Select, SelectItem, SelectTrigger, SelectValue, TopSelectContent } from "@/components/ui/select"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { PanelCard } from "@/components/settings/PanelCard"
 import { BASELINE_MULTIPLE_RANGE } from "@/lib/config/defaults"
-import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
 import {
-  getSettingsControlClassName,
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
   getSettingsValueBadgeClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 
 type CustomMarginMultipliers = { top: number; left: number; right: number; bottom: number }
+type MarginMode = "1" | "2" | "3" | "custom"
+
+const MARGIN_METHOD_OPTIONS: Array<{ value: MarginMode; label: string; detail: string | null }> = [
+  { value: "1", label: "Progressive", detail: "1:2:2:3" },
+  { value: "2", label: "Van de Graaf", detail: "2:3:4:6" },
+  { value: "3", label: "Baseline", detail: "1:1:1:1" },
+  { value: "custom", label: "Custom Margins", detail: null },
+]
 
 type Props = {
   collapsed: boolean
@@ -51,10 +59,10 @@ export const MarginsPanel = memo(function MarginsPanel({
   isDarkMode,
 }: Props) {
   const clampCustomMarginMultiplier = (value: number) => Math.max(1, Math.min(9, Math.round(value)))
-  const controlClassName = getSettingsControlClassName(isDarkMode)
   const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+  const marginMethodListClassName = getSettingsOpenListClassName(isDarkMode)
 
-  const handleMarginModeChange = (value: "1" | "2" | "3" | "custom") => {
+  const handleMarginModeChange = (value: MarginMode) => {
     if (value === "custom") {
       const customMarginScale = gridUnit * baselineMultiple
       onCustomMarginMultipliersChange({
@@ -70,12 +78,9 @@ export const MarginsPanel = memo(function MarginsPanel({
     onMarginMethodChange(parseInt(value, 10) as 1 | 2 | 3)
     onUseCustomMarginsChange(false)
   }
-  const marginMethodSelectPreview = useSelectRolloverPreview<"1" | "2" | "3" | "custom">({
-    value: useCustomMargins ? "custom" : marginMethod.toString() as "1" | "2" | "3",
-    onCommitValue: handleMarginModeChange,
-    onPreviewValue: (value) => onMarginMethodPreviewChange?.(value),
-    onPreviewClear: () => onMarginMethodPreviewChange?.(null),
-  })
+  const selectedMarginMode: MarginMode = useCustomMargins
+    ? "custom"
+    : (marginMethod.toString() as "1" | "2" | "3")
 
   const collapsedSummary = useCustomMargins
     ? `Custom ${baselineMultiple.toFixed(1)}x: T${customMarginMultipliers.top}x L${customMarginMultipliers.left}x R${customMarginMultipliers.right}x B${customMarginMultipliers.bottom}x`
@@ -113,22 +118,38 @@ export const MarginsPanel = memo(function MarginsPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Method</Label>}>
-        <Select
-          value={useCustomMargins ? "custom" : marginMethod.toString()}
-          onOpenChange={marginMethodSelectPreview.handleOpenChange}
-          onValueChange={marginMethodSelectPreview.handleValueChange}
+        <LabeledControlRow
+          variant="popup"
+          className="!items-start"
+          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Method</Label>}
         >
-          <SelectTrigger className={controlClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={marginMethodSelectPreview.handleContentPointerLeave}>
-            <SelectItem value="1" {...marginMethodSelectPreview.getItemPreviewProps("1")}>Progressive (1:2:2:3)</SelectItem>
-            <SelectItem value="2" {...marginMethodSelectPreview.getItemPreviewProps("2")}>Van de Graaf (2:3:4:6)</SelectItem>
-            <SelectItem value="3" {...marginMethodSelectPreview.getItemPreviewProps("3")}>Baseline (1:1:1:1)</SelectItem>
-            <SelectItem value="custom" {...marginMethodSelectPreview.getItemPreviewProps("custom")}>Custom Margins</SelectItem>
-          </TopSelectContent>
-        </Select>
+          <div
+            role="listbox"
+            aria-label="Margin method"
+            className={marginMethodListClassName}
+            onMouseLeave={() => onMarginMethodPreviewChange?.(null)}
+          >
+            {MARGIN_METHOD_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={selectedMarginMode === option.value}
+                className={getSettingsOpenListOptionClassName(isDarkMode, selectedMarginMode === option.value)}
+                onFocus={() => onMarginMethodPreviewChange?.(option.value)}
+                onBlur={() => onMarginMethodPreviewChange?.(null)}
+                onMouseEnter={() => onMarginMethodPreviewChange?.(option.value)}
+                onClick={() => handleMarginModeChange(option.value)}
+              >
+                <span className="min-w-0 truncate">{option.label}</span>
+                {option.detail ? (
+                  <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                    {option.detail}
+                  </span>
+                ) : null}
+              </button>
+            ))}
+          </div>
         </LabeledControlRow>
       </div>
 

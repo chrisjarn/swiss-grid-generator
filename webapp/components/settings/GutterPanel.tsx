@@ -20,7 +20,10 @@ import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import {
   getSettingsControlClassName,
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
   getSettingsValueBadgeClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 
@@ -83,12 +86,6 @@ export const GutterPanel = memo(function GutterPanel({
   onRhythmColsDirectionPreviewChange,
   isDarkMode,
 }: Props) {
-  const rhythmSelectPreview = useSelectRolloverPreview<GridRhythm>({
-    value: rhythm,
-    onCommitValue: onRhythmChange,
-    onPreviewValue: (value) => onRhythmPreviewChange?.(value),
-    onPreviewClear: () => onRhythmPreviewChange?.(null),
-  })
   const rowsDirectionSelectPreview = useSelectRolloverPreview<GridRhythmRowsDirection>({
     value: rhythmRowsDirection,
     onCommitValue: onRhythmRowsDirectionChange,
@@ -103,6 +100,7 @@ export const GutterPanel = memo(function GutterPanel({
   })
   const controlClassName = getSettingsControlClassName(isDarkMode)
   const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+  const rhythmListClassName = getSettingsOpenListClassName(isDarkMode)
 
   return (
     <PanelCard
@@ -116,27 +114,33 @@ export const GutterPanel = memo(function GutterPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rhythms</Label>}>
-        <Select
-          value={rhythm}
-          onOpenChange={rhythmSelectPreview.handleOpenChange}
-          onValueChange={rhythmSelectPreview.handleValueChange}
+        <LabeledControlRow
+          variant="popup"
+          className="!items-start"
+          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythms</Label>}
         >
-          <SelectTrigger className={controlClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={rhythmSelectPreview.handleContentPointerLeave}>
+          <div
+            role="listbox"
+            aria-label="Grid rhythm"
+            className={rhythmListClassName}
+            onMouseLeave={() => onRhythmPreviewChange?.(null)}
+          >
             {RHYTHM_OPTIONS.map((option) => (
-              <SelectItem
+              <button
                 key={option.value}
-                value={option.value}
-                {...rhythmSelectPreview.getItemPreviewProps(option.value)}
+                type="button"
+                role="option"
+                aria-selected={rhythm === option.value}
+                className={getSettingsOpenListOptionClassName(isDarkMode, rhythm === option.value)}
+                onFocus={() => onRhythmPreviewChange?.(option.value)}
+                onBlur={() => onRhythmPreviewChange?.(null)}
+                onMouseEnter={() => onRhythmPreviewChange?.(option.value)}
+                onClick={() => onRhythmChange(option.value)}
               >
                 {option.label}
-              </SelectItem>
+              </button>
             ))}
-          </TopSelectContent>
-        </Select>
+          </div>
         </LabeledControlRow>
       </div>
       {rhythm !== "repetitive" ? (

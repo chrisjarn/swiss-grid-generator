@@ -1,12 +1,5 @@
 import { memo } from "react"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  TopSelectContent,
-} from "@/components/ui/select"
 import { FontSelect } from "@/components/ui/font-select"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
 import { TYPOGRAPHY_SCALE_LABELS } from "@/lib/grid-calculator"
@@ -18,6 +11,9 @@ import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
 import {
   getSettingsControlClassName,
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 
@@ -25,6 +21,11 @@ const TYPOGRAPHY_SCALE_OPTIONS: Array<{ value: TypographyScale; label: string }>
   .entries(TYPOGRAPHY_SCALE_LABELS)
   .map(([value, label]) => ({ value: value as TypographyScale, label }))
   .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
+
+function splitParentheticalLabel(label: string): { label: string; detail: string | null } {
+  const match = label.match(/^(.*?)\s+\((.*)\)$/)
+  return match ? { label: match[1], detail: match[2] } : { label, detail: null }
+}
 
 type Props = {
   collapsed: boolean
@@ -53,12 +54,6 @@ export const TypographyPanel = memo(function TypographyPanel({
   onBaseFontPreviewChange,
   isDarkMode,
 }: Props) {
-  const typographyScaleSelectPreview = useSelectRolloverPreview<TypographyScale>({
-    value: typographyScale,
-    onCommitValue: onTypographyScaleChange,
-    onPreviewValue: (value) => onTypographyScalePreviewChange?.(value),
-    onPreviewClear: () => onTypographyScalePreviewChange?.(null),
-  })
   const baseFontSelectPreview = useSelectRolloverPreview<FontFamily>({
     value: baseFont,
     onCommitValue: onBaseFontChange,
@@ -81,6 +76,7 @@ export const TypographyPanel = memo(function TypographyPanel({
         value: "text-gray-700",
       }
   const controlClassName = getSettingsControlClassName(isDarkMode)
+  const typographyRhythmListClassName = getSettingsOpenListClassName(isDarkMode)
 
   const hierarchyRows = PREVIEW_STYLE_OPTIONS
     .filter((option) => option.value !== "fx")
@@ -118,27 +114,41 @@ export const TypographyPanel = memo(function TypographyPanel({
             getItemPreviewProps={(value) => baseFontSelectPreview.getItemPreviewProps(value as FontFamily)}
           />
         </LabeledControlRow>
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rhythm</Label>}>
-          <Select
-            value={typographyScale}
-            onOpenChange={typographyScaleSelectPreview.handleOpenChange}
-            onValueChange={typographyScaleSelectPreview.handleValueChange}
+        <LabeledControlRow
+          variant="popup"
+          className="!items-start"
+          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythm</Label>}
+        >
+          <div
+            role="listbox"
+            aria-label="Type rhythm"
+            className={typographyRhythmListClassName}
+            onMouseLeave={() => onTypographyScalePreviewChange?.(null)}
           >
-            <SelectTrigger className={controlClassName}>
-              <SelectValue />
-            </SelectTrigger>
-            <TopSelectContent onPointerLeave={typographyScaleSelectPreview.handleContentPointerLeave}>
-              {TYPOGRAPHY_SCALE_OPTIONS.map((option) => (
-                <SelectItem
+            {TYPOGRAPHY_SCALE_OPTIONS.map((option) => {
+              const displayLabel = splitParentheticalLabel(option.label)
+              return (
+                <button
                   key={option.value}
-                  value={option.value}
-                  {...typographyScaleSelectPreview.getItemPreviewProps(option.value)}
+                  type="button"
+                  role="option"
+                  aria-selected={typographyScale === option.value}
+                  className={getSettingsOpenListOptionClassName(isDarkMode, typographyScale === option.value)}
+                  onFocus={() => onTypographyScalePreviewChange?.(option.value)}
+                  onBlur={() => onTypographyScalePreviewChange?.(null)}
+                  onMouseEnter={() => onTypographyScalePreviewChange?.(option.value)}
+                  onClick={() => onTypographyScaleChange(option.value)}
                 >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </TopSelectContent>
-          </Select>
+                  <span className="min-w-0 truncate">{displayLabel.label}</span>
+                  {displayLabel.detail ? (
+                    <span className="ml-auto max-w-[58%] shrink-0 truncate pl-3 text-right tabular-nums">
+                      {displayLabel.detail}
+                    </span>
+                  ) : null}
+                </button>
+              )
+            })}
+          </div>
         </LabeledControlRow>
         <div className={`border ${tableTone.frame}`}>
           <div className={`grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-3 px-3 py-2 text-[10px] uppercase tracking-[0.08em] ${tableTone.header}`}>

@@ -124,10 +124,6 @@ function resolveBuiltInDocumentVariableValue(
       return formatDocumentVariableDate(context.now)
     case "time":
       return formatDocumentVariableTime(context.now)
-    case "url": {
-      const resolvedUrl = value?.trim() ?? ""
-      return resolvedUrl.length > 0 ? resolvedUrl : null
-    }
     default:
       return null
   }

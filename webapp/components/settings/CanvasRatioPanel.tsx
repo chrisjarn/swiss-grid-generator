@@ -1,21 +1,21 @@
 import { memo, useCallback, useEffect, useState } from "react"
 import { RectangleHorizontal, RectangleVertical } from "lucide-react"
 import { Label } from "@/components/ui/label"
-import { Select, SelectItem, SelectTrigger, SelectValue, TopSelectContent } from "@/components/ui/select"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import {
-  getSettingsControlClassName,
   getSettingsIconButtonClassName,
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
   getSettingsValueBadgeClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 import {
   CANVAS_RATIOS,
   clampCustomCanvasRatioUnit,
   formatCustomCanvasRatio,
-  getCanvasRatioDecimal,
   getCanvasRatioDisplayLabel,
   type CanvasRatioKey,
 } from "@/lib/grid-calculator"
@@ -77,10 +77,9 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
 
   const ratioLabel = getCanvasRatioDisplayLabel(canvasRatio, customRatioWidth, customRatioHeight)
   const customRatioText = formatCustomCanvasRatio(customRatioWidth, customRatioHeight)
-  const customRatioDecimal = getCanvasRatioDecimal(customRatioWidth, customRatioHeight)
   const inputClassName = getNeutralFormControlClassName(isDarkMode, "h-8 w-full rounded-sm px-2 text-[12px] focus:ring-2 focus:ring-ring focus:ring-offset-2")
-  const controlClassName = getSettingsControlClassName(isDarkMode)
   const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+  const ratioListClassName = getSettingsOpenListClassName(isDarkMode)
 
   const commitCustomRatioWidth = useCallback(() => {
     const parsed = parseCustomRatioUnitInput(customRatioWidthInput)
@@ -108,32 +107,38 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Ratio</Label>}>
-        <Select
-          value={canvasRatio}
-          onOpenChange={(open) => {
-            if (!open) onCanvasRatioPreviewChange?.(null)
-          }}
-          onValueChange={(v: CanvasRatioKey) => onCanvasRatioChange(v)}
+        <LabeledControlRow
+          variant="popup"
+          className="!items-start"
+          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Ratio</Label>}
         >
-          <SelectTrigger className={controlClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={() => onCanvasRatioPreviewChange?.(null)}>
+          <div
+            role="listbox"
+            aria-label="Canvas ratio"
+            className={ratioListClassName}
+            onMouseLeave={() => onCanvasRatioPreviewChange?.(null)}
+          >
             {CANVAS_RATIOS.map((opt) => (
-              <SelectItem
+              <button
                 key={opt.key}
-                value={opt.key}
+                type="button"
+                role="option"
+                aria-selected={canvasRatio === opt.key}
+                className={getSettingsOpenListOptionClassName(isDarkMode, canvasRatio === opt.key)}
                 onFocus={() => onCanvasRatioPreviewChange?.(opt.key)}
-                onPointerMove={() => onCanvasRatioPreviewChange?.(opt.key)}
+                onBlur={() => onCanvasRatioPreviewChange?.(null)}
+                onMouseEnter={() => onCanvasRatioPreviewChange?.(opt.key)}
+                onClick={() => onCanvasRatioChange(opt.key)}
               >
-                {opt.key === "custom"
-                  ? `${opt.label} (${customRatioText} / 1:${customRatioDecimal.toFixed(3)})`
-                  : `${opt.label} (${opt.ratioLabel} / 1:${opt.ratioDecimal.toFixed(3)})`}
-              </SelectItem>
+                <span className="min-w-0 truncate">{opt.label}</span>
+                {opt.key !== "custom" ? (
+                  <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                    {opt.ratioLabel}
+                  </span>
+                ) : null}
+              </button>
             ))}
-          </TopSelectContent>
-        </Select>
+          </div>
         </LabeledControlRow>
       </div>
       {canvasRatio === "custom" ? (

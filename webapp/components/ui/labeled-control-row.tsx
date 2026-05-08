@@ -20,8 +20,8 @@ export function LabeledControlRow({
   controlClassName = "",
 }: Props) {
   const baseClassName = variant === "popup"
-    ? "grid grid-cols-[5.75rem_minmax(0,1fr)] items-center gap-3"
-    : "grid grid-cols-[minmax(0,1fr)_156px] items-center gap-x-3 gap-y-2"
+    ? "grid grid-cols-[5.25rem_minmax(0,1fr)] items-center gap-3"
+    : "grid grid-cols-[minmax(0,1fr)_168px] items-center gap-x-3 gap-y-2"
   const resolvedControlClassName = variant === "popup"
     ? `min-w-0 w-full justify-self-stretch ${controlClassName}`.trim()
     : `min-w-0 ${controlClassName}`.trim()

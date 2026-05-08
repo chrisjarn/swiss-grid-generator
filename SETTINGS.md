@@ -62,7 +62,7 @@ Default: `swiss`
 - `portrait` (default from `default_v001.json`)
 - `landscape`
 - `Orientation` uses direct portrait/landscape icon buttons; hovering previews before click commit
-- `Ratio` dropdown items preview live on rollover before commit
+- `Ratio` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
 
 #### Rotation
 
@@ -97,11 +97,11 @@ Default: `swiss`
 
 #### Custom Margins
 
-- available as the last option in the `Margin Method` dropdown
+- available as the last option in the `Margin Method` always-open dropdown-style list field
 - per-side multipliers (`top,left,right,bottom`): min `1`, max `9`, step `1`
 - selecting `Custom Margins` reveals the four side sliders
 - actual custom margin = `sideMultiplier × baselineMultiple × gridUnit`
-- `Margin Method` dropdown items preview live on rollover before commit
+- `Margin Method` list items preview live on rollover before click commit
 
 ### Grid
 
@@ -109,7 +109,8 @@ Default: `swiss`
 - Rows (`gridRows`): min `1`, max `13`, step `1`, default `6` (from `default_v001.json`)
 - Gutter multiple: min `1.0`, max `4.0`, step `0.5`, default `1.0`
 - Rhythms (`rhythm`): `fibonacci`, `golden`, `fifth`, `fourth`, `repetitive` (default)
-- `Rhythms` and non-repetitive direction dropdown items preview live on rollover before commit
+- `Rhythms` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
+- Non-repetitive direction dropdown items preview live on rollover before commit
 - Non-repetitive rhythm rows:
   - enabled (`rhythmRowsEnabled`): `true|false` (default `true`)
   - direction (`rhythmRowsDirection`): `ltr` (`Left to right`) or `rtl` (`Right to left`) (default `ltr`)
@@ -121,6 +122,7 @@ Default: `swiss`
 
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
+- `Rhythm` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
 - `Steps` table: shows current size and leading for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale.
 - Swiss on the A4 12pt reference baseline:
   - `Display`: `64pt / 72pt`
@@ -137,10 +139,9 @@ Default: `swiss`
   - `<%pages%>` uses the total physical page count across single pages and facing spreads
   - `<%date%>` rendered as local `YYYY-MM-DD`
   - `<%time%>` rendered as local `HH:mm`
-  - `<%url:https://lp45.net%>` resolves to the URL text after `url:`
 - Preview freezes `date` and `time` to the current preview session; PDF/SVG/IDML freeze them to the export run so all pages share one consistent timestamp.
 - In text edit mode, placeholders stay visible as raw tokens in the edited paragraph; outside edit mode they render as live values.
-- `Rhythm` and `Base` dropdown items preview live on rollover before commit.
+- `Base` dropdown items preview live on rollover before commit.
 - Settings-panel dropdowns open upward.
 - Font dropdown groups: `Sans-Serif`, `Serif`, `Poster` (same grouping in left panel and popup editor).
 - Available fonts:
