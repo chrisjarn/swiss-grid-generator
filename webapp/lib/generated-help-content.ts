@@ -412,7 +412,8 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Header actions cover presets, import, save, export, undo/redo, dark mode, smart text zoom, display toggles, Project, help, and cloud account.",
+              "Header actions cover presets, import, save, export, undo/redo, smart text zoom, display toggles, Project, cloud account, and the vertical-more menu.",
+              "The vertical-more menu contains light/dark mode, Help, Feedback, and Legal Notice.",
               "The Project panel can be toggled with `Cmd/Ctrl+Shift+P`."
             ]
           }
@@ -553,7 +554,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`."
+            "text": "The vertical-more menu toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`."
           }
         ],
         "subsections": []
@@ -676,7 +677,7 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "The footer `Feedback` action opens a compact feedback sidebar.",
+              "The vertical-more menu `Feedback` action opens a compact feedback sidebar.",
               "It collects a required email, a required comment, and up to three small screenshots.",
               "The optional log checkbox attaches the recent local cloud activity log for support.",
               "If you are signed in, the account email is used in the form.",
@@ -694,7 +695,7 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "The footer `Legal Notice` action opens the legal notice sidebar.",
+              "The vertical-more menu `Legal Notice` action opens the legal notice sidebar.",
               "It includes provider details, contact, privacy notes, cloud storage notes, feedback handling, user rights, terms of use, and consumer dispute resolution."
             ]
           }

@@ -1,17 +1,14 @@
 import type { MouseEventHandler, ReactNode } from "react"
 import {
-  CircleHelp,
   Download,
   Image,
   LayoutGrid,
   LayoutTemplate,
   Layers3,
-  Moon,
   Redo2,
   Rows3,
   Save,
   SquareDashed,
-  Sun,
   Type,
   Undo2,
   Upload,
@@ -43,7 +40,6 @@ type Args = {
   activeSidebarPanel: SidebarPanel
   showPresetsBrowser: boolean
   hasPreviewLayout: boolean
-  isDarkUi: boolean
   showBaselines: boolean
   showMargins: boolean
   showModules: boolean
@@ -64,7 +60,6 @@ type Args = {
   onOpenExportDialog: () => void
   onUndo: () => void
   onRedo: () => void
-  onToggleDarkMode: MouseEventHandler<HTMLButtonElement>
   onToggleSmartTextZoom: MouseEventHandler<HTMLButtonElement>
   onToggleBaselines: MouseEventHandler<HTMLButtonElement>
   onToggleMargins: MouseEventHandler<HTMLButtonElement>
@@ -72,7 +67,6 @@ type Args = {
   onToggleImagePlaceholders: MouseEventHandler<HTMLButtonElement>
   onToggleTypography: MouseEventHandler<HTMLButtonElement>
   onToggleLayersPanel: MouseEventHandler<HTMLButtonElement>
-  onToggleHelpPanel: MouseEventHandler<HTMLButtonElement>
   onToggleAccountPanel: MouseEventHandler<HTMLButtonElement>
 }
 
@@ -264,26 +258,6 @@ export function useHeaderActions(args: Args) {
   ]
 
   const sidebarGroup: HeaderAction[] = [
-    {
-      key: "dark-mode",
-      ariaLabel: args.isDarkUi ? "Disable dark mode" : "Enable dark mode",
-      tooltip: args.isDarkUi ? "Switch to light UI" : "Switch to dark UI",
-      shortcutId: "toggle_dark_mode",
-      variant: args.isDarkUi ? "default" : "outline",
-      pressed: args.isDarkUi,
-      onClick: args.onToggleDarkMode,
-      icon: args.isDarkUi ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-    },
-    {
-      key: "help",
-      ariaLabel: "Toggle help",
-      tooltip: "Help & reference",
-      shortcutId: "toggle_help_panel",
-      variant: args.activeSidebarPanel === "help" ? "default" : "outline",
-      pressed: args.activeSidebarPanel === "help",
-      onClick: args.onToggleHelpPanel,
-      icon: <CircleHelp className="h-4 w-4" />,
-    },
     {
       key: "account",
       ariaLabel: args.activeSidebarPanel === "account" ? "Hide account panel" : "Show account panel",

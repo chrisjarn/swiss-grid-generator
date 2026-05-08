@@ -78,8 +78,6 @@ import {
 } from "@/lib/cloud-status-indicator"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
-const RELEASE_CHANNEL = (process.env.NEXT_PUBLIC_RELEASE_CHANNEL ?? "prod").toLowerCase()
-const SHOW_BETA_BADGE = RELEASE_CHANNEL === "beta"
 const LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY = "swiss-grid-generator.layout-open-tooltip-cursor"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -1731,7 +1729,6 @@ export default function Home() {
     activeSidebarPanel,
     showPresetsBrowser,
     hasPreviewLayout,
-    isDarkUi,
     showBaselines,
     showMargins,
     showModules,
@@ -1752,7 +1749,6 @@ export default function Home() {
     onOpenExportDialog: exportActions.openExportDialog,
     onUndo: undoAny,
     onRedo: redoAny,
-    onToggleDarkMode: toggleDarkUi,
     onToggleSmartTextZoom: () => setSmartTextZoomEnabled((current) => !current),
     onToggleBaselines: (event) => handleHeaderVisibilityToggle("showBaselines", event),
     onToggleMargins: (event) => handleHeaderVisibilityToggle("showMargins", event),
@@ -1760,19 +1756,15 @@ export default function Home() {
     onToggleImagePlaceholders: (event) => handleHeaderVisibilityToggle("showImagePlaceholders", event),
     onToggleTypography: (event) => handleHeaderVisibilityToggle("showTypography", event),
     onToggleLayersPanel: toggleLayersPanel,
-    onToggleHelpPanel: toggleHelpPanel,
     onToggleAccountPanel: toggleAccountPanel,
   })
 
   const renderLeftPanel = () => (
     <ControlSidebar
-      showBetaBadge={SHOW_BETA_BADGE}
       uiTheme={controlSidebarTheme}
       editorMode={editorSidebarMode}
       onEditorHostChange={setEditorSidebarHost}
       settingsPanels={settingsPanels}
-      onToggleFeedbackPanel={handleToggleFeedbackPanel}
-      onToggleLegalNoticePanel={handleToggleLegalNoticePanel}
     />
   )
 
@@ -1861,6 +1853,10 @@ export default function Home() {
       onProjectTitleChange={handleProjectTitleChange}
       onProjectDescriptionChange={handleProjectDescriptionChange}
       onProjectAuthorChange={handleProjectAuthorChange}
+      onToggleDarkMode={toggleDarkUi}
+      onToggleHelpPanel={toggleHelpPanel}
+      onToggleFeedbackPanel={handleToggleFeedbackPanel}
+      onToggleLegalNoticePanel={handleToggleLegalNoticePanel}
       onPreviewPlansCommit={completeProjectLoadTiming}
       onClearAuthFeedback={clearAuthFeedback}
       onSyncNow={() => syncAllProjects("manual")}

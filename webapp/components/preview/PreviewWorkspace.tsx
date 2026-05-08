@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, Plus, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, MoreVertical, Plus, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
 import { GridPreview } from "@/components/grid-preview"
@@ -141,6 +141,10 @@ type Props = {
   onProjectTitleChange: (nextTitle: string) => void
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
+  onToggleDarkMode: (event: MouseEvent<HTMLButtonElement>) => void
+  onToggleHelpPanel: () => void
+  onToggleFeedbackPanel: () => void
+  onToggleLegalNoticePanel: () => void
   onPreviewPlansCommit?: () => void
   onClearAuthFeedback: () => void
   onSyncNow?: () => Promise<void>
@@ -308,6 +312,10 @@ export function PreviewWorkspace({
   onProjectTitleChange,
   onProjectDescriptionChange,
   onProjectAuthorChange,
+  onToggleDarkMode,
+  onToggleHelpPanel,
+  onToggleFeedbackPanel,
+  onToggleLegalNoticePanel,
   onPreviewPlansCommit,
   onClearAuthFeedback,
   onSyncNow,
@@ -351,9 +359,11 @@ export function PreviewWorkspace({
   const [pageListRequestToken, setPageListRequestToken] = useState(0)
   const [pageAddHovered, setPageAddHovered] = useState(false)
   const [pageAddShiftActive, setPageAddShiftActive] = useState(false)
+  const [supportMenuOpen, setSupportMenuOpen] = useState(false)
   const [pageNumberEditing, setPageNumberEditing] = useState(false)
   const [pageNumberDraft, setPageNumberDraft] = useState("")
   const pageNumberInputRef = useRef<HTMLInputElement | null>(null)
+  const supportMenuRef = useRef<HTMLDivElement | null>(null)
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const panelPreviewHoveredLayerKey = editorMode ? null : previewHoveredLayerKey
@@ -466,6 +476,26 @@ export function PreviewWorkspace({
       window.removeEventListener("keyup", updatePageAddIntent)
     }
   }, [pageAddHovered])
+
+  useEffect(() => {
+    if (!supportMenuOpen) return
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const menuRoot = supportMenuRef.current
+      if (menuRoot?.contains(event.target as Node)) return
+      setSupportMenuOpen(false)
+    }
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setSupportMenuOpen(false)
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown)
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown)
+      document.removeEventListener("keydown", handleKeyDown)
+    }
+  }, [supportMenuOpen])
 
   const activePageNumber = useMemo(() => {
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
@@ -882,6 +912,77 @@ export function PreviewWorkspace({
 
           <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-end">
             {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
+            <div ref={supportMenuRef} className="relative inline-flex h-8 w-8 items-center justify-center">
+              <HeaderIconButton
+                ariaLabel={supportMenuOpen ? "Close support menu" : "Open support menu"}
+                tooltip="More"
+                variant={supportMenuOpen ? "default" : "outline"}
+                aria-pressed={supportMenuOpen}
+                onClick={() => setSupportMenuOpen((current) => !current)}
+                showTooltip
+                isDarkMode={isDarkUi}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </HeaderIconButton>
+              {supportMenuOpen ? (
+                <div
+                  className={`absolute right-0 top-9 z-40 min-w-36 border py-1 text-[11px] shadow-lg ${
+                    isDarkUi
+                      ? "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]"
+                      : "border-gray-200 bg-gray-100 text-gray-700"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-2 text-left transition-colors ${
+                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
+                    }`}
+                    onClick={(event) => {
+                      setSupportMenuOpen(false)
+                      onToggleDarkMode(event)
+                    }}
+                  >
+                    {isDarkUi ? "Light Mode" : "Dark Mode"}
+                  </button>
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-2 text-left transition-colors ${
+                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
+                    }`}
+                    onClick={() => {
+                      setSupportMenuOpen(false)
+                      onToggleHelpPanel()
+                    }}
+                  >
+                    Help
+                  </button>
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-2 text-left transition-colors ${
+                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
+                    }`}
+                    onClick={() => {
+                      setSupportMenuOpen(false)
+                      onToggleFeedbackPanel()
+                    }}
+                  >
+                    Feedback
+                  </button>
+                  <button
+                    type="button"
+                    className={`block w-full px-3 py-2 text-left transition-colors ${
+                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
+                    }`}
+                    onClick={() => {
+                      setSupportMenuOpen(false)
+                      onToggleLegalNoticePanel()
+                    }}
+                  >
+                    Legal Notice
+                  </button>
+                </div>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>

@@ -165,7 +165,8 @@ Global controls and panel behavior.
 ### Application Controls {#help-application-controls-overview} [noindex]
 
 ### Header and Sidebars {#help-sidebars-header}
-- Header actions cover presets, import, save, export, undo/redo, dark mode, smart text zoom, display toggles, Project, help, and cloud account.
+- Header actions cover presets, import, save, export, undo/redo, smart text zoom, display toggles, Project, cloud account, and the vertical-more menu.
+- The vertical-more menu contains light/dark mode, Help, Feedback, and Legal Notice.
 - The Project panel can be toggled with `Cmd/Ctrl+Shift+P`.
 
 ### Help Navigation {#help-help-navigation}
@@ -218,7 +219,7 @@ Reverts the latest history step. Shortcut: `Cmd/Ctrl+Z`.
 Reapplies an undone history step. Shortcut: `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y`.
 
 ### Dark Mode {#help-header-dark-mode}
-Toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`.
+The vertical-more menu toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`.
 
 ### Smart Text Zoom {#help-header-smart-text-zoom}
 Toggles automatic zoom-to-paragraph while text editing. When enabled, entering text edit zooms to the active paragraph, ordinary text/style edits keep the current zoom, geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit returns to full-page fit.
@@ -266,14 +267,14 @@ Shows or hides image placeholders for the open project and its export path. Shor
 - Locked layers stay visible and selectable, and their preview rollover remains available for guides and unlocking, but move, edit, duplicate, delete, and editor retarget/open actions stay disabled until unlocked.
 
 ### Feedback {#help-feedback-panel}
-- The footer `Feedback` action opens a compact feedback sidebar.
+- The vertical-more menu `Feedback` action opens a compact feedback sidebar.
 - It collects a required email, a required comment, and up to three small screenshots.
 - The optional log checkbox attaches the recent local cloud activity log for support.
 - If you are signed in, the account email is used in the form.
 - Submitting feedback stores the message in Supabase.
 
 ### Legal Notice {#help-legal-notice-panel}
-- The footer `Legal Notice` action opens the legal notice sidebar.
+- The vertical-more menu `Legal Notice` action opens the legal notice sidebar.
 - It includes provider details, contact, privacy notes, cloud storage notes, feedback handling, user rights, terms of use, and consumer dispute resolution.
 
 ### Keyboard Shortcuts {#help-shortcuts}

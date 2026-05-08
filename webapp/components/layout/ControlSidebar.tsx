@@ -7,29 +7,20 @@ import { SIDEBAR_PANEL_WIDTH_CLASSNAME } from "@/components/layout/sidebar-panel
 type UiTheme = {
   leftPanel: string
   leftPanelEdit: string
-  subtleBorder: string
-  bodyText: string
-  link: string
 }
 
 type Props = {
-  showBetaBadge: boolean
   uiTheme: UiTheme
   settingsPanels: ReactNode
   editorMode: "text" | "image" | null
   onEditorHostChange: (node: HTMLDivElement | null) => void
-  onToggleFeedbackPanel: () => void
-  onToggleLegalNoticePanel: () => void
 }
 
 export const ControlSidebar = memo(function ControlSidebar({
-  showBetaBadge,
   uiTheme,
   settingsPanels,
   editorMode,
   onEditorHostChange,
-  onToggleFeedbackPanel,
-  onToggleLegalNoticePanel,
 }: Props) {
   return (
     <div
@@ -50,30 +41,6 @@ export const ControlSidebar = memo(function ControlSidebar({
           ) : (
             settingsPanels
           )}
-        </div>
-
-        <div className={`shrink-0 px-4 py-3 text-[11px] md:px-6 ${uiTheme.bodyText}`}>
-          <div className={`flex items-center gap-3 ${showBetaBadge ? "justify-between" : "justify-end"}`}>
-            {showBetaBadge ? (
-              <span className="inline-flex items-center rounded bg-red-600 px-2 py-0.5 font-medium text-white">Beta</span>
-            ) : null}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className={uiTheme.link}
-                onClick={onToggleFeedbackPanel}
-              >
-                Feedback
-              </button>
-              <button
-                type="button"
-                className={uiTheme.link}
-                onClick={onToggleLegalNoticePanel}
-              >
-                Legal Notice
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>

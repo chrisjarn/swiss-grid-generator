@@ -179,6 +179,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 
 The icon header renders as one full-width row above the left settings panel, preview canvas, and right settings panel. The `Smart Text Zoom` through `Project panel` icon group is centered over the preview column. Header icon buttons use the same active/inactive color logic as compact export popup buttons.
 Multi-page layouts show a dark gray page-position line at the very top of the browser; single-page layouts and the presets browser do not show that line, and it has no underlying track color.
+The header renders a vertical-more menu directly after the account icon; the menu contains `Dark Mode`/`Light Mode`, `Help`, `Feedback`, and `Legal Notice`. The former fixed footer in the left settings panel is not rendered.
 
 ### File Actions (icon buttons)
 
@@ -218,14 +219,17 @@ Multi-page layouts show a dark gray page-position line at the very top of the br
 - Divider placement: image placeholders and the Project toggle are separated by a divider
 - Baselines, margins, gutter/modules, typo, and image placeholders stay disabled until a preview layout is available.
 
-### Sidebar Panels (icon selectors)
+### Sidebar Panels And More Menu
 
-- `Dark mode` (moon/sun icon): toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor; positioned immediately to the left of `Help` and `Account`
 - `Layers` (layers icon): opens the right sidebar Project panel
 - `Information` (`i` icon): toggles rollover info/tooltips globally
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar, `Cmd/Ctrl+Shift+I` toggles Information
-- `Help` (`?` icon): opens help/reference panel
 - `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot stays orange
+- `More` (vertical ellipsis icon): opens a submenu with `Dark Mode`/`Light Mode`, `Help`, `Feedback`, and `Legal Notice`
+- `Dark Mode`/`Light Mode`: toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor
+- `Help`: opens help/reference panel
+- `Feedback`: opens the right sidebar feedback panel
+- `Legal Notice`: opens the right sidebar legal notice panel
 - `Presets` (layout-template icon): opens preset thumbnails in the preview area
 - Behavior: only one right sidebar panel can be open at a time; clicking the active panel icon closes that panel.
 - Behavior: while presets are open, the left settings panel and header Project toggle are disabled.
@@ -272,11 +276,9 @@ Multi-page layouts show a dark gray page-position line at the very top of the br
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
 - Editor panels use the section move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state. The left settings panel does not auto-scroll when section headers are toggled.
 
-### Left Footer (always visible)
+### Support And Legal
 
-- `Feedback` link: opens the right sidebar feedback panel.
-- `Legal Notice` link: opens the right sidebar legal notice panel.
-- `Feedback` and `Legal Notice` remain active even while the presets browser is open.
+- `Feedback` and `Legal Notice` live in the header More submenu and remain active even while the presets browser is open.
 - The current app version appears at the end of the Help page.
 
 When `i` is active, header icons show rollover tooltips with a second line for keyboard shortcuts (including Undo/Redo).
