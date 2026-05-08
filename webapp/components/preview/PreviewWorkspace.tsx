@@ -348,13 +348,14 @@ export function PreviewWorkspace({
   const pageNumberInputRef = useRef<HTMLInputElement | null>(null)
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
-  const hoveredLayerKey = previewHoveredLayerKey ?? layerPanelHoveredLayerKey
+  const panelPreviewHoveredLayerKey = editorMode ? null : previewHoveredLayerKey
+  const hoveredLayerKey = panelPreviewHoveredLayerKey ?? layerPanelHoveredLayerKey
   const liveLayerPanelState = {
     baseFont,
     imageColorScheme,
     selectedLayerKey,
     hoveredLayerKey,
-    previewHoveredLayerKey,
+    previewHoveredLayerKey: panelPreviewHoveredLayerKey,
     editingLayerKey: editorMode ? selectedLayerKey : null,
     editorMode,
     previewEditorOpenToken,
@@ -524,24 +525,21 @@ export function PreviewWorkspace({
     onPageSelect(targetPageId)
   }
 
-  const pagesHeadlineLabel = (
+  function requestPageListView() {
+    setPageListRequestToken((current) => current + 1)
+  }
+
+  const pagesSectionHeadlineLabel = (
     <HoverTooltip
       inline
-      label={"Show page list\nClick Page or the list icon to return from a page submenu to the page list."}
+      label={"Show page list\nClick P A G E S to return from a page submenu to the page list."}
       tooltipClassName="w-64 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
       horizontalAlign="start"
     >
-      <button
-        type="button"
-        aria-label="Show pages list"
-        className={`inline-flex items-center gap-1.5 leading-none transition-colors ${
-          isDarkUi ? "hover:text-[#F4F6F8]" : "hover:text-gray-900"
-        }`}
-        onClick={() => setPageListRequestToken((current) => current + 1)}
-      >
+      <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
         <List className="h-3 w-3" strokeWidth={1.9} />
-        <span>Page</span>
-      </button>
+        <span>P A G E S</span>
+      </span>
     </HoverTooltip>
   )
 
@@ -605,9 +603,10 @@ export function PreviewWorkspace({
       )}
     </span>
   )
+  const pageCounterTextClassName = isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"
 
   const pagePositionValue = pageNumberEditing ? (
-    <span className="inline-flex min-w-0 items-center gap-1">
+    <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
       {pageNavigationControlsBefore}
       <input
         ref={pageNumberInputRef}
@@ -632,18 +631,18 @@ export function PreviewWorkspace({
             cancelPageNumberEdit()
           }
         }}
-        className={`h-4 w-9 rounded-sm border px-1 text-right text-[11px] leading-none outline-none ${
+        className={`h-4 w-9 cursor-text rounded-sm border px-1 text-right text-[11px] leading-none outline-none ${
           isDarkUi
             ? "border-[#4A5566] bg-[#232A35] text-[#F4F6F8] focus:border-swiss-orange"
-          : "border-gray-300 bg-white text-gray-900 focus:border-swiss-orange"
+            : "border-gray-300 bg-white text-gray-900 focus:border-swiss-orange"
         }`}
       />
-      <span className="px-1 text-swiss-orange-soft">of</span>
-      <span className={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}>{documentVariablePageCount}</span>
+      <span className="px-1">of</span>
+      <span>{documentVariablePageCount}</span>
       {pageNavigationControlsAfter}
     </span>
   ) : (
-    <span className="inline-flex min-w-0 items-center gap-1">
+    <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
       {pageNavigationControlsBefore}
       <HoverTooltip
         inline
@@ -655,15 +654,15 @@ export function PreviewWorkspace({
           type="button"
           aria-label={`Edit page number, currently ${documentPagePosition} of ${documentVariablePageCount}`}
           onDoubleClick={beginPageNumberEdit}
-          className={`inline-flex min-w-0 items-center leading-none transition-colors ${
+          className={`inline-flex min-w-0 cursor-text items-center leading-none transition-colors ${
             isDarkUi ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
           }`}
         >
           {documentPagePosition}
         </button>
       </HoverTooltip>
-      <span className="px-1 text-swiss-orange-soft">of</span>
-      <span className={isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"}>{documentVariablePageCount}</span>
+      <span className="px-1">of</span>
+      <span>{documentVariablePageCount}</span>
       {pageNavigationControlsAfter}
     </span>
   )
@@ -1076,14 +1075,22 @@ export function PreviewWorkspace({
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mb-2 mt-2 rounded-md pb-1">
+                  <div className="mt-4 rounded-md py-2">
                     <SectionHeaderRow
-                      label={pagesHeadlineLabel}
-                      value={pagePositionValue}
+                      label={pagesSectionHeadlineLabel}
                       labelClassName={uiTheme.sidebarHeading}
-                      valueClassName=""
-                      actions={renderPageAddActions()}
+                      className="cursor-pointer select-none"
+                      onRowClick={requestPageListView}
                     />
+                  </div>
+                  <div className={`mb-2 mt-1 flex min-h-[18px] w-full items-center justify-between gap-2 rounded-md pb-1 text-[12px] font-normal leading-none normal-case tracking-normal ${uiTheme.sidebarBody}`}>
+                    <span className="min-w-0">Page</span>
+                    <span className="inline-flex min-w-0 items-center gap-2">
+                      <span className="min-w-0 truncate text-[11px] font-normal leading-none">
+                        {pagePositionValue}
+                      </span>
+                      {renderPageAddActions()}
+                    </span>
                   </div>
                   <div
                     aria-hidden="true"

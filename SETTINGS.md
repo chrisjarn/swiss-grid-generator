@@ -31,7 +31,7 @@ Default: `swiss`
 
 - Supported dropdown controls preview hovered items live in the page while the menu is open; leaving or closing the menu restores the committed value until you select an option.
 
-### I. Canvas Ratio
+### Canvas Ratio
 
 #### Ratio options
 
@@ -61,7 +61,8 @@ Default: `swiss`
 
 - `portrait` (default from `default_v001.json`)
 - `landscape`
-- `Ratio` and `Orientation` dropdown items preview live on rollover before commit
+- `Orientation` uses direct portrait/landscape icon buttons; hovering previews before click commit
+- `Ratio` dropdown items preview live on rollover before commit
 
 #### Rotation
 
@@ -70,13 +71,13 @@ Default: `swiss`
 - step: `1`
 - default: `0`
 
-### II. Baseline
+### Baseline
 
 - Grid unit options: `6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28, 32, 36, 48, 60, 72`
 - Default baseline in UI: **A4 baseline (12pt)**
 - Dynamic max baseline protection remains active (ensures usable line count)
 
-### III. Margins
+### Margins
 
 #### Margin method
 
@@ -102,7 +103,7 @@ Default: `swiss`
 - actual custom margin = `sideMultiplier × baselineMultiple × gridUnit`
 - `Margin Method` dropdown items preview live on rollover before commit
 
-### IV. Grid
+### Grid
 
 - Columns (`gridCols`): min `1`, max `13`, step `1`, default `3` (from `default_v001.json`)
 - Rows (`gridRows`): min `1`, max `13`, step `1`, default `6` (from `default_v001.json`)
@@ -116,7 +117,7 @@ Default: `swiss`
   - enabled (`rhythmColsEnabled`): `true|false` (default `true`)
   - direction (`rhythmColsDirection`): `ttb` (`Top to Bottom`) or `btt` (`Bottom to top`) (default `ttb`)
 
-### V. Typo
+### Typo
 
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
@@ -147,7 +148,7 @@ Default: `swiss`
   - Serif: [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [Besley](https://fonts.google.com/specimen/Besley)
   - Poster: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono)
 
-### VI. Color
+### Color
 
 - Selects the global base scheme for image placeholders.
 - `Background`: applies a page background color using `None` or any color from the selected scheme; this setting is stored per page.
@@ -184,9 +185,8 @@ Default: `swiss`
 
 ### UI + Preview Controls (icon toggles)
 
-- `Dark mode` (moon/sun icon): toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor
 - `Smart Text Zoom` (zoom icon): enabled by default; when active, entering text edit mode zooms to the active paragraph, ordinary text/style edits keep the current zoom, frame-geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit restores full-page fit
-- Order: dark mode icon appears to the left of Smart Text Zoom, which appears to the left of the display toggles
+- Order: Smart Text Zoom appears to the left of the display toggles
 
 ### Display Options (icon toggles)
 
@@ -202,6 +202,7 @@ Default: `swiss`
 
 ### Sidebar Panels (icon selectors)
 
+- `Dark mode` (moon/sun icon): toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor; positioned immediately to the left of `Help` and `Account`
 - `Layers` (layers icon): opens the right sidebar Project panel
 - `Information` (`i` icon): toggles rollover info/tooltips globally
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar, `Cmd/Ctrl+Shift+I` toggles Information
@@ -217,12 +218,13 @@ Default: `swiss`
 - The compact project-title row shows the real project title plus an edit/close button.
 - Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
 - The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
+- The pages controls sit under a dedicated `P A G E S` section headline above the `Page` row; the headline carries the list icon, and single-clicking the full headline row returns from a page submenu to the page list.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
-- `Page`: the header label and list icon return from an inline page submenu to the page list. The counter shows current physical page and total physical pages; double-clicking the current number opens an inline jump field capped by the total page count.
+- `Page`: the row uses regular sidebar text styling; the counter shows current physical page and total physical pages, and double-clicking the current number opens an inline jump field capped by the total page count.
 - In page list view, single-clicking a page row selects and displays it while keeping the list open. Double-clicking a page row, or clicking its open toggle, opens that page's inline layer list. Page rows can be dragged to reorder and expose rename/delete controls when opened.
 - `+` inserts a clean page after the active page, preserving page settings/layout mode without copied layer content; `Shift` + `+` inserts a full duplicate with content.
 - Page creation is capped at `1000` pages per project.
-- `Facing pages`: one-way control inside an opened page row, positioned above `Layers`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
+- `Facing pages`: one-way control inside an opened page row, positioned above `L A Y E R S`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.
 - Loading or switching to another page keeps the previous preview hidden until the target page snapshot and first final plan commit are complete, so partial intermediate geometry is never shown.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
@@ -232,7 +234,7 @@ Default: `swiss`
 - Newly added pages open automatically.
 - Every page stores its own settings payload plus preview layout state.
 - Project JSON can also carry an optional `tour` block for guided onboarding that steps through pages, layers, help, and editor targets.
-- Expanded page rows show the mixed text/image stack for that page using current `layerOrder`.
+- Expanded page rows show a `L A Y E R S` headline and divider above the mixed text/image stack for that page using current `layerOrder`.
 - Text cards display a single rendered text preview row in the paragraph font and text color.
 - Image cards display a full-width color rectangle instead of the `Image Placeholder` label.
 - Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
@@ -242,9 +244,9 @@ Default: `swiss`
 - Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
 - Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
 - Layer cards include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
-- Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel.
+- Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel. Preview rollover follows matching layer cards only outside edit mode.
 - Deleting from the panel removes the layer from the active page and saved project JSON.
-- `Page` section header single-clicks to show the page list.
+- `P A G E S` section headline single-clicks across the full row to show the page list.
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
 - Left settings and editor panels use one shared move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state.
 
@@ -390,7 +392,7 @@ Editor controls:
 - left sidebar editor that replaces layout settings while edit mode is active
 - text editor sections: `Paragraph`, `Typo`, `Symbols`, `Placeholders`, `Info`
 - image editor sections: `Geometry`, `Color`, `Info`
-- while edit mode is active, preview hover stays visible on other unlocked existing blocks and clicking one retargets the already open editor
+- while edit mode is active, preview hover stays visible on other unlocked existing blocks and clicking one retargets the already open editor; preview hover does not move or highlight Project panel layer cards
 - locked layers still participate in preview rollover for guides and unlocking, but drag, edit, duplicate, delete, and editor retarget/open behavior stay disabled until unlocked from the Project panel
 - the text editor header uses the same user-facing layer label shown in the Project panel instead of the internal paragraph id
 - Paragraph section:

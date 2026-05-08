@@ -16,6 +16,10 @@ import type { TypographyScale } from "@/lib/config/defaults"
 import { PanelCard } from "@/components/settings/PanelCard"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
+import {
+  getSettingsControlClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 const TYPOGRAPHY_SCALE_OPTIONS: Array<{ value: TypographyScale; label: string }> = Object
   .entries(TYPOGRAPHY_SCALE_LABELS)
@@ -76,6 +80,7 @@ export const TypographyPanel = memo(function TypographyPanel({
         label: "text-gray-900",
         value: "text-gray-700",
       }
+  const controlClassName = getSettingsControlClassName(isDarkMode)
 
   const hierarchyRows = PREVIEW_STYLE_OPTIONS
     .filter((option) => option.value !== "fx")
@@ -89,7 +94,7 @@ export const TypographyPanel = memo(function TypographyPanel({
 
   return (
     <PanelCard
-      title="V. Typo"
+      title="T Y P O"
       tooltip="Typography scale, hierarchy table, and base font; hierarchy and font lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${TYPOGRAPHY_SCALE_LABELS[typographyScale]}, ${baseFont}`}
@@ -99,11 +104,12 @@ export const TypographyPanel = memo(function TypographyPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Base</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Base</Label>}>
           <FontSelect
             value={baseFont}
             onValueChange={(value) => baseFontSelectPreview.handleValueChange(value as FontFamily)}
             options={FONT_OPTIONS}
+            triggerClassName={controlClassName}
             renderTriggerValue={baseFont}
             triggerValueStyle={{ fontFamily: getFontFamilyCss(baseFont) }}
             onOpenChange={baseFontSelectPreview.handleOpenChange}
@@ -112,13 +118,13 @@ export const TypographyPanel = memo(function TypographyPanel({
             getItemPreviewProps={(value) => baseFontSelectPreview.getItemPreviewProps(value as FontFamily)}
           />
         </LabeledControlRow>
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Rhythm</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rhythm</Label>}>
           <Select
             value={typographyScale}
             onOpenChange={typographyScaleSelectPreview.handleOpenChange}
             onValueChange={typographyScaleSelectPreview.handleValueChange}
           >
-            <SelectTrigger>
+            <SelectTrigger className={controlClassName}>
               <SelectValue />
             </SelectTrigger>
             <TopSelectContent onPointerLeave={typographyScaleSelectPreview.handleContentPointerLeave}>

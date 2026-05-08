@@ -17,6 +17,10 @@ import {
   type ImageColorSchemeId,
 } from "@/lib/config/color-schemes"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
+import {
+  getSettingsControlClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 const COLOR_SLOT_LABELS = ["Paper", "Light", "Mid", "Dark"] as const
 
@@ -70,10 +74,11 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
     onPreviewValue: (value) => onCanvasBackgroundPreviewChange?.(value),
     onPreviewClear: () => onCanvasBackgroundPreviewChange?.(null),
   })
+  const controlClassName = getSettingsControlClassName(isDarkMode)
 
   return (
     <PanelCard
-      title="VI. Color"
+      title="C O L O R"
       tooltip="Color scheme and page background for image placeholders; scheme and background lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={(
@@ -94,13 +99,13 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Base</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Base</Label>}>
         <Select
           value={colorScheme}
           onOpenChange={colorSchemeSelectPreview.handleOpenChange}
           onValueChange={colorSchemeSelectPreview.handleValueChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className={controlClassName}>
             <SelectValue />
           </SelectTrigger>
           <TopSelectContent onPointerLeave={colorSchemeSelectPreview.handleContentPointerLeave}>
@@ -135,13 +140,13 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
         ))}
       </div>
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Background</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Background</Label>}>
         <Select
           value={backgroundSelectValue}
           onOpenChange={backgroundSelectPreview.handleOpenChange}
           onValueChange={backgroundSelectPreview.handleValueChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className={controlClassName}>
             <SelectValue />
           </SelectTrigger>
           <TopSelectContent onPointerLeave={backgroundSelectPreview.handleContentPointerLeave}>

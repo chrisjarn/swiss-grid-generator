@@ -6,6 +6,11 @@ import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { PanelCard } from "@/components/settings/PanelCard"
 import { BASELINE_MULTIPLE_RANGE } from "@/lib/config/defaults"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
+import {
+  getSettingsControlClassName,
+  getSettingsValueBadgeClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 type CustomMarginMultipliers = { top: number; left: number; right: number; bottom: number }
 
@@ -46,6 +51,8 @@ export const MarginsPanel = memo(function MarginsPanel({
   isDarkMode,
 }: Props) {
   const clampCustomMarginMultiplier = (value: number) => Math.max(1, Math.min(9, Math.round(value)))
+  const controlClassName = getSettingsControlClassName(isDarkMode)
+  const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
 
   const handleMarginModeChange = (value: "1" | "2" | "3" | "custom") => {
     if (value === "custom") {
@@ -78,8 +85,8 @@ export const MarginsPanel = memo(function MarginsPanel({
     <div className="mt-5 space-y-3">
       <hr />
       <div className="flex items-center justify-between">
-        <Label className="text-sm text-gray-600">Baseline Multiple</Label>
-        <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+        <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Baseline Multiple</Label>
+        <span className={valueBadgeClassName}>
           {baselineMultiple.toFixed(1)}×
         </span>
       </div>
@@ -96,7 +103,7 @@ export const MarginsPanel = memo(function MarginsPanel({
 
   return (
     <PanelCard
-      title="III. Margins"
+      title="M A R G I N S"
       tooltip="Margin method dropdown, baseline multiple, and custom per-side controls; margin method previews on rollover"
       collapsed={collapsed}
       collapsedSummary={collapsedSummary}
@@ -106,13 +113,13 @@ export const MarginsPanel = memo(function MarginsPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Method</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Method</Label>}>
         <Select
           value={useCustomMargins ? "custom" : marginMethod.toString()}
           onOpenChange={marginMethodSelectPreview.handleOpenChange}
           onValueChange={marginMethodSelectPreview.handleValueChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className={controlClassName}>
             <SelectValue />
           </SelectTrigger>
           <TopSelectContent onPointerLeave={marginMethodSelectPreview.handleContentPointerLeave}>
@@ -130,8 +137,8 @@ export const MarginsPanel = memo(function MarginsPanel({
           {(["top", "left", "right"] as const).map((side) => (
             <div key={side} className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className="capitalize text-sm text-gray-600">{side}</Label>
-                <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+                <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{side}</Label>
+                <span className={valueBadgeClassName}>
                   {customMarginMultipliers[side]}×
                 </span>
               </div>
@@ -148,8 +155,8 @@ export const MarginsPanel = memo(function MarginsPanel({
           ))}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className="capitalize text-sm text-gray-600">Bottom</Label>
-              <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Bottom</Label>
+              <span className={valueBadgeClassName}>
                 {customMarginMultipliers.bottom}×
               </span>
             </div>

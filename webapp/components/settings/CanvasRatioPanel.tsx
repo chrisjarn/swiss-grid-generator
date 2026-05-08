@@ -1,9 +1,16 @@
 import { memo, useCallback, useEffect, useState } from "react"
+import { RectangleHorizontal, RectangleVertical } from "lucide-react"
 import { Label } from "@/components/ui/label"
 import { Select, SelectItem, SelectTrigger, SelectValue, TopSelectContent } from "@/components/ui/select"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
+import {
+  getSettingsControlClassName,
+  getSettingsIconButtonClassName,
+  getSettingsValueBadgeClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 import {
   CANVAS_RATIOS,
   clampCustomCanvasRatioUnit,
@@ -71,7 +78,9 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
   const ratioLabel = getCanvasRatioDisplayLabel(canvasRatio, customRatioWidth, customRatioHeight)
   const customRatioText = formatCustomCanvasRatio(customRatioWidth, customRatioHeight)
   const customRatioDecimal = getCanvasRatioDecimal(customRatioWidth, customRatioHeight)
-  const inputClassName = getNeutralFormControlClassName(isDarkMode, "w-full rounded-md px-3 py-2 text-sm focus:ring-2 focus:ring-ring focus:ring-offset-2")
+  const inputClassName = getNeutralFormControlClassName(isDarkMode, "h-8 w-full rounded-sm px-2 text-[12px] focus:ring-2 focus:ring-ring focus:ring-offset-2")
+  const controlClassName = getSettingsControlClassName(isDarkMode)
+  const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
 
   const commitCustomRatioWidth = useCallback(() => {
     const parsed = parseCustomRatioUnitInput(customRatioWidthInput)
@@ -89,8 +98,8 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
 
   return (
     <PanelCard
-      title="I. Canvas"
-      tooltip="Ratio preset or custom width:height, orientation, and preview rotation; ratio and orientation lists preview on rollover"
+      title="C A N V A S"
+      tooltip="Ratio preset or custom width:height, orientation, and preview rotation; ratio lists and orientation controls preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${ratioLabel}, ${orientation}, ${rotation}°`}
       onHeaderClick={onHeaderClick}
@@ -99,7 +108,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Ratio</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Ratio</Label>}>
         <Select
           value={canvasRatio}
           onOpenChange={(open) => {
@@ -107,7 +116,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
           }}
           onValueChange={(v: CanvasRatioKey) => onCanvasRatioChange(v)}
         >
-          <SelectTrigger>
+          <SelectTrigger className={controlClassName}>
             <SelectValue />
           </SelectTrigger>
           <TopSelectContent onPointerLeave={() => onCanvasRatioPreviewChange?.(null)}>
@@ -130,14 +139,14 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       {canvasRatio === "custom" ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <Label className="text-sm text-gray-600">Ratio Units</Label>
-            <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+            <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Ratio Units</Label>
+            <span className={valueBadgeClassName}>
               {customRatioText}
             </span>
           </div>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
             <div className="space-y-1">
-              <Label className="text-xs uppercase tracking-[0.08em] text-gray-500">Width</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Width</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -158,7 +167,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
             </div>
             <span className="pb-2 text-sm text-gray-500">:</span>
             <div className="space-y-1">
-              <Label className="text-xs uppercase tracking-[0.08em] text-gray-500">Height</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Height</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -181,40 +190,44 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
         </div>
       ) : null}
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Orientation</Label>}>
-        <Select
-          value={orientation}
-          onOpenChange={(open) => {
-            if (!open) onOrientationPreviewChange?.(null)
-          }}
-          onValueChange={(v: "portrait" | "landscape") => onOrientationChange(v)}
-        >
-          <SelectTrigger>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={() => onOrientationPreviewChange?.(null)}>
-            <SelectItem
-              value="portrait"
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Orientation</Label>}>
+          <div
+            className="grid grid-cols-2 gap-1.5"
+            onMouseLeave={() => onOrientationPreviewChange?.(null)}
+          >
+            <button
+              type="button"
+              aria-label="Portrait orientation"
+              aria-pressed={orientation === "portrait"}
+              title="Portrait"
+              className={getSettingsIconButtonClassName(isDarkMode, orientation === "portrait")}
               onFocus={() => onOrientationPreviewChange?.("portrait")}
-              onPointerMove={() => onOrientationPreviewChange?.("portrait")}
+              onBlur={() => onOrientationPreviewChange?.(null)}
+              onMouseEnter={() => onOrientationPreviewChange?.("portrait")}
+              onClick={() => onOrientationChange("portrait")}
             >
-              Portrait
-            </SelectItem>
-            <SelectItem
-              value="landscape"
+              <RectangleVertical className="h-4 w-4" strokeWidth={1.8} />
+            </button>
+            <button
+              type="button"
+              aria-label="Landscape orientation"
+              aria-pressed={orientation === "landscape"}
+              title="Landscape"
+              className={getSettingsIconButtonClassName(isDarkMode, orientation === "landscape")}
               onFocus={() => onOrientationPreviewChange?.("landscape")}
-              onPointerMove={() => onOrientationPreviewChange?.("landscape")}
+              onBlur={() => onOrientationPreviewChange?.(null)}
+              onMouseEnter={() => onOrientationPreviewChange?.("landscape")}
+              onClick={() => onOrientationChange("landscape")}
             >
-              Landscape
-            </SelectItem>
-          </TopSelectContent>
-        </Select>
+              <RectangleHorizontal className="h-4 w-4" strokeWidth={1.8} />
+            </button>
+          </div>
         </LabeledControlRow>
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-gray-600">Rotation</Label>
-          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">{rotation}°</span>
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rotation</Label>
+          <span className={valueBadgeClassName}>{rotation}°</span>
         </div>
         <DebouncedSlider
           value={[rotation]}

@@ -314,7 +314,7 @@ export function ExportDialog({
           ) : null}
 
           <div className={sectionGridClassName}>
-            <SectionHeaderRow label="Filename" />
+            <Label className={centeredRowLabelClassName}>Filename</Label>
             <input
               type="text"
               value={exportFilenameDraft}
@@ -355,7 +355,7 @@ export function ExportDialog({
           </div>
 
           <div className="grid grid-cols-4 items-start gap-3">
-            <SectionHeaderRow label="Actions" />
+            <Label className={centeredRowLabelClassName}>Actions</Label>
             <Button variant="outline" size="sm" className={`${actionButtonClassName} w-full`} onClick={onClose}>
               Cancel
             </Button>

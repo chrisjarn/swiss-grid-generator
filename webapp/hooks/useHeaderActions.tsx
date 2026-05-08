@@ -165,19 +165,6 @@ export function useHeaderActions(args: Args) {
     {
       type: "action",
       action: {
-        key: "dark-mode",
-        ariaLabel: args.isDarkUi ? "Disable dark mode" : "Enable dark mode",
-        tooltip: args.isDarkUi ? "Switch to light UI" : "Switch to dark UI",
-        shortcutId: "toggle_dark_mode",
-        variant: args.isDarkUi ? "default" : "outline",
-        pressed: args.isDarkUi,
-        onClick: args.onToggleDarkMode,
-        icon: args.isDarkUi ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
-      },
-    },
-    {
-      type: "action",
-      action: {
         key: "smart-text-zoom",
         ariaLabel: args.smartTextZoomEnabled ? "Disable smart text zoom" : "Enable smart text zoom",
         tooltip: "Smart text edit zoom",
@@ -188,7 +175,7 @@ export function useHeaderActions(args: Args) {
         icon: <ZoomIn className="h-4 w-4" />,
       },
     },
-    { type: "divider", key: "divider-darkmode-baselines" },
+    { type: "divider", key: "divider-smart-text-zoom-baselines" },
     {
       type: "action",
       action: {
@@ -277,6 +264,16 @@ export function useHeaderActions(args: Args) {
   ]
 
   const sidebarGroup: HeaderAction[] = [
+    {
+      key: "dark-mode",
+      ariaLabel: args.isDarkUi ? "Disable dark mode" : "Enable dark mode",
+      tooltip: args.isDarkUi ? "Switch to light UI" : "Switch to dark UI",
+      shortcutId: "toggle_dark_mode",
+      variant: args.isDarkUi ? "default" : "outline",
+      pressed: args.isDarkUi,
+      onClick: args.onToggleDarkMode,
+      icon: args.isDarkUi ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />,
+    },
     {
       key: "help",
       ariaLabel: "Toggle help",

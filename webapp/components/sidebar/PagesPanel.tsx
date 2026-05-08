@@ -793,7 +793,11 @@ export function PagesPanel({
                   {isFacingPage ? <Check className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
                 </button>
               </div>
-              <SectionHeaderRow label="Layers" className="mt-3" />
+              <SectionHeaderRow label="L A Y E R S" className="mt-3" />
+              <div
+                aria-hidden="true"
+                className={`mt-2 h-px w-full ${isDarkMode ? "bg-[#313A47]" : "bg-gray-200"}`}
+              />
               <div className="mt-2">
                 <ProjectPageLayersList
                   pageId={page.id}

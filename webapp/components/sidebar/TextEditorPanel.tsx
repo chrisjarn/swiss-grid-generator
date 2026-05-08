@@ -50,7 +50,6 @@ import {
   TEXT_EDITOR_SCROLL_STORAGE_KEY,
   TEXT_EDITOR_SECTIONS_STORAGE_KEY,
 } from "@/lib/editor-panel-persistence"
-import { getTextLayerDisplayName } from "@/lib/layer-display-name"
 import { resolveCustomStyleSeedMetrics } from "@/lib/preview-text-config"
 import { TEXT_SYMBOL_PALETTE_GROUPS } from "@/lib/text-symbol-palette"
 import { useAutoScrollOpenedSection } from "@/hooks/useAutoScrollOpenedSection"
@@ -242,10 +241,6 @@ export function TextEditorPanel<StyleKey extends string>({
     ? controls.styleOptions.find((option) => option.value === selectionStyleKey)?.label ?? selectionStyleKey
     : "Mixed"
   const resolvedFontFamilyForSelection = selectionFontFamily ?? controls.editorState.draftFont
-  const paragraphDisplayName = getTextLayerDisplayName(controls.editorState.draftText)
-  const paragraphHeadingDisplayName = paragraphDisplayName.length > 10
-    ? `${paragraphDisplayName.slice(0, 10)}...`
-    : paragraphDisplayName
 
   useEffect(() => {
     setFxSizeInput(String(controls.editorState.draftFxSize))
@@ -782,14 +777,7 @@ export function TextEditorPanel<StyleKey extends string>({
       >
         <div ref={registerSectionRef("layout")}>
           <EditorSidebarSection
-            title={(
-              <>
-                I. Paragraph{" "}
-                <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
-                  {paragraphHeadingDisplayName}
-                </span>
-              </>
-            )}
+            title="I. Paragraph"
             tooltip="Rows, baselines, columns, alignment, flow, and rotation; geometry dropdowns preview on rollover"
             collapsed={collapsed.layout}
             collapsedSummary={`${controls.editorState.draftRows} rows, ${controls.editorState.draftColumns} cols`}

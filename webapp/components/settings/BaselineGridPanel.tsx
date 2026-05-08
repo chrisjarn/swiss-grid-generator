@@ -2,6 +2,10 @@ import { memo } from "react"
 import { Label } from "@/components/ui/label"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { PanelCard } from "@/components/settings/PanelCard"
+import {
+  getSettingsValueBadgeClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 type Props = {
   collapsed: boolean
@@ -22,9 +26,11 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
   onCustomBaselineChange,
   isDarkMode,
 }: Props) {
+  const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+
   return (
     <PanelCard
-      title="II. Baseline"
+      title="B A S E L I N E"
       tooltip="Baseline unit for grid and typography"
       collapsed={collapsed}
       collapsedSummary={`${customBaseline} pt`}
@@ -36,8 +42,8 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
       {availableBaselineOptions.length > 0 && (
         <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-gray-600">Grid Unit</Label>
-          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Grid Unit</Label>
+          <span className={valueBadgeClassName}>
             {customBaseline} pt
           </span>
           </div>

@@ -18,6 +18,11 @@ import {
 } from "@/lib/config/defaults"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
 import { LabeledControlRow } from "@/components/ui/labeled-control-row"
+import {
+  getSettingsControlClassName,
+  getSettingsValueBadgeClassName,
+  SETTINGS_ROW_LABEL_CLASSNAME,
+} from "@/components/settings/settings-panel-styles"
 
 const RHYTHM_OPTIONS: Array<{ value: GridRhythm; label: string }> = [
   { value: "fibonacci", label: "Fibonacci" },
@@ -96,9 +101,12 @@ export const GutterPanel = memo(function GutterPanel({
     onPreviewValue: (value) => onRhythmColsDirectionPreviewChange?.(value),
     onPreviewClear: () => onRhythmColsDirectionPreviewChange?.(null),
   })
+  const controlClassName = getSettingsControlClassName(isDarkMode)
+  const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+
   return (
     <PanelCard
-      title="IV. Grid"
+      title="G R I D"
       tooltip="Grid columns, rows, gutter multiple, and rhythm controls; rhythm lists preview on rollover"
       collapsed={collapsed}
       collapsedSummary={`${gridCols} cols, ${gridRows} rows, ${gutterMultiple.toFixed(1)}x`}
@@ -108,13 +116,13 @@ export const GutterPanel = memo(function GutterPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow label={<Label className="text-sm text-gray-600">Rhythms</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rhythms</Label>}>
         <Select
           value={rhythm}
           onOpenChange={rhythmSelectPreview.handleOpenChange}
           onValueChange={rhythmSelectPreview.handleValueChange}
         >
-          <SelectTrigger>
+          <SelectTrigger className={controlClassName}>
             <SelectValue />
           </SelectTrigger>
           <TopSelectContent onPointerLeave={rhythmSelectPreview.handleContentPointerLeave}>
@@ -135,7 +143,7 @@ export const GutterPanel = memo(function GutterPanel({
         <div className="space-y-3">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm text-gray-600">Rows</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rows</Label>
               <Switch
                 checked={rhythmRowsEnabled}
                 onCheckedChange={onRhythmRowsEnabledChange}
@@ -149,7 +157,7 @@ export const GutterPanel = memo(function GutterPanel({
               onValueChange={rowsDirectionSelectPreview.handleValueChange}
               disabled={!rhythmRowsEnabled}
             >
-              <SelectTrigger>
+              <SelectTrigger className={controlClassName}>
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent onPointerLeave={rowsDirectionSelectPreview.handleContentPointerLeave}>
@@ -161,7 +169,7 @@ export const GutterPanel = memo(function GutterPanel({
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm text-gray-600">Cols</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Cols</Label>
               <Switch
                 checked={rhythmColsEnabled}
                 onCheckedChange={onRhythmColsEnabledChange}
@@ -175,7 +183,7 @@ export const GutterPanel = memo(function GutterPanel({
               onValueChange={colsDirectionSelectPreview.handleValueChange}
               disabled={!rhythmColsEnabled}
             >
-              <SelectTrigger>
+              <SelectTrigger className={controlClassName}>
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent onPointerLeave={colsDirectionSelectPreview.handleContentPointerLeave}>
@@ -188,8 +196,8 @@ export const GutterPanel = memo(function GutterPanel({
       ) : null}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-gray-600">Columns</Label>
-          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">{gridCols}</span>
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Columns</Label>
+          <span className={valueBadgeClassName}>{gridCols}</span>
         </div>
         <DebouncedSlider
           value={[gridCols]}
@@ -201,8 +209,8 @@ export const GutterPanel = memo(function GutterPanel({
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-gray-600">Rows</Label>
-          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">{gridRows}</span>
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rows</Label>
+          <span className={valueBadgeClassName}>{gridRows}</span>
         </div>
         <DebouncedSlider
           value={[gridRows]}
@@ -215,8 +223,8 @@ export const GutterPanel = memo(function GutterPanel({
       <hr />
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between">
-          <Label className="text-sm text-gray-600">Baseline Multiple</Label>
-          <span className="text-xs font-mono bg-gray-100 px-1.5 py-0.5 rounded dark:bg-gray-800 dark:text-gray-100">
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Baseline Multiple</Label>
+          <span className={valueBadgeClassName}>
             {gutterMultiple}×
           </span>
         </div>
