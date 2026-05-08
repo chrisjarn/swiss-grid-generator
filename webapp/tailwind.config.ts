@@ -57,7 +57,7 @@ const config: Config = {
           foreground: "hsl(var(--card-foreground))",
         },
         "swiss-orange": {
-          DEFAULT: "#f54123",
+          DEFAULT: "#fd8b7b",
           soft: "#fd8b7b",
         },
       },

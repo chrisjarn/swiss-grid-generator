@@ -1764,8 +1764,21 @@ export default function Home() {
     onToggleAccountPanel: toggleAccountPanel,
   })
 
+  const renderLeftPanel = () => (
+    <ControlSidebar
+      showBetaBadge={SHOW_BETA_BADGE}
+      uiTheme={controlSidebarTheme}
+      editorMode={editorSidebarMode}
+      onEditorHostChange={setEditorSidebarHost}
+      settingsPanels={settingsPanels}
+      onToggleFeedbackPanel={handleToggleFeedbackPanel}
+      onToggleLegalNoticePanel={handleToggleLegalNoticePanel}
+    />
+  )
+
   const previewWorkspace = (
     <PreviewWorkspace
+      renderLeftPanel={renderLeftPanel}
       fileGroup={fileGroup}
       displayGroup={displayGroup}
       sidebarGroup={sidebarGroup}
@@ -1827,7 +1840,6 @@ export default function Home() {
         previewContentEdit: uiTheme.previewContentEdit,
         sidebar: uiTheme.sidebar,
         sidebarBody: uiTheme.sidebarBody,
-        sidebarHeading: uiTheme.sidebarHeading,
       }}
       result={previewResult}
       onLoadPreset={handleLoadBrowserPreset}
@@ -2050,17 +2062,7 @@ export default function Home() {
         className="hidden"
         onChange={loadProjectFromInput}
       />
-      <div className={`flex h-screen overflow-hidden flex-col md:flex-row ${uiTheme.root}`}>
-        <ControlSidebar
-          showBetaBadge={SHOW_BETA_BADGE}
-          uiTheme={controlSidebarTheme}
-          editorMode={editorSidebarMode}
-          onEditorHostChange={setEditorSidebarHost}
-          settingsPanels={settingsPanels}
-          onToggleFeedbackPanel={handleToggleFeedbackPanel}
-          onToggleLegalNoticePanel={handleToggleLegalNoticePanel}
-        />
-
+      <div className={`flex h-screen overflow-hidden flex-col ${uiTheme.root}`}>
         {previewWorkspace}
 
         <WorkspaceDialogs

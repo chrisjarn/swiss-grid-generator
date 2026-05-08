@@ -2,6 +2,8 @@
 
 import { memo, type ReactNode } from "react"
 
+import { SIDEBAR_PANEL_WIDTH_CLASSNAME } from "@/components/layout/sidebar-panel-layout"
+
 type UiTheme = {
   leftPanel: string
   leftPanelEdit: string
@@ -32,19 +34,10 @@ export const ControlSidebar = memo(function ControlSidebar({
   return (
     <div
       data-editor-mode-preserve-root="true"
-      className={`w-full md:w-[280px] md:basis-[280px] md:shrink-0 flex max-h-[50vh] flex-col overflow-hidden border-r border-b transition-colors md:max-h-full md:border-b-0 ${uiTheme.leftPanel} ${
+      className={`${SIDEBAR_PANEL_WIDTH_CLASSNAME} flex max-h-[50vh] flex-col overflow-hidden transition-colors md:max-h-full ${uiTheme.leftPanel} ${
         editorMode ? uiTheme.leftPanelEdit : ""
       }`}
     >
-      <div className={`shrink-0 space-y-2 border-b p-4 md:px-6 md:pt-6 ${uiTheme.subtleBorder}`}>
-        <h1 className="text-3xl font-normal leading-[1] tracking-tight">
-          Swiss Grid Generator
-        </h1>
-        <p className={`text-sm ${uiTheme.bodyText}`}>
-          Based on Müller-Brockmann&apos;s <em><a href="https://amzn.to/40kfiUL">Grid Systems in Graphic Design</a></em> (1981).
-        </p>
-      </div>
-
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
           {editorMode ? (
@@ -52,14 +45,14 @@ export const ControlSidebar = memo(function ControlSidebar({
               ref={onEditorHostChange}
               data-editor-sidebar-host="true"
               data-editor-interactive-root="true"
-              className="min-h-0 flex-1 overflow-hidden border-l border-t border-l-swiss-orange-soft border-t-swiss-orange-soft shadow-[inset_1px_0_0_0_var(--swiss-orange-soft),inset_0_1px_0_0_var(--swiss-orange-soft)]"
+              className="min-h-0 flex-1 overflow-hidden"
             />
           ) : (
             settingsPanels
           )}
         </div>
 
-        <div className={`shrink-0 border-t px-4 py-3 text-[11px] md:px-6 ${uiTheme.subtleBorder} ${uiTheme.bodyText}`}>
+        <div className={`shrink-0 px-4 py-3 text-[11px] md:px-6 ${uiTheme.bodyText}`}>
           <div className={`flex items-center gap-3 ${showBetaBadge ? "justify-between" : "justify-end"}`}>
             {showBetaBadge ? (
               <span className="inline-flex items-center rounded bg-red-600 px-2 py-0.5 font-medium text-white">Beta</span>

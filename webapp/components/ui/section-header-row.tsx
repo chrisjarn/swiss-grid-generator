@@ -2,6 +2,8 @@ import type { MouseEvent, ReactNode } from "react"
 
 import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
 
+export const SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME = "!text-gray-700 dark:!text-gray-300"
+
 type SectionHeaderRowProps = {
   label: ReactNode
   value?: ReactNode

@@ -5,7 +5,7 @@ import { ChevronUp } from "lucide-react"
 
 import { HoverTooltip } from "@/components/ui/hover-tooltip"
 import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
-import { SectionHeaderRow } from "@/components/ui/section-header-row"
+import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 
 type Props = {
   title: ReactNode
@@ -36,10 +36,10 @@ export function EditorSidebarSection({
 }: Props) {
   return (
     <section
-      className={`mb-3 border-b pb-3 pt-4 last:mb-0 last:border-b-0 last:pb-0 ${
+      className={`mb-3 pb-3 pt-4 last:mb-0 last:pb-0 ${
         isDarkMode
-          ? "border-[#313A47] text-[#F4F6F8]"
-          : "border-gray-200 text-gray-900"
+          ? "text-[#F4F6F8]"
+          : "text-gray-900"
       }`}
     >
       <HoverTooltip
@@ -59,7 +59,7 @@ export function EditorSidebarSection({
             <h3 className="leading-tight">
               <SectionHeaderRow
                 label={title}
-                labelClassName={collapsed ? "" : "!text-swiss-orange"}
+                labelClassName={collapsed ? SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME : ""}
                 actionIcon={(
                   <ChevronUp
                     className={`h-2 w-2 transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}

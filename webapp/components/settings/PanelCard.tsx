@@ -4,7 +4,7 @@ import type { SectionKey } from "@/hooks/useSettingsHistory"
 import { useSettingsHelpNavigation } from "@/components/settings/help-navigation-context"
 import { ChevronUp } from "lucide-react"
 import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
-import { SectionHeaderRow } from "@/components/ui/section-header-row"
+import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 
 type Props = {
   title: string
@@ -33,10 +33,10 @@ export function PanelCard({
 
   return (
     <section
-      className={`mb-3 border-b pb-3 pt-4 last:mb-0 last:border-b-0 last:pb-0 ${
+      className={`mb-3 pb-3 pt-4 last:mb-0 last:pb-0 ${
         isDarkMode
-          ? "border-gray-700 text-gray-100"
-          : "border-gray-200 text-gray-900"
+          ? "text-gray-100"
+          : "text-gray-900"
       }`}
     >
       <HoverTooltip
@@ -60,7 +60,7 @@ export function PanelCard({
             <h3 className={`leading-tight ${interactionsDisabled ? "opacity-50" : ""}`}>
               <SectionHeaderRow
                 label={title}
-                labelClassName={collapsed || interactionsDisabled ? "" : "!text-swiss-orange"}
+                labelClassName={collapsed || interactionsDisabled ? SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME : ""}
                 actionIcon={(
                   <ChevronUp
                     className={`h-2 w-2 transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}

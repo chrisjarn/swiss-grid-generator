@@ -290,9 +290,6 @@ export function useHeaderActions(args: Args) {
       tooltip: accountTooltip,
       showStatusDot: true,
       statusDotClassName: args.accountStatusDotClassName,
-      buttonClassName: args.activeSidebarPanel === "account"
-        ? "bg-accent text-accent-foreground hover:bg-accent hover:text-accent-foreground"
-        : undefined,
       variant: "outline",
       pressed: args.activeSidebarPanel === "account",
       onClick: args.onToggleAccountPanel,

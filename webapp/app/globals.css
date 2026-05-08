@@ -17,7 +17,7 @@
 
 @layer base {
   :root {
-    --swiss-orange: #f54123;
+    --swiss-orange: #fd8b7b;
     --swiss-orange-soft: #fd8b7b;
     --background: 220 14% 96%;
     --foreground: 222 47% 11%;
@@ -42,7 +42,7 @@
   }
 
   .dark {
-    --swiss-orange: #f54123;
+    --swiss-orange: #fd8b7b;
     --swiss-orange-soft: #fd8b7b;
     --background: 218 22% 15%;
     --foreground: 210 20% 96%;

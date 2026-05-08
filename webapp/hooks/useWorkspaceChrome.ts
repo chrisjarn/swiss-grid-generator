@@ -15,7 +15,6 @@ export type WorkspaceTheme = {
   previewContentEdit: string
   divider: string
   sidebar: string
-  sidebarHeading: string
   sidebarBody: string
 }
 
@@ -33,7 +32,6 @@ const DARK_THEME: WorkspaceTheme = {
   previewContentEdit: "bg-[#161A22]",
   divider: "bg-[#313A47]",
   sidebar: "dark border-[#313A47] bg-[#1D232D] text-[#A8B1BF]",
-  sidebarHeading: "text-swiss-orange-soft",
   sidebarBody: "text-[#8D98AA]",
 }
 
@@ -51,7 +49,6 @@ const LIGHT_THEME: WorkspaceTheme = {
   previewContentEdit: "bg-gray-100",
   divider: "bg-gray-200",
   sidebar: "border-gray-200 bg-gray-100 text-gray-700",
-  sidebarHeading: "text-swiss-orange-soft",
   sidebarBody: "text-gray-600",
 }
 

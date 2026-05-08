@@ -1,6 +1,6 @@
 "use client"
 
-import { memo } from "react"
+import { memo, useRef } from "react"
 
 import { BaselineGridPanel } from "@/components/settings/BaselineGridPanel"
 import { CanvasRatioPanel } from "@/components/settings/CanvasRatioPanel"
@@ -10,7 +10,6 @@ import { MarginsPanel } from "@/components/settings/MarginsPanel"
 import { SettingsHelpNavigationProvider } from "@/components/settings/help-navigation-context"
 import { SidebarSectionScrollFrame } from "@/components/layout/SidebarSectionScrollFrame"
 import { TypographyPanel } from "@/components/settings/TypographyPanel"
-import { useAutoScrollOpenedSection } from "@/hooks/useAutoScrollOpenedSection"
 import type {
   GridRhythm,
   GridRhythmColsDirection,
@@ -170,10 +169,10 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   onCanvasBackgroundPreviewChange,
   isDarkMode,
 }: Props) {
-  const { scrollRootRef, registerSectionRef, bottomSpacerHeight } = useAutoScrollOpenedSection(collapsed)
+  const scrollRootRef = useRef<HTMLDivElement | null>(null)
 
   return (
-    <SidebarSectionScrollFrame bottomSpacerHeight={bottomSpacerHeight} scrollRootRef={scrollRootRef}>
+    <SidebarSectionScrollFrame bottomSpacerHeight={0} scrollRootRef={scrollRootRef}>
       <SettingsHelpNavigationProvider
         value={{
           showHelpIcons: showSectionHelpIcons,
@@ -182,7 +181,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           onNavigate: onHelpNavigate,
         }}
       >
-        <div ref={registerSectionRef("format")}>
+        <div>
           <CanvasRatioPanel
             collapsed={collapsed.format}
             onHeaderClick={onSectionHeaderClick("format")}
@@ -203,7 +202,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div ref={registerSectionRef("baseline")}>
+        <div>
           <BaselineGridPanel
             collapsed={collapsed.baseline}
             onHeaderClick={onSectionHeaderClick("baseline")}
@@ -215,7 +214,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div ref={registerSectionRef("margins")}>
+        <div>
           <MarginsPanel
             collapsed={collapsed.margins}
             onHeaderClick={onSectionHeaderClick("margins")}
@@ -235,7 +234,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div ref={registerSectionRef("gutter")}>
+        <div>
           <GutterPanel
             collapsed={collapsed.gutter}
             onHeaderClick={onSectionHeaderClick("gutter")}
@@ -263,7 +262,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div ref={registerSectionRef("typo")}>
+        <div>
           <TypographyPanel
             collapsed={collapsed.typo}
             onHeaderClick={onSectionHeaderClick("typo")}
@@ -282,7 +281,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div ref={registerSectionRef("color")}>
+        <div>
           <ColorSchemePanel
             collapsed={collapsed.color}
             onHeaderClick={onSectionHeaderClick("color")}

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import type { ButtonProps } from "@/components/ui/button"
 import { HoverTooltip } from "@/components/ui/hover-tooltip"
+import { getCompactActionButtonClassName } from "@/components/ui/popup-styles"
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
 
@@ -12,6 +13,7 @@ type HeaderIconButtonProps = {
   showTooltip?: boolean
   showStatusDot?: boolean
   statusDotClassName?: string
+  isDarkMode?: boolean
 } & Pick<ButtonProps, "variant" | "disabled" | "onClick"> & {
     "aria-pressed"?: boolean
   }
@@ -27,8 +29,11 @@ export function HeaderIconButton({
   showTooltip = true,
   showStatusDot = false,
   statusDotClassName,
+  isDarkMode = false,
   "aria-pressed": ariaPressed,
 }: HeaderIconButtonProps) {
+  const isActive = ariaPressed === true || variant === "default"
+
   return (
     <HoverTooltip
       label={tooltip}
@@ -38,7 +43,11 @@ export function HeaderIconButton({
       <Button
         size="icon"
         variant={variant}
-        className={cn("relative h-8 w-8", buttonClassName)}
+        className={cn(
+          getCompactActionButtonClassName({ isDarkMode, active: isActive }),
+          "relative h-8 w-8 rounded-sm p-0",
+          buttonClassName,
+        )}
         aria-label={ariaLabel}
         aria-pressed={ariaPressed}
         disabled={disabled}

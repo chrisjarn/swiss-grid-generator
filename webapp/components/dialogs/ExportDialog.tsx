@@ -305,7 +305,7 @@ export function ExportDialog({
                 className={cn(
                   compactInputClassName,
                   "col-span-3",
-                  isRangeInvalid ? "border-[#f54123] ring-1 ring-[#f54123]" : "",
+                  isRangeInvalid ? "border-[#fd8b7b] ring-1 ring-[#fd8b7b]" : "",
                 )}
                 placeholder="1-5;7;25;550-650"
                 aria-invalid={isRangeInvalid}

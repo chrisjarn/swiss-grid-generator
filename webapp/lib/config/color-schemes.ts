@@ -49,7 +49,7 @@ export const IMAGE_COLOR_SCHEMES = [
   {
     id: "swiss-modern",
     label: "Swiss Modern",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#f54123"]),
+    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#fd8b7b"]),
   },
   {
     id: "stone-cyan",

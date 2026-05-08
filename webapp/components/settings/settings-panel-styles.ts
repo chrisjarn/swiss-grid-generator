@@ -1,8 +1,9 @@
 import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
 import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
+import { SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 
-export const SETTINGS_ROW_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} flex h-8 items-center text-left leading-none`
-export const SETTINGS_OPEN_LIST_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} flex h-7 items-center text-left leading-none`
+export const SETTINGS_ROW_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} ${SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME} flex h-8 items-center text-left leading-none`
+export const SETTINGS_OPEN_LIST_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} ${SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME} flex h-7 items-center text-left leading-none`
 
 export function getSettingsControlClassName(isDarkMode: boolean, className = "") {
   return getNeutralFormControlClassName(

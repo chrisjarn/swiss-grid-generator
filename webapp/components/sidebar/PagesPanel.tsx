@@ -13,7 +13,7 @@ import {
   lockDocumentUserSelect,
 } from "@/lib/sidebar-card-drag"
 import { getNeutralFormControlClassName } from "@/components/ui/popup-styles"
-import { SectionHeaderRow } from "@/components/ui/section-header-row"
+import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
@@ -102,9 +102,13 @@ export function PagesPanel({
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null)
   const [previewHoverFocusToken, setPreviewHoverFocusToken] = useState(0)
   const [manualExpandedPageId, setManualExpandedPageId] = useState<string | null>(null)
-  const [transientExpandedPageId, setTransientExpandedPageId] = useState<string | null>(activePageId)
-  const [transientExpandedReason, setTransientExpandedReason] = useState<TransientExpandedReason | null>("page-navigation")
-  const [forcePageListView, setForcePageListView] = useState(false)
+  const [transientExpandedPageId, setTransientExpandedPageId] = useState<string | null>(() => (
+    pages.length <= 1 ? activePageId : null
+  ))
+  const [transientExpandedReason, setTransientExpandedReason] = useState<TransientExpandedReason | null>(() => (
+    pages.length <= 1 ? "page-navigation" : null
+  ))
+  const [forcePageListView, setForcePageListView] = useState(() => pages.length > 1)
   const [deferredPreviewHoveredLayerKey, setDeferredPreviewHoveredLayerKey] = useState<string | null>(null)
   const [scrollViewport, setScrollViewport] = useState({ top: 0, height: 0 })
   const [measuredPageHeights, setMeasuredPageHeights] = useState<Record<string, number>>({})
@@ -402,13 +406,13 @@ export function PagesPanel({
 
   const tone = isDarkMode
     ? {
-        row: "border-[#313A47] text-[#F4F6F8] hover:bg-[#232A35]",
+        row: "text-[#F4F6F8] hover:bg-[#232A35]",
         rowMuted: "text-[#8D98AA]",
         close: "text-[#A8B1BF] hover:bg-[#232A35] hover:text-[#F4F6F8]",
         accent: "text-swiss-orange-soft",
       }
     : {
-        row: "border-gray-200 text-gray-900 hover:bg-gray-100",
+        row: "text-gray-900 hover:bg-gray-100",
         rowMuted: "text-gray-500",
         close: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
         accent: "text-swiss-orange",
@@ -672,7 +676,7 @@ export function PagesPanel({
             onSelectPage(page.id)
             openPageSubmenu(page.id)
           }}
-          className={`flex min-h-[50px] flex-col border-b text-xs leading-snug transition-colors ${tone.row} ${
+          className={`flex min-h-[50px] flex-col text-xs leading-snug transition-colors ${tone.row} ${
             draggingPageId === page.id
               ? "opacity-45"
               : ""
@@ -793,10 +797,10 @@ export function PagesPanel({
                   {isFacingPage ? <Check className="h-3.5 w-3.5" /> : <Square className="h-3.5 w-3.5" />}
                 </button>
               </div>
-              <SectionHeaderRow label="L A Y E R S" className="mt-3" />
-              <div
-                aria-hidden="true"
-                className={`mt-2 h-px w-full ${isDarkMode ? "bg-[#313A47]" : "bg-gray-200"}`}
+              <SectionHeaderRow
+                label="L A Y E R S"
+                className="mt-3"
+                labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
               />
               <div className="mt-2">
                 <ProjectPageLayersList

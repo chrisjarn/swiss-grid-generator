@@ -262,13 +262,13 @@ export function ProjectPageLayersList({
 
   const tone = isDarkMode
     ? {
-        row: "border-[#313A47] text-[#F4F6F8]",
+        row: "text-[#F4F6F8]",
         rowMuted: "text-[#8D98AA]",
         rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-[#8D98AA]",
       }
     : {
-        row: "border-gray-200 text-gray-900",
+        row: "text-gray-900",
         rowMuted: "text-gray-500",
         rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-gray-500",
@@ -375,7 +375,7 @@ export function ProjectPageLayersList({
       >
         {renderDropMarker(0)}
       </div>
-      {visibleThumbs.map((thumb, index) => {
+      {visibleThumbs.map((thumb) => {
         const isSelected = selectedLayerKey === thumb.key
         const isHovered = isActivePage && hoveredLayerKey === thumb.key
         const isEditing = editingLayerKey === thumb.key
@@ -435,11 +435,11 @@ export function ProjectPageLayersList({
                 if (!allowLayerInteractions) return
                 onToggleEditor(thumb.key)
               }}
-              className={`relative border-t px-0 py-2 text-xs leading-snug transition-colors ${
+              className={`relative px-0 py-2 text-xs leading-snug transition-colors ${
                 draggingKey === thumb.key
                   ? `${tone.row} cursor-grabbing opacity-45`
                   : `${tone.row} ${tone.rowHover}`
-              } ${index === 0 ? "border-t-0" : ""} ${
+              } ${
                 previewHighlightClassName
               } ${
                 editingHighlightClassName

@@ -32,6 +32,11 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 
 ## Settings Panel (Left)
 
+- The left panel begins directly with the parameter sections; the former title/reference block is not rendered in the panel layout.
+- The left settings panel and right Project panel use the same shared width (`280px` on desktop, full width on mobile), side gutters, and top inset rhythm.
+- The left panel does not auto-scroll or reposition when section headers are toggled.
+- Preset browser mode hides the left settings panel.
+- Section headlines use the shared spaced-uppercase headline style; opened section headlines use Swiss orange soft, while collapsed section headlines and left-panel parameter labels use neutral gray.
 - Supported dropdown controls preview hovered items live in the page while the menu is open; leaving or closing the menu restores the committed value until you select an option.
 - Always-open dropdown-style list fields use a full-width option list with the parameter name as a headline above it.
 
@@ -162,13 +167,16 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - `Background`: applies a page background color from the selected scheme using clickable swatches; clicking the active swatch toggles the background off. This setting is stored per page.
 - `Background` swatches preview live on rollover before commit.
 - Available schemes:
-  - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#f54123`
+  - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#fd8b7b`
   - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`
   - `Fresh Contrast`: `#fef9f7`, `#1aa9bc`, `#457c39`, `#ffeb00`
 - The text editor and image editor Color controls show a `COLOR` headline above the active color swatches, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
 - Image placeholders can also override swatch color and transparency directly in that Color section.
 
 ## Preview Header
+
+The icon header renders as one full-width row above the left settings panel, preview canvas, and right settings panel. The `Smart Text Zoom` through `Project panel` icon group is centered over the preview column. Header icon buttons use the same active/inactive color logic as compact export popup buttons.
+Multi-page layouts show a dark gray page-position line at the very top of the browser; single-page layouts and the presets browser do not show that line, and it has no underlying track color.
 
 ### File Actions (icon buttons)
 
@@ -223,13 +231,17 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 ### Project Panel
 
 - `Title`: editable project title; also drives the default project JSON filename stem.
+- Project panel section headlines use the same neutral gray as the shared inactive section-header style.
+- The Project panel uses the same shared width (`280px` on desktop, full width on mobile), side gutters, and top inset rhythm as the left settings panel.
 - The compact project-title row shows the real project title plus an edit/close button.
 - Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
 - The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
-- The pages controls sit under a dedicated `P A G E S` section headline above the `Page` row; the headline carries the list icon, and single-clicking the full headline row returns from a page submenu to the page list.
+- The pages controls sit under a dedicated `P A G E S` section headline above the `Page` row; the headline carries the list icon, and single-clicking the full headline row returns from a page submenu to the page list. When the project contains only one page, this headline becomes `P A G E`, the `+` page action moves into the headline, and the separate `Page` navigation row is hidden.
 - Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
 - `Page`: the row uses regular sidebar text styling; the counter shows current physical page and total physical pages, and double-clicking the current number opens an inline jump field capped by the total page count.
+- Page navigation chevrons are grouped tightly as `<<`/`<` and `>`/`>>` pairs.
 - In page list view, single-clicking a page row selects and displays it while keeping the list open. Double-clicking a page row, or clicking its open toggle, opens that page's inline layer list. Page rows can be dragged to reorder and expose rename/delete controls when opened.
+- Opening the Project panel for a layout with more than one page starts in page list view.
 - `+` inserts a clean page after the active page, preserving page settings/layout mode without copied layer content; `Shift` + `+` inserts a full duplicate with content.
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `L A Y E R S`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
@@ -254,9 +266,9 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - Layer cards include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
 - Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel. Preview rollover follows matching layer cards only outside edit mode.
 - Deleting from the panel removes the layer from the active page and saved project JSON.
-- `P A G E S` section headline single-clicks across the full row to show the page list.
+- In multi-page projects, the `P A G E S` section headline single-clicks across the full row to show the page list.
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
-- Left settings and editor panels use one shared move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state.
+- Editor panels use the section move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state. The left settings panel does not auto-scroll when section headers are toggled.
 
 ### Left Footer (always visible)
 

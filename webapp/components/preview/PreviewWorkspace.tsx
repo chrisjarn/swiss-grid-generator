@@ -13,7 +13,7 @@ import { PresetLayoutsPanel } from "@/components/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/components/sidebar/ProjectTitleSection"
 import { HeaderIconButton } from "@/components/ui/header-icon-button"
 import { HoverTooltip } from "@/components/ui/hover-tooltip"
-import { SectionHeaderRow } from "@/components/ui/section-header-row"
+import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 import { getStyleDefaultFontWeight, resolveFontVariant, type FontFamily } from "@/lib/config/fonts"
 import {
   type ImageColorSchemeId,
@@ -29,6 +29,11 @@ import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
 import { ProjectTourOverlay } from "@/components/preview/ProjectTourOverlay"
 import { LayoutOpenTooltipOverlay } from "@/components/preview/LayoutOpenTooltipOverlay"
+import {
+  SIDEBAR_PANEL_WIDTH_CLASSNAME,
+  WORKSPACE_HEADER_GRID_WITH_SIDEBAR_CLASSNAME,
+  WORKSPACE_HEADER_GRID_WITHOUT_SIDEBAR_CLASSNAME,
+} from "@/components/layout/sidebar-panel-layout"
 import { buildGridResultFromUiSettings, resolveUiSettingsSnapshot } from "@/lib/ui-settings-resolver"
 import {
   getProjectPagePhysicalPageNumber,
@@ -53,10 +58,10 @@ type UiTheme = {
   previewContentEdit: string
   sidebar: string
   sidebarBody: string
-  sidebarHeading: string
 }
 
 type Props = {
+  renderLeftPanel?: () => ReactNode
   fileGroup: HeaderItem[]
   displayGroup: HeaderItem[]
   sidebarGroup: HeaderAction[]
@@ -195,6 +200,7 @@ function renderHeaderAction(
   action: HeaderAction,
   showSectionHelpIcons: boolean,
   onHeaderHelpNavigate: (actionKey: string) => void,
+  isDarkMode: boolean,
 ) {
   const shortcut = action.shortcutId
     ? PREVIEW_HEADER_SHORTCUTS.find((item) => item.id === action.shortcutId)?.combo
@@ -219,6 +225,7 @@ function renderHeaderAction(
         statusDotClassName={action.statusDotClassName}
         showTooltip
         buttonClassName={action.buttonClassName}
+        isDarkMode={isDarkMode}
       >
         {action.icon}
       </HeaderIconButton>
@@ -227,6 +234,7 @@ function renderHeaderAction(
 }
 
 export function PreviewWorkspace({
+  renderLeftPanel,
   fileGroup,
   displayGroup,
   sidebarGroup,
@@ -419,6 +427,7 @@ export function PreviewWorkspace({
     sidebarActiveProjectPage,
   ])
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
+  const isSingleProjectPage = projectPages.length <= 1
   const pageActionButtonClassName = `inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${
     isDarkUi
       ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
@@ -431,6 +440,9 @@ export function PreviewWorkspace({
     || activeSidebarPanel === "legal"
     || activeSidebarPanel === "account"
   )
+  const headerGridClassName = shouldRenderSidebarPanel
+    ? WORKSPACE_HEADER_GRID_WITH_SIDEBAR_CLASSNAME
+    : WORKSPACE_HEADER_GRID_WITHOUT_SIDEBAR_CLASSNAME
 
   useEffect(() => {
     if (activeSidebarPanel === "layers" && !showPresetsBrowser) return
@@ -529,21 +541,21 @@ export function PreviewWorkspace({
     setPageListRequestToken((current) => current + 1)
   }
 
-  const pagesSectionHeadlineLabel = (
-    <HoverTooltip
-      inline
-      label={"Show page list\nClick P A G E S to return from a page submenu to the page list."}
-      tooltipClassName="w-64 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
-      horizontalAlign="start"
-    >
-      <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
-        <List className="h-3 w-3" strokeWidth={1.9} />
-        <span>P A G E S</span>
-      </span>
-    </HoverTooltip>
-  )
+  const pagesSectionHeadlineLabel = isSingleProjectPage ? "P A G E" : (
+      <HoverTooltip
+        inline
+        label={"Show page list\nClick P A G E S to return from a page submenu to the page list."}
+        tooltipClassName="w-64 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        horizontalAlign="start"
+      >
+        <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
+          <List className="h-3 w-3" strokeWidth={1.9} />
+          <span>P A G E S</span>
+        </span>
+      </HoverTooltip>
+    )
 
-  const pageNavigationButtonClassName = (disabled: boolean) => `inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm transition-colors ${
+  const pageNavigationButtonClassName = (disabled: boolean) => `inline-flex h-4 w-3 shrink-0 items-center justify-center rounded-sm transition-colors ${
     disabled
       ? isDarkUi
         ? "cursor-not-allowed text-[#5D6878]"
@@ -571,7 +583,7 @@ export function PreviewWorkspace({
   )
 
   const pageNavigationControlsBefore = (
-    <span className="mr-1 inline-flex items-center gap-0.5">
+    <span className="mr-1 inline-flex items-center -space-x-1">
       {renderPageNavigationButton(
         "First page",
         1,
@@ -588,7 +600,7 @@ export function PreviewWorkspace({
   )
 
   const pageNavigationControlsAfter = (
-    <span className="ml-1 inline-flex items-center gap-0.5">
+    <span className="ml-1 inline-flex items-center -space-x-1">
       {renderPageNavigationButton(
         "Next page",
         documentPagePosition + 1,
@@ -835,53 +847,55 @@ export function PreviewWorkspace({
 
   return (
     <div className={`min-h-0 min-w-0 flex flex-1 flex-col ${uiTheme.previewShell}`}>
-      <div className={`px-4 py-3 md:px-6 border-b ${uiTheme.previewHeader}`}>
-        <div className="flex flex-col gap-2 landscape:flex-row landscape:items-center landscape:justify-between landscape:gap-3">
-          <div className="flex flex-wrap items-start gap-2 landscape:flex-nowrap">
+      {!showPresetsBrowser && documentVariablePageCount > 1 ? (
+        <div
+          className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-px overflow-hidden"
+          aria-label={`Page position ${documentPagePosition} of ${documentVariablePageCount}`}
+          role="progressbar"
+          aria-valuemin={1}
+          aria-valuemax={documentVariablePageCount}
+          aria-valuenow={documentPagePosition}
+        >
+          <div
+            className="h-full bg-gray-700"
+            style={{ width: `${documentPagePositionPercent}%` }}
+          />
+        </div>
+      ) : null}
+      <div className={`px-4 py-3 md:px-6 ${uiTheme.previewHeader}`}>
+        <div className={`grid grid-cols-1 gap-2 md:items-center md:gap-3 ${headerGridClassName}`}>
+          <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-start">
             {fileGroup.map((item) =>
               item.type === "divider"
                 ? <div key={item.key} className={`h-6 w-px ${uiTheme.divider}`} aria-hidden="true" />
-                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate),
+                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi),
             )}
           </div>
 
-          <div className="flex flex-wrap items-start gap-2 landscape:flex-nowrap">
+          <div className="flex flex-wrap items-start justify-start gap-2 md:flex-nowrap md:justify-self-center">
             {displayGroup.map((item) =>
               item.type === "divider"
                 ? <div key={item.key} className={`h-6 w-px ${uiTheme.divider}`} aria-hidden="true" />
-                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate),
+                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi),
             )}
           </div>
 
-          <div className="flex flex-wrap items-start gap-2 landscape:flex-nowrap">
-            {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate))}
+          <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-end">
+            {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
           </div>
         </div>
       </div>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
-        <div
-          className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto transition-colors ${
-            showPresetsBrowser ? "p-4 md:p-6" : ""
-          } ${
-            editorMode ? uiTheme.previewContentEdit : uiTheme.previewContent
-          }`}
-        >
-          {!showPresetsBrowser ? (
-            <div
-              className={`pointer-events-none sticky top-0 z-30 h-px w-full shrink-0 overflow-hidden ${isDarkUi ? "bg-[#313A47]" : "bg-gray-200"}`}
-              aria-label={`Page position ${documentPagePosition} of ${documentVariablePageCount}`}
-              role="progressbar"
-              aria-valuemin={1}
-              aria-valuemax={documentVariablePageCount}
-              aria-valuenow={documentPagePosition}
-            >
-              <div
-                className="h-full bg-swiss-orange"
-                style={{ width: `${documentPagePositionPercent}%` }}
-              />
-            </div>
-          ) : null}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
+        {!showPresetsBrowser ? renderLeftPanel?.() : null}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
+          <div
+            className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto transition-colors ${
+              showPresetsBrowser ? "p-4 md:p-6" : ""
+            } ${
+              editorMode ? uiTheme.previewContentEdit : uiTheme.previewContent
+            }`}
+          >
           {!showPresetsBrowser && tourState ? (
             <ProjectTourOverlay
               title={tourState.title}
@@ -994,16 +1008,16 @@ export function PreviewWorkspace({
               onSnapshotGetterChange={onSnapshotGetterChange}
             />
           )}
-        </div>
-        {shouldRenderSidebarPanel && (
-          <div
-            data-help-scroll-root={activeSidebarPanel === "layers" ? undefined : "true"}
-            className={` min-h-0 w-[280px] basis-[280px] shrink-0 border-l overflow-x-hidden text-sm ${uiTheme.sidebar} ${
-              activeSidebarPanel === "layers"
-                ? "overflow-hidden"
-                : "overflow-y-auto overscroll-contain p-4 md:p-6"
-            }`}
-          >
+          </div>
+          {shouldRenderSidebarPanel && (
+            <div
+              data-help-scroll-root={activeSidebarPanel === "layers" ? undefined : "true"}
+              className={`min-h-0 ${SIDEBAR_PANEL_WIDTH_CLASSNAME} overflow-x-hidden text-sm ${uiTheme.sidebar} ${
+                activeSidebarPanel === "layers"
+                  ? "overflow-hidden"
+                  : "overflow-y-auto overscroll-contain p-4 md:p-6"
+              }`}
+            >
             {activeSidebarPanel === "help" && (
               <HelpPanel
                 isDarkMode={isDarkUi}
@@ -1019,11 +1033,11 @@ export function PreviewWorkspace({
                   sidebarControlsUseLivePage ? "" : "pointer-events-none opacity-50"
                 }`}
               >
-                <div className="shrink-0 px-4 pt-4 md:px-6 md:pt-6">
+                <div className="shrink-0 px-4 pt-4 md:px-6">
                   <div className="rounded-md py-2">
                     <SectionHeaderRow
                       label="P R O J E C T"
-                      labelClassName={uiTheme.sidebarHeading}
+                      labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
                       actions={(
                         <div className="flex shrink-0 items-center gap-1">
                           <button
@@ -1078,24 +1092,23 @@ export function PreviewWorkspace({
                   <div className="mt-4 rounded-md py-2">
                     <SectionHeaderRow
                       label={pagesSectionHeadlineLabel}
-                      labelClassName={uiTheme.sidebarHeading}
-                      className="cursor-pointer select-none"
-                      onRowClick={requestPageListView}
+                      labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
+                      className={`${isSingleProjectPage ? "" : "cursor-pointer"} select-none`}
+                      actions={isSingleProjectPage ? renderPageAddActions() : undefined}
+                      onRowClick={isSingleProjectPage ? undefined : requestPageListView}
                     />
                   </div>
-                  <div className={`mb-2 mt-1 flex min-h-[18px] w-full items-center justify-between gap-2 rounded-md pb-1 text-[12px] font-normal leading-none normal-case tracking-normal ${uiTheme.sidebarBody}`}>
-                    <span className="min-w-0">Page</span>
-                    <span className="inline-flex min-w-0 items-center gap-2">
-                      <span className="min-w-0 truncate text-[11px] font-normal leading-none">
-                        {pagePositionValue}
+                  {!isSingleProjectPage ? (
+                    <div className={`mb-2 mt-1 flex min-h-[18px] w-full items-center justify-between gap-2 rounded-md pb-1 text-[12px] font-normal leading-none normal-case tracking-normal ${uiTheme.sidebarBody}`}>
+                      <span className="min-w-0">Page</span>
+                      <span className="inline-flex min-w-0 items-center gap-2">
+                        <span className="min-w-0 truncate text-[11px] font-normal leading-none">
+                          {pagePositionValue}
+                        </span>
+                        {renderPageAddActions()}
                       </span>
-                      {renderPageAddActions()}
-                    </span>
-                  </div>
-                  <div
-                    aria-hidden="true"
-                    className={`-mx-4 mt-1 h-px md:-mx-6 ${isDarkUi ? "bg-[#313A47]" : "bg-gray-200"}`}
-                  />
+                    </div>
+                  ) : null}
                 </div>
                 <div
                   data-help-scroll-root="true"
@@ -1143,8 +1156,9 @@ export function PreviewWorkspace({
                 onClose={closeSidebarPanel}
               />
             )}
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
