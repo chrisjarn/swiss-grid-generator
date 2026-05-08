@@ -1,14 +1,6 @@
 import { memo, useState } from "react"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  TopSelectContent,
-} from "@/components/ui/select"
 import { PanelCard } from "@/components/settings/PanelCard"
-import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import {
   getClosestImageSchemeColorToken,
   getImageSchemeColorToken,
@@ -16,13 +8,14 @@ import {
   IMAGE_COLOR_SCHEMES,
   type ImageColorSchemeId,
 } from "@/lib/config/color-schemes"
-import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
 import {
-  getSettingsControlClassName,
-  SETTINGS_ROW_LABEL_CLASSNAME,
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
+  SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 
 const COLOR_SLOT_LABELS = ["Paper", "Light", "Mid", "Dark"] as const
+const NO_BACKGROUND_VALUE = "__none__"
 
 type Props = {
   collapsed: boolean
@@ -54,32 +47,23 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
   const displayedScheme = previewColorScheme ? getImageColorScheme(previewColorScheme) : selected
   const backgroundOptionValues = displayedScheme.colors.map((_, index) => getImageSchemeColorToken(index))
   const backgroundSelectValue = canvasBackground === null
-    ? "__none__"
+    ? NO_BACKGROUND_VALUE
     : getClosestImageSchemeColorToken(canvasBackground, colorScheme)
-  const colorSchemeSelectPreview = useSelectRolloverPreview<ImageColorSchemeId>({
-    value: colorScheme,
-    onCommitValue: onColorSchemeChange,
-    onPreviewValue: (value) => {
-      setPreviewColorScheme(value)
-      onColorSchemePreviewChange?.(value)
-    },
-    onPreviewClear: () => {
-      setPreviewColorScheme(null)
-      onColorSchemePreviewChange?.(null)
-    },
-  })
-  const backgroundSelectPreview = useSelectRolloverPreview<string>({
-    value: backgroundSelectValue,
-    onCommitValue: (value) => onCanvasBackgroundChange(value === "__none__" ? null : value),
-    onPreviewValue: (value) => onCanvasBackgroundPreviewChange?.(value),
-    onPreviewClear: () => onCanvasBackgroundPreviewChange?.(null),
-  })
-  const controlClassName = getSettingsControlClassName(isDarkMode)
+  const colorSchemeListClassName = getSettingsOpenListClassName(isDarkMode)
+  const backgroundRingOffsetClassName = isDarkMode ? "ring-offset-[#151A21]" : "ring-offset-white"
+  const handleColorSchemePreview = (value: ImageColorSchemeId) => {
+    setPreviewColorScheme(value)
+    onColorSchemePreviewChange?.(value)
+  }
+  const clearColorSchemePreview = () => {
+    setPreviewColorScheme(null)
+    onColorSchemePreviewChange?.(null)
+  }
 
   return (
     <PanelCard
       title="C O L O R"
-      tooltip="Color scheme and page background for image placeholders; scheme and background lists preview on rollover"
+      tooltip="Color scheme and page background swatches for image placeholders; scheme list and swatches preview on rollover"
       collapsed={collapsed}
       collapsedSummary={(
         <div className="flex items-center gap-1.5">
@@ -98,78 +82,82 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
       helpSectionKey="color"
       isDarkMode={isDarkMode}
     >
-      <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Base</Label>}>
-        <Select
-          value={colorScheme}
-          onOpenChange={colorSchemeSelectPreview.handleOpenChange}
-          onValueChange={colorSchemeSelectPreview.handleValueChange}
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Base</Label>
+        <div
+          role="listbox"
+          aria-label="Base color scheme"
+          className={colorSchemeListClassName}
+          onMouseLeave={clearColorSchemePreview}
         >
-          <SelectTrigger className={controlClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={colorSchemeSelectPreview.handleContentPointerLeave}>
-            {IMAGE_COLOR_SCHEMES.map((scheme) => (
-              <SelectItem
-                key={scheme.id}
-                value={scheme.id}
-                {...colorSchemeSelectPreview.getItemPreviewProps(scheme.id)}
-              >
-                {scheme.label}
-              </SelectItem>
-            ))}
-          </TopSelectContent>
-        </Select>
-        </LabeledControlRow>
-      </div>
-      <div className="grid grid-cols-4 gap-2">
-        {displayedScheme.colors.map((color, index) => (
-          <div
-            key={`${displayedScheme.id}-${index}-${color}`}
-            className="flex flex-col items-start gap-1"
-          >
-            <div
-              className={`h-5 w-full rounded-sm border ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}
-              style={{ backgroundColor: color }}
-              title={color}
-            />
-            <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-              {color.toLowerCase()}
-            </span>
-          </div>
-        ))}
-      </div>
-      <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Background</Label>}>
-        <Select
-          value={backgroundSelectValue}
-          onOpenChange={backgroundSelectPreview.handleOpenChange}
-          onValueChange={backgroundSelectPreview.handleValueChange}
-        >
-          <SelectTrigger className={controlClassName}>
-            <SelectValue />
-          </SelectTrigger>
-          <TopSelectContent onPointerLeave={backgroundSelectPreview.handleContentPointerLeave}>
-            <SelectItem value="__none__" {...backgroundSelectPreview.getItemPreviewProps("__none__")}>None</SelectItem>
-            {selected.colors.map((color, index) => (
-              <SelectItem
-                key={`background-${selected.id}-${color}`}
-                value={backgroundOptionValues[index] ?? getImageSchemeColorToken(index)}
-                {...backgroundSelectPreview.getItemPreviewProps(backgroundOptionValues[index] ?? getImageSchemeColorToken(index))}
-              >
-                <span className="flex items-center gap-2">
+          {IMAGE_COLOR_SCHEMES.map((scheme) => (
+            <button
+              key={scheme.id}
+              type="button"
+              role="option"
+              aria-selected={colorScheme === scheme.id}
+              className={getSettingsOpenListOptionClassName(isDarkMode, colorScheme === scheme.id)}
+              onFocus={() => handleColorSchemePreview(scheme.id)}
+              onBlur={clearColorSchemePreview}
+              onMouseEnter={() => handleColorSchemePreview(scheme.id)}
+              onClick={() => {
+                onColorSchemeChange(scheme.id)
+                clearColorSchemePreview()
+              }}
+            >
+              <span className="min-w-0 truncate">{scheme.label}</span>
+              <span className="ml-auto flex shrink-0 items-center gap-1 pl-3">
+                {scheme.colors.map((color, index) => (
                   <span
-                    className={`inline-block h-3 w-3 rounded-full border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
+                    key={`${scheme.id}-${index}-${color}`}
+                    className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
                     style={{ backgroundColor: color }}
+                    title={color}
                   />
-                  <span>{COLOR_SLOT_LABELS[index]}</span>
-                  <span className="font-mono text-xs">{color.toLowerCase()}</span>
+                ))}
+              </span>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Background</Label>
+        <div
+          className="grid grid-cols-4 gap-2"
+          onMouseLeave={() => onCanvasBackgroundPreviewChange?.(null)}
+        >
+          {displayedScheme.colors.map((color, index) => {
+            const token = backgroundOptionValues[index] ?? getImageSchemeColorToken(index)
+            const selectedBackground = backgroundSelectValue === token
+            return (
+              <div
+                key={`background-${displayedScheme.id}-${index}-${color}`}
+                className="flex flex-col items-start gap-1"
+              >
+                <button
+                  type="button"
+                  aria-label={`Toggle ${COLOR_SLOT_LABELS[index]} page background`}
+                  aria-pressed={selectedBackground}
+                  title={color}
+                  className={`h-5 w-full rounded-sm border transition-colors active:translate-y-px ${
+                    isDarkMode ? "border-gray-700" : "border-gray-200"
+                  } ${selectedBackground ? `ring-2 ring-gray-500 ring-offset-1 ${backgroundRingOffsetClassName}` : ""}`}
+                  style={{ backgroundColor: color }}
+                  onFocus={() => onCanvasBackgroundPreviewChange?.(token)}
+                  onBlur={() => onCanvasBackgroundPreviewChange?.(null)}
+                  onMouseEnter={() => onCanvasBackgroundPreviewChange?.(token)}
+                  onClick={() => {
+                    onCanvasBackgroundChange(selectedBackground ? null : token)
+                    onCanvasBackgroundPreviewChange?.(null)
+                  }}
+                />
+                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  {color.toLowerCase()}
                 </span>
-              </SelectItem>
-            ))}
-          </TopSelectContent>
-        </Select>
-        </LabeledControlRow>
+              </div>
+            )
+          })}
+        </div>
       </div>
     </PanelCard>
   )

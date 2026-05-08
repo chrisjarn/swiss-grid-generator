@@ -63,14 +63,12 @@ export const TypographyPanel = memo(function TypographyPanel({
   const tableTone = isDarkMode
     ? {
         frame: "border-gray-700 bg-gray-900/60",
-        header: "text-gray-400",
         row: "border-gray-800",
         label: "text-gray-100",
         value: "text-gray-300",
       }
     : {
         frame: "border-gray-200 bg-gray-50/80",
-        header: "text-gray-500",
         row: "border-gray-200",
         label: "text-gray-900",
         value: "text-gray-700",
@@ -114,11 +112,8 @@ export const TypographyPanel = memo(function TypographyPanel({
             getItemPreviewProps={(value) => baseFontSelectPreview.getItemPreviewProps(value as FontFamily)}
           />
         </LabeledControlRow>
-        <LabeledControlRow
-          variant="popup"
-          className="!items-start"
-          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythm</Label>}
-        >
+        <div className="space-y-1.5">
+          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythm</Label>
           <div
             role="listbox"
             aria-label="Type rhythm"
@@ -149,21 +144,17 @@ export const TypographyPanel = memo(function TypographyPanel({
               )
             })}
           </div>
-        </LabeledControlRow>
+        </div>
         <div className={`border ${tableTone.frame}`}>
-          <div className={`grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-3 px-3 py-2 text-[10px] uppercase tracking-[0.08em] ${tableTone.header}`}>
-            <span>Steps</span>
-            <span>Size</span>
-            <span>Leading</span>
-          </div>
           {hierarchyRows.map((row, index) => (
             <div
               key={row.key}
-              className={`grid grid-cols-[minmax(0,1fr)_auto_auto] gap-x-3 px-3 py-2 text-[11px] ${index > 0 ? `border-t ${tableTone.row}` : ""}`}
+              className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 px-3 py-2 text-[11px] ${index > 0 ? `border-t ${tableTone.row}` : ""}`}
             >
               <span className={`truncate ${tableTone.label}`}>{row.label}</span>
-              <span className={`font-mono ${tableTone.value}`}>{formatPtSize(row.size)}</span>
-              <span className={`font-mono ${tableTone.value}`}>{formatPtSize(row.leading)}</span>
+              <span className={`font-mono text-right tabular-nums ${tableTone.value}`}>
+                {formatPtSize(row.size)}/{formatPtSize(row.leading)}
+              </span>
             </div>
           ))}
         </div>

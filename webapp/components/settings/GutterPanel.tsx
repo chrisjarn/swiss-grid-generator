@@ -17,7 +17,6 @@ import {
   type GridRhythmRowsDirection,
 } from "@/lib/config/defaults"
 import { useSelectRolloverPreview } from "@/hooks/useSelectRolloverPreview"
-import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import {
   getSettingsControlClassName,
   getSettingsOpenListClassName,
@@ -27,12 +26,12 @@ import {
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/components/settings/settings-panel-styles"
 
-const RHYTHM_OPTIONS: Array<{ value: GridRhythm; label: string }> = [
-  { value: "fibonacci", label: "Fibonacci" },
-  { value: "golden", label: "Golden Ratio" },
-  { value: "fifth", label: "Perfect Fifth" },
-  { value: "fourth", label: "Perfect Fourth" },
-  { value: "repetitive", label: "Repetitive" },
+const RHYTHM_OPTIONS: Array<{ value: GridRhythm; label: string; detail: string }> = [
+  { value: "fibonacci", label: "Fibonacci", detail: "1:2:3:5" },
+  { value: "golden", label: "Golden Ratio", detail: "1:1.618" },
+  { value: "fifth", label: "Perfect Fifth", detail: "3:2" },
+  { value: "fourth", label: "Perfect Fourth", detail: "4:3" },
+  { value: "repetitive", label: "Repetitive", detail: "1:1:1:1" },
 ]
 
 type Props = {
@@ -113,35 +112,33 @@ export const GutterPanel = memo(function GutterPanel({
       helpSectionKey="gutter"
       isDarkMode={isDarkMode}
     >
-      <div className="space-y-2">
-        <LabeledControlRow
-          variant="popup"
-          className="!items-start"
-          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythms</Label>}
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythms</Label>
+        <div
+          role="listbox"
+          aria-label="Grid rhythm"
+          className={rhythmListClassName}
+          onMouseLeave={() => onRhythmPreviewChange?.(null)}
         >
-          <div
-            role="listbox"
-            aria-label="Grid rhythm"
-            className={rhythmListClassName}
-            onMouseLeave={() => onRhythmPreviewChange?.(null)}
-          >
-            {RHYTHM_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={rhythm === option.value}
-                className={getSettingsOpenListOptionClassName(isDarkMode, rhythm === option.value)}
-                onFocus={() => onRhythmPreviewChange?.(option.value)}
-                onBlur={() => onRhythmPreviewChange?.(null)}
-                onMouseEnter={() => onRhythmPreviewChange?.(option.value)}
-                onClick={() => onRhythmChange(option.value)}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </LabeledControlRow>
+          {RHYTHM_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={rhythm === option.value}
+              className={getSettingsOpenListOptionClassName(isDarkMode, rhythm === option.value)}
+              onFocus={() => onRhythmPreviewChange?.(option.value)}
+              onBlur={() => onRhythmPreviewChange?.(null)}
+              onMouseEnter={() => onRhythmPreviewChange?.(option.value)}
+              onClick={() => onRhythmChange(option.value)}
+            >
+              <span className="min-w-0 truncate">{option.label}</span>
+              <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                {option.detail}
+              </span>
+            </button>
+          ))}
+        </div>
       </div>
       {rhythm !== "repetitive" ? (
         <div className="space-y-3">

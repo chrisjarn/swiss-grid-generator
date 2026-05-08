@@ -30,6 +30,7 @@ Default: `swiss`
 ## Settings Panel (Left)
 
 - Supported dropdown controls preview hovered items live in the page while the menu is open; leaving or closing the menu restores the committed value until you select an option.
+- Always-open dropdown-style list fields use a full-width option list with the parameter name as a headline above it.
 
 ### Canvas Ratio
 
@@ -109,6 +110,7 @@ Default: `swiss`
 - Rows (`gridRows`): min `1`, max `13`, step `1`, default `6` (from `default_v001.json`)
 - Gutter multiple: min `1.0`, max `4.0`, step `0.5`, default `1.0`
 - Rhythms (`rhythm`): `fibonacci`, `golden`, `fifth`, `fourth`, `repetitive` (default)
+- Rhythm list details: `Fibonacci` -> `1:2:3:5`, `Golden Ratio` -> `1:1.618`, `Perfect Fifth` -> `3:2`, `Perfect Fourth` -> `4:3`, `Repetitive` -> `1:1:1:1`
 - `Rhythms` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
 - Non-repetitive direction dropdown items preview live on rollover before commit
 - Non-repetitive rhythm rows:
@@ -123,7 +125,7 @@ Default: `swiss`
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
 - `Rhythm` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
-- `Steps` table: shows current size and leading for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale.
+- Hierarchy overview: shows current `size/leading` for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale.
 - Swiss on the A4 12pt reference baseline:
   - `Display`: `64pt / 72pt`
   - `Headline`: `30pt / 36pt`
@@ -152,8 +154,9 @@ Default: `swiss`
 ### Color
 
 - Selects the global base scheme for image placeholders.
-- `Background`: applies a page background color using `None` or any color from the selected scheme; this setting is stored per page.
-- `Base Color Scheme` and `Background` dropdown items preview live on rollover before commit.
+- `Base`: uses a full-width always-open list with palette preview swatches on the right; list items preview live on rollover before click commit.
+- `Background`: applies a page background color from the selected scheme using clickable swatches; clicking the active swatch toggles the background off. This setting is stored per page.
+- `Background` swatches preview live on rollover before commit.
 - Available schemes:
   - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#f54123`
   - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`

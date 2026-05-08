@@ -843,9 +843,10 @@ export const HELP_CONTENT_GROUPS = [
             "type": "list",
             "items": [
               "Sets the base scheme for new image placeholders.",
-              "`Background` applies `None` or a scheme color to the page.",
+              "`Base` uses an open list with palette preview swatches on the right.",
+              "`Background` applies a scheme color to the page through the swatches. Click the active swatch again to clear the background.",
               "The same scheme system is used in the image editor, where individual placeholders can still override swatch color and transparency.",
-              "Scheme and background preview on dropdown hover before commit."
+              "Base list items and background swatches preview on rollover before commit."
             ]
           }
         ],

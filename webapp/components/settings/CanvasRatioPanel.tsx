@@ -106,40 +106,35 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       helpSectionKey="format"
       isDarkMode={isDarkMode}
     >
-      <div className="space-y-2">
-        <LabeledControlRow
-          variant="popup"
-          className="!items-start"
-          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Ratio</Label>}
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Ratio</Label>
+        <div
+          role="listbox"
+          aria-label="Canvas ratio"
+          className={ratioListClassName}
+          onMouseLeave={() => onCanvasRatioPreviewChange?.(null)}
         >
-          <div
-            role="listbox"
-            aria-label="Canvas ratio"
-            className={ratioListClassName}
-            onMouseLeave={() => onCanvasRatioPreviewChange?.(null)}
-          >
-            {CANVAS_RATIOS.map((opt) => (
-              <button
-                key={opt.key}
-                type="button"
-                role="option"
-                aria-selected={canvasRatio === opt.key}
-                className={getSettingsOpenListOptionClassName(isDarkMode, canvasRatio === opt.key)}
-                onFocus={() => onCanvasRatioPreviewChange?.(opt.key)}
-                onBlur={() => onCanvasRatioPreviewChange?.(null)}
-                onMouseEnter={() => onCanvasRatioPreviewChange?.(opt.key)}
-                onClick={() => onCanvasRatioChange(opt.key)}
-              >
-                <span className="min-w-0 truncate">{opt.label}</span>
-                {opt.key !== "custom" ? (
-                  <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                    {opt.ratioLabel}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </LabeledControlRow>
+          {CANVAS_RATIOS.map((opt) => (
+            <button
+              key={opt.key}
+              type="button"
+              role="option"
+              aria-selected={canvasRatio === opt.key}
+              className={getSettingsOpenListOptionClassName(isDarkMode, canvasRatio === opt.key)}
+              onFocus={() => onCanvasRatioPreviewChange?.(opt.key)}
+              onBlur={() => onCanvasRatioPreviewChange?.(null)}
+              onMouseEnter={() => onCanvasRatioPreviewChange?.(opt.key)}
+              onClick={() => onCanvasRatioChange(opt.key)}
+            >
+              <span className="min-w-0 truncate">{opt.label}</span>
+              {opt.key !== "custom" ? (
+                <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                  {opt.ratioLabel}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
       {canvasRatio === "custom" ? (
         <div className="space-y-2">

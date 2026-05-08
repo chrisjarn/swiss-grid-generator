@@ -1,7 +1,6 @@
 import { memo } from "react"
 import { Label } from "@/components/ui/label"
 import { DebouncedSlider } from "@/components/ui/slider"
-import { LabeledControlRow } from "@/components/ui/labeled-control-row"
 import { PanelCard } from "@/components/settings/PanelCard"
 import { BASELINE_MULTIPLE_RANGE } from "@/lib/config/defaults"
 import {
@@ -117,40 +116,35 @@ export const MarginsPanel = memo(function MarginsPanel({
       helpSectionKey="margins"
       isDarkMode={isDarkMode}
     >
-      <div className="space-y-2">
-        <LabeledControlRow
-          variant="popup"
-          className="!items-start"
-          label={<Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Method</Label>}
+      <div className="space-y-1.5">
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Method</Label>
+        <div
+          role="listbox"
+          aria-label="Margin method"
+          className={marginMethodListClassName}
+          onMouseLeave={() => onMarginMethodPreviewChange?.(null)}
         >
-          <div
-            role="listbox"
-            aria-label="Margin method"
-            className={marginMethodListClassName}
-            onMouseLeave={() => onMarginMethodPreviewChange?.(null)}
-          >
-            {MARGIN_METHOD_OPTIONS.map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                role="option"
-                aria-selected={selectedMarginMode === option.value}
-                className={getSettingsOpenListOptionClassName(isDarkMode, selectedMarginMode === option.value)}
-                onFocus={() => onMarginMethodPreviewChange?.(option.value)}
-                onBlur={() => onMarginMethodPreviewChange?.(null)}
-                onMouseEnter={() => onMarginMethodPreviewChange?.(option.value)}
-                onClick={() => handleMarginModeChange(option.value)}
-              >
-                <span className="min-w-0 truncate">{option.label}</span>
-                {option.detail ? (
-                  <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                    {option.detail}
-                  </span>
-                ) : null}
-              </button>
-            ))}
-          </div>
-        </LabeledControlRow>
+          {MARGIN_METHOD_OPTIONS.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              role="option"
+              aria-selected={selectedMarginMode === option.value}
+              className={getSettingsOpenListOptionClassName(isDarkMode, selectedMarginMode === option.value)}
+              onFocus={() => onMarginMethodPreviewChange?.(option.value)}
+              onBlur={() => onMarginMethodPreviewChange?.(null)}
+              onMouseEnter={() => onMarginMethodPreviewChange?.(option.value)}
+              onClick={() => handleMarginModeChange(option.value)}
+            >
+              <span className="min-w-0 truncate">{option.label}</span>
+              {option.detail ? (
+                <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                  {option.detail}
+                </span>
+              ) : null}
+            </button>
+          ))}
+        </div>
       </div>
 
       {useCustomMargins ? (
