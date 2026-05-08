@@ -37,6 +37,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - The left panel does not auto-scroll or reposition when section headers are toggled.
 - Preset browser mode hides the left settings panel.
 - Section headlines use the shared spaced-uppercase headline style; opened section headlines use Swiss orange soft, while collapsed section headlines and left-panel parameter labels use neutral gray.
+- Collapsed left-panel sections temporarily open on rollover, scroll into the visible panel area, and close again on hover-out; clicking a section toggle persists the open state.
 - Left-panel settings sections render a full-width `#f3f4f6` divider at the bottom of each section; open sections use a darker gray background band while collapsed sections stay on the panel background.
 - Supported dropdown controls preview hovered items live in the page while the menu is open; leaving or closing the menu restores the committed value until you select an option.
 - Always-open dropdown-style list fields use a full-width option list with the parameter name as a headline above it.

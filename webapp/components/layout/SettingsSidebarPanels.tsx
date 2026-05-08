@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useRef } from "react"
+import { memo, useCallback, useLayoutEffect, useRef, useState } from "react"
 
 import { BaselineGridPanel } from "@/components/settings/BaselineGridPanel"
 import { CanvasRatioPanel } from "@/components/settings/CanvasRatioPanel"
@@ -99,6 +99,33 @@ type Props = {
   isDarkMode: boolean
 }
 
+function scrollSectionIntoVisiblePanelArea(
+  scrollRoot: HTMLDivElement,
+  sectionNode: HTMLDivElement,
+): void {
+  const rootRect = scrollRoot.getBoundingClientRect()
+  const sectionRect = sectionNode.getBoundingClientRect()
+
+  if (sectionRect.top < rootRect.top) {
+    scrollRoot.scrollTo({
+      top: Math.max(0, scrollRoot.scrollTop + sectionRect.top - rootRect.top),
+      behavior: "auto",
+    })
+    return
+  }
+
+  if (sectionRect.bottom <= rootRect.bottom) return
+
+  const offset = sectionRect.height >= rootRect.height
+    ? sectionRect.top - rootRect.top
+    : sectionRect.bottom - rootRect.bottom
+
+  scrollRoot.scrollTo({
+    top: Math.max(0, scrollRoot.scrollTop + offset),
+    behavior: "auto",
+  })
+}
+
 export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   collapsed,
   showSectionHelpIcons,
@@ -170,9 +197,56 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   isDarkMode,
 }: Props) {
   const scrollRootRef = useRef<HTMLDivElement | null>(null)
+  const sectionRefs = useRef<Partial<Record<SectionKey, HTMLDivElement | null>>>({})
+  const [hoverOpenSection, setHoverOpenSection] = useState<SectionKey | null>(null)
+  const [bottomSpacerHeight, setBottomSpacerHeight] = useState(0)
+  const isSectionCollapsed = useCallback((section: SectionKey) => (
+    collapsed[section] && hoverOpenSection !== section
+  ), [collapsed, hoverOpenSection])
+  const registerSectionRef = useCallback((section: SectionKey) => (node: HTMLDivElement | null) => {
+    sectionRefs.current[section] = node
+  }, [])
+  const handleSectionMouseEnter = useCallback((section: SectionKey) => {
+    if (interactionsDisabled || !collapsed[section]) return
+    setHoverOpenSection(section)
+  }, [collapsed, interactionsDisabled])
+  const handleSectionMouseLeave = useCallback((section: SectionKey) => {
+    setHoverOpenSection((current) => current === section ? null : current)
+  }, [])
+  const getSectionWrapperProps = useCallback((section: SectionKey) => ({
+    ref: registerSectionRef(section),
+    onMouseEnter: () => handleSectionMouseEnter(section),
+    onMouseLeave: () => handleSectionMouseLeave(section),
+  }), [handleSectionMouseEnter, handleSectionMouseLeave, registerSectionRef])
+
+  useLayoutEffect(() => {
+    const scrollRoot = scrollRootRef.current
+    if (!scrollRoot || typeof ResizeObserver === "undefined") return
+
+    const updateBottomSpacerHeight = () => setBottomSpacerHeight(scrollRoot.clientHeight)
+    const resizeObserver = new ResizeObserver(updateBottomSpacerHeight)
+    resizeObserver.observe(scrollRoot)
+    updateBottomSpacerHeight()
+
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!hoverOpenSection) return
+
+    const scrollRoot = scrollRootRef.current
+    const sectionNode = sectionRefs.current[hoverOpenSection]
+    if (!scrollRoot || !sectionNode) return
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollSectionIntoVisiblePanelArea(scrollRoot, sectionNode)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [hoverOpenSection])
 
   return (
-    <SidebarSectionScrollFrame bottomSpacerHeight={0} scrollRootRef={scrollRootRef}>
+    <SidebarSectionScrollFrame bottomSpacerHeight={bottomSpacerHeight} scrollRootRef={scrollRootRef}>
       <SettingsHelpNavigationProvider
         value={{
           showHelpIcons: showSectionHelpIcons,
@@ -181,9 +255,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           onNavigate: onHelpNavigate,
         }}
       >
-        <div>
+        <div {...getSectionWrapperProps("format")}>
           <CanvasRatioPanel
-            collapsed={collapsed.format}
+            collapsed={isSectionCollapsed("format")}
             onHeaderClick={onSectionHeaderClick("format")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             canvasRatio={canvasRatio}
@@ -202,9 +276,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div>
+        <div {...getSectionWrapperProps("baseline")}>
           <BaselineGridPanel
-            collapsed={collapsed.baseline}
+            collapsed={isSectionCollapsed("baseline")}
             onHeaderClick={onSectionHeaderClick("baseline")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             customBaseline={customBaseline}
@@ -214,9 +288,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div>
+        <div {...getSectionWrapperProps("margins")}>
           <MarginsPanel
-            collapsed={collapsed.margins}
+            collapsed={isSectionCollapsed("margins")}
             onHeaderClick={onSectionHeaderClick("margins")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             marginMethod={marginMethod}
@@ -234,9 +308,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div>
+        <div {...getSectionWrapperProps("gutter")}>
           <GutterPanel
-            collapsed={collapsed.gutter}
+            collapsed={isSectionCollapsed("gutter")}
             onHeaderClick={onSectionHeaderClick("gutter")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             gridCols={gridCols}
@@ -262,9 +336,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div>
+        <div {...getSectionWrapperProps("typo")}>
           <TypographyPanel
-            collapsed={collapsed.typo}
+            collapsed={isSectionCollapsed("typo")}
             onHeaderClick={onSectionHeaderClick("typo")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             typographyScale={typographyScale}
@@ -281,9 +355,9 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           />
         </div>
 
-        <div>
+        <div {...getSectionWrapperProps("color")}>
           <ColorSchemePanel
-            collapsed={collapsed.color}
+            collapsed={isSectionCollapsed("color")}
             onHeaderClick={onSectionHeaderClick("color")}
             onHeaderDoubleClick={onSectionHeaderDoubleClick}
             colorScheme={colorScheme}
