@@ -15,10 +15,6 @@
     "weights": [100, 200, 300, 400, 500, 600, 700],
     "italic": true
   },
-  "Libre Franklin": {
-    "weights": [100, 200, 300, 400, 500, 600, 700, 800, 900],
-    "italic": true
-  },
   "IBM Plex Mono": {
     "weights": [100, 200, 300, 400, 500, 600, 700],
     "italic": true

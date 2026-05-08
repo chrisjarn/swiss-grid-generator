@@ -188,7 +188,6 @@ function resolveKnownFamily(fontFamilyStack: string): FontFamily | null {
     "Noto Sans Symbols 2",
     "Libre Baskerville",
     "Playfair Display",
-    "Libre Franklin",
     "IBM Plex Sans",
     "IBM Plex Mono",
     "Bodoni Moda",

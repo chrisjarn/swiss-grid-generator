@@ -151,7 +151,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - Settings-panel dropdowns open upward.
 - Font dropdown groups: `Sans-Serif`, `Serif`, `Poster` (same grouping in left panel and popup editor).
 - Available fonts:
-  - Sans-Serif: [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Inter](https://fonts.google.com/specimen/Inter), [Jost](https://fonts.google.com/specimen/Jost), [Libre Franklin](https://fonts.google.com/specimen/Libre+Franklin), [Work Sans](https://fonts.google.com/specimen/Work+Sans)
+  - Sans-Serif: [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Inter](https://fonts.google.com/specimen/Inter), [Jost](https://fonts.google.com/specimen/Jost), [Work Sans](https://fonts.google.com/specimen/Work+Sans)
   - Serif: [Besley](https://fonts.google.com/specimen/Besley), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville)
   - Poster: [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono), [Playfair Display](https://fonts.google.com/specimen/Playfair+Display)
 

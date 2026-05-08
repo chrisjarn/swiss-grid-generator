@@ -210,8 +210,8 @@ function collectTextMetricsStressSamples(
       align: "left",
     },
     {
-      label: "Stress / Narrow editorial note / Libre Franklin",
-      canvasFont: buildCanvasFont("Libre Franklin", 400, false, 10),
+      label: "Stress / Narrow editorial note / Work Sans",
+      canvasFont: buildCanvasFont("Work Sans", 400, false, 10),
       text: "Small editorial text in a narrow measure must keep line decisions stable across engines.",
       maxWidth: 118,
       hyphenate: true,

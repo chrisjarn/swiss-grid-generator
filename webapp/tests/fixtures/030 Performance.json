@@ -104,7 +104,7 @@
           "paragraph-p001-m11": "EB Garamond",
           "paragraph-p001-m13": "Besley",
           "paragraph-p001-m15": "Work Sans",
-          "paragraph-p001-m17": "Libre Franklin",
+          "paragraph-p001-m17": "Work Sans",
           "paragraph-p001-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -525,7 +525,7 @@
           "paragraph-p002-m13": "EB Garamond",
           "paragraph-p002-m15": "Besley",
           "paragraph-p002-m17": "Work Sans",
-          "paragraph-p002-m19": "Libre Franklin"
+          "paragraph-p002-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p002-m01": 600,
@@ -936,7 +936,7 @@
           "paragraph-p003-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p003-m01": "Libre Franklin",
+          "paragraph-p003-m01": "Work Sans",
           "paragraph-p003-m03": "Bodoni Moda",
           "paragraph-p003-m05": "Inter",
           "paragraph-p003-m07": "IBM Plex Sans",
@@ -1357,7 +1357,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p004-m01": "Work Sans",
-          "paragraph-p004-m03": "Libre Franklin",
+          "paragraph-p004-m03": "Work Sans",
           "paragraph-p004-m05": "Bodoni Moda",
           "paragraph-p004-m07": "Inter",
           "paragraph-p004-m09": "IBM Plex Sans",
@@ -1778,7 +1778,7 @@
         "blockFontFamilies": {
           "paragraph-p005-m01": "Besley",
           "paragraph-p005-m03": "Work Sans",
-          "paragraph-p005-m05": "Libre Franklin",
+          "paragraph-p005-m05": "Work Sans",
           "paragraph-p005-m07": "Bodoni Moda",
           "paragraph-p005-m09": "Inter",
           "paragraph-p005-m11": "IBM Plex Sans",
@@ -2199,7 +2199,7 @@
           "paragraph-p006-m01": "EB Garamond",
           "paragraph-p006-m03": "Besley",
           "paragraph-p006-m05": "Work Sans",
-          "paragraph-p006-m07": "Libre Franklin",
+          "paragraph-p006-m07": "Work Sans",
           "paragraph-p006-m09": "Bodoni Moda",
           "paragraph-p006-m11": "Inter",
           "paragraph-p006-m13": "IBM Plex Sans",
@@ -2620,7 +2620,7 @@
           "paragraph-p007-m03": "EB Garamond",
           "paragraph-p007-m05": "Besley",
           "paragraph-p007-m07": "Work Sans",
-          "paragraph-p007-m09": "Libre Franklin",
+          "paragraph-p007-m09": "Work Sans",
           "paragraph-p007-m11": "Bodoni Moda",
           "paragraph-p007-m13": "Inter",
           "paragraph-p007-m15": "IBM Plex Sans",
@@ -3041,7 +3041,7 @@
           "paragraph-p008-m05": "EB Garamond",
           "paragraph-p008-m07": "Besley",
           "paragraph-p008-m09": "Work Sans",
-          "paragraph-p008-m11": "Libre Franklin",
+          "paragraph-p008-m11": "Work Sans",
           "paragraph-p008-m13": "Bodoni Moda",
           "paragraph-p008-m15": "Inter",
           "paragraph-p008-m17": "IBM Plex Sans",
@@ -3393,7 +3393,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "mono",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -3462,7 +3462,7 @@
           "paragraph-p009-m07": "EB Garamond",
           "paragraph-p009-m09": "Besley",
           "paragraph-p009-m11": "Work Sans",
-          "paragraph-p009-m13": "Libre Franklin",
+          "paragraph-p009-m13": "Work Sans",
           "paragraph-p009-m15": "Bodoni Moda",
           "paragraph-p009-m17": "Inter",
           "paragraph-p009-m19": "IBM Plex Sans"
@@ -3883,7 +3883,7 @@
           "paragraph-p010-m09": "EB Garamond",
           "paragraph-p010-m11": "Besley",
           "paragraph-p010-m13": "Work Sans",
-          "paragraph-p010-m15": "Libre Franklin",
+          "paragraph-p010-m15": "Work Sans",
           "paragraph-p010-m17": "Bodoni Moda",
           "paragraph-p010-m19": "Inter"
         },
@@ -4304,7 +4304,7 @@
           "paragraph-p011-m11": "EB Garamond",
           "paragraph-p011-m13": "Besley",
           "paragraph-p011-m15": "Work Sans",
-          "paragraph-p011-m17": "Libre Franklin",
+          "paragraph-p011-m17": "Work Sans",
           "paragraph-p011-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -4725,7 +4725,7 @@
           "paragraph-p012-m13": "EB Garamond",
           "paragraph-p012-m15": "Besley",
           "paragraph-p012-m17": "Work Sans",
-          "paragraph-p012-m19": "Libre Franklin"
+          "paragraph-p012-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p012-m01": 800,
@@ -5136,7 +5136,7 @@
           "paragraph-p013-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p013-m01": "Libre Franklin",
+          "paragraph-p013-m01": "Work Sans",
           "paragraph-p013-m03": "Bodoni Moda",
           "paragraph-p013-m05": "Inter",
           "paragraph-p013-m07": "IBM Plex Sans",
@@ -5557,7 +5557,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p014-m01": "Work Sans",
-          "paragraph-p014-m03": "Libre Franklin",
+          "paragraph-p014-m03": "Work Sans",
           "paragraph-p014-m05": "Bodoni Moda",
           "paragraph-p014-m07": "Inter",
           "paragraph-p014-m09": "IBM Plex Sans",
@@ -5978,7 +5978,7 @@
         "blockFontFamilies": {
           "paragraph-p015-m01": "Besley",
           "paragraph-p015-m03": "Work Sans",
-          "paragraph-p015-m05": "Libre Franklin",
+          "paragraph-p015-m05": "Work Sans",
           "paragraph-p015-m07": "Bodoni Moda",
           "paragraph-p015-m09": "Inter",
           "paragraph-p015-m11": "IBM Plex Sans",
@@ -6399,7 +6399,7 @@
           "paragraph-p016-m01": "EB Garamond",
           "paragraph-p016-m03": "Besley",
           "paragraph-p016-m05": "Work Sans",
-          "paragraph-p016-m07": "Libre Franklin",
+          "paragraph-p016-m07": "Work Sans",
           "paragraph-p016-m09": "Bodoni Moda",
           "paragraph-p016-m11": "Inter",
           "paragraph-p016-m13": "IBM Plex Sans",
@@ -6820,7 +6820,7 @@
           "paragraph-p017-m03": "EB Garamond",
           "paragraph-p017-m05": "Besley",
           "paragraph-p017-m07": "Work Sans",
-          "paragraph-p017-m09": "Libre Franklin",
+          "paragraph-p017-m09": "Work Sans",
           "paragraph-p017-m11": "Bodoni Moda",
           "paragraph-p017-m13": "Inter",
           "paragraph-p017-m15": "IBM Plex Sans",
@@ -7241,7 +7241,7 @@
           "paragraph-p018-m05": "EB Garamond",
           "paragraph-p018-m07": "Besley",
           "paragraph-p018-m09": "Work Sans",
-          "paragraph-p018-m11": "Libre Franklin",
+          "paragraph-p018-m11": "Work Sans",
           "paragraph-p018-m13": "Bodoni Moda",
           "paragraph-p018-m15": "Inter",
           "paragraph-p018-m17": "IBM Plex Sans",
@@ -7593,7 +7593,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "swiss-modern",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -7662,7 +7662,7 @@
           "paragraph-p019-m07": "EB Garamond",
           "paragraph-p019-m09": "Besley",
           "paragraph-p019-m11": "Work Sans",
-          "paragraph-p019-m13": "Libre Franklin",
+          "paragraph-p019-m13": "Work Sans",
           "paragraph-p019-m15": "Bodoni Moda",
           "paragraph-p019-m17": "Inter",
           "paragraph-p019-m19": "IBM Plex Sans"
@@ -8083,7 +8083,7 @@
           "paragraph-p020-m09": "EB Garamond",
           "paragraph-p020-m11": "Besley",
           "paragraph-p020-m13": "Work Sans",
-          "paragraph-p020-m15": "Libre Franklin",
+          "paragraph-p020-m15": "Work Sans",
           "paragraph-p020-m17": "Bodoni Moda",
           "paragraph-p020-m19": "Inter"
         },
@@ -8504,7 +8504,7 @@
           "paragraph-p021-m11": "EB Garamond",
           "paragraph-p021-m13": "Besley",
           "paragraph-p021-m15": "Work Sans",
-          "paragraph-p021-m17": "Libre Franklin",
+          "paragraph-p021-m17": "Work Sans",
           "paragraph-p021-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -8925,7 +8925,7 @@
           "paragraph-p022-m13": "EB Garamond",
           "paragraph-p022-m15": "Besley",
           "paragraph-p022-m17": "Work Sans",
-          "paragraph-p022-m19": "Libre Franklin"
+          "paragraph-p022-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p022-m01": 400,
@@ -9336,7 +9336,7 @@
           "paragraph-p023-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p023-m01": "Libre Franklin",
+          "paragraph-p023-m01": "Work Sans",
           "paragraph-p023-m03": "Bodoni Moda",
           "paragraph-p023-m05": "Inter",
           "paragraph-p023-m07": "IBM Plex Sans",
@@ -9757,7 +9757,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p024-m01": "Work Sans",
-          "paragraph-p024-m03": "Libre Franklin",
+          "paragraph-p024-m03": "Work Sans",
           "paragraph-p024-m05": "Bodoni Moda",
           "paragraph-p024-m07": "Inter",
           "paragraph-p024-m09": "IBM Plex Sans",
@@ -10178,7 +10178,7 @@
         "blockFontFamilies": {
           "paragraph-p025-m01": "Besley",
           "paragraph-p025-m03": "Work Sans",
-          "paragraph-p025-m05": "Libre Franklin",
+          "paragraph-p025-m05": "Work Sans",
           "paragraph-p025-m07": "Bodoni Moda",
           "paragraph-p025-m09": "Inter",
           "paragraph-p025-m11": "IBM Plex Sans",
@@ -10599,7 +10599,7 @@
           "paragraph-p026-m01": "EB Garamond",
           "paragraph-p026-m03": "Besley",
           "paragraph-p026-m05": "Work Sans",
-          "paragraph-p026-m07": "Libre Franklin",
+          "paragraph-p026-m07": "Work Sans",
           "paragraph-p026-m09": "Bodoni Moda",
           "paragraph-p026-m11": "Inter",
           "paragraph-p026-m13": "IBM Plex Sans",
@@ -11020,7 +11020,7 @@
           "paragraph-p027-m03": "EB Garamond",
           "paragraph-p027-m05": "Besley",
           "paragraph-p027-m07": "Work Sans",
-          "paragraph-p027-m09": "Libre Franklin",
+          "paragraph-p027-m09": "Work Sans",
           "paragraph-p027-m11": "Bodoni Moda",
           "paragraph-p027-m13": "Inter",
           "paragraph-p027-m15": "IBM Plex Sans",
@@ -11441,7 +11441,7 @@
           "paragraph-p028-m05": "EB Garamond",
           "paragraph-p028-m07": "Besley",
           "paragraph-p028-m09": "Work Sans",
-          "paragraph-p028-m11": "Libre Franklin",
+          "paragraph-p028-m11": "Work Sans",
           "paragraph-p028-m13": "Bodoni Moda",
           "paragraph-p028-m15": "Inter",
           "paragraph-p028-m17": "IBM Plex Sans",
@@ -11793,7 +11793,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "stone-cyan",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -11862,7 +11862,7 @@
           "paragraph-p029-m07": "EB Garamond",
           "paragraph-p029-m09": "Besley",
           "paragraph-p029-m11": "Work Sans",
-          "paragraph-p029-m13": "Libre Franklin",
+          "paragraph-p029-m13": "Work Sans",
           "paragraph-p029-m15": "Bodoni Moda",
           "paragraph-p029-m17": "Inter",
           "paragraph-p029-m19": "IBM Plex Sans"
@@ -12283,7 +12283,7 @@
           "paragraph-p030-m09": "EB Garamond",
           "paragraph-p030-m11": "Besley",
           "paragraph-p030-m13": "Work Sans",
-          "paragraph-p030-m15": "Libre Franklin",
+          "paragraph-p030-m15": "Work Sans",
           "paragraph-p030-m17": "Bodoni Moda",
           "paragraph-p030-m19": "Inter"
         },
@@ -12704,7 +12704,7 @@
           "paragraph-p031-m11": "EB Garamond",
           "paragraph-p031-m13": "Besley",
           "paragraph-p031-m15": "Work Sans",
-          "paragraph-p031-m17": "Libre Franklin",
+          "paragraph-p031-m17": "Work Sans",
           "paragraph-p031-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -13125,7 +13125,7 @@
           "paragraph-p032-m13": "EB Garamond",
           "paragraph-p032-m15": "Besley",
           "paragraph-p032-m17": "Work Sans",
-          "paragraph-p032-m19": "Libre Franklin"
+          "paragraph-p032-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p032-m01": 600,
@@ -13536,7 +13536,7 @@
           "paragraph-p033-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p033-m01": "Libre Franklin",
+          "paragraph-p033-m01": "Work Sans",
           "paragraph-p033-m03": "Bodoni Moda",
           "paragraph-p033-m05": "Inter",
           "paragraph-p033-m07": "IBM Plex Sans",
@@ -13957,7 +13957,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p034-m01": "Work Sans",
-          "paragraph-p034-m03": "Libre Franklin",
+          "paragraph-p034-m03": "Work Sans",
           "paragraph-p034-m05": "Bodoni Moda",
           "paragraph-p034-m07": "Inter",
           "paragraph-p034-m09": "IBM Plex Sans",
@@ -14378,7 +14378,7 @@
         "blockFontFamilies": {
           "paragraph-p035-m01": "Besley",
           "paragraph-p035-m03": "Work Sans",
-          "paragraph-p035-m05": "Libre Franklin",
+          "paragraph-p035-m05": "Work Sans",
           "paragraph-p035-m07": "Bodoni Moda",
           "paragraph-p035-m09": "Inter",
           "paragraph-p035-m11": "IBM Plex Sans",
@@ -14799,7 +14799,7 @@
           "paragraph-p036-m01": "EB Garamond",
           "paragraph-p036-m03": "Besley",
           "paragraph-p036-m05": "Work Sans",
-          "paragraph-p036-m07": "Libre Franklin",
+          "paragraph-p036-m07": "Work Sans",
           "paragraph-p036-m09": "Bodoni Moda",
           "paragraph-p036-m11": "Inter",
           "paragraph-p036-m13": "IBM Plex Sans",
@@ -15220,7 +15220,7 @@
           "paragraph-p037-m03": "EB Garamond",
           "paragraph-p037-m05": "Besley",
           "paragraph-p037-m07": "Work Sans",
-          "paragraph-p037-m09": "Libre Franklin",
+          "paragraph-p037-m09": "Work Sans",
           "paragraph-p037-m11": "Bodoni Moda",
           "paragraph-p037-m13": "Inter",
           "paragraph-p037-m15": "IBM Plex Sans",
@@ -15641,7 +15641,7 @@
           "paragraph-p038-m05": "EB Garamond",
           "paragraph-p038-m07": "Besley",
           "paragraph-p038-m09": "Work Sans",
-          "paragraph-p038-m11": "Libre Franklin",
+          "paragraph-p038-m11": "Work Sans",
           "paragraph-p038-m13": "Bodoni Moda",
           "paragraph-p038-m15": "Inter",
           "paragraph-p038-m17": "IBM Plex Sans",
@@ -15993,7 +15993,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "fresh-contrast",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -16062,7 +16062,7 @@
           "paragraph-p039-m07": "EB Garamond",
           "paragraph-p039-m09": "Besley",
           "paragraph-p039-m11": "Work Sans",
-          "paragraph-p039-m13": "Libre Franklin",
+          "paragraph-p039-m13": "Work Sans",
           "paragraph-p039-m15": "Bodoni Moda",
           "paragraph-p039-m17": "Inter",
           "paragraph-p039-m19": "IBM Plex Sans"
@@ -16483,7 +16483,7 @@
           "paragraph-p040-m09": "EB Garamond",
           "paragraph-p040-m11": "Besley",
           "paragraph-p040-m13": "Work Sans",
-          "paragraph-p040-m15": "Libre Franklin",
+          "paragraph-p040-m15": "Work Sans",
           "paragraph-p040-m17": "Bodoni Moda",
           "paragraph-p040-m19": "Inter"
         },
@@ -16904,7 +16904,7 @@
           "paragraph-p041-m11": "EB Garamond",
           "paragraph-p041-m13": "Besley",
           "paragraph-p041-m15": "Work Sans",
-          "paragraph-p041-m17": "Libre Franklin",
+          "paragraph-p041-m17": "Work Sans",
           "paragraph-p041-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -17325,7 +17325,7 @@
           "paragraph-p042-m13": "EB Garamond",
           "paragraph-p042-m15": "Besley",
           "paragraph-p042-m17": "Work Sans",
-          "paragraph-p042-m19": "Libre Franklin"
+          "paragraph-p042-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p042-m01": 800,
@@ -17736,7 +17736,7 @@
           "paragraph-p043-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p043-m01": "Libre Franklin",
+          "paragraph-p043-m01": "Work Sans",
           "paragraph-p043-m03": "Bodoni Moda",
           "paragraph-p043-m05": "Inter",
           "paragraph-p043-m07": "IBM Plex Sans",
@@ -18157,7 +18157,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p044-m01": "Work Sans",
-          "paragraph-p044-m03": "Libre Franklin",
+          "paragraph-p044-m03": "Work Sans",
           "paragraph-p044-m05": "Bodoni Moda",
           "paragraph-p044-m07": "Inter",
           "paragraph-p044-m09": "IBM Plex Sans",
@@ -18578,7 +18578,7 @@
         "blockFontFamilies": {
           "paragraph-p045-m01": "Besley",
           "paragraph-p045-m03": "Work Sans",
-          "paragraph-p045-m05": "Libre Franklin",
+          "paragraph-p045-m05": "Work Sans",
           "paragraph-p045-m07": "Bodoni Moda",
           "paragraph-p045-m09": "Inter",
           "paragraph-p045-m11": "IBM Plex Sans",
@@ -18999,7 +18999,7 @@
           "paragraph-p046-m01": "EB Garamond",
           "paragraph-p046-m03": "Besley",
           "paragraph-p046-m05": "Work Sans",
-          "paragraph-p046-m07": "Libre Franklin",
+          "paragraph-p046-m07": "Work Sans",
           "paragraph-p046-m09": "Bodoni Moda",
           "paragraph-p046-m11": "Inter",
           "paragraph-p046-m13": "IBM Plex Sans",
@@ -19420,7 +19420,7 @@
           "paragraph-p047-m03": "EB Garamond",
           "paragraph-p047-m05": "Besley",
           "paragraph-p047-m07": "Work Sans",
-          "paragraph-p047-m09": "Libre Franklin",
+          "paragraph-p047-m09": "Work Sans",
           "paragraph-p047-m11": "Bodoni Moda",
           "paragraph-p047-m13": "Inter",
           "paragraph-p047-m15": "IBM Plex Sans",
@@ -19841,7 +19841,7 @@
           "paragraph-p048-m05": "EB Garamond",
           "paragraph-p048-m07": "Besley",
           "paragraph-p048-m09": "Work Sans",
-          "paragraph-p048-m11": "Libre Franklin",
+          "paragraph-p048-m11": "Work Sans",
           "paragraph-p048-m13": "Bodoni Moda",
           "paragraph-p048-m15": "Inter",
           "paragraph-p048-m17": "IBM Plex Sans",
@@ -20193,7 +20193,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "sage-pop",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -20262,7 +20262,7 @@
           "paragraph-p049-m07": "EB Garamond",
           "paragraph-p049-m09": "Besley",
           "paragraph-p049-m11": "Work Sans",
-          "paragraph-p049-m13": "Libre Franklin",
+          "paragraph-p049-m13": "Work Sans",
           "paragraph-p049-m15": "Bodoni Moda",
           "paragraph-p049-m17": "Inter",
           "paragraph-p049-m19": "IBM Plex Sans"
@@ -20683,7 +20683,7 @@
           "paragraph-p050-m09": "EB Garamond",
           "paragraph-p050-m11": "Besley",
           "paragraph-p050-m13": "Work Sans",
-          "paragraph-p050-m15": "Libre Franklin",
+          "paragraph-p050-m15": "Work Sans",
           "paragraph-p050-m17": "Bodoni Moda",
           "paragraph-p050-m19": "Inter"
         },
@@ -21104,7 +21104,7 @@
           "paragraph-p051-m11": "EB Garamond",
           "paragraph-p051-m13": "Besley",
           "paragraph-p051-m15": "Work Sans",
-          "paragraph-p051-m17": "Libre Franklin",
+          "paragraph-p051-m17": "Work Sans",
           "paragraph-p051-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -21525,7 +21525,7 @@
           "paragraph-p052-m13": "EB Garamond",
           "paragraph-p052-m15": "Besley",
           "paragraph-p052-m17": "Work Sans",
-          "paragraph-p052-m19": "Libre Franklin"
+          "paragraph-p052-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p052-m01": 400,
@@ -21936,7 +21936,7 @@
           "paragraph-p053-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p053-m01": "Libre Franklin",
+          "paragraph-p053-m01": "Work Sans",
           "paragraph-p053-m03": "Bodoni Moda",
           "paragraph-p053-m05": "Inter",
           "paragraph-p053-m07": "IBM Plex Sans",
@@ -22357,7 +22357,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p054-m01": "Work Sans",
-          "paragraph-p054-m03": "Libre Franklin",
+          "paragraph-p054-m03": "Work Sans",
           "paragraph-p054-m05": "Bodoni Moda",
           "paragraph-p054-m07": "Inter",
           "paragraph-p054-m09": "IBM Plex Sans",
@@ -22778,7 +22778,7 @@
         "blockFontFamilies": {
           "paragraph-p055-m01": "Besley",
           "paragraph-p055-m03": "Work Sans",
-          "paragraph-p055-m05": "Libre Franklin",
+          "paragraph-p055-m05": "Work Sans",
           "paragraph-p055-m07": "Bodoni Moda",
           "paragraph-p055-m09": "Inter",
           "paragraph-p055-m11": "IBM Plex Sans",
@@ -23199,7 +23199,7 @@
           "paragraph-p056-m01": "EB Garamond",
           "paragraph-p056-m03": "Besley",
           "paragraph-p056-m05": "Work Sans",
-          "paragraph-p056-m07": "Libre Franklin",
+          "paragraph-p056-m07": "Work Sans",
           "paragraph-p056-m09": "Bodoni Moda",
           "paragraph-p056-m11": "Inter",
           "paragraph-p056-m13": "IBM Plex Sans",
@@ -23620,7 +23620,7 @@
           "paragraph-p057-m03": "EB Garamond",
           "paragraph-p057-m05": "Besley",
           "paragraph-p057-m07": "Work Sans",
-          "paragraph-p057-m09": "Libre Franklin",
+          "paragraph-p057-m09": "Work Sans",
           "paragraph-p057-m11": "Bodoni Moda",
           "paragraph-p057-m13": "Inter",
           "paragraph-p057-m15": "IBM Plex Sans",
@@ -24041,7 +24041,7 @@
           "paragraph-p058-m05": "EB Garamond",
           "paragraph-p058-m07": "Besley",
           "paragraph-p058-m09": "Work Sans",
-          "paragraph-p058-m11": "Libre Franklin",
+          "paragraph-p058-m11": "Work Sans",
           "paragraph-p058-m13": "Bodoni Moda",
           "paragraph-p058-m15": "Inter",
           "paragraph-p058-m17": "IBM Plex Sans",
@@ -24393,7 +24393,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "coral-bay",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -24462,7 +24462,7 @@
           "paragraph-p059-m07": "EB Garamond",
           "paragraph-p059-m09": "Besley",
           "paragraph-p059-m11": "Work Sans",
-          "paragraph-p059-m13": "Libre Franklin",
+          "paragraph-p059-m13": "Work Sans",
           "paragraph-p059-m15": "Bodoni Moda",
           "paragraph-p059-m17": "Inter",
           "paragraph-p059-m19": "IBM Plex Sans"
@@ -24883,7 +24883,7 @@
           "paragraph-p060-m09": "EB Garamond",
           "paragraph-p060-m11": "Besley",
           "paragraph-p060-m13": "Work Sans",
-          "paragraph-p060-m15": "Libre Franklin",
+          "paragraph-p060-m15": "Work Sans",
           "paragraph-p060-m17": "Bodoni Moda",
           "paragraph-p060-m19": "Inter"
         },
@@ -25304,7 +25304,7 @@
           "paragraph-p061-m11": "EB Garamond",
           "paragraph-p061-m13": "Besley",
           "paragraph-p061-m15": "Work Sans",
-          "paragraph-p061-m17": "Libre Franklin",
+          "paragraph-p061-m17": "Work Sans",
           "paragraph-p061-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -25725,7 +25725,7 @@
           "paragraph-p062-m13": "EB Garamond",
           "paragraph-p062-m15": "Besley",
           "paragraph-p062-m17": "Work Sans",
-          "paragraph-p062-m19": "Libre Franklin"
+          "paragraph-p062-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p062-m01": 600,
@@ -26136,7 +26136,7 @@
           "paragraph-p063-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p063-m01": "Libre Franklin",
+          "paragraph-p063-m01": "Work Sans",
           "paragraph-p063-m03": "Bodoni Moda",
           "paragraph-p063-m05": "Inter",
           "paragraph-p063-m07": "IBM Plex Sans",
@@ -26557,7 +26557,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p064-m01": "Work Sans",
-          "paragraph-p064-m03": "Libre Franklin",
+          "paragraph-p064-m03": "Work Sans",
           "paragraph-p064-m05": "Bodoni Moda",
           "paragraph-p064-m07": "Inter",
           "paragraph-p064-m09": "IBM Plex Sans",
@@ -26978,7 +26978,7 @@
         "blockFontFamilies": {
           "paragraph-p065-m01": "Besley",
           "paragraph-p065-m03": "Work Sans",
-          "paragraph-p065-m05": "Libre Franklin",
+          "paragraph-p065-m05": "Work Sans",
           "paragraph-p065-m07": "Bodoni Moda",
           "paragraph-p065-m09": "Inter",
           "paragraph-p065-m11": "IBM Plex Sans",
@@ -27399,7 +27399,7 @@
           "paragraph-p066-m01": "EB Garamond",
           "paragraph-p066-m03": "Besley",
           "paragraph-p066-m05": "Work Sans",
-          "paragraph-p066-m07": "Libre Franklin",
+          "paragraph-p066-m07": "Work Sans",
           "paragraph-p066-m09": "Bodoni Moda",
           "paragraph-p066-m11": "Inter",
           "paragraph-p066-m13": "IBM Plex Sans",
@@ -27820,7 +27820,7 @@
           "paragraph-p067-m03": "EB Garamond",
           "paragraph-p067-m05": "Besley",
           "paragraph-p067-m07": "Work Sans",
-          "paragraph-p067-m09": "Libre Franklin",
+          "paragraph-p067-m09": "Work Sans",
           "paragraph-p067-m11": "Bodoni Moda",
           "paragraph-p067-m13": "Inter",
           "paragraph-p067-m15": "IBM Plex Sans",
@@ -28241,7 +28241,7 @@
           "paragraph-p068-m05": "EB Garamond",
           "paragraph-p068-m07": "Besley",
           "paragraph-p068-m09": "Work Sans",
-          "paragraph-p068-m11": "Libre Franklin",
+          "paragraph-p068-m11": "Work Sans",
           "paragraph-p068-m13": "Bodoni Moda",
           "paragraph-p068-m15": "Inter",
           "paragraph-p068-m17": "IBM Plex Sans",
@@ -28593,7 +28593,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "industrial-ember",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -28662,7 +28662,7 @@
           "paragraph-p069-m07": "EB Garamond",
           "paragraph-p069-m09": "Besley",
           "paragraph-p069-m11": "Work Sans",
-          "paragraph-p069-m13": "Libre Franklin",
+          "paragraph-p069-m13": "Work Sans",
           "paragraph-p069-m15": "Bodoni Moda",
           "paragraph-p069-m17": "Inter",
           "paragraph-p069-m19": "IBM Plex Sans"
@@ -29083,7 +29083,7 @@
           "paragraph-p070-m09": "EB Garamond",
           "paragraph-p070-m11": "Besley",
           "paragraph-p070-m13": "Work Sans",
-          "paragraph-p070-m15": "Libre Franklin",
+          "paragraph-p070-m15": "Work Sans",
           "paragraph-p070-m17": "Bodoni Moda",
           "paragraph-p070-m19": "Inter"
         },
@@ -29504,7 +29504,7 @@
           "paragraph-p071-m11": "EB Garamond",
           "paragraph-p071-m13": "Besley",
           "paragraph-p071-m15": "Work Sans",
-          "paragraph-p071-m17": "Libre Franklin",
+          "paragraph-p071-m17": "Work Sans",
           "paragraph-p071-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -29925,7 +29925,7 @@
           "paragraph-p072-m13": "EB Garamond",
           "paragraph-p072-m15": "Besley",
           "paragraph-p072-m17": "Work Sans",
-          "paragraph-p072-m19": "Libre Franklin"
+          "paragraph-p072-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p072-m01": 800,
@@ -30336,7 +30336,7 @@
           "paragraph-p073-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p073-m01": "Libre Franklin",
+          "paragraph-p073-m01": "Work Sans",
           "paragraph-p073-m03": "Bodoni Moda",
           "paragraph-p073-m05": "Inter",
           "paragraph-p073-m07": "IBM Plex Sans",
@@ -30757,7 +30757,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p074-m01": "Work Sans",
-          "paragraph-p074-m03": "Libre Franklin",
+          "paragraph-p074-m03": "Work Sans",
           "paragraph-p074-m05": "Bodoni Moda",
           "paragraph-p074-m07": "Inter",
           "paragraph-p074-m09": "IBM Plex Sans",
@@ -31178,7 +31178,7 @@
         "blockFontFamilies": {
           "paragraph-p075-m01": "Besley",
           "paragraph-p075-m03": "Work Sans",
-          "paragraph-p075-m05": "Libre Franklin",
+          "paragraph-p075-m05": "Work Sans",
           "paragraph-p075-m07": "Bodoni Moda",
           "paragraph-p075-m09": "Inter",
           "paragraph-p075-m11": "IBM Plex Sans",
@@ -31599,7 +31599,7 @@
           "paragraph-p076-m01": "EB Garamond",
           "paragraph-p076-m03": "Besley",
           "paragraph-p076-m05": "Work Sans",
-          "paragraph-p076-m07": "Libre Franklin",
+          "paragraph-p076-m07": "Work Sans",
           "paragraph-p076-m09": "Bodoni Moda",
           "paragraph-p076-m11": "Inter",
           "paragraph-p076-m13": "IBM Plex Sans",
@@ -32020,7 +32020,7 @@
           "paragraph-p077-m03": "EB Garamond",
           "paragraph-p077-m05": "Besley",
           "paragraph-p077-m07": "Work Sans",
-          "paragraph-p077-m09": "Libre Franklin",
+          "paragraph-p077-m09": "Work Sans",
           "paragraph-p077-m11": "Bodoni Moda",
           "paragraph-p077-m13": "Inter",
           "paragraph-p077-m15": "IBM Plex Sans",
@@ -32441,7 +32441,7 @@
           "paragraph-p078-m05": "EB Garamond",
           "paragraph-p078-m07": "Besley",
           "paragraph-p078-m09": "Work Sans",
-          "paragraph-p078-m11": "Libre Franklin",
+          "paragraph-p078-m11": "Work Sans",
           "paragraph-p078-m13": "Bodoni Moda",
           "paragraph-p078-m15": "Inter",
           "paragraph-p078-m17": "IBM Plex Sans",
@@ -32793,7 +32793,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "patina-clay",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -32862,7 +32862,7 @@
           "paragraph-p079-m07": "EB Garamond",
           "paragraph-p079-m09": "Besley",
           "paragraph-p079-m11": "Work Sans",
-          "paragraph-p079-m13": "Libre Franklin",
+          "paragraph-p079-m13": "Work Sans",
           "paragraph-p079-m15": "Bodoni Moda",
           "paragraph-p079-m17": "Inter",
           "paragraph-p079-m19": "IBM Plex Sans"
@@ -33283,7 +33283,7 @@
           "paragraph-p080-m09": "EB Garamond",
           "paragraph-p080-m11": "Besley",
           "paragraph-p080-m13": "Work Sans",
-          "paragraph-p080-m15": "Libre Franklin",
+          "paragraph-p080-m15": "Work Sans",
           "paragraph-p080-m17": "Bodoni Moda",
           "paragraph-p080-m19": "Inter"
         },
@@ -33704,7 +33704,7 @@
           "paragraph-p081-m11": "EB Garamond",
           "paragraph-p081-m13": "Besley",
           "paragraph-p081-m15": "Work Sans",
-          "paragraph-p081-m17": "Libre Franklin",
+          "paragraph-p081-m17": "Work Sans",
           "paragraph-p081-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -34125,7 +34125,7 @@
           "paragraph-p082-m13": "EB Garamond",
           "paragraph-p082-m15": "Besley",
           "paragraph-p082-m17": "Work Sans",
-          "paragraph-p082-m19": "Libre Franklin"
+          "paragraph-p082-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p082-m01": 400,
@@ -34536,7 +34536,7 @@
           "paragraph-p083-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p083-m01": "Libre Franklin",
+          "paragraph-p083-m01": "Work Sans",
           "paragraph-p083-m03": "Bodoni Moda",
           "paragraph-p083-m05": "Inter",
           "paragraph-p083-m07": "IBM Plex Sans",
@@ -34957,7 +34957,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p084-m01": "Work Sans",
-          "paragraph-p084-m03": "Libre Franklin",
+          "paragraph-p084-m03": "Work Sans",
           "paragraph-p084-m05": "Bodoni Moda",
           "paragraph-p084-m07": "Inter",
           "paragraph-p084-m09": "IBM Plex Sans",
@@ -35378,7 +35378,7 @@
         "blockFontFamilies": {
           "paragraph-p085-m01": "Besley",
           "paragraph-p085-m03": "Work Sans",
-          "paragraph-p085-m05": "Libre Franklin",
+          "paragraph-p085-m05": "Work Sans",
           "paragraph-p085-m07": "Bodoni Moda",
           "paragraph-p085-m09": "Inter",
           "paragraph-p085-m11": "IBM Plex Sans",
@@ -35799,7 +35799,7 @@
           "paragraph-p086-m01": "EB Garamond",
           "paragraph-p086-m03": "Besley",
           "paragraph-p086-m05": "Work Sans",
-          "paragraph-p086-m07": "Libre Franklin",
+          "paragraph-p086-m07": "Work Sans",
           "paragraph-p086-m09": "Bodoni Moda",
           "paragraph-p086-m11": "Inter",
           "paragraph-p086-m13": "IBM Plex Sans",
@@ -36220,7 +36220,7 @@
           "paragraph-p087-m03": "EB Garamond",
           "paragraph-p087-m05": "Besley",
           "paragraph-p087-m07": "Work Sans",
-          "paragraph-p087-m09": "Libre Franklin",
+          "paragraph-p087-m09": "Work Sans",
           "paragraph-p087-m11": "Bodoni Moda",
           "paragraph-p087-m13": "Inter",
           "paragraph-p087-m15": "IBM Plex Sans",
@@ -36641,7 +36641,7 @@
           "paragraph-p088-m05": "EB Garamond",
           "paragraph-p088-m07": "Besley",
           "paragraph-p088-m09": "Work Sans",
-          "paragraph-p088-m11": "Libre Franklin",
+          "paragraph-p088-m11": "Work Sans",
           "paragraph-p088-m13": "Bodoni Moda",
           "paragraph-p088-m15": "Inter",
           "paragraph-p088-m17": "IBM Plex Sans",
@@ -36993,7 +36993,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "signal-cyan",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -37062,7 +37062,7 @@
           "paragraph-p089-m07": "EB Garamond",
           "paragraph-p089-m09": "Besley",
           "paragraph-p089-m11": "Work Sans",
-          "paragraph-p089-m13": "Libre Franklin",
+          "paragraph-p089-m13": "Work Sans",
           "paragraph-p089-m15": "Bodoni Moda",
           "paragraph-p089-m17": "Inter",
           "paragraph-p089-m19": "IBM Plex Sans"
@@ -37483,7 +37483,7 @@
           "paragraph-p090-m09": "EB Garamond",
           "paragraph-p090-m11": "Besley",
           "paragraph-p090-m13": "Work Sans",
-          "paragraph-p090-m15": "Libre Franklin",
+          "paragraph-p090-m15": "Work Sans",
           "paragraph-p090-m17": "Bodoni Moda",
           "paragraph-p090-m19": "Inter"
         },
@@ -37904,7 +37904,7 @@
           "paragraph-p091-m11": "EB Garamond",
           "paragraph-p091-m13": "Besley",
           "paragraph-p091-m15": "Work Sans",
-          "paragraph-p091-m17": "Libre Franklin",
+          "paragraph-p091-m17": "Work Sans",
           "paragraph-p091-m19": "Bodoni Moda"
         },
         "blockFontWeights": {
@@ -38325,7 +38325,7 @@
           "paragraph-p092-m13": "EB Garamond",
           "paragraph-p092-m15": "Besley",
           "paragraph-p092-m17": "Work Sans",
-          "paragraph-p092-m19": "Libre Franklin"
+          "paragraph-p092-m19": "Work Sans"
         },
         "blockFontWeights": {
           "paragraph-p092-m01": 600,
@@ -38736,7 +38736,7 @@
           "paragraph-p093-m19": "body"
         },
         "blockFontFamilies": {
-          "paragraph-p093-m01": "Libre Franklin",
+          "paragraph-p093-m01": "Work Sans",
           "paragraph-p093-m03": "Bodoni Moda",
           "paragraph-p093-m05": "Inter",
           "paragraph-p093-m07": "IBM Plex Sans",
@@ -39157,7 +39157,7 @@
         },
         "blockFontFamilies": {
           "paragraph-p094-m01": "Work Sans",
-          "paragraph-p094-m03": "Libre Franklin",
+          "paragraph-p094-m03": "Work Sans",
           "paragraph-p094-m05": "Bodoni Moda",
           "paragraph-p094-m07": "Inter",
           "paragraph-p094-m09": "IBM Plex Sans",
@@ -39578,7 +39578,7 @@
         "blockFontFamilies": {
           "paragraph-p095-m01": "Besley",
           "paragraph-p095-m03": "Work Sans",
-          "paragraph-p095-m05": "Libre Franklin",
+          "paragraph-p095-m05": "Work Sans",
           "paragraph-p095-m07": "Bodoni Moda",
           "paragraph-p095-m09": "Inter",
           "paragraph-p095-m11": "IBM Plex Sans",
@@ -39999,7 +39999,7 @@
           "paragraph-p096-m01": "EB Garamond",
           "paragraph-p096-m03": "Besley",
           "paragraph-p096-m05": "Work Sans",
-          "paragraph-p096-m07": "Libre Franklin",
+          "paragraph-p096-m07": "Work Sans",
           "paragraph-p096-m09": "Bodoni Moda",
           "paragraph-p096-m11": "Inter",
           "paragraph-p096-m13": "IBM Plex Sans",
@@ -40420,7 +40420,7 @@
           "paragraph-p097-m03": "EB Garamond",
           "paragraph-p097-m05": "Besley",
           "paragraph-p097-m07": "Work Sans",
-          "paragraph-p097-m09": "Libre Franklin",
+          "paragraph-p097-m09": "Work Sans",
           "paragraph-p097-m11": "Bodoni Moda",
           "paragraph-p097-m13": "Inter",
           "paragraph-p097-m15": "IBM Plex Sans",
@@ -40841,7 +40841,7 @@
           "paragraph-p098-m05": "EB Garamond",
           "paragraph-p098-m07": "Besley",
           "paragraph-p098-m09": "Work Sans",
-          "paragraph-p098-m11": "Libre Franklin",
+          "paragraph-p098-m11": "Work Sans",
           "paragraph-p098-m13": "Bodoni Moda",
           "paragraph-p098-m15": "Inter",
           "paragraph-p098-m17": "IBM Plex Sans",
@@ -41193,7 +41193,7 @@
         "rhythmColsEnabled": false,
         "rhythmColsDirection": "btt",
         "typographyScale": "swiss",
-        "baseFont": "Libre Franklin",
+        "baseFont": "Work Sans",
         "imageColorScheme": "mono",
         "canvasBackground": null,
         "customBaseline": 12,
@@ -41262,7 +41262,7 @@
           "paragraph-p099-m07": "EB Garamond",
           "paragraph-p099-m09": "Besley",
           "paragraph-p099-m11": "Work Sans",
-          "paragraph-p099-m13": "Libre Franklin",
+          "paragraph-p099-m13": "Work Sans",
           "paragraph-p099-m15": "Bodoni Moda",
           "paragraph-p099-m17": "Inter",
           "paragraph-p099-m19": "IBM Plex Sans"
@@ -41683,7 +41683,7 @@
           "paragraph-p100-m09": "EB Garamond",
           "paragraph-p100-m11": "Besley",
           "paragraph-p100-m13": "Work Sans",
-          "paragraph-p100-m15": "Libre Franklin",
+          "paragraph-p100-m15": "Work Sans",
           "paragraph-p100-m17": "Bodoni Moda",
           "paragraph-p100-m19": "Inter"
         },

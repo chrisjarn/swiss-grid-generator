@@ -32,7 +32,6 @@ const FONT_STACKS: Record<string, string> = {
   "Work Sans": "Work Sans, sans-serif",
   Jost: "Jost, sans-serif",
   "IBM Plex Sans": "IBM Plex Sans, sans-serif",
-  "Libre Franklin": "Libre Franklin, sans-serif",
   "EB Garamond": "EB Garamond, serif",
   "Libre Baskerville": "Libre Baskerville, serif",
   "Bodoni Moda": "Bodoni Moda, serif",

@@ -39,13 +39,6 @@ export const FONT_DEFINITIONS = [
     cssVar: "--font-jost",
   },
   {
-    value: "Libre Franklin",
-    label: "Libre Franklin",
-    category: "Sans-Serif",
-    stack: "Libre Franklin, sans-serif",
-    cssVar: "--font-libre-franklin",
-  },
-  {
     value: "Work Sans",
     label: "Work Sans",
     category: "Sans-Serif",
