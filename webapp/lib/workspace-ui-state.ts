@@ -1,6 +1,7 @@
 import {
   FORMAT_BASELINES,
   clampCustomCanvasRatioUnit,
+  clampFibonacciSequenceStartIndex,
   type CanvasRatioKey,
 } from "@/lib/grid-calculator"
 import { clampRotation } from "@/lib/block-constraints"
@@ -43,6 +44,7 @@ export type GridUiState = Pick<
   | "rhythmColsEnabled"
   | "rhythmColsDirection"
   | "typographyScale"
+  | "fibonacciSequenceStartIndex"
   | "baseFont"
   | "imageColorScheme"
   | "canvasBackground"
@@ -89,6 +91,7 @@ export const INITIAL_GRID_UI_STATE: GridUiState = {
   rhythmColsEnabled: DEFAULT_UI.rhythmColsEnabled,
   rhythmColsDirection: DEFAULT_UI.rhythmColsDirection,
   typographyScale: DEFAULT_UI.typographyScale,
+  fibonacciSequenceStartIndex: DEFAULT_UI.fibonacciSequenceStartIndex,
   baseFont: DEFAULT_UI.baseFont,
   imageColorScheme: DEFAULT_UI.imageColorScheme,
   canvasBackground: DEFAULT_UI.canvasBackground,
@@ -128,6 +131,7 @@ export type UiAction =
   | { type: "SET"; key: "rhythmColsEnabled"; value: boolean }
   | { type: "SET"; key: "rhythmColsDirection"; value: GridRhythmColsDirection }
   | { type: "SET"; key: "typographyScale"; value: TypographyScale }
+  | { type: "SET"; key: "fibonacciSequenceStartIndex"; value: number }
   | { type: "SET"; key: "baseFont"; value: FontFamily }
   | { type: "SET"; key: "imageColorScheme"; value: ImageColorSchemeId }
   | { type: "SET"; key: "canvasBackground"; value: string | null }
@@ -202,6 +206,11 @@ export function gridUiReducer(state: GridUiState, action: UiAction): GridUiState
           if (state.gutterMultiple === nextGutterMultiple) return state
           return { ...state, gutterMultiple: nextGutterMultiple }
         }
+        case "fibonacciSequenceStartIndex": {
+          const nextStartIndex = clampFibonacciSequenceStartIndex(action.value)
+          if (state.fibonacciSequenceStartIndex === nextStartIndex) return state
+          return { ...state, fibonacciSequenceStartIndex: nextStartIndex }
+        }
         default:
           return state
       }
@@ -238,6 +247,7 @@ export function gridUiReducer(state: GridUiState, action: UiAction): GridUiState
         rhythmColsEnabled: action.snapshot.rhythmColsEnabled,
         rhythmColsDirection: action.snapshot.rhythmColsDirection,
         typographyScale: action.snapshot.typographyScale,
+        fibonacciSequenceStartIndex: clampFibonacciSequenceStartIndex(action.snapshot.fibonacciSequenceStartIndex),
         baseFont: action.snapshot.baseFont,
         imageColorScheme: action.snapshot.imageColorScheme,
         canvasBackground: action.snapshot.canvasBackground,

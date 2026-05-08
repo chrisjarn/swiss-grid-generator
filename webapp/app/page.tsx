@@ -348,7 +348,7 @@ export default function Home() {
     orientation, rotation,
     marginMethod, gridCols, gridRows, baselineMultiple, gutterMultiple, rhythm,
     rhythmRowsEnabled, rhythmRowsDirection, rhythmColsEnabled, rhythmColsDirection,
-    typographyScale, baseFont, imageColorScheme, canvasBackground, customBaseline,
+    typographyScale, fibonacciSequenceStartIndex, baseFont, imageColorScheme, canvasBackground, customBaseline,
     useCustomMargins, customMarginMultipliers, showBaselines, showModules,
     showMargins, showImagePlaceholders, showTypography, showLayers, collapsed,
   } = ui
@@ -369,6 +369,7 @@ export default function Home() {
     setRhythmColsEnabled,
     setRhythmColsDirection,
     setTypographyScale,
+    setFibonacciSequenceStartIndex,
     setBaseFont,
     setImageColorScheme,
     setCanvasBackground,
@@ -560,6 +561,7 @@ export default function Home() {
     rhythmColsEnabled,
     rhythmColsDirection,
     typographyScale,
+    fibonacciSequenceStartIndex,
     baseFont,
     imageColorScheme,
     canvasBackground,
@@ -590,6 +592,7 @@ export default function Home() {
     rhythmColsEnabled,
     rhythmColsDirection,
     typographyScale,
+    fibonacciSequenceStartIndex,
     baseFont,
     imageColorScheme,
     canvasBackground,
@@ -1960,6 +1963,8 @@ export default function Home() {
       typographyScale={sidebarControlUi.typographyScale}
       onTypographyScaleChange={setTypographyScale}
       onTypographyScalePreviewChange={handleTypographyScalePreviewChange}
+      fibonacciSequenceStartIndex={sidebarControlUi.fibonacciSequenceStartIndex}
+      onFibonacciSequenceStartIndexChange={setFibonacciSequenceStartIndex}
       typographyStyles={sidebarControlResult.typography.styles}
       baseFont={sidebarControlUi.baseFont}
       onBaseFontChange={setBaseFont}
@@ -2008,6 +2013,7 @@ export default function Home() {
     setRhythmRowsDirection,
     setRhythmRowsEnabled,
     setRotation,
+    setFibonacciSequenceStartIndex,
     setTypographyScale,
     setUseCustomMargins,
     showSectionHelpIcons,

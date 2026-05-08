@@ -246,9 +246,11 @@ widths[i] = moduleWidthBudget / gridCols
 For `fibonacci` rhythm:
 
 ```
-fib = [1, 2, 3, 5, ...]
+fib = [13, 21, 34, 55, ...]
 widths[i] = moduleWidthBudget × fib[i] / sum(fib)
 ```
+
+Grid Fibonacci does not use a `1`-starting window.
 
 If rows Fibonacci is disabled, widths fall back to equal distribution:
 
@@ -360,9 +362,9 @@ Formulas below are expressed as A4 reference sizes (pt) and converted to ratios 
 | Golden Ratio (φ = 1.618) | 10/φ, 10, 10φ, 10φ^2, 10φ^4, 10φ^5 |
 | Perfect Fourth (P4 = 4/3) | 10/P4, 10, 10P4^2, 10P4^3, 10P4^6, 10P4^7 |
 | Perfect Fifth (P5 = 3/2) | 10/P5, 10, 10P5, 10P5^2, 10P5^4, 10P5^5 |
-| Fibonacci | 10×13/21, 10, 10×34/21, 10×55/21, 10×89/21, 10×144/21 |
+| Fibonacci | 10×S0/21, 10×S1/21, 10×S2/21, 10×S3/21, 10×S4/21, 10×S5/21 |
 
-For the Fibonacci method, the sequence starts at `13` and is normalized so `21` maps to the `10pt` body reference. On the A4 12pt reference grid the resulting floored sizes are `6, 10, 16, 26, 42, 68` for `Caption`, `Body`, `Subhead`, `Headline`, `Display`, and `FX`. Leading is checked after font-size flooring. If a style's baseline-derived leading would be smaller than its font size, the leading multiplier is raised to the next whole baseline multiple.
+For the Fibonacci method, the default displayed sequence is `13, 21, 34, 55, 89`, with the next hidden value `144` used for `FX`. The active six-value window is `S0..S5`; the default `21` remains the fixed `10pt` reference. On the A4 12pt reference grid the default floored sizes are `6, 10, 16, 26, 42, 68` for `Caption`, `Body`, `Subhead`, `Headline`, `Display`, and `FX`; default Fibonacci `Caption` uses `8pt` leading. Moving the UI sequence left or right shifts the window against that fixed reference, so the body size and the whole rhythm scale down or up. The supported displayed windows start at `8`, `13`, and `21`. Leading is checked after font-size flooring. If a style's baseline-derived leading would be smaller than its font size, the leading multiplier is raised to the next whole baseline multiple.
 
 ### Scaling to Other Formats
 

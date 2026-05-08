@@ -25,6 +25,7 @@ import {
 import {
   FORMAT_BASELINES,
   CUSTOM_CANVAS_FORMAT,
+  clampFibonacciSequenceStartIndex,
   clampCustomCanvasRatioUnit,
   generateSwissGrid,
   getCustomCanvasFormatDimensions,
@@ -43,6 +44,7 @@ type UiSettingsSource = Record<string, unknown>
 const CANVAS_RATIO_BY_FORMAT = Object.fromEntries(
   Object.entries(PREVIEW_DEFAULT_FORMAT_BY_RATIO).map(([canvasRatio, format]) => [format, canvasRatio]),
 ) as Partial<Record<string, keyof typeof PREVIEW_DEFAULT_FORMAT_BY_RATIO>>
+const OBSOLETE_UI_SETTING_KEYS = ["gridFibonacciSequenceStartIndex"] as const
 
 function clampPositive(value: unknown, fallback: number): number {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) return fallback
@@ -179,6 +181,7 @@ export function resolveUiSettingsSnapshot(
       ? source.rhythmColsDirection
       : defaultRhythmAxis.rhythmColsDirection,
     typographyScale: isTypographyScale(source.typographyScale) ? source.typographyScale : DEFAULT_UI.typographyScale,
+    fibonacciSequenceStartIndex: clampFibonacciSequenceStartIndex(source.fibonacciSequenceStartIndex),
     baseFont: isFontFamily(source.baseFont) ? source.baseFont : DEFAULT_BASE_FONT,
     imageColorScheme,
     canvasBackground: resolveCanvasBackground(source.canvasBackground, imageColorScheme),
@@ -202,6 +205,9 @@ export function stripSessionUiSettings(source: Record<string, unknown>): Record<
   const serializableSnapshot = { ...source }
 
   SESSION_UI_SETTING_KEYS.forEach((key) => {
+    delete serializableSnapshot[key]
+  })
+  OBSOLETE_UI_SETTING_KEYS.forEach((key) => {
     delete serializableSnapshot[key]
   })
 
@@ -330,6 +336,7 @@ export function buildGridResultFromUiSettings(
     rhythmColsDirection: snapshot.rhythmColsDirection,
     customMargins,
     typographyScale: snapshot.typographyScale,
+    fibonacciSequenceStartIndex: snapshot.fibonacciSequenceStartIndex,
   })
 
   const normalized = withResolvedGridGuides(baseResult)

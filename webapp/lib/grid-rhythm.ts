@@ -4,7 +4,8 @@ import type {
   GridRhythmRowsDirection,
 } from "./config/defaults.ts"
 
-// NEW: Grid Rhythm (Fibonacci)
+const GRID_FIBONACCI_SEQUENCE = [13, 21, 34, 55, 89, 144, 233, 377, 610, 987, 1597, 2584, 4181] as const
+
 export function calculateModuleSizes(
   totalWidth: number,
   totalHeight: number,
@@ -28,8 +29,7 @@ export function calculateModuleSizes(
 
   const fib = (count: number) => {
     if (count <= 0) return []
-    const sequence = [1]
-    for (let i = 1; i < count; i += 1) sequence.push(sequence[i - 1] + (sequence[i - 2] || 1))
+    const sequence = GRID_FIBONACCI_SEQUENCE.slice(0, count)
     const total = sequence.reduce((sum, value) => sum + value, 0)
     if (total <= 0) return Array(count).fill(1 / count)
     return sequence.map((value) => value / total)

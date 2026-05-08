@@ -85,6 +85,8 @@ type Props = {
   typographyScale: TypographyScale
   onTypographyScaleChange: (value: TypographyScale) => void
   onTypographyScalePreviewChange?: (value: TypographyScale | null) => void
+  fibonacciSequenceStartIndex: number
+  onFibonacciSequenceStartIndexChange: (value: number) => void
   typographyStyles: GridResult["typography"]["styles"]
   baseFont: FontFamily
   onBaseFontChange: (value: FontFamily) => void
@@ -154,6 +156,8 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   typographyScale,
   onTypographyScaleChange,
   onTypographyScalePreviewChange,
+  fibonacciSequenceStartIndex,
+  onFibonacciSequenceStartIndexChange,
   typographyStyles,
   baseFont,
   onBaseFontChange,
@@ -267,6 +271,8 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
             typographyScale={typographyScale}
             onTypographyScaleChange={onTypographyScaleChange}
             onTypographyScalePreviewChange={onTypographyScalePreviewChange}
+            fibonacciSequenceStartIndex={fibonacciSequenceStartIndex}
+            onFibonacciSequenceStartIndexChange={onFibonacciSequenceStartIndexChange}
             typographyStyles={typographyStyles}
             gridUnit={gridUnit}
             baseFont={baseFont}

@@ -1,6 +1,7 @@
 import {
   DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT,
   DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH,
+  DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
   CUSTOM_CANVAS_FORMAT,
   type CanvasRatioKey,
 } from "@/lib/grid-calculator"
@@ -57,6 +58,7 @@ export const DEFAULT_UI: UiSettingsSnapshot = {
   rhythmColsEnabled: true,
   rhythmColsDirection: "ttb",
   typographyScale: "swiss",
+  fibonacciSequenceStartIndex: DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
   baseFont: "Inter",
   imageColorScheme: "swiss-modern",
   canvasBackground: getImageSchemeColorToken(0),

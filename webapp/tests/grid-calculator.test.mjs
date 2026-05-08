@@ -4,6 +4,7 @@ import assert from "node:assert/strict"
 import {
   CUSTOM_CANVAS_FORMAT,
   FORMATS_PT,
+  formatFibonacciTypographySequence,
   getCustomCanvasFormatDimensions,
   generateSwissGrid,
   getMaxBaseline,
@@ -194,6 +195,27 @@ test("custom margins override defaults; top/bottom are baseline-snapped", () => 
   assert.equal(result.grid.margins.right, 22)
 })
 
+test("fibonacci grid rhythm starts at 13", () => {
+  const result = generateSwissGrid({
+    format: "A4",
+    orientation: "portrait",
+    marginMethod: 1,
+    gridCols: 5,
+    gridRows: 1,
+    baseline: 12,
+    gutterMultiple: 1,
+    rhythm: "fibonacci",
+    rhythmRowsEnabled: true,
+    rhythmColsEnabled: false,
+  })
+  const totalWidth = result.module.widths.reduce((sum, value) => sum + value, 0)
+  const expected = [13, 21, 34, 55, 89]
+  const expectedTotal = expected.reduce((sum, value) => sum + value, 0)
+  result.module.widths.forEach((width, index) => {
+    approxEqual(width / totalWidth, expected[index] / expectedTotal, `grid fibonacci width ratio ${index}`)
+  })
+})
+
 test("typography styles stay baseline-aligned across all scales", () => {
   const scales = ["swiss", "golden", "fourth", "fifth", "fibonacci"]
   const styleKeys = ["fx", "caption", "body", "subhead", "headline", "display"]
@@ -234,6 +256,8 @@ test("fibonacci typography leading is never smaller than font size", () => {
   }
 
   assert.equal(result.typography.styles.caption.size, 6)
+  assert.equal(result.typography.styles.caption.leading, 8)
+  assert.equal(result.typography.styles.caption.baselineMultiplier, 2 / 3)
   assert.equal(result.typography.styles.body.size, 10)
   assert.equal(result.typography.styles.subhead.size, 16)
   assert.equal(result.typography.styles.headline.size, 26)
@@ -242,6 +266,45 @@ test("fibonacci typography leading is never smaller than font size", () => {
   assert.equal(result.typography.styles.body.leading, 12)
   assert.equal(result.typography.styles.body.baselineMultiplier, 1)
   assert.equal(result.typography.styles.body.bodyLines, 1)
+})
+
+test("fibonacci typography sequence shifts against the default body reference", () => {
+  assert.equal(formatFibonacciTypographySequence(), "13, 21, 34, 55, 89")
+
+  const shiftedLeft = generateSwissGrid({
+    format: "A4",
+    orientation: "portrait",
+    marginMethod: 1,
+    gridCols: 6,
+    gridRows: 8,
+    baseline: 12,
+    typographyScale: "fibonacci",
+    fibonacciSequenceStartIndex: 4,
+  })
+  assert.equal(formatFibonacciTypographySequence(4), "8, 13, 21, 34, 55")
+  assert.equal(shiftedLeft.typography.styles.caption.size, 3)
+  assert.equal(shiftedLeft.typography.styles.body.size, 6)
+  assert.equal(shiftedLeft.typography.styles.subhead.size, 10)
+  assert.equal(shiftedLeft.typography.styles.headline.size, 16)
+  assert.equal(shiftedLeft.typography.styles.display.size, 26)
+
+  const shiftedRight = generateSwissGrid({
+    format: "A4",
+    orientation: "portrait",
+    marginMethod: 1,
+    gridCols: 6,
+    gridRows: 8,
+    baseline: 12,
+    typographyScale: "fibonacci",
+    fibonacciSequenceStartIndex: 6,
+  })
+  assert.equal(formatFibonacciTypographySequence(6), "21, 34, 55, 89, 144")
+  assert.equal(shiftedRight.typography.styles.caption.size, 10)
+  assert.equal(shiftedRight.typography.styles.body.size, 16)
+  assert.equal(shiftedRight.typography.styles.subhead.size, 26)
+  assert.equal(shiftedRight.typography.styles.headline.size, 42)
+  assert.equal(shiftedRight.typography.styles.display.size, 68)
+  assert.equal(formatFibonacciTypographySequence(7), "21, 34, 55, 89, 144")
 })
 
 test("non-repetitive rhythm row heights are baseline-aligned per module", () => {

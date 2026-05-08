@@ -90,6 +90,10 @@ export function useWorkspaceUiActions({
     dispatch({ type: "SET", key: "typographyScale", value })
   }, [dispatch])
 
+  const setFibonacciSequenceStartIndex = useCallback((value: number) => {
+    dispatch({ type: "SET", key: "fibonacciSequenceStartIndex", value })
+  }, [dispatch])
+
   const setBaseFont = useCallback((value: FontFamily) => {
     dispatch({ type: "SET", key: "baseFont", value })
   }, [dispatch])
@@ -167,6 +171,7 @@ export function useWorkspaceUiActions({
     setRhythmColsEnabled,
     setRhythmColsDirection,
     setTypographyScale,
+    setFibonacciSequenceStartIndex,
     setBaseFont,
     setImageColorScheme,
     setCanvasBackground,

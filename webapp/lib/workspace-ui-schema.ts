@@ -40,6 +40,7 @@ export type UiSettingsSnapshot = {
   rhythmColsEnabled: boolean
   rhythmColsDirection: GridRhythmColsDirection
   typographyScale: TypographyScale
+  fibonacciSequenceStartIndex: number
   baseFont: FontFamily
   imageColorScheme: ImageColorSchemeId
   canvasBackground: string | null

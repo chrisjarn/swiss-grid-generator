@@ -27,7 +27,7 @@ import {
 } from "@/components/settings/settings-panel-styles"
 
 const RHYTHM_OPTIONS: Array<{ value: GridRhythm; label: string; detail: string }> = [
-  { value: "fibonacci", label: "Fibonacci", detail: "1:2:3:5" },
+  { value: "fibonacci", label: "Fibonacci", detail: "13:21:34:55:89" },
   { value: "golden", label: "Golden Ratio", detail: "1:1.618" },
   { value: "fifth", label: "Perfect Fifth", detail: "3:2" },
   { value: "fourth", label: "Perfect Fourth", detail: "4:3" },

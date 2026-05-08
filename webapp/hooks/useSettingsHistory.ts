@@ -23,6 +23,7 @@ function areSnapshotsEqual(a: UiSettingsSnapshot, b: UiSettingsSnapshot): boolea
     && a.rhythmColsEnabled === b.rhythmColsEnabled
     && a.rhythmColsDirection === b.rhythmColsDirection
     && a.typographyScale === b.typographyScale
+    && a.fibonacciSequenceStartIndex === b.fibonacciSequenceStartIndex
     && a.baseFont === b.baseFont
     && a.imageColorScheme === b.imageColorScheme
     && a.canvasBackground === b.canvasBackground

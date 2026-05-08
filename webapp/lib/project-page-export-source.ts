@@ -18,7 +18,10 @@ import {
   type MarginMethod,
   type Orientation,
 } from "@/lib/config/ui-defaults"
-import { type GridResult } from "@/lib/grid-calculator"
+import {
+  clampFibonacciSequenceStartIndex,
+  type GridResult,
+} from "@/lib/grid-calculator"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import {
   buildGridResultFromUiSettings,
@@ -299,6 +302,7 @@ export function resolveProjectPageUiSettings(
   const rhythmRowsDirectionSource = source.rhythmRowsDirection
   const rhythmColsEnabledSource = source.rhythmColsEnabled
   const rhythmColsDirectionSource = source.rhythmColsDirection
+  const fibonacciSequenceStartIndexSource = source.fibonacciSequenceStartIndex
   const useCustomMargins = source.useCustomMargins === true
 
   if (typeof gridCols !== "number" || !Number.isFinite(gridCols) || gridCols <= 0) {
@@ -343,6 +347,12 @@ export function resolveProjectPageUiSettings(
   if (source.typographyScale !== undefined && !isTypographyScale(source.typographyScale)) {
     throw new Error(`Invalid project page "${sourcePath}": uiSettings.typographyScale is not supported`)
   }
+  if (
+    fibonacciSequenceStartIndexSource !== undefined
+    && (typeof fibonacciSequenceStartIndexSource !== "number" || !Number.isFinite(fibonacciSequenceStartIndexSource))
+  ) {
+    throw new Error(`Invalid project page "${sourcePath}": uiSettings.fibonacciSequenceStartIndex must be a finite number`)
+  }
 
   const customMarginMultipliers = useCustomMargins
     ? resolveCustomMarginMultipliers(source.customMarginMultipliers, sourcePath)
@@ -372,6 +382,7 @@ export function resolveProjectPageUiSettings(
       ? clampRotation(source.rotation)
       : resolved.rotation,
     typographyScale: resolved.typographyScale,
+    fibonacciSequenceStartIndex: clampFibonacciSequenceStartIndex(fibonacciSequenceStartIndexSource ?? resolved.fibonacciSequenceStartIndex),
     baseFont: resolved.baseFont,
     imageColorScheme: resolved.imageColorScheme,
     canvasBackground: resolved.canvasBackground,

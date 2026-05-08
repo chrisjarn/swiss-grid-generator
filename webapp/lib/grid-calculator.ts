@@ -32,6 +32,7 @@ export interface GridSettings {
   rhythmColsDirection?: GridRhythmColsDirection;
   customMargins?: { top: number; bottom: number; left: number; right: number };
   typographyScale?: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci";
+  fibonacciSequenceStartIndex?: number;
 }
 
 export interface GridResult {
@@ -396,23 +397,58 @@ const TYPOGRAPHY_RATIOS_FIFTH: TypographyRatios = {
   display:  { sizeRatio: (10 * P5 ** 4) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
 };
 
-// Fibonacci sizes normalized so 21 maps to the A4 body reference of 10pt.
-const FIBONACCI_BODY_REFERENCE = 21;
-const TYPOGRAPHY_RATIOS_FIBONACCI: TypographyRatios = {
-  fx:       { sizeRatio: (10 * 144 / FIBONACCI_BODY_REFERENCE) / 12,  leadingMult: 8, bodyLines: 8, weight: "Bold" },
-  caption:  { sizeRatio: (10 * 13 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
-  body:     { sizeRatio: 10 / 12,                                      leadingMult: 1, bodyLines: 1, weight: "Regular" },
-  subhead:  { sizeRatio: (10 * 34 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 2, bodyLines: 2, weight: "Regular" },
-  headline: { sizeRatio: (10 * 55 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 3, bodyLines: 3, weight: "Bold" },
-  display:  { sizeRatio: (10 * 89 / FIBONACCI_BODY_REFERENCE) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
-};
+export const FIBONACCI_TYPOGRAPHY_SEQUENCE = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377] as const;
+export const DEFAULT_FIBONACCI_SEQUENCE_START_INDEX = 5;
+export const MIN_FIBONACCI_SEQUENCE_START_INDEX = 4;
+export const MAX_FIBONACCI_SEQUENCE_START_INDEX = 6;
+const FIBONACCI_DEFAULT_BODY_REFERENCE = 21;
+
+export function clampFibonacciSequenceStartIndex(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_FIBONACCI_SEQUENCE_START_INDEX;
+  }
+  return Math.min(
+    MAX_FIBONACCI_SEQUENCE_START_INDEX,
+    Math.max(MIN_FIBONACCI_SEQUENCE_START_INDEX, Math.round(value)),
+  );
+}
+
+export function getFibonacciTypographySequence(startIndex: unknown = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX): number[] {
+  const normalizedStart = clampFibonacciSequenceStartIndex(startIndex);
+  return FIBONACCI_TYPOGRAPHY_SEQUENCE.slice(normalizedStart, normalizedStart + 5);
+}
+
+export function formatFibonacciTypographySequence(startIndex: unknown = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX): string {
+  return getFibonacciTypographySequence(startIndex).join(", ");
+}
+
+function buildFibonacciTypographyRatios(startIndex: unknown): TypographyRatios {
+  const normalizedStart = clampFibonacciSequenceStartIndex(startIndex);
+  const sequence = FIBONACCI_TYPOGRAPHY_SEQUENCE.slice(normalizedStart, normalizedStart + 6);
+  const caption = sequence[0] ?? 13;
+  const body = sequence[1] ?? 21;
+  const subhead = sequence[2] ?? 34;
+  const headline = sequence[3] ?? 55;
+  const display = sequence[4] ?? 89;
+  const fx = sequence[5] ?? 144;
+  const bodyReference = FIBONACCI_DEFAULT_BODY_REFERENCE;
+  const captionLeadingMult = normalizedStart === DEFAULT_FIBONACCI_SEQUENCE_START_INDEX ? 2 / 3 : 1;
+
+  return {
+    fx:       { sizeRatio: (10 * fx / bodyReference) / 12,        leadingMult: 8, bodyLines: 8, weight: "Bold" },
+    caption:  { sizeRatio: (10 * caption / bodyReference) / 12,   leadingMult: captionLeadingMult, bodyLines: 1, weight: "Regular", blockItalic: true },
+    body:     { sizeRatio: (10 * body / bodyReference) / 12,      leadingMult: 1, bodyLines: 1, weight: "Regular" },
+    subhead:  { sizeRatio: (10 * subhead / bodyReference) / 12,   leadingMult: 2, bodyLines: 2, weight: "Regular" },
+    headline: { sizeRatio: (10 * headline / bodyReference) / 12,  leadingMult: 3, bodyLines: 3, weight: "Bold" },
+    display:  { sizeRatio: (10 * display / bodyReference) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
+  };
+}
 
 const TYPOGRAPHY_SCALE_MAP: Record<string, TypographyRatios> = {
   swiss: TYPOGRAPHY_RATIOS_SWISS,
   golden: TYPOGRAPHY_RATIOS_GOLDEN,
   fourth: TYPOGRAPHY_RATIOS_FOURTH,
   fifth: TYPOGRAPHY_RATIOS_FIFTH,
-  fibonacci: TYPOGRAPHY_RATIOS_FIBONACCI,
 };
 
 export const TYPOGRAPHY_SCALE_LABELS: Record<string, string> = {
@@ -431,6 +467,7 @@ function resolveTypographyLeadingMultiplier(
 ): number {
   if (typographyScale !== "fibonacci") return style.leadingMult;
   if (!Number.isFinite(gridUnit) || gridUnit <= 0) return style.leadingMult;
+  if (gridUnit * style.leadingMult >= flooredSize) return style.leadingMult;
 
   const minimumBaselineMultiple = Math.ceil(flooredSize / gridUnit);
   return Math.max(style.leadingMult, minimumBaselineMultiple);
@@ -653,10 +690,13 @@ export function generateTypographyStyles(
   scaleFactor: number,
   gridUnit: number,
   formatName: string,
-  typographyScale: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci" = "swiss"
+  typographyScale: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci" = "swiss",
+  fibonacciSequenceStartIndex: number = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
 ): GridResult["typography"] {
   const scaledStyles: GridResult["typography"]["styles"] = {};
-  const ratios = TYPOGRAPHY_SCALE_MAP[typographyScale] ?? TYPOGRAPHY_RATIOS_SWISS;
+  const ratios = typographyScale === "fibonacci"
+    ? buildFibonacciTypographyRatios(fibonacciSequenceStartIndex)
+    : TYPOGRAPHY_SCALE_MAP[typographyScale] ?? TYPOGRAPHY_RATIOS_SWISS;
 
   for (const [styleName, style] of Object.entries(ratios)) {
     // Font size = baseline × ratio (proportional across all formats)
@@ -706,6 +746,7 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
     rhythmColsEnabled,
     rhythmColsDirection,
     typographyScale = "swiss",
+    fibonacciSequenceStartIndex = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
   } = settings;
 
   const defaultRhythmAxis = defaultGridRhythmAxisSettings();
@@ -840,7 +881,13 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
   const netHAligned = moduleHeights.reduce((acc, value) => acc + value, 0) + (gridRows - 1) * gridMarginVertical;
 
 
-  const typoSettings = generateTypographyStyles(scale_factor, gridUnit, format, typographyScale);
+  const typoSettings = generateTypographyStyles(
+    scale_factor,
+    gridUnit,
+    format,
+    typographyScale,
+    fibonacciSequenceStartIndex,
+  );
 
   return {
     format,

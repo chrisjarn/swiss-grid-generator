@@ -2,7 +2,14 @@ import { memo, useState } from "react"
 import { Label } from "@/components/ui/label"
 import { FontSelect } from "@/components/ui/font-select"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
-import { generateTypographyStyles, TYPOGRAPHY_SCALE_LABELS } from "@/lib/grid-calculator"
+import {
+  MAX_FIBONACCI_SEQUENCE_START_INDEX,
+  MIN_FIBONACCI_SEQUENCE_START_INDEX,
+  clampFibonacciSequenceStartIndex,
+  formatFibonacciTypographySequence,
+  generateTypographyStyles,
+  TYPOGRAPHY_SCALE_LABELS,
+} from "@/lib/grid-calculator"
 import type { GridResult } from "@/lib/grid-calculator"
 import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/lib/config/fonts"
 import type { TypographyScale } from "@/lib/config/defaults"
@@ -34,6 +41,8 @@ type Props = {
   typographyScale: TypographyScale
   onTypographyScaleChange: (value: TypographyScale) => void
   onTypographyScalePreviewChange?: (value: TypographyScale | null) => void
+  fibonacciSequenceStartIndex: number
+  onFibonacciSequenceStartIndexChange: (value: number) => void
   typographyStyles: GridResult["typography"]["styles"]
   gridUnit: number
   baseFont: FontFamily
@@ -49,6 +58,8 @@ export const TypographyPanel = memo(function TypographyPanel({
   typographyScale,
   onTypographyScaleChange,
   onTypographyScalePreviewChange,
+  fibonacciSequenceStartIndex,
+  onFibonacciSequenceStartIndexChange,
   typographyStyles,
   gridUnit,
   baseFont,
@@ -78,8 +89,12 @@ export const TypographyPanel = memo(function TypographyPanel({
       }
   const controlClassName = getSettingsControlClassName(isDarkMode)
   const typographyRhythmListClassName = getSettingsOpenListClassName(isDarkMode)
+  const normalizedFibonacciStartIndex = clampFibonacciSequenceStartIndex(fibonacciSequenceStartIndex)
+  const activeTypographyScaleLabel = typographyScale === "fibonacci"
+    ? `Fibonacci (${formatFibonacciTypographySequence(normalizedFibonacciStartIndex)})`
+    : TYPOGRAPHY_SCALE_LABELS[typographyScale]
   const displayedTypographyStyles = previewTypographyScale
-    ? generateTypographyStyles(1, gridUnit, "A4", previewTypographyScale).styles
+    ? generateTypographyStyles(1, gridUnit, "A4", previewTypographyScale, normalizedFibonacciStartIndex).styles
     : typographyStyles
   const handleTypographyScalePreview = (value: TypographyScale) => {
     setPreviewTypographyScale(value)
@@ -88,6 +103,19 @@ export const TypographyPanel = memo(function TypographyPanel({
   const clearTypographyScalePreview = () => {
     setPreviewTypographyScale(null)
     onTypographyScalePreviewChange?.(null)
+  }
+  const handleFibonacciSequenceStep = (direction: -1 | 1) => (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    const nextIndex = clampFibonacciSequenceStartIndex(normalizedFibonacciStartIndex + direction)
+    onTypographyScaleChange("fibonacci")
+    onFibonacciSequenceStartIndexChange(nextIndex)
+    handleTypographyScalePreview("fibonacci")
+  }
+  const handleFibonacciKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Enter" && event.key !== " ") return
+    event.preventDefault()
+    onTypographyScaleChange("fibonacci")
   }
 
   const hierarchyRows = PREVIEW_STYLE_OPTIONS
@@ -105,7 +133,7 @@ export const TypographyPanel = memo(function TypographyPanel({
       title="T Y P O"
       tooltip="Typography scale, hierarchy table, and base font; hierarchy and font lists preview on rollover"
       collapsed={collapsed}
-      collapsedSummary={`${TYPOGRAPHY_SCALE_LABELS[typographyScale]}, ${baseFont}`}
+      collapsedSummary={`${activeTypographyScaleLabel}, ${baseFont}`}
       onHeaderClick={onHeaderClick}
       onHeaderDoubleClick={onHeaderDoubleClick}
       helpSectionKey="typo"
@@ -136,13 +164,55 @@ export const TypographyPanel = memo(function TypographyPanel({
           >
             {TYPOGRAPHY_SCALE_OPTIONS.map((option) => {
               const displayLabel = splitParentheticalLabel(option.label)
+              const selected = typographyScale === option.value
+              if (option.value === "fibonacci") {
+                return (
+                  <div
+                    key={option.value}
+                    role="option"
+                    tabIndex={0}
+                    aria-selected={selected}
+                    className={getSettingsOpenListOptionClassName(isDarkMode, selected)}
+                    onFocus={() => handleTypographyScalePreview(option.value)}
+                    onBlur={clearTypographyScalePreview}
+                    onMouseEnter={() => handleTypographyScalePreview(option.value)}
+                    onClick={() => onTypographyScaleChange(option.value)}
+                    onKeyDown={handleFibonacciKeyDown}
+                  >
+                    <span className="flex min-w-0 items-center gap-1">
+                      <span className="min-w-0 truncate">{displayLabel.label}</span>
+                      <button
+                        type="button"
+                        aria-label="Shift Fibonacci sequence left"
+                        disabled={normalizedFibonacciStartIndex <= MIN_FIBONACCI_SEQUENCE_START_INDEX}
+                        className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
+                        onClick={handleFibonacciSequenceStep(-1)}
+                      >
+                        &lt;
+                      </button>
+                      <button
+                        type="button"
+                        aria-label="Shift Fibonacci sequence right"
+                        disabled={normalizedFibonacciStartIndex >= MAX_FIBONACCI_SEQUENCE_START_INDEX}
+                        className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
+                        onClick={handleFibonacciSequenceStep(1)}
+                      >
+                        &gt;
+                      </button>
+                    </span>
+                    <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                      {formatFibonacciTypographySequence(normalizedFibonacciStartIndex)}
+                    </span>
+                  </div>
+                )
+              }
               return (
                 <button
                   key={option.value}
                   type="button"
                   role="option"
-                  aria-selected={typographyScale === option.value}
-                  className={getSettingsOpenListOptionClassName(isDarkMode, typographyScale === option.value)}
+                  aria-selected={selected}
+                  className={getSettingsOpenListOptionClassName(isDarkMode, selected)}
                   onFocus={() => handleTypographyScalePreview(option.value)}
                   onBlur={clearTypographyScalePreview}
                   onMouseEnter={() => handleTypographyScalePreview(option.value)}

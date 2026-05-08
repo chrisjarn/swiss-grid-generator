@@ -27,7 +27,8 @@ Current, implementation-accurate reference for all user-facing options and defau
 
 Default: `swiss`
 
-Fibonacci maps the sequence `13, 21, 34, 55, 89` to `Caption`, `Body`, `Subhead`, `Headline`, and `Display`, with `21` normalized to the `10pt` body reference. It promotes leading to the next baseline multiple whenever the initial baseline multiple would be smaller than the font size.
+Fibonacci maps the sequence `13, 21, 34, 55, 89` to `Caption`, `Body`, `Subhead`, `Headline`, and `Display`, with the default `21` normalized to the `10pt` body reference. In that default window, `Caption` uses `8pt` leading on the A4 `12pt` reference grid. Other Fibonacci leading values promote to the next baseline multiple whenever the initial baseline multiple would be smaller than the font size.
+The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the sequence shifts the five displayed Fibonacci values left or right while all values stay tied to the default `21 = 10pt` reference, so the typography rhythm visibly scales. The available displayed windows start at `8`, `13`, and `21`.
 
 ## Settings Panel (Left)
 
@@ -112,7 +113,7 @@ Fibonacci maps the sequence `13, 21, 34, 55, 89` to `Caption`, `Body`, `Subhead`
 - Rows (`gridRows`): min `1`, max `13`, step `1`, default `6` (from `default_v001.json`)
 - Gutter multiple: min `1.0`, max `4.0`, step `0.5`, default `1.0`
 - Rhythms (`rhythm`): `fibonacci`, `golden`, `fifth`, `fourth`, `repetitive` (default)
-- Rhythm list details: `Fibonacci` -> `1:2:3:5`, `Golden Ratio` -> `1:1.618`, `Perfect Fifth` -> `3:2`, `Perfect Fourth` -> `4:3`, `Repetitive` -> `1:1:1:1`
+- Rhythm list details: `Fibonacci` -> `13:21:34:55:89`, `Golden Ratio` -> `1:1.618`, `Perfect Fifth` -> `3:2`, `Perfect Fourth` -> `4:3`, `Repetitive` -> `1:1:1:1`
 - `Rhythms` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
 - Non-repetitive direction dropdown items preview live on rollover before commit
 - Non-repetitive rhythm rows:
@@ -127,6 +128,7 @@ Fibonacci maps the sequence `13, 21, 34, 55, 89` to `Caption`, `Body`, `Subhead`
 - `Base`: sets the default canvas rendering font for all paragraphs that do not have an explicit paragraph-level font override.
 - `Rhythm`: selects the typography scale preset (see Typography Scale Presets).
 - `Rhythm` uses an always-open dropdown-style list field so every option is visible; list items preview live on rollover before click commit
+- The Fibonacci rhythm row shows direct `<` and `>` controls next to the label and the active sequence on the right, for example `Fibonacci < > 13, 21, 34, 55, 89`; clicking either control shifts the sequence while keeping the default `21 = 10pt` reference. The controls clamp to windows starting at `8` and `21`.
 - Hierarchy overview: shows current `size/leading` for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline/scale, and previews the hovered `Rhythm` preset while the list is active.
 - Swiss on the A4 12pt reference baseline:
   - `Display`: `64pt / 72pt`
