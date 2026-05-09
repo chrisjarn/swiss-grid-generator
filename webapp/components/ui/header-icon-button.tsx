@@ -38,7 +38,7 @@ export function HeaderIconButton({
     <HoverTooltip
       label={tooltip}
       disabled={!showTooltip}
-      tooltipClassName="w-max whitespace-pre-line text-center border-gray-200 bg-gray-100/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+      tooltipClassName="w-max whitespace-pre-line border-border bg-popover/95 text-center text-popover-foreground shadow-lg"
     >
       <Button
         size="icon"
@@ -57,7 +57,7 @@ export function HeaderIconButton({
           <span
             aria-hidden="true"
             className={cn(
-              "absolute right-1 top-1 h-1.5 w-1.5 rounded-full ring-1 ring-white dark:ring-[#1D232D]",
+              "absolute right-1 top-1 h-1.5 w-1.5 rounded-full ring-1 ring-background",
               statusDotClassName ?? "bg-swiss-orange-soft",
             )}
           />

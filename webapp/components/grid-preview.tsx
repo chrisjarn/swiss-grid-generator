@@ -2060,9 +2060,7 @@ export const GridPreview = memo(function GridPreview({
     <div
       ref={previewContainerRef}
       data-tooltip-boundary="preview-workspace"
-      className={`relative h-full w-full min-w-0 overflow-hidden rounded-lg ${
-        isDarkMode ? "bg-[#161A22]" : "bg-gray-100"
-      }`}
+      className="relative h-full w-full min-w-0 overflow-hidden rounded-lg bg-background"
       style={{ opacity: previewDisplayReady ? 1 : 0 }}
       onPointerDown={handlePreviewWorkspacePointerDown}
     >

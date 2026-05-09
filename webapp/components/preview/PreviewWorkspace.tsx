@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, MoreVertical, Plus, X } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, Plus, X } from "lucide-react"
 import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
 import { GridPreview } from "@/components/grid-preview"
@@ -11,7 +11,6 @@ import { AccountPanel } from "@/components/sidebar/AccountPanel"
 import { PagesPanel, type PagePanelListItem } from "@/components/sidebar/PagesPanel"
 import { PresetLayoutsPanel } from "@/components/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/components/sidebar/ProjectTitleSection"
-import { HeaderIconButton } from "@/components/ui/header-icon-button"
 import { HoverTooltip } from "@/components/ui/hover-tooltip"
 import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/components/ui/section-header-row"
 import { getStyleDefaultFontWeight, resolveFontVariant, type FontFamily } from "@/lib/config/fonts"
@@ -20,7 +19,6 @@ import {
 } from "@/lib/config/color-schemes"
 import { type ProjectPage } from "@/lib/document-session"
 import type { HelpSectionId } from "@/lib/help-registry"
-import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
 import type { HeaderAction, HeaderItem } from "@/hooks/useHeaderActions"
 import type { GridResult } from "@/lib/grid-calculator"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
@@ -30,7 +28,6 @@ import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
 import { ProjectTourOverlay } from "@/components/preview/ProjectTourOverlay"
 import { LayoutOpenTooltipOverlay } from "@/components/preview/LayoutOpenTooltipOverlay"
 import {
-  SIDEBAR_PANEL_WIDTH_CLASSNAME,
   WORKSPACE_HEADER_GRID_WITH_SIDEBAR_CLASSNAME,
   WORKSPACE_HEADER_GRID_WITHOUT_SIDEBAR_CLASSNAME,
 } from "@/components/layout/sidebar-panel-layout"
@@ -41,6 +38,8 @@ import {
   getProjectPhysicalPageCount,
 } from "@/lib/document-page-numbering"
 import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
+import { RightPanel } from "@/gui/shell/RightPanel"
+import { TopBar } from "@/gui/shell/TopBar"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -196,43 +195,6 @@ type Props = {
   } | null
 }
 
-function renderHeaderAction(
-  action: HeaderAction,
-  showSectionHelpIcons: boolean,
-  onHeaderHelpNavigate: (actionKey: string) => void,
-  isDarkMode: boolean,
-) {
-  const shortcut = action.shortcutId
-    ? PREVIEW_HEADER_SHORTCUTS.find((item) => item.id === action.shortcutId)?.combo
-    : null
-  const tooltip = shortcut ? `${action.tooltip}\n${shortcut}` : action.tooltip
-  return (
-    <div
-      key={action.key}
-      data-preview-header-action={action.key}
-      className={`inline-flex h-8 w-8 justify-center ${showSectionHelpIcons ? "relative items-center" : "items-center"}`}
-      onMouseEnter={showSectionHelpIcons ? () => onHeaderHelpNavigate(action.key) : undefined}
-    >
-      {showSectionHelpIcons ? <HelpIndicatorLine /> : null}
-      <HeaderIconButton
-        ariaLabel={action.ariaLabel}
-        tooltip={tooltip}
-        variant={action.variant ?? "outline"}
-        aria-pressed={action.pressed}
-        disabled={action.disabled}
-        onClick={action.onClick}
-        showStatusDot={action.showStatusDot}
-        statusDotClassName={action.statusDotClassName}
-        showTooltip
-        buttonClassName={action.buttonClassName}
-        isDarkMode={isDarkMode}
-      >
-        {action.icon}
-      </HeaderIconButton>
-    </div>
-  )
-}
-
 export function PreviewWorkspace({
   renderLeftPanel,
   fileGroup,
@@ -351,11 +313,9 @@ export function PreviewWorkspace({
   const [pageListRequestToken, setPageListRequestToken] = useState(0)
   const [pageAddHovered, setPageAddHovered] = useState(false)
   const [pageAddShiftActive, setPageAddShiftActive] = useState(false)
-  const [supportMenuOpen, setSupportMenuOpen] = useState(false)
   const [pageNumberEditing, setPageNumberEditing] = useState(false)
   const [pageNumberDraft, setPageNumberDraft] = useState("")
   const pageNumberInputRef = useRef<HTMLInputElement | null>(null)
-  const supportMenuRef = useRef<HTMLDivElement | null>(null)
   const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
   const previewVariableNow = useMemo(() => new Date(), [])
   const panelPreviewHoveredLayerKey = editorMode ? null : previewHoveredLayerKey
@@ -430,11 +390,7 @@ export function PreviewWorkspace({
   ])
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const isSingleProjectPage = projectPages.length <= 1
-  const pageActionButtonClassName = `inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${
-    isDarkUi
-      ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-      : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-  }`
+  const pageActionButtonClassName = "inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
   const shouldRenderSidebarPanel = activeSidebarPanel !== null && (
     !showPresetsBrowser
     || activeSidebarPanel === "help"
@@ -468,26 +424,6 @@ export function PreviewWorkspace({
       window.removeEventListener("keyup", updatePageAddIntent)
     }
   }, [pageAddHovered])
-
-  useEffect(() => {
-    if (!supportMenuOpen) return
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const menuRoot = supportMenuRef.current
-      if (menuRoot?.contains(event.target as Node)) return
-      setSupportMenuOpen(false)
-    }
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSupportMenuOpen(false)
-    }
-
-    document.addEventListener("pointerdown", handlePointerDown)
-    document.addEventListener("keydown", handleKeyDown)
-    return () => {
-      document.removeEventListener("pointerdown", handlePointerDown)
-      document.removeEventListener("keydown", handleKeyDown)
-    }
-  }, [supportMenuOpen])
 
   const activePageNumber = useMemo(() => {
     return getProjectPagePhysicalPageNumber(projectPages, activePageId)
@@ -567,7 +503,7 @@ export function PreviewWorkspace({
       <HoverTooltip
         inline
         label={"Show page list\nClick P A G E S to return from a page submenu to the page list."}
-        tooltipClassName="w-64 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        tooltipClassName="w-64 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-popover-foreground shadow-lg"
         horizontalAlign="start"
       >
         <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
@@ -579,12 +515,8 @@ export function PreviewWorkspace({
 
   const pageNavigationButtonClassName = (disabled: boolean) => `inline-flex h-4 w-3 shrink-0 items-center justify-center rounded-sm transition-colors ${
     disabled
-      ? isDarkUi
-        ? "cursor-not-allowed text-[#5D6878]"
-        : "cursor-not-allowed text-gray-300"
-      : isDarkUi
-        ? "text-[#A8B1BF] hover:text-[#F4F6F8]"
-        : "text-gray-500 hover:text-gray-900"
+      ? "cursor-not-allowed text-muted-foreground/45"
+      : "text-muted-foreground hover:text-foreground"
   }`
 
   const renderPageNavigationButton = (
@@ -637,7 +569,7 @@ export function PreviewWorkspace({
       )}
     </span>
   )
-  const pageCounterTextClassName = isDarkUi ? "text-[#A8B1BF]" : "text-gray-500"
+  const pageCounterTextClassName = "text-muted-foreground"
 
   const pagePositionValue = pageNumberEditing ? (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
@@ -665,11 +597,7 @@ export function PreviewWorkspace({
             cancelPageNumberEdit()
           }
         }}
-        className={`h-4 w-9 cursor-text rounded-sm border px-1 text-right text-[11px] leading-none outline-none ${
-          isDarkUi
-            ? "border-[#4A5566] bg-[#232A35] text-[#F4F6F8] focus:border-swiss-orange"
-            : "border-gray-300 bg-white text-gray-900 focus:border-swiss-orange"
-        }`}
+        className="h-4 w-9 cursor-text rounded-sm border border-input bg-background px-1 text-right text-[11px] leading-none text-foreground outline-none focus:border-swiss-orange"
       />
       <span className="px-1">of</span>
       <span>{documentVariablePageCount}</span>
@@ -681,16 +609,14 @@ export function PreviewWorkspace({
       <HoverTooltip
         inline
         label={`Page ${documentPagePosition} of ${documentVariablePageCount}\nDouble-click the current page number to jump to a page.`}
-        tooltipClassName="w-56 whitespace-pre-line border-gray-200 bg-gray-100/95 text-left text-[11px] leading-snug text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        tooltipClassName="w-56 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] leading-snug text-popover-foreground shadow-lg"
         horizontalAlign="end"
       >
         <button
           type="button"
           aria-label={`Edit page number, currently ${documentPagePosition} of ${documentVariablePageCount}`}
           onDoubleClick={beginPageNumberEdit}
-          className={`inline-flex min-w-0 cursor-text items-center leading-none transition-colors ${
-            isDarkUi ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
-          }`}
+          className="inline-flex min-w-0 cursor-text items-center leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           {documentPagePosition}
         </button>
@@ -827,9 +753,7 @@ export function PreviewWorkspace({
   function renderPageAddActions() {
     const addShiftActive = pageAddShiftActive && pageAddHovered
     const pageAddButtonActiveClassName = addShiftActive
-      ? isDarkUi
-        ? "border-swiss-orange-soft bg-swiss-orange text-white hover:brightness-110"
-        : "border-swiss-orange bg-swiss-orange text-white hover:brightness-95"
+      ? "border-swiss-orange bg-swiss-orange text-background hover:brightness-95"
       : ""
     const tooltip = pageAddDisabled
       ? `Maximum ${MAX_GUI_PROJECT_PAGES} pages reached.`
@@ -840,7 +764,7 @@ export function PreviewWorkspace({
         <HoverTooltip
           inline
           label={tooltip}
-          tooltipClassName="w-max whitespace-pre-line text-center border-gray-200 bg-gray-100/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        tooltipClassName="w-max whitespace-pre-line border-border bg-popover/95 text-center text-popover-foreground shadow-lg"
         >
           <button
             type="button"
@@ -879,105 +803,26 @@ export function PreviewWorkspace({
           aria-valuenow={documentPagePosition}
         >
           <div
-            className="h-full bg-gray-700"
+            className="h-full bg-foreground"
             style={{ width: `${documentPagePositionPercent}%` }}
           />
         </div>
       ) : null}
-      <div className={`px-4 py-3 md:px-6 ${uiTheme.previewHeader}`}>
-        <div className={`grid grid-cols-1 gap-2 md:items-center md:gap-3 ${headerGridClassName}`}>
-          <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-start">
-            {fileGroup.map((item) =>
-              item.type === "divider"
-                ? <div key={item.key} className={`h-6 w-px ${uiTheme.divider}`} aria-hidden="true" />
-                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi),
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-start justify-start gap-2 md:flex-nowrap md:justify-self-center">
-            {displayGroup.map((item) =>
-              item.type === "divider"
-                ? <div key={item.key} className={`h-6 w-px ${uiTheme.divider}`} aria-hidden="true" />
-                : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi),
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-end">
-            {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
-            <div ref={supportMenuRef} className="relative inline-flex h-8 w-8 items-center justify-center">
-              <HeaderIconButton
-                ariaLabel={supportMenuOpen ? "Close support menu" : "Open support menu"}
-                tooltip="More"
-                variant={supportMenuOpen ? "default" : "outline"}
-                aria-pressed={supportMenuOpen}
-                onClick={() => setSupportMenuOpen((current) => !current)}
-                showTooltip
-                isDarkMode={isDarkUi}
-              >
-                <MoreVertical className="h-4 w-4" />
-              </HeaderIconButton>
-              {supportMenuOpen ? (
-                <div
-                  className={`absolute right-0 top-9 z-40 min-w-36 border py-1 text-[11px] shadow-lg ${
-                    isDarkUi
-                      ? "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]"
-                      : "border-gray-200 bg-gray-100 text-gray-700"
-                  }`}
-                >
-                  <button
-                    type="button"
-                    className={`block w-full px-3 py-2 text-left transition-colors ${
-                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
-                    }`}
-                    onClick={(event) => {
-                      setSupportMenuOpen(false)
-                      onToggleDarkMode(event)
-                    }}
-                  >
-                    {isDarkUi ? "Light Mode" : "Dark Mode"}
-                  </button>
-                  <button
-                    type="button"
-                    className={`block w-full px-3 py-2 text-left transition-colors ${
-                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
-                    }`}
-                    onClick={() => {
-                      setSupportMenuOpen(false)
-                      onToggleHelpPanel()
-                    }}
-                  >
-                    Help
-                  </button>
-                  <button
-                    type="button"
-                    className={`block w-full px-3 py-2 text-left transition-colors ${
-                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
-                    }`}
-                    onClick={() => {
-                      setSupportMenuOpen(false)
-                      onToggleFeedbackPanel()
-                    }}
-                  >
-                    Feedback
-                  </button>
-                  <button
-                    type="button"
-                    className={`block w-full px-3 py-2 text-left transition-colors ${
-                      isDarkUi ? "hover:bg-[#232A35]" : "hover:bg-white"
-                    }`}
-                    onClick={() => {
-                      setSupportMenuOpen(false)
-                      onToggleLegalNoticePanel()
-                    }}
-                  >
-                    Legal Notice
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
-      </div>
+      <TopBar
+        fileGroup={fileGroup}
+        displayGroup={displayGroup}
+        sidebarGroup={sidebarGroup}
+        headerGridClassName={headerGridClassName}
+        previewHeaderClassName={uiTheme.previewHeader}
+        dividerClassName={uiTheme.divider}
+        showSectionHelpIcons={showSectionHelpIcons}
+        isDarkUi={isDarkUi}
+        onHeaderHelpNavigate={onHeaderHelpNavigate}
+        onToggleDarkMode={onToggleDarkMode}
+        onToggleHelpPanel={onToggleHelpPanel}
+        onToggleFeedbackPanel={onToggleFeedbackPanel}
+        onToggleLegalNoticePanel={onToggleLegalNoticePanel}
+      />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
         {!showPresetsBrowser ? renderLeftPanel?.() : null}
@@ -1024,7 +869,7 @@ export function PreviewWorkspace({
           ) : null}
           {showPresetsBrowser ? (
             <div
-              className={`relative h-full min-h-[360px] w-full ${isDarkUi ? "bg-[#1D232D]" : "bg-gray-100/60"}`}
+              className="relative h-full min-h-[360px] w-full bg-card"
               onMouseEnter={showSectionHelpIcons ? () => onHeaderHelpNavigate("presets") : undefined}
             >
               {showSectionHelpIcons ? <HelpIndicatorLine className="-top-[10px]" /> : null}
@@ -1100,14 +945,7 @@ export function PreviewWorkspace({
           )}
           </div>
           {shouldRenderSidebarPanel && (
-            <div
-              data-help-scroll-root={activeSidebarPanel === "layers" ? undefined : "true"}
-              className={`min-h-0 ${SIDEBAR_PANEL_WIDTH_CLASSNAME} overflow-x-hidden text-sm ${uiTheme.sidebar} ${
-                activeSidebarPanel === "layers"
-                  ? "overflow-hidden"
-                  : "overflow-y-auto overscroll-contain p-4 md:p-6"
-              }`}
-            >
+            <RightPanel activeSidebarPanel={activeSidebarPanel} uiTheme={uiTheme}>
             {activeSidebarPanel === "help" && (
               <HelpPanel
                 isDarkMode={isDarkUi}
@@ -1137,12 +975,8 @@ export function PreviewWorkspace({
                             onClick={() => setShowProjectInfo((current) => !current)}
                             className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors ${
                               showProjectInfo
-                                ? isDarkUi
-                                  ? "border-swiss-orange bg-swiss-orange text-[#F4F6F8]"
-                                  : "border-swiss-orange bg-swiss-orange text-white"
-                                : isDarkUi
-                                  ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                                  : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
+                                ? "border-swiss-orange bg-swiss-orange text-primary-foreground"
+                                : "border-border bg-secondary text-muted-foreground hover:text-foreground"
                             }`}
                           >
                             <Info className="h-2 w-2" />
@@ -1151,11 +985,7 @@ export function PreviewWorkspace({
                             type="button"
                             aria-label="Close project panel"
                             onClick={closeSidebarPanel}
-                            className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors ${
-                              isDarkUi
-                                ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]"
-                                : "border-gray-300 bg-gray-100 text-gray-700 hover:text-gray-900"
-                            }`}
+                            className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
                           >
                             <X className="h-2 w-2" />
                           </button>
@@ -1246,7 +1076,7 @@ export function PreviewWorkspace({
                 onClose={closeSidebarPanel}
               />
             )}
-            </div>
+            </RightPanel>
           )}
         </div>
       </div>

@@ -1,0 +1,7 @@
+export { default as Shell } from "@/gui/shell/Shell"
+export { CanvasContainer, type CanvasContainerProps } from "@/gui/shell/CanvasContainer"
+export { LeftToolbar, type LeftToolbarProps } from "@/gui/shell/LeftToolbar"
+export { RightPanel, type RightPanelProps } from "@/gui/shell/RightPanel"
+export { ThemeProvider } from "@/gui/shell/ThemeProvider"
+export { TopBar, type TopBarProps } from "@/gui/shell/TopBar"
+export type { WorkspaceTheme } from "@/gui/shell/workspaceTheme"

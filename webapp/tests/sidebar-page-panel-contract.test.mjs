@@ -11,7 +11,7 @@ function readText(relPath) {
 
 test("page navigation centralizes the settled GUI page separately from immediate preview selection", () => {
   const hookSource = readText("hooks/useSettledPageNavigation.ts")
-  const pageSource = readText("gui/shell/Shell.tsx")
+  const pageSource = readText("gui/shell/useShellModel.tsx")
   const workspaceSource = readText("components/preview/PreviewWorkspace.tsx")
   const panelSource = readText("components/sidebar/PagesPanel.tsx")
   const layerListSource = readText("components/sidebar/ProjectPageLayersList.tsx")

@@ -227,7 +227,7 @@ test("save dialog remains focused on library metadata rather than json filename 
 })
 
 test("default pdf and svg filenames no longer encode a paper-size override", () => {
-  const source = readText("gui/shell/Shell.tsx")
+  const source = readText("gui/shell/useShellModel.tsx")
   assert.match(source, /const\s+defaultPdfFilename\s*=\s*useMemo\(\s*\(\)\s*=>\s*`\$\{baseFilename\}_grid\.pdf`/)
   assert.match(source, /const\s+defaultSvgFilename\s*=\s*useMemo\(\s*\(\)\s*=>\s*`\$\{baseFilename\}_grid\.svg`/)
   assert.doesNotMatch(source, /baseFilename}_\$\{exportPaperSize\}_grid\.(pdf|svg)/)

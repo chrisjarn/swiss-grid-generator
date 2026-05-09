@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from "react"
 
 import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
 
-export const SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME = "!text-gray-700 dark:!text-gray-300"
+export const SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME = "!text-muted-foreground"
 
 type SectionHeaderRowProps = {
   label: ReactNode
@@ -48,7 +48,7 @@ export function SectionHeaderRow({
           {statusDotClassName ? (
             <span
               aria-hidden="true"
-              className={`h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white dark:ring-[#1D232D] ${statusDotClassName}`}
+              className={`h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-background ${statusDotClassName}`}
             />
           ) : null}
           {value !== undefined ? (
