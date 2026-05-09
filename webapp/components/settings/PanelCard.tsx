@@ -1,6 +1,6 @@
 import { HoverTooltip } from "@/components/ui/hover-tooltip"
 import type { ReactNode } from "react"
-import type { SectionKey } from "@/hooks/useSettingsHistory"
+import type { SectionKey } from "@/lib/workspace-ui-schema"
 import { useSettingsHelpNavigation } from "@/components/settings/help-navigation-context"
 import { ChevronUp } from "lucide-react"
 import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"

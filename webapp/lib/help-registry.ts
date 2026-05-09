@@ -1,4 +1,4 @@
-import type { SectionKey } from "@/hooks/useSettingsHistory"
+import type { SectionKey } from "@/lib/workspace-ui-schema"
 
 import {
   ALL_HELP_INDEX_ITEMS,

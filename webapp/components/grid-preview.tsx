@@ -190,6 +190,8 @@ interface GridPreviewProps {
   onRequestGridReductionWarning?: (message: string) => void
   onHistoryAvailabilityChange?: (canUndo: boolean, canRedo: boolean) => void
   onHistoryRecord?: () => void
+  externalHistory?: boolean
+  onBeforePreviewMutation?: (layout: PreviewLayoutState) => void
   onUndoRequest?: () => void
   onRedoRequest?: () => void
   requestedLayerOrder?: BlockId[] | null
@@ -251,6 +253,8 @@ export const GridPreview = memo(function GridPreview({
   onRequestGridReductionWarning,
   onHistoryAvailabilityChange,
   onHistoryRecord,
+  externalHistory = false,
+  onBeforePreviewMutation,
   onUndoRequest,
   onRedoRequest,
   requestedLayerOrder = null,
@@ -621,22 +625,36 @@ export const GridPreview = memo(function GridPreview({
     showTypography,
   ])
 
-  const {
-    pushHistory,
-    recordHistoryBeforeChange,
-    resetHistory,
-    undo,
-    redo,
-  } = usePreviewHistory<PreviewLayoutState>({
+  const previewHistory = usePreviewHistory<PreviewLayoutState>({
     historyLimit: HISTORY_LIMIT,
     undoNonce,
     redoNonce,
     buildSnapshot,
     revisionKey: layoutRevisionKey,
     applySnapshot,
-    onHistoryAvailabilityChange,
-    onRecordHistory: onHistoryRecord,
+    onHistoryAvailabilityChange: externalHistory ? undefined : onHistoryAvailabilityChange,
+    onRecordHistory: externalHistory ? undefined : onHistoryRecord,
   })
+
+  const recordExternalHistoryBeforeChange = useCallback(() => {
+    onBeforePreviewMutation?.(buildSnapshot())
+  }, [buildSnapshot, onBeforePreviewMutation])
+
+  const {
+    pushHistory,
+    recordHistoryBeforeChange,
+    resetHistory,
+    undo,
+    redo,
+  } = externalHistory
+    ? {
+        pushHistory: () => undefined,
+        recordHistoryBeforeChange: recordExternalHistoryBeforeChange,
+        resetHistory: () => undefined,
+        undo: () => undefined,
+        redo: () => undefined,
+      }
+    : previewHistory
 
   const getAutoFitForPlacement = usePreviewAutoFitPlacement<BlockId, TypographyStyleKey>({
     canvasRef,

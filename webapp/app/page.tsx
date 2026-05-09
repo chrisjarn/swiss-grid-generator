@@ -1,5 +1,5 @@
-import LegacyWorkspace from "@/gui/legacy/LegacyWorkspace"
+import Shell from "@/gui/shell/Shell"
 
 export default function Page() {
-  return <LegacyWorkspace />
+  return <Shell />
 }

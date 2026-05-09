@@ -14,9 +14,6 @@ import {
 } from "@/lib/config/defaults"
 import { type ImageColorSchemeId } from "@/lib/config/color-schemes"
 import {
-  DEFAULT_UI,
-} from "@/lib/config/ui-defaults"
-import {
   type FontFamily,
 } from "@/lib/config/fonts"
 import {
@@ -66,45 +63,6 @@ function clampGutterMultiple(value: number): number {
 
 function clampCustomRatioUnit(value: number, fallback: number): number {
   return clampCustomCanvasRatioUnit(value, fallback)
-}
-
-export const INITIAL_GRID_UI_STATE: GridUiState = {
-  canvasRatio: DEFAULT_UI.canvasRatio,
-  customRatioWidth: DEFAULT_UI.customRatioWidth,
-  customRatioHeight: DEFAULT_UI.customRatioHeight,
-  orientation: DEFAULT_UI.orientation,
-  rotation: DEFAULT_UI.rotation,
-  marginMethod: DEFAULT_UI.marginMethod,
-  gridCols: DEFAULT_UI.gridCols,
-  gridRows: DEFAULT_UI.gridRows,
-  gutterMultiple: clampGutterMultiple(DEFAULT_UI.gutterMultiple),
-  rhythm: DEFAULT_UI.rhythm,
-  rhythmRowsEnabled: DEFAULT_UI.rhythmRowsEnabled,
-  rhythmRowsDirection: DEFAULT_UI.rhythmRowsDirection,
-  rhythmColsEnabled: DEFAULT_UI.rhythmColsEnabled,
-  rhythmColsDirection: DEFAULT_UI.rhythmColsDirection,
-  typographyScale: DEFAULT_UI.typographyScale,
-  fibonacciSequenceStartIndex: DEFAULT_UI.fibonacciSequenceStartIndex,
-  baseFont: DEFAULT_UI.baseFont,
-  imageColorScheme: DEFAULT_UI.imageColorScheme,
-  canvasBackground: DEFAULT_UI.canvasBackground,
-  customBaseline: DEFAULT_UI.customBaseline,
-  useCustomMargins: DEFAULT_UI.useCustomMargins,
-  customMarginMultipliers: DEFAULT_UI.customMarginMultipliers,
-  showBaselines: DEFAULT_UI.showBaselines,
-  showModules: DEFAULT_UI.showModules,
-  showMargins: DEFAULT_UI.showMargins,
-  showImagePlaceholders: DEFAULT_UI.showImagePlaceholders,
-  showTypography: DEFAULT_UI.showTypography,
-  showLayers: DEFAULT_UI.showLayers,
-  collapsed: SECTION_KEYS.reduce(
-    (acc, key) => {
-      const raw = DEFAULT_UI.collapsed[key]
-      acc[key] = typeof raw === "boolean" ? raw : true
-      return acc
-    },
-    {} as Record<SectionKey, boolean>,
-  ),
 }
 
 export type UiAction =

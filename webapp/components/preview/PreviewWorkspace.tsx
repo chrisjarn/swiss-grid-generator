@@ -80,9 +80,6 @@ type Props = {
   imageColorScheme: ImageColorSchemeId
   resolvedCanvasBackground: string | null
   rotation: number
-  previewUndoNonce: number
-  previewRedoNonce: number
-  documentHistoryResetNonce: number
   selectedLayerKey: string | null
   projectTitle: string
   projectDescription: string
@@ -113,7 +110,7 @@ type Props = {
   sidebarActiveProjectPage: PreviewProjectPage | null
   sidebarActivePageId: string
   sidebarControlsUseLivePage: boolean
-  loadedPreviewLayout: { token: number; layout: PreviewLayoutState } | null
+  loadedPreviewLayout: { token: number; layout: PreviewLayoutState | null } | null
   layoutEngine: LayoutEngineContract
   requestedLayerOrderState: { token: number; order: string[] } | null
   requestedLayerDeleteState: { token: number; target: string } | null
@@ -127,10 +124,9 @@ type Props = {
   onDeleteUserPreset: (preset: LayoutPreset) => Promise<void>
   onHeaderHelpNavigate: (actionKey: string) => void
   onOpenHelpSection: (sectionId: HelpSectionId) => void
-  onHistoryRecord: () => void
   onUndoRequest: () => void
   onRedoRequest: () => void
-  onHistoryAvailabilityChange: (undoAvailable: boolean, redoAvailable: boolean) => void
+  onBeforePreviewMutation: (layout: PreviewLayoutState) => void
   onRequestGridRestore: (cols: number, rows: number) => void
   gridReductionWarningToast: { id: number; message: string } | null
   onDismissGridReductionWarningToast: () => void
@@ -257,9 +253,6 @@ export function PreviewWorkspace({
   imageColorScheme,
   resolvedCanvasBackground,
   rotation,
-  previewUndoNonce,
-  previewRedoNonce,
-  documentHistoryResetNonce,
   selectedLayerKey,
   projectTitle,
   projectDescription,
@@ -298,10 +291,9 @@ export function PreviewWorkspace({
   onDeleteUserPreset,
   onHeaderHelpNavigate,
   onOpenHelpSection,
-  onHistoryRecord,
   onUndoRequest,
   onRedoRequest,
-  onHistoryAvailabilityChange,
+  onBeforePreviewMutation,
   onRequestGridRestore,
   gridReductionWarningToast,
   onDismissGridReductionWarningToast,
@@ -1068,16 +1060,13 @@ export function PreviewWorkspace({
               initialLayout={loadedPreviewLayout?.layout ?? null}
               initialLayoutToken={loadedPreviewLayout?.token ?? 0}
               rotation={rotation}
-              undoNonce={previewUndoNonce}
-              redoNonce={previewRedoNonce}
-              historyResetToken={documentHistoryResetNonce}
-              onHistoryRecord={onHistoryRecord}
+              externalHistory
+              onBeforePreviewMutation={onBeforePreviewMutation}
               onUndoRequest={onUndoRequest}
               onRedoRequest={onRedoRequest}
               onOpenHelpSection={onOpenHelpSection}
               showEditorHelpIcon={showSectionHelpIcons}
               showPreviewHelpIndicator={showSectionHelpIcons}
-              onHistoryAvailabilityChange={onHistoryAvailabilityChange}
               onRequestGridRestore={onRequestGridRestore}
               gridReductionWarningToast={gridReductionWarningToast}
               onDismissGridReductionWarningToast={onDismissGridReductionWarningToast}

@@ -457,14 +457,14 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 - Moved shared UI primitives to `webapp/shared/ui/` and left compatibility re-export shims in `webapp/components/ui/` so existing imports keep working during the next cleanup pass.
 - Added pure type staging under `webapp/core/types/` for `PageExportPlan`, document state, grid config, and workspace state.
 - Added minimal GUI foundations under `webapp/gui/`: shell layout, plan-only Swiss canvas, one representative grid panel, and separate document/workspace Zustand stores.
-- Moved the former large Next page orchestrator to `webapp/gui/legacy/LegacyWorkspace.tsx`; `webapp/app/page.tsx` is now a thin Next.js boundary.
+- Moved the production workspace shell to `webapp/gui/shell/Shell.tsx`; `webapp/app/page.tsx` is now a thin Next.js boundary.
 
 ### Boundaries
 
 - `webapp/gui/preview/SwissCanvas.tsx` consumes `PageExportPlan` only and does not compute layout.
-- The current production workspace still routes through `webapp/gui/legacy/LegacyWorkspace.tsx` and legacy `webapp/components/grid-preview.tsx` until the next decomposition pass.
+- The current production workspace routes through `webapp/gui/shell/Shell.tsx` and still uses `webapp/components/grid-preview.tsx` as the interaction canvas until the next preview decomposition pass.
 - `webapp/core/` must stay React-free.
-- The two new store files are staging boundaries; the legacy workspace has not yet been rewired to them.
+- `documentStore` is the authored-document owner, and `workspaceStore` owns transient UI state.
 
 ### Validation
 

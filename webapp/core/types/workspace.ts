@@ -1,7 +1,8 @@
 import type { LayerId, PageId } from "@/core/types/document"
+import type { SectionKey } from "@/lib/workspace-ui-schema"
 
 export type WorkspaceTool = "select" | "text" | "image" | "pan"
-export type WorkspacePanel = "project" | "account" | "feedback" | "help" | "legal" | "presets" | null
+export type WorkspacePanel = "layers" | "account" | "feedback" | "help" | "legal" | null
 
 export type WorkspaceSelection = {
   pageId: PageId | null
@@ -11,14 +12,12 @@ export type WorkspaceSelection = {
 export type WorkspaceState = {
   activeTool: WorkspaceTool
   activePanel: WorkspacePanel
+  showPresetsBrowser: boolean
+  activeHelpSectionId: string | null
   selection: WorkspaceSelection
   zoom: number
-  showBaselines: boolean
-  showMargins: boolean
-  showModules: boolean
-  showTypography: boolean
-  showImagePlaceholders: boolean
   smartTextZoom: boolean
   darkMode: boolean
   informationVisible: boolean
+  collapsed: Record<SectionKey, boolean>
 }

@@ -1,6 +1,5 @@
 import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
 import type { PreviewLayoutState } from "@/lib/types/preview-layout"
-import type { GridConfig } from "@/core/types/grid"
 
 export type DocumentId = string
 export type PageId = string
@@ -26,7 +25,7 @@ export type DocumentPageLayoutMode = "single" | "facing"
 export type DocumentPage<Layout = PreviewLayoutState> = {
   id: PageId
   name: string
-  uiSettings: GridConfig
+  uiSettings: Record<string, unknown>
   previewLayout: Layout | null
   layoutMode: DocumentPageLayoutMode
 }

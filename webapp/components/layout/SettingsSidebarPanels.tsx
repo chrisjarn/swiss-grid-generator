@@ -19,7 +19,7 @@ import type {
 import type { FontFamily } from "@/lib/config/fonts"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import type { CanvasRatioKey, GridResult } from "@/lib/grid-calculator"
-import type { SectionKey } from "@/hooks/useSettingsHistory"
+import type { SectionKey } from "@/lib/workspace-ui-schema"
 
 type CustomMarginMultipliers = {
   top: number

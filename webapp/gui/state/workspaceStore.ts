@@ -4,40 +4,39 @@ import { create } from "zustand"
 
 import type { LayerId, PageId } from "@/core/types/document"
 import type { WorkspacePanel, WorkspaceState, WorkspaceTool } from "@/core/types/workspace"
+import { DEFAULT_UI } from "@/lib/config/ui-defaults"
 
 type WorkspaceStoreState = WorkspaceState & {
   setActiveTool: (activeTool: WorkspaceTool) => void
   setActivePanel: (activePanel: WorkspacePanel) => void
   togglePanel: (panel: Exclude<WorkspacePanel, null>) => void
+  setShowPresetsBrowser: (showPresetsBrowser: boolean) => void
+  setActiveHelpSectionId: (activeHelpSectionId: string | null) => void
   setSelection: (selection: { pageId: PageId | null; layerId: LayerId | null }) => void
+  setSelectedLayer: (layerId: LayerId | null, pageId?: PageId | null) => void
   clearSelection: () => void
   setZoom: (zoom: number) => void
-  setDisplayOption: (
-    key: "showBaselines" | "showMargins" | "showModules" | "showTypography" | "showImagePlaceholders",
-    value: boolean,
-  ) => void
   setSmartTextZoom: (smartTextZoom: boolean) => void
   setDarkMode: (darkMode: boolean) => void
   setInformationVisible: (informationVisible: boolean) => void
+  setCollapsed: (collapsed: WorkspaceState["collapsed"]) => void
   resetWorkspace: () => void
 }
 
 const DEFAULT_WORKSPACE_STATE: WorkspaceState = {
   activeTool: "select",
-  activePanel: "project",
+  activePanel: null,
+  showPresetsBrowser: true,
+  activeHelpSectionId: null,
   selection: {
     pageId: null,
     layerId: null,
   },
   zoom: 1,
-  showBaselines: true,
-  showMargins: true,
-  showModules: true,
-  showTypography: true,
-  showImagePlaceholders: true,
   smartTextZoom: true,
   darkMode: false,
   informationVisible: false,
+  collapsed: DEFAULT_UI.collapsed,
 }
 
 function clampZoom(zoom: number): number {
@@ -58,7 +57,25 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set) => ({
     }))
   },
 
+  setShowPresetsBrowser: (showPresetsBrowser) => {
+    set((state) => ({
+      showPresetsBrowser,
+      activePanel: showPresetsBrowser && state.activePanel === "layers" ? null : state.activePanel,
+    }))
+  },
+
+  setActiveHelpSectionId: (activeHelpSectionId) => set({ activeHelpSectionId }),
+
   setSelection: (selection) => set({ selection }),
+
+  setSelectedLayer: (layerId, pageId = null) => {
+    set((state) => ({
+      selection: {
+        pageId: pageId ?? state.selection.pageId,
+        layerId,
+      },
+    }))
+  },
 
   clearSelection: () => {
     set({
@@ -71,13 +88,13 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set) => ({
 
   setZoom: (zoom) => set({ zoom: clampZoom(zoom) }),
 
-  setDisplayOption: (key, value) => set({ [key]: value }),
-
   setSmartTextZoom: (smartTextZoom) => set({ smartTextZoom }),
 
   setDarkMode: (darkMode) => set({ darkMode }),
 
   setInformationVisible: (informationVisible) => set({ informationVisible }),
+
+  setCollapsed: (collapsed) => set({ collapsed }),
 
   resetWorkspace: () => set(DEFAULT_WORKSPACE_STATE),
 }))

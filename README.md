@@ -201,7 +201,7 @@ Fonts, wrapping, line positions, paragraph boxes, image placeholders, grid geome
 
 That means preset thumbnails, the live preview, drag previews, edit geometry, and PDF/SVG/IDML export planning all share the same source of truth. Browser text metrics are diagnostic only, so a Safari, Firefox, Chrome, or future browser update must not silently change authored layouts.
 
-The active frontend boundary is `webapp/`. The root no longer carries a parallel package entry point. `webapp/app/page.tsx` is intentionally thin and delegates to the current legacy workspace while the codebase is being split into clearer domains.
+The active frontend boundary is `webapp/`. The root no longer carries a parallel package entry point. `webapp/app/page.tsx` is intentionally thin and mounts the production shell in `webapp/gui/shell/Shell.tsx`.
 
 Current source layout:
 
@@ -210,7 +210,7 @@ Current source layout:
 - `webapp/gui/`: React shell, preview, panels, editors, dialogs, and the two new state stores.
 - `webapp/shared/`: reusable UI primitives and utilities.
 - `webapp/components/ui/`: compatibility re-export shims during import cleanup.
-- `webapp/gui/legacy/LegacyWorkspace.tsx`: temporary home of the former page orchestrator until it is decomposed.
+- `webapp/gui/shell/Shell.tsx`: production workspace shell backed by `documentStore` and `workspaceStore`.
 
 `webapp/gui/preview/SwissCanvas.tsx` is a plan-only canvas foundation. It consumes `PageExportPlan`; it does not calculate layout.
 
