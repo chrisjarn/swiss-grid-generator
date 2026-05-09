@@ -34,15 +34,17 @@ Current capability inventory for Swiss Grid Generator.
 
 ## Typography
 
-- Hierarchy levels: `Display`, `Headline`, `Subhead`, `Body`, `Caption`, `Custom`.
+- Core type hierarchy levels: `Display`, `Headline`, `Subhead`, `Body`, `Caption`, and `fx`.
+- `Custom` is a paragraph-level override mode in the text editor rather than a global scale row.
 - Scale systems: `Swiss`, `Golden Ratio`, `Fibonacci`, `Perfect Fourth`, `Perfect Fifth`.
 - Left-panel hierarchy table showing the resolved `Display`, `Headline`, `Subhead`, `Body`, and `Caption` metrics for the active baseline/scale.
 - Base font inheritance plus block-level override support.
-- Font family groups: `Sans-Serif`, `Serif`, `Poster`.
+- Font family groups: `Sans-Serif`, `Serif`, `Display`.
 - Available Fonts:
   - Sans-Serif: [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Inter](https://fonts.google.com/specimen/Inter), [Jost](https://fonts.google.com/specimen/Jost), [Work Sans](https://fonts.google.com/specimen/Work+Sans)
   - Serif: [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [Besley](https://fonts.google.com/specimen/Besley)
-  - Poster: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display)
+  - Display: [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono), [Playfair Display](https://fonts.google.com/specimen/Playfair+Display)
+- Inserted symbols use `Noto Sans Symbols 2` as an internal run-level font assignment for stable rendering/export.
 - Family cut selection from available local variants.
 - Optical or metric kerning.
 - Tracking input from `-120` to `+300` (`1/1000 em`).
@@ -204,7 +206,7 @@ Current capability inventory for Swiss Grid Generator.
 - SVG and IDML page-set artifacts can be reused from a bounded exact-request cache for repeated exports without re-rendering unchanged page sets.
 - Export metadata fields (`Project Title`, `Subject`, `Author`) are editable in the dialog for all formats.
 - PDF, SVG, and IDML share one bleed option:
-  - enabled by default
+  - disabled by default
   - default width `3mm`
   - one shared `ExportBox` defines trim, bleed, media canvas, export origin, crop-mark geometry, and guide clipping
   - visible export geometry extends through the production bleed area; a fixed white crop-mark canvas and black crop marks are added outside it

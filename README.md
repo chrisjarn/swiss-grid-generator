@@ -75,12 +75,12 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 
 ### Typography System
 - Five harmonious type scales (Swiss, Golden Ratio, Fibonacci, Perfect Fourth, Perfect Fifth)
-- Six hierarchy levels: **Display · Headline · Subhead · Body · Caption · Custom**
-- The `V. Typo & Rhythms` panel uses `Base`, `Rhythm`, and a `Steps` table for **Display · Headline · Subhead · Body · Caption**; `Custom` is paragraph-level and seeds from the paragraph's current size/leading when first selected
+- Core type hierarchy includes **Display · Headline · Subhead · Body · Caption · fx**; `Custom` is a paragraph-level override mode in the text editor
+- The typography controls expose `Base`, `Rhythm`, and a hierarchy overview for **Display · Headline · Subhead · Body · Caption**; `Custom` seeds from the paragraph's current size/leading when first selected
 - Available Fonts:
   - **Sans-Serif**: [IBM Plex Sans](https://fonts.google.com/specimen/IBM+Plex+Sans), [Inter](https://fonts.google.com/specimen/Inter), [Jost](https://fonts.google.com/specimen/Jost), [Work Sans](https://fonts.google.com/specimen/Work+Sans)
   - **Serif**: [EB Garamond](https://fonts.google.com/specimen/EB+Garamond), [Libre Baskerville](https://fonts.google.com/specimen/Libre+Baskerville), [Bodoni Moda](https://fonts.google.com/specimen/Bodoni+Moda), [Besley](https://fonts.google.com/specimen/Besley)
-  - **Poster**: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono), [Noto Sans Symbols 2](https://fonts.google.com/noto/specimen/Noto+Sans+Symbols+2)
+  - **Display**: [Playfair Display](https://fonts.google.com/specimen/Playfair+Display), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono)
 - Paragraph-level geometry plus horizontal/vertical alignment and selection-level font family, cut, hierarchy, color, and tracking
 - Paragraph and image-placeholder height can be composed as `rows + baselines`, including shallow frames such as `0 rows + 1 baseline`
 - Paragraph vertical alignment (`Top`, `Center`, `Bottom`) stays baseline-aligned inside the configured frame height
@@ -186,7 +186,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - TypeScript
 - Tailwind CSS + Radix UI
 - Canonical page planning with deterministic font-file metrics; canvas is used as the live output surface
-- Zustand for state management
+- React state, reducers, and domain hooks for current UI state management
 - IndexedDB/Dexie for local offline project storage
 - Supabase for optional authentication, cloud sync, and feedback storage
 - jsPDF for print output

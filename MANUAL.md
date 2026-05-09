@@ -22,7 +22,7 @@ The tool works best when global decisions are made first and local overrides are
 
 ### Build the page in the simplest reliable order.
 
-Choose `Ratio`, `Orientation`, and, if needed, `Rotation`. Then set the `Baseline`, choose the `Margins` method, and, if needed, switch to `Custom Margins` to tune the content field. After that, set `Cols`, `Rows`, `Gutter`, and `Rhythm`, then define the document type scale and base font in `Typo & Rhythms`.
+Choose `Ratio`, `Orientation`, and, if needed, `Rotation`. Then set the `Baseline`, choose the `Margins` method, and, if needed, switch to `Custom Margins` to tune the content field. After that, set `Cols`, `Rows`, `Gutter`, and `Rhythm`, then define the document type scale and base font in `Typo`.
 
 Only after the page structure is established should you create content. Double-click a module to create a text paragraph. Use `Shift` + double-click to create an image placeholder. If the page feels wrong, return to baseline and margins before changing the content blocks.
 
@@ -54,7 +54,7 @@ Only after that should you define columns, rows, gutter, and rhythm. Use `Repeti
 
 ### Let type reinforce the grid.
 
-Start by setting the document type scale and the base font. Then assign hierarchy by role: caption, body, subhead, headline, fx/custom, and display. These levels are structural roles, not mood presets.
+Start by setting the document type scale and the base font. Then assign hierarchy by role: caption, body, subhead, headline, display, and `fx` where needed. `Custom` is a paragraph-level override mode, not part of the global type scale. These roles are structural, not mood presets.
 
 Refine tracking and leading only after the hierarchy is correct. Tracking changes the tonal color of the page and should be used carefully. Alignment and vertical alignment should be compositional decisions, not repair tools. Variables such as `%page%`, `%pages%`, `%date%`, and `%lorem%` belong to the editorial logic of the page.
 
