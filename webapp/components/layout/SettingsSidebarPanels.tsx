@@ -54,8 +54,6 @@ type Props = {
   marginMethod: 1 | 2 | 3
   onMarginMethodChange: (value: 1 | 2 | 3) => void
   onMarginMethodPreviewChange?: (value: "1" | "2" | "3" | "custom" | null) => void
-  baselineMultiple: number
-  onBaselineMultipleChange: (value: number) => void
   useCustomMargins: boolean
   onUseCustomMarginsChange: (value: boolean) => void
   customMarginMultipliers: CustomMarginMultipliers
@@ -152,8 +150,6 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   marginMethod,
   onMarginMethodChange,
   onMarginMethodPreviewChange,
-  baselineMultiple,
-  onBaselineMultipleChange,
   useCustomMargins,
   onUseCustomMarginsChange,
   customMarginMultipliers,
@@ -296,8 +292,6 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
             marginMethod={marginMethod}
             onMarginMethodChange={onMarginMethodChange}
             onMarginMethodPreviewChange={onMarginMethodPreviewChange}
-            baselineMultiple={baselineMultiple}
-            onBaselineMultipleChange={onBaselineMultipleChange}
             useCustomMargins={useCustomMargins}
             onUseCustomMarginsChange={onUseCustomMarginsChange}
             customMarginMultipliers={customMarginMultipliers}

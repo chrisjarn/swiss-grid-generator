@@ -292,7 +292,6 @@ export function resolveProjectPageUiSettings(
   const canvasRatio = source.canvasRatio
   const orientation = source.orientation
   const marginMethod = source.marginMethod
-  const baselineMultiple = source.baselineMultiple
   const gutterMultiple = source.gutterMultiple
   const customBaseline = source.customBaseline
   const customRatioWidth = resolvePositiveNumberSetting(source.customRatioWidth, sourcePath, "uiSettings.customRatioWidth")
@@ -319,9 +318,6 @@ export function resolveProjectPageUiSettings(
   }
   if (!isMarginMethod(marginMethod)) {
     throw new Error(`Invalid project page "${sourcePath}": uiSettings.marginMethod must be 1, 2, or 3`)
-  }
-  if (typeof baselineMultiple !== "number" || !Number.isFinite(baselineMultiple) || baselineMultiple <= 0) {
-    throw new Error(`Invalid project page "${sourcePath}": uiSettings.baselineMultiple must be a positive number`)
   }
   if (typeof gutterMultiple !== "number" || !Number.isFinite(gutterMultiple) || gutterMultiple <= 0) {
     throw new Error(`Invalid project page "${sourcePath}": uiSettings.gutterMultiple must be a positive number`)
@@ -376,7 +372,6 @@ export function resolveProjectPageUiSettings(
     customRatioHeight: customRatioHeight ?? resolved.customRatioHeight,
     orientation,
     marginMethod,
-    baselineMultiple,
     gutterMultiple,
     rotation: typeof source.rotation === "number" && Number.isFinite(source.rotation)
       ? clampRotation(source.rotation)

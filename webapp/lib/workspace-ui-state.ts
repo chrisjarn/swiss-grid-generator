@@ -6,7 +6,6 @@ import {
 } from "@/lib/grid-calculator"
 import { clampRotation } from "@/lib/block-constraints"
 import {
-  BASELINE_MULTIPLE_RANGE,
   GUTTER_MULTIPLE_RANGE,
   type GridRhythm,
   type GridRhythmColsDirection,
@@ -36,7 +35,6 @@ export type GridUiState = Pick<
   | "marginMethod"
   | "gridCols"
   | "gridRows"
-  | "baselineMultiple"
   | "gutterMultiple"
   | "rhythm"
   | "rhythmRowsEnabled"
@@ -62,10 +60,6 @@ export type GridUiState = Pick<
 
 export const DEFAULT_A4_BASELINE = FORMAT_BASELINES["A4"] ?? 12
 
-function clampBaselineMultiple(value: number): number {
-  return Math.min(BASELINE_MULTIPLE_RANGE.max, Math.max(BASELINE_MULTIPLE_RANGE.min, value))
-}
-
 function clampGutterMultiple(value: number): number {
   return Math.min(GUTTER_MULTIPLE_RANGE.max, Math.max(GUTTER_MULTIPLE_RANGE.min, value))
 }
@@ -83,7 +77,6 @@ export const INITIAL_GRID_UI_STATE: GridUiState = {
   marginMethod: DEFAULT_UI.marginMethod,
   gridCols: DEFAULT_UI.gridCols,
   gridRows: DEFAULT_UI.gridRows,
-  baselineMultiple: clampBaselineMultiple(DEFAULT_UI.baselineMultiple),
   gutterMultiple: clampGutterMultiple(DEFAULT_UI.gutterMultiple),
   rhythm: DEFAULT_UI.rhythm,
   rhythmRowsEnabled: DEFAULT_UI.rhythmRowsEnabled,
@@ -123,7 +116,6 @@ export type UiAction =
   | { type: "SET"; key: "marginMethod"; value: 1 | 2 | 3 }
   | { type: "SET"; key: "gridCols"; value: number }
   | { type: "SET"; key: "gridRows"; value: number }
-  | { type: "SET"; key: "baselineMultiple"; value: number }
   | { type: "SET"; key: "gutterMultiple"; value: number }
   | { type: "SET"; key: "rhythm"; value: GridRhythm }
   | { type: "SET"; key: "rhythmRowsEnabled"; value: boolean }
@@ -196,11 +188,6 @@ export function gridUiReducer(state: GridUiState, action: UiAction): GridUiState
           if (state.customRatioHeight === nextCustomRatioHeight) return state
           return { ...state, customRatioHeight: nextCustomRatioHeight }
         }
-        case "baselineMultiple": {
-          const nextBaselineMultiple = clampBaselineMultiple(action.value)
-          if (state.baselineMultiple === nextBaselineMultiple) return state
-          return { ...state, baselineMultiple: nextBaselineMultiple }
-        }
         case "gutterMultiple": {
           const nextGutterMultiple = clampGutterMultiple(action.value)
           if (state.gutterMultiple === nextGutterMultiple) return state
@@ -239,7 +226,6 @@ export function gridUiReducer(state: GridUiState, action: UiAction): GridUiState
         marginMethod: action.snapshot.marginMethod,
         gridCols: action.snapshot.gridCols,
         gridRows: action.snapshot.gridRows,
-        baselineMultiple: clampBaselineMultiple(action.snapshot.baselineMultiple),
         gutterMultiple: clampGutterMultiple(action.snapshot.gutterMultiple),
         rhythm: action.snapshot.rhythm,
         rhythmRowsEnabled: action.snapshot.rhythmRowsEnabled,

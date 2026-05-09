@@ -300,8 +300,7 @@ Shows or hides image placeholders for the open project and its export path. Shor
 ### III. Margins {#help-margins}
 - Choose a margin method or `Custom Margins`.
 - Margin method previews on dropdown hover before commit.
-- `Baseline Multiple` scales the margin system while keeping baseline alignment.
-- `Custom Margins` exposes top, left, right, and bottom baseline-multiplier controls.
+- `Custom Margins` exposes top, left, right, and bottom baseline-unit controls.
 
 ### IV. Grid {#help-gutter}
 - Set columns, rows, gutter, and rhythm.

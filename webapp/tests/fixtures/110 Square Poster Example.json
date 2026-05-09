@@ -34,7 +34,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 4,
-        "baselineMultiple": 2,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -48,10 +47,10 @@
         "customBaseline": 12,
         "useCustomMargins": true,
         "customMarginMultipliers": {
-          "top": 1,
-          "left": 1,
-          "right": 1,
-          "bottom": 1
+          "top": 2,
+          "left": 2,
+          "right": 2,
+          "bottom": 2
         },
         "format": "SQUARE_1_1"
       },

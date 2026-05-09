@@ -15,7 +15,6 @@ function areSnapshotsEqual(a: UiSettingsSnapshot, b: UiSettingsSnapshot): boolea
     && a.marginMethod === b.marginMethod
     && a.gridCols === b.gridCols
     && a.gridRows === b.gridRows
-    && a.baselineMultiple === b.baselineMultiple
     && a.gutterMultiple === b.gutterMultiple
     && a.rhythm === b.rhythm
     && a.rhythmRowsEnabled === b.rhythmRowsEnabled

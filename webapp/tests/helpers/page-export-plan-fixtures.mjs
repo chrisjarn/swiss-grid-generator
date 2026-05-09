@@ -24,7 +24,6 @@ export function createStressGridResult(pageIndex = 0) {
     gridCols: 8 + (pageIndex % 3),
     gridRows: 10 + (pageIndex % 4),
     baseline: 10 + (pageIndex % 3),
-    baselineMultiple: 1,
     gutterMultiple: pageIndex % 2 === 0 ? 1 : 0.5,
     rhythm: "modular",
     rhythmRowsEnabled: true,

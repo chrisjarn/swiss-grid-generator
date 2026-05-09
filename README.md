@@ -47,7 +47,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 ### Baseline Grid
 - 18 baseline options (6 pt to 72 pt)
 - All vertical rhythm derived from the baseline
-- Typography leading and margins stay aligned to baseline multiples
+- Typography leading and margins stay aligned to the baseline grid
 - Stable positioning — changing baseline doesn’t break your layout
 
 ### Margins
@@ -56,8 +56,7 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
   - Van de Graaf (2:3:4:6)
   - Baseline (1:1:1:1)
 - `Custom Margins` available as the last option in the margin-method dropdown
-- Shared baseline multiple scaling
-- Full custom margin control
+- Full custom margin control in baseline units
 
 ### Grid & Rhythms (The Star Feature)
 - 1–13 columns and rows

@@ -109,7 +109,7 @@ Baseline value remains the same in landscape; only page dimensions swap.
 
 ## Margins
 
-Margins are calculated as **baseline multiples** and then **snapped to the baseline grid**.
+Margins are calculated in **baseline units** and then **snapped to the baseline grid**.
 
 ### Three Calculation Methods
 
@@ -118,30 +118,27 @@ Margins are calculated as **baseline multiples** and then **snapped to the basel
 Swiss modern approach for single pages. Creates gentle visual weight shift downward.
 
 ```
-margin_top    = gridUnit × 1.0 × baselineMultiple
-margin_left   = gridUnit × 2.0 × baselineMultiple
-margin_right  = gridUnit × 2.0 × baselineMultiple
-margin_bottom = gridUnit × 3.0 × baselineMultiple
+margin_top    = gridUnit × 1.0
+margin_left   = gridUnit × 2.0
+margin_right  = gridUnit × 2.0
+margin_bottom = gridUnit × 3.0
 ```
 
-**Example with 12pt baseline, 1× multiple:**
+**Example with 12pt baseline:**
 - Top: 12pt, Left/Right: 24pt, Bottom: 36pt
-
-**With 2× multiple:**
-- Top: 24pt, Left/Right: 48pt, Bottom: 72pt
 
 #### Method 2: Van de Graaf (2:3:4:6)
 
-Asymmetric margins inspired by the Van de Graaf canon, adapted to baseline multiples.
+Asymmetric margins inspired by the Van de Graaf canon, expressed in baseline units.
 
 ```
-margin_top    = gridUnit × 2.0 × baselineMultiple
-margin_left   = gridUnit × 3.0 × baselineMultiple
-margin_right  = gridUnit × 4.0 × baselineMultiple
-margin_bottom = gridUnit × 6.0 × baselineMultiple
+margin_top    = gridUnit × 2.0
+margin_left   = gridUnit × 3.0
+margin_right  = gridUnit × 4.0
+margin_bottom = gridUnit × 6.0
 ```
 
-**Example with 12pt baseline, 1× multiple:**
+**Example with 12pt baseline:**
 - Top: 24pt, Left: 36pt, Right: 48pt, Bottom: 72pt
 
 #### Method 3: Baseline (1:1:1:1)
@@ -149,18 +146,18 @@ margin_bottom = gridUnit × 6.0 × baselineMultiple
 Pure Müller-Brockmann approach: all margins equal.
 
 ```
-margin = gridUnit × baselineMultiple  // All sides
+margin = gridUnit  // All sides
 ```
 
-**Example with 12pt baseline, 2× multiple:**
-- All margins: 24pt
+**Example with 12pt baseline:**
+- All margins: 12pt
 
 ### Custom Margins
 
-Bypasses the method selection. Each side is set independently as an integer multiplier, then scaled by the shared baseline multiple:
+Bypasses the method selection. Each side is set independently as an integer baseline-unit multiplier:
 
 ```
-margin_[side] = multiplier_[side] × baselineMultiple × gridUnit
+margin_[side] = multiplier_[side] × gridUnit
 ```
 
 Multiplier range: 1–9 (integer steps).
@@ -190,7 +187,7 @@ This value is used as `contentArea.height` in the output. The bottom margin rema
 
 ## Gutters
 
-Gutters are the spacing between modules. They scale by the gutter baseline multiple slider.
+Gutters are the spacing between modules. They scale by the gutter multiple slider.
 
 ```
 gridMarginHorizontal = gridUnit × gutterMultiple
@@ -312,7 +309,7 @@ Validated constraints:
 - `orientation` must be `portrait` or `landscape`
 - `marginMethod` must be `1`, `2`, or `3`
 - `gridCols` and `gridRows` must be integers `>= 1`
-- `baseline` (if provided), `baselineMultiple`, and `gutterMultiple` must be finite and `> 0`
+- `baseline` (if provided) and `gutterMultiple` must be finite and `> 0`
 - `customMargins` values must be finite and `>= 0`
 
 Computed-dimension checks:

@@ -344,7 +344,7 @@ export default function Home() {
     canvasRatio,
     customRatioWidth, customRatioHeight,
     orientation, rotation,
-    marginMethod, gridCols, gridRows, baselineMultiple, gutterMultiple, rhythm,
+    marginMethod, gridCols, gridRows, gutterMultiple, rhythm,
     rhythmRowsEnabled, rhythmRowsDirection, rhythmColsEnabled, rhythmColsDirection,
     typographyScale, fibonacciSequenceStartIndex, baseFont, imageColorScheme, canvasBackground, customBaseline,
     useCustomMargins, customMarginMultipliers, showBaselines, showModules,
@@ -359,7 +359,6 @@ export default function Home() {
     setMarginMethod,
     setGridCols,
     setGridRows,
-    setBaselineMultiple,
     setGutterMultiple,
     setRhythm,
     setRhythmRowsEnabled,
@@ -551,7 +550,6 @@ export default function Home() {
     marginMethod,
     gridCols,
     gridRows,
-    baselineMultiple,
     gutterMultiple,
     rhythm,
     rhythmRowsEnabled,
@@ -582,7 +580,6 @@ export default function Home() {
     marginMethod,
     gridCols,
     gridRows,
-    baselineMultiple,
     gutterMultiple,
     rhythm,
     rhythmRowsEnabled,
@@ -741,7 +738,7 @@ export default function Home() {
     : sidebarControlUi.gridCols
   const sidebarControlMaxBaseline = useMemo(() => {
     const customMarginUnits = sidebarControlUi.useCustomMargins
-      ? sidebarControlUi.baselineMultiple * (
+      ? (
         sidebarControlUi.customMarginMultipliers.top
         + sidebarControlUi.customMarginMultipliers.bottom
       )
@@ -749,12 +746,10 @@ export default function Home() {
     return getMaxBaseline(
       sidebarControlResult.pageSizePt.height,
       sidebarControlUi.marginMethod,
-      sidebarControlUi.baselineMultiple,
       customMarginUnits,
     )
   }, [
     sidebarControlResult.pageSizePt.height,
-    sidebarControlUi.baselineMultiple,
     sidebarControlUi.customMarginMultipliers,
     sidebarControlUi.marginMethod,
     sidebarControlUi.useCustomMargins,
@@ -789,15 +784,14 @@ export default function Home() {
       return
     }
     if (value === "custom") {
-      const customMarginScale = gridUnit * baselineMultiple
       const clampCustomMarginMultiplier = (multiplier: number) => Math.max(1, Math.min(9, Math.round(multiplier)))
       setPreviewPatch({
         useCustomMargins: true,
         customMarginMultipliers: {
-          top: clampCustomMarginMultiplier(result.grid.margins.top / customMarginScale),
-          left: clampCustomMarginMultiplier(result.grid.margins.left / customMarginScale),
-          right: clampCustomMarginMultiplier(result.grid.margins.right / customMarginScale),
-          bottom: clampCustomMarginMultiplier(result.grid.margins.bottom / customMarginScale),
+          top: clampCustomMarginMultiplier(result.grid.margins.top / gridUnit),
+          left: clampCustomMarginMultiplier(result.grid.margins.left / gridUnit),
+          right: clampCustomMarginMultiplier(result.grid.margins.right / gridUnit),
+          bottom: clampCustomMarginMultiplier(result.grid.margins.bottom / gridUnit),
         },
       })
       return
@@ -806,7 +800,7 @@ export default function Home() {
       marginMethod: parseInt(value, 10) as 1 | 2 | 3,
       useCustomMargins: false,
     })
-  }, [baselineMultiple, clearPreviewKeys, gridUnit, result.grid.margins, setPreviewPatch])
+  }, [clearPreviewKeys, gridUnit, result.grid.margins, setPreviewPatch])
   const handleRhythmPreviewChange = useCallback((value: typeof rhythm | null) => {
     if (value === null) {
       clearPreviewKeys(["rhythm"])
@@ -1941,8 +1935,6 @@ export default function Home() {
       marginMethod={sidebarControlUi.marginMethod}
       onMarginMethodChange={setMarginMethod}
       onMarginMethodPreviewChange={handleMarginMethodPreviewChange}
-      baselineMultiple={sidebarControlUi.baselineMultiple}
-      onBaselineMultipleChange={setBaselineMultiple}
       useCustomMargins={sidebarControlUi.useCustomMargins}
       onUseCustomMarginsChange={setUseCustomMargins}
       customMarginMultipliers={sidebarControlUi.customMarginMultipliers}
@@ -2003,7 +1995,6 @@ export default function Home() {
     handleSectionHelpNavigate,
     handleTypographyScalePreviewChange,
     isDarkUi,
-    setBaselineMultiple,
     setBaseFont,
     setCanvasBackground,
     setCanvasRatio,

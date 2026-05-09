@@ -1,6 +1,5 @@
 import { clampRotation } from "@/lib/block-constraints"
 import {
-  BASELINE_MULTIPLE_RANGE,
   GUTTER_MULTIPLE_RANGE,
   defaultGridRhythmAxisSettings,
   isGridRhythm,
@@ -113,10 +112,10 @@ function resolveCustomMarginMultipliers(value: unknown): UiSettingsSnapshot["cus
 
   const source = value as Partial<Record<keyof UiSettingsSnapshot["customMarginMultipliers"], unknown>>
   return {
-    top: clampPositive(source.top, DEFAULT_UI.customMarginMultipliers.top),
-    left: clampPositive(source.left, DEFAULT_UI.customMarginMultipliers.left),
-    right: clampPositive(source.right, DEFAULT_UI.customMarginMultipliers.right),
-    bottom: clampPositive(source.bottom, DEFAULT_UI.customMarginMultipliers.bottom),
+    top: clampPositiveInteger(source.top, DEFAULT_UI.customMarginMultipliers.top),
+    left: clampPositiveInteger(source.left, DEFAULT_UI.customMarginMultipliers.left),
+    right: clampPositiveInteger(source.right, DEFAULT_UI.customMarginMultipliers.right),
+    bottom: clampPositiveInteger(source.bottom, DEFAULT_UI.customMarginMultipliers.bottom),
   }
 }
 
@@ -153,12 +152,6 @@ export function resolveUiSettingsSnapshot(
     marginMethod: resolveMarginMethod(source.marginMethod),
     gridCols: clampPositiveInteger(source.gridCols, DEFAULT_UI.gridCols),
     gridRows: clampPositiveInteger(source.gridRows, DEFAULT_UI.gridRows),
-    baselineMultiple: clampRange(
-      source.baselineMultiple,
-      DEFAULT_UI.baselineMultiple,
-      BASELINE_MULTIPLE_RANGE.min,
-      BASELINE_MULTIPLE_RANGE.max,
-    ),
     gutterMultiple: clampRange(
       source.gutterMultiple,
       DEFAULT_UI.gutterMultiple,
@@ -310,10 +303,10 @@ export function buildGridResultFromUiSettings(
   const baseline = snapshot.customBaseline
   const customMargins = snapshot.useCustomMargins
     ? {
-        top: snapshot.customMarginMultipliers.top * snapshot.baselineMultiple * baseline,
-        left: snapshot.customMarginMultipliers.left * snapshot.baselineMultiple * baseline,
-        right: snapshot.customMarginMultipliers.right * snapshot.baselineMultiple * baseline,
-        bottom: snapshot.customMarginMultipliers.bottom * snapshot.baselineMultiple * baseline,
+        top: snapshot.customMarginMultipliers.top * baseline,
+        left: snapshot.customMarginMultipliers.left * baseline,
+        right: snapshot.customMarginMultipliers.right * baseline,
+        bottom: snapshot.customMarginMultipliers.bottom * baseline,
       }
     : undefined
 
@@ -327,7 +320,6 @@ export function buildGridResultFromUiSettings(
     gridCols: snapshot.gridCols,
     gridRows: snapshot.gridRows,
     baseline,
-    baselineMultiple: snapshot.baselineMultiple,
     gutterMultiple: snapshot.gutterMultiple,
     rhythm: snapshot.rhythm,
     rhythmRowsEnabled: snapshot.rhythmRowsEnabled,

@@ -12,7 +12,6 @@ export type LayoutPresetUiSettings = Record<string, unknown> & {
   marginMethod: 1 | 2 | 3
   gridCols: number
   gridRows: number
-  baselineMultiple: number
   gutterMultiple: number
   rotation?: number
   typographyScale?: "swiss" | "golden" | "fibonacci" | "fourth" | "fifth"

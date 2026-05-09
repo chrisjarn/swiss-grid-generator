@@ -99,19 +99,12 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 | `3` | Baseline (1:1:1:1) | 1x | 1x | 1x | 1x |
 | `custom` | Custom Margins | user-defined | user-defined | user-defined | user-defined |
 
-#### Baseline Multiple (Margins and Custom Margins)
-
-- min: `1.0`
-- max: `4.0`
-- step: `0.5`
-- default: `1.0`
-
 #### Custom Margins
 
 - available as the last option in the `Margin Method` always-open dropdown-style list field
 - per-side multipliers (`top,left,right,bottom`): min `1`, max `9`, step `1`
 - selecting `Custom Margins` reveals the four side sliders
-- actual custom margin = `sideMultiplier × baselineMultiple × gridUnit`
+- actual custom margin = `sideMultiplier × gridUnit`
 - `Margin Method` list items preview live on rollover before click commit
 
 ### Grid
@@ -557,7 +550,7 @@ Behavior:
 
 ## JSON UI Fields (serialized)
 
-`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `baselineMultiple`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
+`canvasRatio`, `customRatioWidth`, `customRatioHeight`, `format`, `exportPaperSize`, `orientation`, `rotation`, `marginMethod`, `gridCols`, `gridRows`, `gutterMultiple`, `rhythm`, `rhythmRowsEnabled`, `rhythmRowsDirection`, `rhythmColsEnabled`, `rhythmColsDirection`, `typographyScale`, `baseFont`, `imageColorScheme`, `canvasBackground`, `customBaseline`, `displayUnit`, `useCustomMargins`, `customMarginMultipliers`
 
 Notes:
 - Export bleed is session/export-run state, not serialized per page. The default is centralized in `DEFAULT_EXPORT_BLEED_OPTIONS`.

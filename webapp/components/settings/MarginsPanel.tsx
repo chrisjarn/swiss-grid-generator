@@ -2,7 +2,6 @@ import { memo } from "react"
 import { Label } from "@/components/ui/label"
 import { DebouncedSlider } from "@/components/ui/slider"
 import { PanelCard } from "@/components/settings/PanelCard"
-import { BASELINE_MULTIPLE_RANGE } from "@/lib/config/defaults"
 import {
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,
@@ -28,8 +27,6 @@ type Props = {
   marginMethod: 1 | 2 | 3
   onMarginMethodChange: (value: 1 | 2 | 3) => void
   onMarginMethodPreviewChange?: (value: "1" | "2" | "3" | "custom" | null) => void
-  baselineMultiple: number
-  onBaselineMultipleChange: (value: number) => void
   useCustomMargins: boolean
   onUseCustomMarginsChange: (checked: boolean) => void
   customMarginMultipliers: CustomMarginMultipliers
@@ -47,8 +44,6 @@ export const MarginsPanel = memo(function MarginsPanel({
   marginMethod,
   onMarginMethodChange,
   onMarginMethodPreviewChange,
-  baselineMultiple,
-  onBaselineMultipleChange,
   useCustomMargins,
   onUseCustomMarginsChange,
   customMarginMultipliers,
@@ -63,12 +58,11 @@ export const MarginsPanel = memo(function MarginsPanel({
 
   const handleMarginModeChange = (value: MarginMode) => {
     if (value === "custom") {
-      const customMarginScale = gridUnit * baselineMultiple
       onCustomMarginMultipliersChange({
-        top: clampCustomMarginMultiplier(currentMargins.top / customMarginScale),
-        left: clampCustomMarginMultiplier(currentMargins.left / customMarginScale),
-        right: clampCustomMarginMultiplier(currentMargins.right / customMarginScale),
-        bottom: clampCustomMarginMultiplier(currentMargins.bottom / customMarginScale),
+        top: clampCustomMarginMultiplier(currentMargins.top / gridUnit),
+        left: clampCustomMarginMultiplier(currentMargins.left / gridUnit),
+        right: clampCustomMarginMultiplier(currentMargins.right / gridUnit),
+        bottom: clampCustomMarginMultiplier(currentMargins.bottom / gridUnit),
       })
       onUseCustomMarginsChange(true)
       return
@@ -82,33 +76,13 @@ export const MarginsPanel = memo(function MarginsPanel({
     : (marginMethod.toString() as "1" | "2" | "3")
 
   const collapsedSummary = useCustomMargins
-    ? `Custom ${baselineMultiple.toFixed(1)}x: T${customMarginMultipliers.top}x L${customMarginMultipliers.left}x R${customMarginMultipliers.right}x B${customMarginMultipliers.bottom}x`
-    : `${marginMethod === 1 ? "Progressive" : marginMethod === 2 ? "Van de Graaf" : "Baseline"}, ${baselineMultiple.toFixed(1)}x`
-
-  const baselineMultipleControl = (
-    <div className="mt-5 space-y-3">
-      <hr />
-      <div className="flex items-center justify-between">
-        <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Baseline Multiple</Label>
-        <span className={valueBadgeClassName}>
-          {baselineMultiple.toFixed(1)}×
-        </span>
-      </div>
-      <DebouncedSlider
-        value={[baselineMultiple]}
-        min={BASELINE_MULTIPLE_RANGE.min}
-        max={BASELINE_MULTIPLE_RANGE.max}
-        step={BASELINE_MULTIPLE_RANGE.step}
-        onValueCommit={([v]) => onBaselineMultipleChange(v)}
-        onThumbDoubleClick={() => onBaselineMultipleChange(1)}
-      />
-    </div>
-  )
+    ? `Custom T${customMarginMultipliers.top}x L${customMarginMultipliers.left}x R${customMarginMultipliers.right}x B${customMarginMultipliers.bottom}x`
+    : `${marginMethod === 1 ? "Progressive" : marginMethod === 2 ? "Van de Graaf" : "Baseline"}`
 
   return (
     <PanelCard
       title="M A R G I N S"
-      tooltip="Margin method dropdown, baseline multiple, and custom per-side controls; margin method previews on rollover"
+      tooltip="Margin method dropdown and custom per-side controls; margin method previews on rollover"
       collapsed={collapsed}
       collapsedSummary={collapsedSummary}
       onHeaderClick={onHeaderClick}
@@ -185,11 +159,8 @@ export const MarginsPanel = memo(function MarginsPanel({
               }
             />
           </div>
-          {baselineMultipleControl}
         </div>
-      ) : (
-        baselineMultipleControl
-      )}
+      ) : null}
     </PanelCard>
   )
 })

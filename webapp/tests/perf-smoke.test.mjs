@@ -15,11 +15,11 @@ function runTimed(iterations, fn) {
 
 test("perf smoke: generateSwissGrid remains fast for common presets", () => {
   const cases = [
-    { format: "A4", orientation: "portrait", marginMethod: 1, gridCols: 6, gridRows: 8, baseline: 12, baselineMultiple: 1, gutterMultiple: 1, typographyScale: "swiss" },
-    { format: "A4", orientation: "landscape", marginMethod: 2, gridCols: 8, gridRows: 6, baseline: 10, baselineMultiple: 1, gutterMultiple: 0.5, typographyScale: "golden" },
-    { format: "A3", orientation: "portrait", marginMethod: 1, gridCols: 7, gridRows: 9, baseline: 14, baselineMultiple: 1, gutterMultiple: 1, typographyScale: "fourth" },
-    { format: "A5", orientation: "portrait", marginMethod: 3, gridCols: 4, gridRows: 6, baseline: 8, baselineMultiple: 1, gutterMultiple: 0.5, typographyScale: "fifth" },
-    { format: "LETTER", orientation: "portrait", marginMethod: 1, gridCols: 5, gridRows: 7, baseline: 11, baselineMultiple: 1, gutterMultiple: 1, typographyScale: "fibonacci" },
+    { format: "A4", orientation: "portrait", marginMethod: 1, gridCols: 6, gridRows: 8, baseline: 12, gutterMultiple: 1, typographyScale: "swiss" },
+    { format: "A4", orientation: "landscape", marginMethod: 2, gridCols: 8, gridRows: 6, baseline: 10, gutterMultiple: 0.5, typographyScale: "golden" },
+    { format: "A3", orientation: "portrait", marginMethod: 1, gridCols: 7, gridRows: 9, baseline: 14, gutterMultiple: 1, typographyScale: "fourth" },
+    { format: "A5", orientation: "portrait", marginMethod: 3, gridCols: 4, gridRows: 6, baseline: 8, gutterMultiple: 0.5, typographyScale: "fifth" },
+    { format: "LETTER", orientation: "portrait", marginMethod: 1, gridCols: 5, gridRows: 7, baseline: 11, gutterMultiple: 1, typographyScale: "fibonacci" },
   ]
 
   const durationMs = runTimed(30000, (i) => {
@@ -67,4 +67,3 @@ test("perf smoke: computeReflowPlan stays within regression budget", () => {
   // Reflow is heavier; this budget catches large regressions while avoiding flakiness.
   assert.ok(durationMs < 2500, `computeReflowPlan regression: ${durationMs.toFixed(2)}ms for 300 runs`)
 })
-

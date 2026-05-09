@@ -22,7 +22,7 @@ The tool works best when global decisions are made first and local overrides are
 
 ### Build the page in the simplest reliable order.
 
-Choose `Ratio`, `Orientation`, and, if needed, `Rotation`. Then set the `Baseline`, choose the `Margins` method, and adjust the `Baseline Multiple` until the content field feels proportionate. After that, set `Cols`, `Rows`, `Gutter`, and `Rhythm`, then define the document type scale and base font in `Typo & Rhythms`.
+Choose `Ratio`, `Orientation`, and, if needed, `Rotation`. Then set the `Baseline`, choose the `Margins` method, and, if needed, switch to `Custom Margins` to tune the content field. After that, set `Cols`, `Rows`, `Gutter`, and `Rhythm`, then define the document type scale and base font in `Typo & Rhythms`.
 
 Only after the page structure is established should you create content. Double-click a module to create a text paragraph. Use `Shift` + double-click to create an image placeholder. If the page feels wrong, return to baseline and margins before changing the content blocks.
 
@@ -40,7 +40,7 @@ This order matters because the tool is system-driven. If a document needs many l
 
 Use single pages when each page should stand on its own. Use `Facing Pages` when a spread should behave as one editorial field. A facing spread is one project page, but it represents two physical pages. That matters for page numbering and for document variables such as `%page%` and `%pages%`.
 
-In the Project panel, use the `Page` header or list icon to return from a page's layer stack to the page list. Activate pages directly from the page rows, and open a page row only when you need to inspect or edit its layers. The page counter can jump to a physical page number, and `Shift` + `+` duplicates the active page when the composition needs a content copy. The compact project-title row can be double-clicked to open the metadata fields, and the small `i` toggle is only for document info text. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition.
+In the Project panel, use the `Page` header or list icon to return from layers to the page list. Activate pages directly from the rows, open a row only when you need its layers, and use the page counter when you need to jump by physical page number. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition.
 
 ## 5. Grid, Margins, and Rhythm
 
@@ -72,9 +72,9 @@ Before refining wording, define the frame with `Rows`, `Baselines`, and `Cols`. 
 
 Choose the export format according to what happens next. Use `PDF` for faithful vector document output, `SVG` for frozen vector geometry per page, and `IDML` when the document continues in InDesign. The export choice should serve the downstream workflow, not convenience in the moment.
 
-Before exporting, confirm the selected page range, the page order, the page numbering, the document size, and the output of editorial variables. On long documents or rotated pages, always make a visual check after export. Export should confirm a resolved layout, not compensate for an unresolved one.
+Before exporting, confirm the selected page range, page order, page numbering, document size, and editorial variables. On long documents or rotated pages, make a visual check after export.
 
-PDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time; use it as feedback for long documents, not as a reason to change layout decisions mid-export.
+PDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time.
 
 ## 9. Keyboard and Fast Interaction
 

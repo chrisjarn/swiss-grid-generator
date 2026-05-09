@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "exportedAt": "2026-04-29T16:08:54.991Z",
+  "exportedAt": "2026-05-09T09:41:39.901Z",
   "title": "Swiss Grid Generator Manual",
   "description": "Swiss Grid Generator Software Manual",
   "author": "Swiss Grid Generator",
@@ -25,7 +25,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -279,7 +278,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -533,7 +531,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -569,7 +566,7 @@
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Build the page in the simplest reliable order.",
           "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
           "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose Ratio, Orientation, and, if needed, Rotation. Then set the Baseline, choose the Margins method, and adjust the Baseline Multiple until the content field feels proportionate. After that, set Cols, Rows, Gutter, and Rhythm, then define the document type scale and base font in Typo & Rhythms.\n\nOnly after the page structure is established should you create content. Double-click a module to create a text paragraph. Use Shift + double-click to create an image placeholder. If the page feels wrong, return to baseline and margins before changing the content blocks."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose Ratio, Orientation, and, if needed, Rotation. Then set the Baseline, choose the Margins method, and, if needed, switch to Custom Margins to tune the content field. After that, set Cols, Rows, Gutter, and Rhythm, then define the document type scale and base font in Typo & Rhythms.\n\nOnly after the page structure is established should you create content. Double-click a module to create a text paragraph. Use Shift + double-click to create an image placeholder. If the page feels wrong, return to baseline and margins before changing the content blocks."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -787,7 +784,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -1041,7 +1037,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -1077,7 +1072,7 @@
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Treat page order as part of the design.",
           "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
           "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use single pages when each page should stand on its own. Use Facing Pages when a spread should behave as one editorial field. A facing spread is one project page, but it represents two physical pages. That matters for page numbering and for document variables such as %page% and %pages%.\n\nIn the Project panel, activate pages directly from the page cards and open a page card when you need to inspect or edit its layers. Use the small i toggle only when you need the document info text. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use single pages when each page should stand on its own. Use Facing Pages when a spread should behave as one editorial field. A facing spread is one project page, but it represents two physical pages. That matters for page numbering and for document variables such as %page% and %pages%.\n\nIn the Project panel, use the Page header or list icon to return from layers to the page list. Activate pages directly from the rows, open a row only when you need its layers, and use the page counter when you need to jump by physical page number. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -1295,7 +1290,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -1549,7 +1543,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -1803,7 +1796,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -2057,7 +2049,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -2093,7 +2084,7 @@
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Export is translation, not correction.",
           "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
           "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose the export format according to what happens next. Use PDF for faithful vector document output, SVG for frozen vector geometry per page, and IDML when the document continues in InDesign. The export choice should serve the downstream workflow, not convenience in the moment.\n\nBefore exporting, confirm the selected page range, the page order, the page numbering, the document size, and the output of editorial variables. On long documents or rotated pages, always make a visual check after export. Export should confirm a resolved layout, not compensate for an unresolved one."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose the export format according to what happens next. Use PDF for faithful vector document output, SVG for frozen vector geometry per page, and IDML when the document continues in InDesign. The export choice should serve the downstream workflow, not convenience in the moment.\n\nBefore exporting, confirm the selected page range, page order, page numbering, document size, and editorial variables. On long documents or rotated pages, make a visual check after export.\n\nPDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -2311,7 +2302,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -2347,7 +2337,7 @@
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Use shortcuts to protect concentration.",
           "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
           "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Only a few interactions materially improve the workflow: double-click to create text, Shift + double-click to create an image placeholder, hold 1 to 5 while double-clicking to choose hierarchy directly, drag to move, Alt/Option + drag to duplicate, use arrow keys to nudge selected layers, and press Esc to leave dialogs or cancel export at the next safe point.\n\nThe purpose of shortcuts is not speed for its own sake. The purpose is to keep attention on the page. Keep the interaction set small, predictable, and compositional."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Only a few interactions materially improve the workflow: double-click to create text, Shift + double-click to create an image placeholder, hold 1 to 5 while double-clicking to choose hierarchy directly, drag to move, use the visible + affordance for paragraph transfer or image-placeholder duplication, use arrow keys to nudge selected layers, and press Esc to leave dialogs or cancel export at the next safe point.\n\nThe purpose of shortcuts is not speed for its own sake. The purpose is to keep attention on the page. Keep the interaction set small, predictable, and compositional."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -2565,7 +2555,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,
@@ -2819,7 +2808,6 @@
         "marginMethod": 3,
         "gridCols": 6,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,

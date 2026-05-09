@@ -37,17 +37,17 @@ function pick(rand, values) {
 }
 
 test("getMaxBaseline applies hard cap of 72", () => {
-  const max = getMaxBaseline(5000, 1, 1)
+  const max = getMaxBaseline(5000, 1)
   assert.equal(max, 72)
 })
 
-test("getMaxBaseline uses margin method units and baseline multiple", () => {
-  const max = getMaxBaseline(1200, 2, 2)
-  assert.equal(max, 30) // floor(1200 / (24 + (8 * 2)))
+test("getMaxBaseline uses margin method units", () => {
+  const max = getMaxBaseline(1200, 2)
+  assert.equal(max, 37) // floor(1200 / (24 + 8))
 })
 
 test("getMaxBaseline accepts custom margin units override", () => {
-  const max = getMaxBaseline(1000, 1, 1, 10)
+  const max = getMaxBaseline(1000, 1, 10)
   assert.equal(max, 29) // floor(1000 / (24 + 10))
 })
 
@@ -59,7 +59,6 @@ test("generateSwissGrid returns coherent content and module geometry", () => {
     gridCols: 6,
     gridRows: 8,
     baseline: 12,
-    baselineMultiple: 1,
     gutterMultiple: 1,
   })
 
@@ -89,7 +88,6 @@ test("generateSwissGrid defaults rhythm axes to enabled", () => {
     gridCols: 3,
     gridRows: 6,
     baseline: 12,
-    baselineMultiple: 1,
     gutterMultiple: 1,
   })
 
@@ -152,14 +150,13 @@ test("custom ratio dimensions preserve A4 area and respect orientation", () => {
   assert.equal(landscape.pageSizePt.height, portrait.pageSizePt.width)
 })
 
-test("margin methods produce expected ratios at baselineMultiple=1", () => {
+test("margin methods produce expected ratios", () => {
   const common = {
     format: "A4",
     orientation: "portrait",
     gridCols: 6,
     gridRows: 8,
     baseline: 12,
-    baselineMultiple: 1,
     gutterMultiple: 1,
   }
 
@@ -356,7 +353,6 @@ test("adding one top-baseline custom margin does not collapse module height", ()
     gridCols: 3,
     gridRows: 6,
     baseline: 12,
-    baselineMultiple: 1,
     gutterMultiple: 1,
   }
 
@@ -391,7 +387,6 @@ test("fuzz: valid settings maintain finite and coherent geometry", () => {
       gridCols: randomInt(rand, 1, 13),
       gridRows: randomInt(rand, 1, 13),
       baseline: randomInt(rand, 4, 36),
-      baselineMultiple: randomInt(rand, 1, 14) / 2, // 0.5 to 7
       gutterMultiple: randomInt(rand, 1, 2) / 2, // 0.5 to 1
       typographyScale: pick(rand, scales),
     }
@@ -437,7 +432,6 @@ test("guard rails: invalid settings throw explicit errors", () => {
     gridCols: 6,
     gridRows: 8,
     baseline: 12,
-    baselineMultiple: 1,
     gutterMultiple: 1,
   }
 
@@ -447,7 +441,6 @@ test("guard rails: invalid settings throw explicit errors", () => {
   assert.throws(() => generateSwissGrid({ ...base, gridCols: 0 }), /gridCols must be an integer >= 1/)
   assert.throws(() => generateSwissGrid({ ...base, gridRows: 0 }), /gridRows must be an integer >= 1/)
   assert.throws(() => generateSwissGrid({ ...base, baseline: 0 }), /baseline must be a finite number > 0/)
-  assert.throws(() => generateSwissGrid({ ...base, baselineMultiple: 0 }), /baselineMultiple must be a finite number > 0/)
   assert.throws(() => generateSwissGrid({ ...base, gutterMultiple: 0 }), /gutterMultiple must be a finite number > 0/)
   assert.throws(
     () => generateSwissGrid({ ...base, customMargins: { top: -1, bottom: 10, left: 10, right: 10 } }),

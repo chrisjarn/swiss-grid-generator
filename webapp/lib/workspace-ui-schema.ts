@@ -32,7 +32,6 @@ export type UiSettingsSnapshot = {
   marginMethod: 1 | 2 | 3
   gridCols: number
   gridRows: number
-  baselineMultiple: number
   gutterMultiple: number
   rhythm: GridRhythm
   rhythmRowsEnabled: boolean

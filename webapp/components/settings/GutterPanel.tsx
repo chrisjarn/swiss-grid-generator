@@ -224,7 +224,7 @@ export const GutterPanel = memo(function GutterPanel({
       <hr />
       <div className="mt-5 space-y-3">
         <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Baseline Multiple</Label>
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Gutter Multiple</Label>
           <span className={valueBadgeClassName}>
             {gutterMultiple}×
           </span>

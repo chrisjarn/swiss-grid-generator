@@ -13,7 +13,6 @@ test("preset project source json parses into isolated instances", () => {
           marginMethod: 1,
           gridCols: 3,
           gridRows: 6,
-          baselineMultiple: 1,
           gutterMultiple: 1,
         },
         previewLayout: {

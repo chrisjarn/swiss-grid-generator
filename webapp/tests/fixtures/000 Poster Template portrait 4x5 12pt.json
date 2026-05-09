@@ -25,7 +25,6 @@
         "marginMethod": 3,
         "gridCols": 4,
         "gridRows": 5,
-        "baselineMultiple": 1,
         "gutterMultiple": 1,
         "rhythm": "repetitive",
         "rhythmRowsEnabled": true,

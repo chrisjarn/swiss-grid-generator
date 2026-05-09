@@ -23,7 +23,6 @@ export interface GridSettings {
   gridCols: number;
   gridRows: number;
   baseline?: number;
-  baselineMultiple?: number;
   gutterMultiple?: number;
   rhythm?: GridRhythm;
   rhythmRowsEnabled?: boolean;
@@ -43,7 +42,6 @@ export interface GridResult {
     marginMethodId: number;
     gridCols: number;
     gridRows: number;
-    baselineMultiple: number;
     customBaseline: number | undefined;
     rhythm: GridRhythm;
     rhythmRowsEnabled: boolean;
@@ -541,28 +539,17 @@ function quantizeHeightsToBaselineUnits(
 
 function calculateProgressiveMargins(
   gridUnit: number,
-  w: number,
-  _h: number,
-  _gridCols: number,
-  _gridRows: number,
-  baselineMultiple: number = 1.0
 ): MarginResult {
   // Progressive 1:2:2:3 ratio (Swiss modern approach for single pages)
   // Top is smallest, left/right are equal (symmetric), bottom is largest
   // Creates gentle visual weight shift downward for better flow
   // All margins are multiples of the baseline grid unit
 
-  // The baselineMultiple slider scales the base ratios
-  // Example with 12pt baseline:
-  //   1x = 12:24:24:36pt (1:2:2:3)
-  //   2x = 24:48:48:72pt (2:4:4:6)
-  //   3x = 36:72:72:108pt (3:6:6:9)
-
   return {
-    top: gridUnit * 1.0 * baselineMultiple,     // 1× baseline × multiplier
-    bottom: gridUnit * 3.0 * baselineMultiple,  // 3× baseline × multiplier
-    left: gridUnit * 2.0 * baselineMultiple,    // 2× baseline × multiplier
-    right: gridUnit * 2.0 * baselineMultiple,   // 2× baseline × multiplier (same as left)
+    top: gridUnit * 1.0,
+    bottom: gridUnit * 3.0,
+    left: gridUnit * 2.0,
+    right: gridUnit * 2.0,
     gutterH: gridUnit,
     gutterV: gridUnit,
   };
@@ -570,23 +557,16 @@ function calculateProgressiveMargins(
 
 function calculateVandegraafMargins(
   gridUnit: number,
-  w: number,
-  _h: number,
-  _gridCols: number,
-  _gridRows: number,
-  baselineMultiple: number = 1.0
 ): MarginResult {
   // Van de Graaf-inspired 2:3:4:6 ratio (top:left:right:bottom)
   // All margins are multiples of the baseline grid unit
   // Example with 12pt baseline and 1x:
   //   Top: 2×12 = 24pt, Left: 3×12 = 36pt, Right: 4×12 = 48pt, Bottom: 6×12 = 72pt
-  // With 2x multiple: all values double
-
   return {
-    top: gridUnit * 2.0 * baselineMultiple,     // 2× baseline × multiplier
-    bottom: gridUnit * 6.0 * baselineMultiple,  // 6× baseline × multiplier
-    left: gridUnit * 3.0 * baselineMultiple,    // 3× baseline × multiplier
-    right: gridUnit * 4.0 * baselineMultiple,   // 4× baseline × multiplier
+    top: gridUnit * 2.0,
+    bottom: gridUnit * 6.0,
+    left: gridUnit * 3.0,
+    right: gridUnit * 4.0,
     gutterH: gridUnit,
     gutterV: gridUnit,
   };
@@ -594,27 +574,22 @@ function calculateVandegraafMargins(
 
 function calculateGridBasedMargins(
   gridUnit: number,
-  _w: number,
-  _h: number,
-  _gridCols: number,
-  _gridRows: number,
-  baselineMultiple: number = 1.0
 ): MarginResult {
-  // Pure Müller-Brockmann approach: margins as baseline multiples
+  // Pure Müller-Brockmann approach: margins in one baseline unit
   // All margins are multiples of the baseline unit for grid harmony
   // Symmetric margins (common for single sheets/posters in Swiss style)
 
   return {
-    top: baselineMultiple * gridUnit,
-    bottom: baselineMultiple * gridUnit,
-    left: baselineMultiple * gridUnit,
-    right: baselineMultiple * gridUnit,
+    top: gridUnit,
+    bottom: gridUnit,
+    left: gridUnit,
+    right: gridUnit,
     gutterH: gridUnit,
     gutterV: gridUnit,
   };
 }
 
-const MARGIN_CALCULATORS: Record<number, (gridUnit: number, w: number, h: number, gridCols: number, gridRows: number, baselineMultiple?: number) => MarginResult> = {
+const MARGIN_CALCULATORS: Record<number, (gridUnit: number) => MarginResult> = {
   1: calculateProgressiveMargins,
   2: calculateVandegraafMargins,
   3: calculateGridBasedMargins,
@@ -664,11 +639,10 @@ const MARGIN_VERTICAL_UNITS: Record<number, number> = {
 export function getMaxBaseline(
   pageHeight: number,
   marginMethod: number,
-  baselineMultiple: number,
   customMarginUnits?: number,
 ): number {
   const marginUnits = customMarginUnits
-    ?? (MARGIN_VERTICAL_UNITS[marginMethod] ?? 4) * baselineMultiple;
+    ?? (MARGIN_VERTICAL_UNITS[marginMethod] ?? 4);
   const maxDynamic = Math.floor(pageHeight / (MIN_BASELINES + marginUnits));
   return Math.min(BASELINE_HARD_CAP, maxDynamic);
 }
@@ -738,7 +712,6 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
     gridCols,
     gridRows,
     baseline: customBaseline,
-    baselineMultiple = 1.0,
     gutterMultiple = 1.0,
     rhythm = "repetitive",
     rhythmRowsEnabled,
@@ -773,9 +746,6 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
   }
   if (customBaseline !== undefined && (!Number.isFinite(customBaseline) || customBaseline <= 0)) {
     throw new Error(`baseline must be a finite number > 0 (received ${String(customBaseline)})`);
-  }
-  if (!Number.isFinite(baselineMultiple) || baselineMultiple <= 0) {
-    throw new Error(`baselineMultiple must be a finite number > 0 (received ${String(baselineMultiple)})`);
   }
   if (!Number.isFinite(gutterMultiple) || gutterMultiple <= 0) {
     throw new Error(`gutterMultiple must be a finite number > 0 (received ${String(gutterMultiple)})`);
@@ -813,7 +783,7 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
     gridMarginVertical = gridUnit * gutterMultiple;
   } else {
     const marginCalculator = MARGIN_CALCULATORS[marginMethod];
-    const margins = marginCalculator(gridUnit, w, h, gridCols, gridRows, baselineMultiple);
+    const margins = marginCalculator(gridUnit);
     ({ top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight } = margins);
     gridMarginHorizontal = gridUnit * gutterMultiple;
     gridMarginVertical = gridUnit * gutterMultiple;
@@ -897,7 +867,6 @@ export function generateSwissGrid(settings: GridSettings): GridResult {
       marginMethodId: marginMethod,
       gridCols,
       gridRows,
-      baselineMultiple,
       customBaseline,
       rhythm,
       rhythmRowsEnabled: resolvedRhythmRowsEnabled,

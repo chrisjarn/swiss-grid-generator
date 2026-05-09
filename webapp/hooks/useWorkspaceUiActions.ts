@@ -58,10 +58,6 @@ export function useWorkspaceUiActions({
     dispatch({ type: "SET", key: "gridRows", value })
   }, [dispatch])
 
-  const setBaselineMultiple = useCallback((value: number) => {
-    dispatch({ type: "SET", key: "baselineMultiple", value })
-  }, [dispatch])
-
   const setGutterMultiple = useCallback((value: number) => {
     dispatch({ type: "SET", key: "gutterMultiple", value })
   }, [dispatch])
@@ -163,7 +159,6 @@ export function useWorkspaceUiActions({
     setMarginMethod,
     setGridCols,
     setGridRows,
-    setBaselineMultiple,
     setGutterMultiple,
     setRhythm,
     setRhythmRowsEnabled,

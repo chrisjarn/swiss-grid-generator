@@ -171,7 +171,23 @@ async function main() {
     description: "Swiss Grid Generator Software Manual",
     author: "Swiss Grid Generator",
     createdAt: "2026-04-07T12:00:00.000Z",
+    visibilitySettings: {
+      showBaselines: true,
+      showModules: true,
+      showMargins: true,
+      showImagePlaceholders: true,
+      showTypography: true,
+    },
     pages,
+    layoutEngine: {
+      id: "swiss-grid-layout-v2",
+      version: 2,
+      textMetricsEngine: "font-file-deterministic-optical-margin-v1",
+      opticalMarginModel: "font-file-contour-optical-margin-v1",
+      verticalTextBoxModel: "cap-top-legacy-descent-0.2em",
+      wrapModel: "font-file-width-tracking-optical-v1",
+      layerOrderModel: "explicit-layer-order-v1",
+    },
   }
 
   await fs.writeFile(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8")

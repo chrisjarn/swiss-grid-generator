@@ -26,7 +26,7 @@ Current capability inventory for Swiss Grid Generator.
 - Full page rotation from `-180..180`.
 - Baseline units from `6pt` to `72pt`, filtered by usable line count.
 - Margin method dropdown: `Progressive`, `Van de Graaf`, `Baseline`, `Custom Margins`.
-- Custom per-side margins with shared baseline multiple.
+- Custom per-side margins in direct baseline units.
 - Grid size from `1..13` for both columns and rows.
 - Gutter multiple from `1.0..4.0` in `0.5` steps.
 - Rhythm modes: `Repetitive`, `Fibonacci`, `Golden Ratio`, `Perfect Fourth`, `Perfect Fifth`.
