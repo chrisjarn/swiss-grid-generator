@@ -497,10 +497,10 @@ Font behavior:
   - `public/fonts/google/<slug>/italic.ttf`
   - `public/fonts/google/<slug>/bolditalic.ttf`
 - Browser canvas text metrics are diagnostics only; they are not the production source for text wrapping, drag/edit geometry, thumbnail layout, or export plans.
-- Asset sync routine:
-  - `npm run fonts:sync` (reads `lib/config/fonts.ts` and rebuilds local Google font assets)
-- Asset verification routine:
-  - `npm run fonts:verify` (checks every configured family/cut path referenced by `lib/config/fonts.ts`)
+- Asset sync routine from `webapp/`:
+  - `npm run fonts:sync` (reads `webapp/lib/config/fonts.ts` and rebuilds local Google font assets)
+- Asset verification routine from `webapp/`:
+  - `npm run fonts:verify` (checks every configured family/cut path referenced by `webapp/lib/config/fonts.ts`)
 - `npm run fonts:verify` runs as part of `assets:generate`; missing configured font assets are build-time errors, not runtime export fallbacks.
 - Export warms document-used metric and fallback/export font faces in the background after project changes and when the export dialog opens. It does not preload all bundled fonts.
 

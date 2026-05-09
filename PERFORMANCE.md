@@ -445,3 +445,30 @@ The kept checkpoints from this pass were validated with:
 - `npm run test:canvas-renderer`
 - `npm run lint`
 - `npx tsc --noEmit`
+
+## 2026-05-09 Architecture Refactor Checkpoint
+
+This pass did not change planner math, export geometry, text metrics, or benchmark numbers. It made the repository boundary and first frontend split explicit while preserving the existing runtime path.
+
+### Kept Changes
+
+- Removed stale root package entry points and obsolete public/layout artifacts; `webapp/` is the active frontend boundary.
+- Kept screenshots and documentation assets.
+- Moved shared UI primitives to `webapp/shared/ui/` and left compatibility re-export shims in `webapp/components/ui/` so existing imports keep working during the next cleanup pass.
+- Added pure type staging under `webapp/core/types/` for `PageExportPlan`, document state, grid config, and workspace state.
+- Added minimal GUI foundations under `webapp/gui/`: shell layout, plan-only Swiss canvas, one representative grid panel, and separate document/workspace Zustand stores.
+- Moved the former large Next page orchestrator to `webapp/gui/legacy/LegacyWorkspace.tsx`; `webapp/app/page.tsx` is now a thin Next.js boundary.
+
+### Boundaries
+
+- `webapp/gui/preview/SwissCanvas.tsx` consumes `PageExportPlan` only and does not compute layout.
+- The current production workspace still routes through `webapp/gui/legacy/LegacyWorkspace.tsx` and legacy `webapp/components/grid-preview.tsx` until the next decomposition pass.
+- `webapp/core/` must stay React-free.
+- The two new store files are staging boundaries; the legacy workspace has not yet been rewired to them.
+
+### Validation
+
+- `npm run lint`
+- `npx tsc --noEmit`
+- `node --test tests/sidebar-page-panel-contract.test.mjs`
+- `node --test tests/svg-export-contract.test.mjs`

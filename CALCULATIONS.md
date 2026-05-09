@@ -2,7 +2,7 @@
 
 This document describes the mathematical calculations used in the Swiss Grid Generator, based on Josef Müller-Brockmann's *Grid Systems in Graphic Design* (1981).
 
-Core grid formulas reference `webapp/lib/grid-calculator.ts`; preview reflow/autofit planning formulas are implemented in `webapp/lib/reflow-planner.ts` and `webapp/lib/autofit-planner.ts`.
+Core grid formulas currently reference `webapp/lib/grid-calculator.ts`; preview reflow/autofit planning formulas are implemented in `webapp/lib/reflow-planner.ts` and `webapp/lib/autofit-planner.ts`. New pure domain types are staged under `webapp/core/types/` as part of the migration toward `webapp/core/layout/`, but the mathematical source of truth is still the canonical `PageExportPlan`.
 
 Recent UI updates (header dividers/tooltips, dark-mode shell styling, shortcut coverage, inline page-layer navigation) do not change these mathematical formulas.
 In the Project -> Pages -> inline Layers architecture, these calculations are evaluated independently per page.
@@ -609,7 +609,7 @@ The raw source string remains unchanged in editor state and saved project JSON. 
 
 ## Preview Placement + Reflow
 
-Interactive placement is orchestrated in `webapp/components/grid-preview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/lib/`.
+Interactive placement is currently orchestrated in legacy `webapp/components/grid-preview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/lib/`. The new `webapp/gui/preview/SwissCanvas.tsx` foundation is intentionally narrower: it is a `PageExportPlan` consumer only and does not perform placement, reflow, or export-specific calculation.
 
 ### Logical Grid Anchor Model
 
