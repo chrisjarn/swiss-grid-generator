@@ -54,7 +54,7 @@ function resolveNewTextLayerModuleGeometry({
 
 type Args = {
   showTypography: boolean
-  dragEndedAtRef: RefObject<number>
+  dragEndedAtRef: RefObject<number | null>
   canvasRef: RefObject<HTMLCanvasElement | null>
   setEditorState: Dispatch<SetStateAction<BlockEditorState<string> | null>>
   resultGridCols: number
@@ -191,7 +191,7 @@ export function useBlockEditorCanvasDoubleClick({
   }, [])
 
   return useCallback((event: ReactMouseEvent<HTMLCanvasElement>) => {
-    if (!showTypography || Date.now() - dragEndedAtRef.current < PREVIEW_DRAG_CLICK_GUARD_MS) return
+    if (!showTypography || Date.now() - (dragEndedAtRef.current ?? 0) < PREVIEW_DRAG_CLICK_GUARD_MS) return
 
     const canvas = canvasRef.current
     if (!canvas) return

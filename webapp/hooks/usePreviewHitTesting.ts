@@ -10,9 +10,9 @@ import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
 import { isPointWithinRect, resolvePreviewHoverBandRect } from "@/lib/preview-hover-affordance"
 
 type Args<Key extends string> = {
-  blockRectsRef: RefObject<Record<Key, BlockRect>>
-  imageRectsRef: RefObject<Record<Key, BlockRect>>
-  previousPlansRef: RefObject<Map<Key, BlockRenderPlan<Key>>>
+  blockRectsRef: RefObject<Record<Key, BlockRect> | null>
+  imageRectsRef: RefObject<Record<Key, BlockRect> | null>
+  previousPlansRef: RefObject<Map<Key, BlockRenderPlan<Key>> | null>
   resolvedLayerOrder: readonly Key[]
   imageOrder: readonly Key[]
   showImagePlaceholders: boolean
@@ -135,9 +135,12 @@ export function usePreviewHitTesting<Key extends string>({
   const isPointWithinLayerHoverBand = useCallback((key: Key, pageX: number, pageY: number): boolean => {
     const isImage = imageKeySet.has(key)
     if (isImage && !showImagePlaceholders) return false
+    const blockRects = blockRectsRef.current
+    const imageRects = imageRectsRef.current
+    const previousPlans = previousPlansRef.current
     const rect = isImage
-      ? imageRectsRef.current[key] ?? null
-      : (previousPlansRef.current.get(key)?.guideRects[0] ?? blockRectsRef.current[key] ?? null)
+      ? imageRects?.[key] ?? null
+      : (previousPlans?.get(key)?.guideRects[0] ?? blockRects?.[key] ?? null)
     if (!rect) return false
     return isPointWithinRect(pageX, pageY, resolvePreviewHoverBandRect({
       targetRect: rect,
@@ -172,12 +175,13 @@ export function usePreviewHitTesting<Key extends string>({
       if (isImage && !showImagePlaceholders) continue
 
       if (isImage) {
-        const rect = imageRectsRef.current[key]
+        const rect = imageRectsRef.current?.[key]
+        if (!rect) continue
         if (isPointWithinRect(pageX, pageY, rect)) return key
         continue
       }
 
-      const plan = previousPlansRef.current.get(key)
+      const plan = previousPlansRef.current?.get(key)
       const lineHit = plan?.renderedLines.some((line) => isPointWithinRenderedLine(pageX, pageY, line)) ?? false
       if (lineHit) {
         return key
@@ -190,7 +194,8 @@ export function usePreviewHitTesting<Key extends string>({
 
       const hasPlan = Boolean(plan)
       if (!hasPlan) {
-        const rect = blockRectsRef.current[key]
+        const rect = blockRectsRef.current?.[key]
+        if (!rect) continue
         if (isPointWithinRect(pageX, pageY, rect)) {
           return key
         }

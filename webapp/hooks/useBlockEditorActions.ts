@@ -51,7 +51,7 @@ function resolveSpanAnchoredPosition({
 
 type Args = {
   showTypography: boolean
-  dragEndedAtRef: RefObject<number>
+  dragEndedAtRef: RefObject<number | null>
   canvasRef: RefObject<HTMLCanvasElement | null>
   editorState: EditorState | null
   editorStateRef: RefObject<EditorState | null>

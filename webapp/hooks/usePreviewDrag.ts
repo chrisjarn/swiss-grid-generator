@@ -23,7 +23,7 @@ type Args<Key extends string, DragPreviewContext = void> = {
   showTypography: boolean
   isEditorOpen: boolean
   canvasRef: RefObject<HTMLCanvasElement | null>
-  blockRectsRef: RefObject<Record<Key, BlockRect>>
+  blockRectsRef: RefObject<Record<Key, BlockRect> | null>
   getBlockRect?: (key: Key) => BlockRect | null
   blockModulePositions: Partial<Record<Key, DragModulePosition>>
   findTopmostBlockAtPoint: (x: number, y: number) => Key | null
@@ -154,7 +154,8 @@ export function usePreviewDrag<Key extends string, DragPreviewContext = void>({
     const key = findTopmostBlockAtPoint(pagePoint.x, pagePoint.y)
     if (!key) return
     const dragPreviewContext = getDragPreviewContext?.(event, key)
-    const block = getBlockRect ? getBlockRect(key) : blockRectsRef.current[key]
+    const blockRects = blockRectsRef.current
+    const block = getBlockRect ? getBlockRect(key) : (blockRects?.[key] ?? null)
     const anchorPoint = getDragAnchorPoint?.(key, dragPreviewContext)
     const dragAnchorPoint = anchorPoint ?? (block ? { x: block.x, y: block.y } : null)
     if (!dragAnchorPoint) return
@@ -324,8 +325,9 @@ export function usePreviewDrag<Key extends string, DragPreviewContext = void>({
 
   const beginDetachedCopyDrag = useCallback((key: Key, clientX: number, clientY: number, context?: DragPreviewContext) => {
     const canvas = canvasRef.current
-    const block = getBlockRect ? getBlockRect(key) : blockRectsRef.current[key]
     if (!canvas) return
+    const blockRects = blockRectsRef.current
+    const block = getBlockRect ? getBlockRect(key) : (blockRects?.[key] ?? null)
     const rect = canvas.getBoundingClientRect()
     const pagePoint = toPagePoint(clientX - rect.left, clientY - rect.top)
     if (!pagePoint) return

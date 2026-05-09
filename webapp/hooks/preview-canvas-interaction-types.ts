@@ -31,8 +31,8 @@ export type PreviewCanvasInteractionArgs<Key extends string, StyleKey extends st
   editorOpen: boolean
   activeEditorTarget: Key | null
   canvasRef: RefObject<HTMLCanvasElement | null>
-  blockRectsRef: RefObject<Record<Key, BlockRect>>
-  imageRectsRef: RefObject<Record<Key, BlockRect>>
+  blockRectsRef: RefObject<Record<Key, BlockRect> | null>
+  imageRectsRef: RefObject<Record<Key, BlockRect> | null>
   blockModulePositions: Partial<Record<Key, ModulePosition>>
   imageModulePositions: Partial<Record<Key, ModulePosition>>
   toPagePoint: (x: number, y: number) => PagePoint | null

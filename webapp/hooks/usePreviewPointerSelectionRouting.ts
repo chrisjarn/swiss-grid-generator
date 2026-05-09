@@ -113,7 +113,7 @@ export function usePreviewPointerSelectionRouting<Key extends string, StyleKey e
     isEditorOpen: editorOpen,
     canvasRef,
     blockRectsRef,
-    getBlockRect: (key) => blockRectsRef.current[key] ?? imageRectsRef.current[key] ?? null,
+    getBlockRect: (key) => blockRectsRef.current?.[key] ?? imageRectsRef.current?.[key] ?? null,
     blockModulePositions: draggableModulePositions,
     findTopmostBlockAtPoint: findTopmostDraggableAtPoint,
     toPagePoint,

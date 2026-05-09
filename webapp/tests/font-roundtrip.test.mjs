@@ -4,7 +4,7 @@ import fs from "node:fs"
 import path from "node:path"
 
 const ROOT = process.cwd()
-const PAGE_PATH = path.join(ROOT, "app", "page.tsx")
+const SHELL_MODEL_PATH = path.join(ROOT, "gui", "shell", "useShellModel.tsx")
 const PREVIEW_WORKSPACE_PATH = path.join(ROOT, "components", "preview", "PreviewWorkspace.tsx")
 const FONT_CONFIG_PATH = path.join(ROOT, "lib", "config", "fonts.ts")
 const UI_DEFAULTS_PATH = path.join(ROOT, "lib", "config", "ui-defaults.ts")
@@ -41,13 +41,13 @@ test("default ui snapshot contains baseFont", () => {
 })
 
 test("page save/load wiring includes baseFont", () => {
-  const pageSource = readText(PAGE_PATH)
+  const shellModelSource = readText(SHELL_MODEL_PATH)
   const previewWorkspaceSource = readText(PREVIEW_WORKSPACE_PATH)
   const resolverSource = readText(UI_RESOLVER_PATH)
   const workspaceUiStateSource = readText(WORKSPACE_UI_STATE_PATH)
   const exportActionsSource = readText(EXPORT_ACTIONS_PATH)
-  assert.match(pageSource, /buildSerializableUiSettingsSnapshot\(currentDocumentUiSnapshot\)/)
-  assert.match(pageSource, /buildUiSnapshotFromLoadedSettings\(page\.uiSettings,\s*\{[\s\S]*?visibilitySettings,/)
+  assert.match(shellModelSource, /buildSerializableUiSettingsSnapshot\(currentDocumentUiSnapshot\)/)
+  assert.match(shellModelSource, /buildUiSnapshotFromLoadedSettings\(page\.uiSettings,\s*\{[\s\S]*?visibilitySettings,/)
   assert.match(workspaceUiStateSource, /return resolveUiSettingsSnapshot\(loaded,\s*\{/)
   assert.match(resolverSource, /baseFont:\s*isFontFamily\(source\.baseFont\)\s*\?\s*source\.baseFont\s*:\s*DEFAULT_BASE_FONT/)
   assert.match(exportActionsSource, /\.\.\.getCurrentProjectSnapshot\(\)/)
