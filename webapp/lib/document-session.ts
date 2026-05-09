@@ -7,6 +7,7 @@ import {
   parseLayoutEngineContract,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
+import { resolveFontFamily, type FontFamily } from "@/lib/config/fonts"
 
 export type ProjectMetadata = {
   title: string
@@ -91,12 +92,75 @@ export function extractProjectMetadata(source: unknown): ProjectMetadata {
   }
 }
 
-function toLoadedPreviewLayout<Layout>(value: unknown): Layout | null {
-  return value && typeof value === "object" ? value as Layout : null
-}
-
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
+}
+
+function sanitizeProjectUiSettingsFonts(source: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...source,
+    baseFont: resolveFontFamily(source.baseFont),
+  }
+}
+
+function sanitizeProjectTextFormatRuns(
+  source: unknown,
+  fallbackFontFamily: FontFamily,
+): unknown {
+  if (!isObjectRecord(source)) return source
+  let changed = false
+  const nextRunsByBlock: Record<string, unknown> = {}
+
+  for (const [blockKey, runs] of Object.entries(source)) {
+    if (!Array.isArray(runs)) {
+      nextRunsByBlock[blockKey] = runs
+      continue
+    }
+    nextRunsByBlock[blockKey] = runs.map((run) => {
+      if (!isObjectRecord(run) || run.fontFamily === undefined) return run
+      const fontFamily = resolveFontFamily(run.fontFamily, fallbackFontFamily)
+      if (fontFamily === run.fontFamily) return run
+      changed = true
+      return { ...run, fontFamily }
+    })
+  }
+
+  return changed ? nextRunsByBlock : source
+}
+
+function sanitizeProjectPreviewLayoutFonts<Layout>(
+  source: unknown,
+  fallbackFontFamily: FontFamily,
+): Layout | null {
+  if (!isObjectRecord(source)) return null
+
+  let changed = false
+  let nextBlockFontFamilies = source.blockFontFamilies
+  if (isObjectRecord(source.blockFontFamilies)) {
+    const resolvedFonts: Record<string, unknown> = {}
+    for (const [blockKey, fontFamily] of Object.entries(source.blockFontFamilies)) {
+      const resolvedFontFamily = resolveFontFamily(fontFamily, fallbackFontFamily)
+      resolvedFonts[blockKey] = resolvedFontFamily
+      if (resolvedFontFamily !== fontFamily) changed = true
+    }
+    nextBlockFontFamilies = resolvedFonts
+  }
+
+  const nextBlockTextFormatRuns = sanitizeProjectTextFormatRuns(
+    source.blockTextFormatRuns,
+    fallbackFontFamily,
+  )
+  if (nextBlockTextFormatRuns !== source.blockTextFormatRuns) changed = true
+
+  return (
+    changed
+      ? {
+          ...source,
+          blockFontFamilies: nextBlockFontFamilies,
+          blockTextFormatRuns: nextBlockTextFormatRuns,
+        }
+      : source
+  ) as Layout
 }
 
 function resolveBooleanSetting(value: unknown, fallback: boolean): boolean {
@@ -194,11 +258,13 @@ function parseProjectPages<Layout>(value: unknown): ProjectPage<Layout>[] {
     const rawId = typeof payload.id === "string" ? payload.id.trim() : ""
     const id = rawId.length > 0 && !seenIds.has(rawId) ? rawId : undefined
     const layoutMode = payload.layoutMode === "facing" ? "facing" : "single"
+    const uiSettings = sanitizeProjectUiSettingsFonts(payload.uiSettings as Record<string, unknown>)
+    const baseFont = resolveFontFamily(uiSettings.baseFont)
     const page = createProjectPage<Layout>({
       id,
       name: toPageName(payload.name, `Page ${index + 1}`),
-      uiSettings: payload.uiSettings as Record<string, unknown>,
-      previewLayout: toLoadedPreviewLayout<Layout>(payload.previewLayout),
+      uiSettings,
+      previewLayout: sanitizeProjectPreviewLayoutFonts<Layout>(payload.previewLayout, baseFont),
       layoutMode,
     })
 

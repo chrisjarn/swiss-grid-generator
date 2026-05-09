@@ -57,7 +57,7 @@ test("page export plan resolves paragraph and inline text colors through the tex
   assert.match(source, /const\s+defaultTextColor\s*=\s*getDefaultTextSchemeColor\(imageColorScheme\)/)
   assert.match(source, /const\s+resolveExportTextColor\s*=\s*\(value:\s*unknown\)\s*=>\s*resolveTextSchemeColor\(value,\s*imageColorScheme\)/)
   assert.match(source, /const\s+resolvedTextColor\s*=\s*resolveExportTextColor\(blockTextColors\[key\]\s*\?\?\s*defaultTextColor\)/)
-  assert.match(source, /const\s+exportFormatRuns\s*=\s*getExportFormatRunsForScheme\(\s*blockTextFormatRuns\[key\],\s*imageColorScheme,\s*resolveExportTextColor,\s*\)/)
+  assert.match(source, /const\s+exportFormatRuns\s*=\s*getExportFormatRunsForScheme\(\s*blockTextFormatRuns\[key\],\s*imageColorScheme,\s*resolveExportTextColor,\s*fontFamily,\s*\)/)
 })
 
 test("pdf export consumes the shared page export plan instead of rebuilding layout inline", () => {
@@ -188,7 +188,7 @@ test("pdf export registers inline format-run fonts before rendering text", () =>
   const source = readText("lib/export-engine.ts")
   assert.match(source, /function\s+collectPdfFontFaces\(pages:\s*readonly\s+ResolvedProjectPageExportSource\[\]\):\s*PdfFontRegistrationFace\[\]/)
   assert.match(source, /layout\.blockTextFormatRuns\?\.\[key\]\?\.forEach/)
-  assert.match(source, /isFontFamily\(run\.fontFamily\)/)
+  assert.match(source, /resolveFontFamily\(run\.fontFamily,\s*fontFamily\)/)
   assert.match(source, /const\s+pdfFontFaces\s*=\s*collectPdfFontFaces\(plannedPages\)/)
   assert.match(source, /ensurePdfFontFacesRegistered\(pdf,\s*pdfFontFaces\)/)
 })

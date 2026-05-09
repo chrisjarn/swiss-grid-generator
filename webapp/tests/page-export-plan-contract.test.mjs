@@ -129,6 +129,25 @@ test("row-based reflow uses the final module row for 150 Fonts display paragraph
   assert.equal(displayPlan?.commands.at(-1)?.text, "9")
 })
 
+test("page export plan replaces removed Libre Franklin layout references", () => {
+  const args = createStressPagePlanArgs(7)
+  const key = args.layout.blockOrder[0]
+  args.layout.blockFontFamilies = { ...(args.layout.blockFontFamilies ?? {}) }
+  args.layout.blockTextFormatRuns = { ...(args.layout.blockTextFormatRuns ?? {}) }
+  args.layout.blockFontFamilies[key] = "Libre Franklin"
+  args.layout.blockTextFormatRuns[key] = [{
+    start: 0,
+    end: Math.min(8, args.layout.textContent[key]?.length ?? 0),
+    fontFamily: "Libre Franklin",
+  }]
+
+  const plan = buildPageExportPlan(args)
+  const textPlan = plan.textPlans.find((entry) => entry.key === key)
+
+  assert.equal(textPlan?.fontFamily, "Inter")
+  assert.ok(textPlan?.graphemeLines.flat().every((grapheme) => grapheme.fontFamily !== "Libre Franklin"))
+})
+
 test("layout profiling is dev-only instrumentation around existing planning and drawing calls", () => {
   const profilerSource = readText("lib/layout-performance.ts")
   const planSource = readText("lib/page-export-plan.ts")

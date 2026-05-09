@@ -3,6 +3,7 @@ import { normalizeHeightMetrics, resolveBlockHeight } from "@/lib/block-height"
 import {
   DEFAULT_BASE_FONT,
   getStyleDefaultFontWeight,
+  resolveFontFamily,
   resolveFontVariant,
   type FontFamily,
 } from "@/lib/config/fonts"
@@ -273,8 +274,11 @@ type PageExportPlanPhaseAccumulator = {
 }
 
 const PAGE_EXPORT_TEXT_INPUT_CACHE_LIMIT = 5000
+const PAGE_EXPORT_DOCUMENT_VARIABLE_CACHE_LIMIT = 2048
+const PAGE_EXPORT_LOREM_LINE_COUNT_CACHE_LIMIT = 20000
 const EMPTY_TRACKING_RUNS: TextTrackingRun[] = []
 const EMPTY_FORMAT_RUNS: TextFormatRun<TypographyStyleKey, FontFamily>[] = []
+const DOCUMENT_VARIABLE_TOKEN_RE = /<%([a-z_]+)(?::([\s\S]*?))?%>/gi
 
 const normalizedPageExportTrackingRunsCache = new WeakMap<
   readonly TextTrackingRun[],
@@ -288,6 +292,14 @@ const normalizedPageExportFormatRunsCache = new WeakMap<
   readonly TextFormatRun<TypographyStyleKey, FontFamily>[],
   Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>
 >()
+const pageExportDocumentVariableCache = new Map<string, PageExportCachedDocumentVariableContent>()
+const pageExportLoremLineCountCache = new Map<string, number>()
+
+type PageExportCachedDocumentVariableContent = {
+  text: string
+  formatRuns: TextFormatRun<TypographyStyleKey, FontFamily>[]
+  trackingRuns: TextTrackingRun[]
+}
 
 function rememberPageExportCachedValue<T>(
   cache: Map<string, T>,
@@ -306,6 +318,138 @@ function getPageExportBaseFormatKey(
   baseFormat: ResolvedBlockPlan["baseFormat"],
 ): string {
   return `${baseFormat.fontFamily}:${baseFormat.fontWeight}:${baseFormat.italic ? 1 : 0}:${baseFormat.styleKey}:${baseFormat.color}`
+}
+
+function rememberPageExportLruValue<T>(
+  cache: Map<string, T>,
+  key: string,
+  value: T,
+  limit: number,
+): T {
+  if (cache.has(key)) cache.delete(key)
+  cache.set(key, value)
+  while (cache.size > limit) {
+    const oldestKey = cache.keys().next().value
+    if (!oldestKey) break
+    cache.delete(oldestKey)
+  }
+  return value
+}
+
+function readPageExportLruValue<T>(
+  cache: Map<string, T>,
+  key: string,
+): T | null {
+  const value = cache.get(key)
+  if (value === undefined) return null
+  cache.delete(key)
+  cache.set(key, value)
+  return value
+}
+
+function clonePageExportFormatRuns(
+  runs: readonly TextFormatRun<TypographyStyleKey, FontFamily>[],
+): TextFormatRun<TypographyStyleKey, FontFamily>[] {
+  return runs.map((run) => ({ ...run }))
+}
+
+function clonePageExportTrackingRuns(
+  runs: readonly TextTrackingRun[],
+): TextTrackingRun[] {
+  return runs.map((run) => ({ ...run }))
+}
+
+function clonePageExportDocumentVariableContent(
+  content: PageExportCachedDocumentVariableContent,
+): PageExportCachedDocumentVariableContent {
+  return {
+    text: content.text,
+    formatRuns: clonePageExportFormatRuns(content.formatRuns),
+    trackingRuns: clonePageExportTrackingRuns(content.trackingRuns),
+  }
+}
+
+function stablePageExportCacheStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") return JSON.stringify(value)
+  if (value instanceof Date) return JSON.stringify(value.toISOString())
+  if (Array.isArray(value)) return `[${value.map(stablePageExportCacheStringify).join(",")}]`
+  const entries = Object.entries(value as Record<string, unknown>)
+    .filter(([, entryValue]) => entryValue !== undefined)
+    .sort(([left], [right]) => left.localeCompare(right))
+  return `{${entries.map(([key, entryValue]) => `${JSON.stringify(key)}:${stablePageExportCacheStringify(entryValue)}`).join(",")}}`
+}
+
+function readDocumentVariableTokenNames(text: string): Set<string> {
+  const names = new Set<string>()
+  if (!text.includes("<%")) return names
+  DOCUMENT_VARIABLE_TOKEN_RE.lastIndex = 0
+  for (const match of text.matchAll(DOCUMENT_VARIABLE_TOKEN_RE)) {
+    names.add((match[1] ?? "").trim().toLowerCase())
+  }
+  return names
+}
+
+function hasDocumentVariable(text: string): boolean {
+  return readDocumentVariableTokenNames(text).size > 0
+}
+
+function getRelevantDocumentVariableContextKey(
+  text: string,
+  context: DocumentVariableContext,
+): string {
+  const names = readDocumentVariableTokenNames(text)
+  const contextParts: Record<string, unknown> = {}
+
+  if (names.has("project_title")) contextParts.projectTitle = context.projectTitle
+  if (names.has("page_title") || names.has("title")) contextParts.pageTitle = context.pageTitle
+  if (names.has("page")) contextParts.pageNumber = context.pageNumber
+  if (names.has("pages")) contextParts.pageCount = context.pageCount
+  if (names.has("date") || names.has("time")) contextParts.now = context.now.toISOString()
+
+  return stablePageExportCacheStringify(contextParts)
+}
+
+function buildPageExportResolveFontSizeKey(blockPlan: ResolvedBlockPlan): string {
+  const usedStyleKeys = new Set<TypographyStyleKey>([blockPlan.styleKey])
+  for (const run of blockPlan.rawFormatRuns) {
+    if (run.styleKey) usedStyleKeys.add(run.styleKey)
+  }
+  const entries = [...usedStyleKeys]
+    .sort()
+    .map((styleKey) => [styleKey, blockPlan.resolveFontSize(styleKey)])
+  return stablePageExportCacheStringify(entries)
+}
+
+function buildPageExportLoremDocumentVariableCacheKey({
+  blockPlan,
+  context,
+  layoutEngine,
+  includeMaxLoremLines = true,
+}: {
+  blockPlan: ResolvedBlockPlan
+  context: DocumentVariableContext
+  layoutEngine: LayoutEngineContract
+  includeMaxLoremLines?: boolean
+}): string {
+  return stablePageExportCacheStringify({
+    rawText: blockPlan.rawText,
+    context: getRelevantDocumentVariableContextKey(blockPlan.rawText, context),
+    baseFormat: blockPlan.baseFormat,
+    formatRuns: blockPlan.rawFormatRuns,
+    trackingScale: blockPlan.trackingScale,
+    trackingRuns: blockPlan.rawTrackingRuns,
+    maxLoremLines: includeMaxLoremLines ? blockPlan.maxLoremLines : undefined,
+    wrapWidth: blockPlan.wrapWidth,
+    hyphenate: blockPlan.hyphenate,
+    fontFamily: blockPlan.fontFamily,
+    fontWeight: blockPlan.fontWeight,
+    italic: blockPlan.italic,
+    baseFontSize: blockPlan.baseFontSize,
+    baseCanvasFont: blockPlan.baseCanvasFont,
+    opticalKerning: blockPlan.opticalKerning,
+    resolveFontSize: buildPageExportResolveFontSizeKey(blockPlan),
+    layoutEngine,
+  })
 }
 
 function getNormalizedPageExportTrackingRuns(
@@ -333,6 +477,7 @@ function getExportFormatRunsForScheme(
   formatRuns: readonly TextFormatRun<TypographyStyleKey, FontFamily>[] | null | undefined,
   imageColorScheme: ImageColorSchemeId,
   resolveExportTextColor: (value: unknown) => string,
+  fallbackFontFamily: FontFamily,
 ): readonly TextFormatRun<TypographyStyleKey, FontFamily>[] {
   if (!formatRuns || formatRuns.length === 0) return EMPTY_FORMAT_RUNS
   let cacheByScheme = exportFormatRunsBySchemeCache.get(formatRuns)
@@ -340,19 +485,28 @@ function getExportFormatRunsForScheme(
     cacheByScheme = new Map<string, readonly TextFormatRun<TypographyStyleKey, FontFamily>[]>()
     exportFormatRunsBySchemeCache.set(formatRuns, cacheByScheme)
   }
-  const cached = cacheByScheme.get(imageColorScheme)
+  const cacheKey = `${imageColorScheme}::${fallbackFontFamily}`
+  const cached = cacheByScheme.get(cacheKey)
   if (cached) return cached
   let changed = false
   const resolvedRuns = formatRuns.map((run) => {
-    if (run.color === undefined) return run
+    let nextRun = run
+    if (run.fontFamily !== undefined) {
+      const nextFontFamily = resolveFontFamily(run.fontFamily, fallbackFontFamily)
+      if (nextFontFamily !== run.fontFamily) {
+        changed = true
+        nextRun = { ...nextRun, fontFamily: nextFontFamily }
+      }
+    }
+    if (run.color === undefined) return nextRun
     const nextColor = resolveExportTextColor(run.color)
-    if (nextColor === run.color) return run
+    if (nextColor === run.color) return nextRun
     changed = true
-    return { ...run, color: nextColor }
+    return { ...nextRun, color: nextColor }
   })
   return rememberPageExportCachedValue(
     cacheByScheme,
-    imageColorScheme,
+    cacheKey,
     changed ? resolvedRuns : formatRuns,
   )
 }
@@ -1090,7 +1244,7 @@ function buildPageExportPlanInternal({
       : (Number.isFinite(spanWidth) && spanWidth > 0
           ? spanWidth
           : span * modW + Math.max(0, span - 1) * gridMarginHorizontal)
-    const fontFamily = blockFontFamilies[key] ?? baseFont
+    const fontFamily = resolveFontFamily(blockFontFamilies[key], baseFont)
     const weightOverride = blockFontWeights[key]
     const requestedWeight = typeof weightOverride === "number" && Number.isFinite(weightOverride) && weightOverride > 0
       ? weightOverride
@@ -1120,6 +1274,7 @@ function buildPageExportPlanInternal({
       blockTextFormatRuns[key],
       imageColorScheme,
       resolveExportTextColor,
+      fontFamily,
     )
     const rawFormatRuns = getNormalizedPageExportFormatRuns(
       rawText,
@@ -1222,8 +1377,32 @@ function buildPageExportPlanInternal({
     resolvedBlockPlans.set(key, blockPlan)
     const blockDocumentVariableContext = blockPlan.documentVariableContext
     const documentVariablesStartedAt = phaseAccumulator ? getNowMs() : 0
-    const resolved = blockDocumentVariableContext && key !== rawDocumentVariableBlockKey
-      ? resolveDocumentVariableContent({
+    let resolved: PageExportCachedDocumentVariableContent
+    if (blockDocumentVariableContext && key !== rawDocumentVariableBlockKey && hasDocumentVariable(blockPlan.rawText)) {
+      const tokenNames = readDocumentVariableTokenNames(blockPlan.rawText)
+      const loremCacheKey = tokenNames.has("lorem")
+        ? buildPageExportLoremDocumentVariableCacheKey({
+            blockPlan,
+            context: blockDocumentVariableContext,
+            layoutEngine,
+          })
+        : null
+      const loremLineCountCacheBaseKey = loremCacheKey
+        ? buildPageExportLoremDocumentVariableCacheKey({
+            blockPlan,
+            context: blockDocumentVariableContext,
+            layoutEngine,
+            includeMaxLoremLines: false,
+          })
+        : null
+      const cachedResolved = loremCacheKey
+        ? readPageExportLruValue(pageExportDocumentVariableCache, loremCacheKey)
+        : null
+
+      if (cachedResolved) {
+        resolved = clonePageExportDocumentVariableContent(cachedResolved)
+      } else {
+        const computed = resolveDocumentVariableContent({
           text: blockPlan.rawText,
           context: blockDocumentVariableContext,
           baseFormat: blockPlan.baseFormat,
@@ -1234,21 +1413,31 @@ function buildPageExportPlanInternal({
             if (name !== "lorem") return null
             const rawPrefix = rawText.slice(0, rawStart)
             const rawSuffix = rawText.slice(rawEnd)
-            const candidateLineCountCache = new Map<string, number>()
+            const canUsePlainLoremCandidate = blockPlan.rawFormatRuns.length === 0
+              && blockPlan.rawTrackingRuns.length === 0
+              && !rawPrefix.includes("<%")
+              && !rawSuffix.includes("<%")
             return fitLoremTextToLineCapacity({
               maxLines: blockPlan.maxLoremLines,
               countLinesForCandidate: (candidate) => {
-                const cachedLineCount = candidateLineCountCache.get(candidate)
-                if (cachedLineCount !== undefined) return cachedLineCount
+                const lineCountCacheKey = `${loremLineCountCacheBaseKey ?? "uncached"}\u0001${rawStart}\u0001${rawEnd}\u0001${candidate}`
+                const cachedLineCount = readPageExportLruValue(pageExportLoremLineCountCache, lineCountCacheKey)
+                if (cachedLineCount !== null) return cachedLineCount
                 const candidateRawText = `${rawPrefix}${candidate}${rawSuffix}`
-                const candidateResolved = resolveDocumentVariableContent({
-                  text: candidateRawText,
-                  context,
-                  baseFormat: blockPlan.baseFormat,
-                  formatRuns: blockPlan.rawFormatRuns,
-                  baseTrackingScale: blockPlan.trackingScale,
-                  trackingRuns: blockPlan.rawTrackingRuns,
-                })
+                const candidateResolved = canUsePlainLoremCandidate
+                  ? {
+                      text: candidateRawText,
+                      formatRuns: EMPTY_FORMAT_RUNS,
+                      trackingRuns: EMPTY_TRACKING_RUNS,
+                    }
+                  : resolveDocumentVariableContent({
+                      text: candidateRawText,
+                      context,
+                      baseFormat: blockPlan.baseFormat,
+                      formatRuns: blockPlan.rawFormatRuns,
+                      baseTrackingScale: blockPlan.trackingScale,
+                      trackingRuns: blockPlan.rawTrackingRuns,
+                    })
                 if (!textMeasureContext) {
                   const lineCount = wrapTextDetailed(
                     candidateResolved.text,
@@ -1256,8 +1445,12 @@ function buildPageExportPlanInternal({
                     blockPlan.hyphenate,
                     (sample) => sample.length * blockPlan.baseFontSize * 0.56,
                   ).length
-                  candidateLineCountCache.set(candidate, lineCount)
-                  return lineCount
+                  return rememberPageExportLruValue(
+                    pageExportLoremLineCountCache,
+                    lineCountCacheKey,
+                    lineCount,
+                    PAGE_EXPORT_LOREM_LINE_COUNT_CACHE_LIMIT,
+                  )
                 }
                 applyCanvasTextConfig(textMeasureContext, {
                   font: blockPlan.baseCanvasFont,
@@ -1277,17 +1470,37 @@ function buildPageExportPlanInternal({
                   undefined,
                   blockPlan.baseCanvasFont,
                 ).length
-                candidateLineCountCache.set(candidate, lineCount)
-                return lineCount
+                return rememberPageExportLruValue(
+                  pageExportLoremLineCountCache,
+                  lineCountCacheKey,
+                  lineCount,
+                  PAGE_EXPORT_LOREM_LINE_COUNT_CACHE_LIMIT,
+                )
               },
             })
           },
         })
-      : {
-          text: blockPlan.rawText,
-          formatRuns: blockPlan.rawFormatRuns,
-          trackingRuns: blockPlan.rawTrackingRuns,
+        resolved = {
+          text: computed.text,
+          formatRuns: computed.formatRuns,
+          trackingRuns: computed.trackingRuns,
         }
+        if (loremCacheKey) {
+          rememberPageExportLruValue(
+            pageExportDocumentVariableCache,
+            loremCacheKey,
+            clonePageExportDocumentVariableContent(resolved),
+            PAGE_EXPORT_DOCUMENT_VARIABLE_CACHE_LIMIT,
+          )
+        }
+      }
+    } else {
+      resolved = {
+        text: blockPlan.rawText,
+        formatRuns: blockPlan.rawFormatRuns,
+        trackingRuns: blockPlan.rawTrackingRuns,
+      }
+    }
     if (phaseAccumulator) {
       phaseAccumulator.documentVariablesMs += getNowMs() - documentVariablesStartedAt
     }

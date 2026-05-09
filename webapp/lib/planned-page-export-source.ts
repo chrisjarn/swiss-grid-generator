@@ -5,6 +5,8 @@ import {
 import { buildPageExportPlan, type PageExportPlan } from "@/lib/page-export-plan"
 import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
 
+type PlannerTextMetricsService = NonNullable<Parameters<typeof buildPageExportPlan>[0]["textMetricsService"]>
+
 export type PlannedProjectPageExportSource = ResolvedProjectPageExportSource & {
   exportPlan: PageExportPlan
 }
@@ -12,6 +14,7 @@ export type PlannedProjectPageExportSource = ResolvedProjectPageExportSource & {
 export function buildPlannedProjectPageExportSource(
   source: ResolvedProjectPageExportSource,
   layoutEngine: LayoutEngineContract = CURRENT_LAYOUT_ENGINE_CONTRACT,
+  textMetricsService?: PlannerTextMetricsService,
 ): PlannedProjectPageExportSource {
   return {
     ...source,
@@ -29,6 +32,7 @@ export function buildPlannedProjectPageExportSource(
       showImagePlaceholders: source.uiSettings.showImagePlaceholders,
       showTypography: source.uiSettings.showTypography,
       layoutEngine,
+      textMetricsService,
     }),
   }
 }

@@ -59,6 +59,7 @@
     "test:page-export-plan": "node --import ./scripts/register-ts-alias-loader.mjs --test tests/page-export-plan-contract.test.mjs",
     "export": "node --import ./scripts/register-ts-alias-loader.mjs scripts/export-project.mjs",
     "benchmark:layout": "node --import ./scripts/register-ts-alias-loader.mjs scripts/benchmark-page-export-plan.mjs",
+    "fixtures:performance": "node scripts/generate-performance-fixture.mjs",
     "test": "npm run test:presets && npm run test:roundtrip && npm run test:grid && npm run test:reflow && npm run test:autofit && npm run test:canvas-renderer && npm run test:document-variables && npm run test:project-transfer && npm run test:snapshot && npm run test:text && npm run test:text-tracking && npm run test:text-rendering && npm run test:text-metrics && npm run test:typography-layout && npm run test:inline-editor && npm run test:editor-interactions && npm run test:copy-affordance && npm run test:optical && npm run test:pdf && npm run test:svg && npm run test:idml && npm run test:export-box && npm run test:export-geometry && npm run test:page-export-plan && npm run test:perf",
     "fonts:sync": "../.venv-fonttools/bin/python scripts/sync_google_font_assets.py"
   },

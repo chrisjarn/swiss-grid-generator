@@ -49,3 +49,4 @@ __pycache__/
 *_grid.txt
 *_grid.pdf
 assets/
+webapp/tests/fixtures/performance-1000-pages-static-text.json

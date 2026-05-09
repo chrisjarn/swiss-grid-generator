@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-04-24T10:25:47.990Z",
-  "title": "Performance 1000 Pages",
-  "description": "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, and systematic baseline + grid-rhythm variation across the document.",
+  "title": "Performance 1000 Pages Placeholder",
+  "description": "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, lorem document-variable placeholders, and systematic baseline + grid-rhythm variation across the document.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {

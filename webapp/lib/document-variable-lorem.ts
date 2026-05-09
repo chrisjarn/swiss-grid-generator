@@ -7,15 +7,20 @@ const LOREM_SOURCE = [
 
 const LOREM_WORDS = LOREM_SOURCE.match(/\S+/g) ?? ["Lorem", "ipsum."]
 const MAX_LOREM_WORDS = 4096
+const loremCandidateCache = new Map<number, string>()
 
 function buildLoremCandidate(wordCount: number): string {
   if (wordCount <= 0) return ""
+  const cached = loremCandidateCache.get(wordCount)
+  if (cached !== undefined) return cached
 
   const words: string[] = []
   for (let index = 0; index < wordCount; index += 1) {
     words.push(LOREM_WORDS[index % LOREM_WORDS.length] ?? "lorem")
   }
-  return words.join(" ")
+  const candidate = words.join(" ")
+  loremCandidateCache.set(wordCount, candidate)
+  return candidate
 }
 
 export function fitLoremTextToLineCapacity({

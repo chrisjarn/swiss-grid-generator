@@ -72,8 +72,8 @@ function readArgs(argv) {
 function usage() {
   return [
     "Usage:",
-    "  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000",
-    "  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --out ../tmp/export-debug",
+    "  npm run export -- --layout tests/fixtures/performance-1000-pages-placeholder.json --range 1-1000",
+    "  npm run export -- --layout tests/fixtures/performance-1000-pages-placeholder.json --range 1,5-10 --format pdf,svg,idml --out ../tmp/export-debug",
     "",
     "Options:",
     "  --layout   Path to a Swiss Grid Generator layout JSON.",

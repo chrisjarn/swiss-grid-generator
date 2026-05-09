@@ -182,7 +182,7 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added CLI export:
   ```bash
   cd webapp
-  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --bleed-mm 3 --out ../tmp/export-debug
+  npm run export -- --layout tests/fixtures/performance-1000-pages-placeholder.json --range 1,5-10 --format pdf,svg,idml --bleed-mm 3 --out ../tmp/export-debug
   ```
 - Added phase timing for:
   - `resolve export sources`
@@ -391,6 +391,38 @@ Full PDF, SVG files, and IDML CLI run:
   idml write                1.84s size=455.80MB
   total                   124.22s
 ```
+
+## 2026-05-09 Planner Cache And Fixture Split
+
+This pass kept `PageExportPlan` as the canonical planning artifact and did not move preview to SVG, WebGPU, WASM, or an export-only renderer. The goal was to remove duplicated deterministic planner work while preserving preview/PDF/SVG/IDML parity.
+
+### Kept Changes
+
+- Added bounded planner-side caches for document-variable resolution and lorem fitting. The cache stores resolved variable text and text runs, not returned `PageExportPlan` objects.
+- Moved repeated lorem candidate line-count lookups into a shared deterministic LRU cache, so repeated placeholder fitting can reuse exact line-count results without retaining full page geometry.
+- Reused one deterministic `TextMetricsService` across export planning for all pages in a run.
+- Hardened removed-font handling. Legacy `Libre Franklin` references imported from old saved layouts resolve to `Inter` during project parsing and in planner/export font resolution, avoiding deterministic font-file metric failures without reintroducing the removed font.
+- Split the 1000-page performance fixture:
+  - `performance-1000-pages-placeholder.json` keeps `<%lorem%>` blocks and measures document-variable fitting.
+  - `performance-1000-pages-static-text.json` replaces lorem tokens with static text and isolates ordinary wrapping/glyph planning/export cost. It is generated on demand by `npm run fixtures:performance` and intentionally ignored by git.
+- Updated `npm run benchmark:layout` to preload deterministic metric faces, use a shared text metrics service, and report silent phase totals for planner substeps.
+
+### Measured Results
+
+On the stress-page planner benchmark, the 1000-page run improved from the earlier `21351.23ms` user-reported baseline to about `4808.80ms`:
+
+```text
+pages=1000 buildPageExportPlan=4808.80ms avg=4.81ms textPlans=17000 imagePlans=6000
+```
+
+The placeholder export fixture still spends about `14.4s` planning 1000 pages when many lorem frames have distinct geometry. That is expected: exact lorem fitting remains real layout work, and this pass only removes repeated deterministic work where keys match. Use the static-text fixture when comparing renderer/export cost without document-variable fitting.
+
+### Boundaries
+
+- Returned `PageExportPlan` objects are still built per page and are not cached.
+- Browser text metrics remain diagnostic only.
+- SVG export output is still a consumer of the canonical plan, not the live preview implementation.
+- IDML XML generation and ZIP compression remain separate bottlenecks for all-format exports.
 
 ### Current Boundaries
 

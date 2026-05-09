@@ -1,6 +1,14 @@
 export type LayoutPerformanceMetadata = Record<string, boolean | number | string | null | undefined>
+export type LayoutPerformanceMetric = {
+  label: string
+  durationMs: number
+  metadata?: LayoutPerformanceMetadata
+}
+export type LayoutPerformanceMetricListener = (metric: LayoutPerformanceMetric) => void
 
 export const LAYOUT_PROFILING_ENV_KEY = "NEXT_PUBLIC_LAYOUT_PROFILING"
+const LAYOUT_PROFILING_SILENT_ENV_KEY = "SGG_LAYOUT_PROFILING_SILENT"
+const layoutPerformanceMetricListeners = new Set<LayoutPerformanceMetricListener>()
 
 function isProfilingFlagEnabled(value: string | undefined): boolean {
   return value === "1" || value?.toLowerCase() === "true"
@@ -8,6 +16,10 @@ function isProfilingFlagEnabled(value: string | undefined): boolean {
 
 export function isLayoutProfilingEnabled(): boolean {
   return isProfilingFlagEnabled(process.env.NEXT_PUBLIC_LAYOUT_PROFILING)
+}
+
+function isLayoutProfilingSilent(): boolean {
+  return isProfilingFlagEnabled(process.env[LAYOUT_PROFILING_SILENT_ENV_KEY])
 }
 
 function getNowMs(): number {
@@ -29,7 +41,20 @@ export function recordLayoutPerformanceMetric(
   metadata?: LayoutPerformanceMetadata,
 ): void {
   if (!isLayoutProfilingEnabled()) return
-  console.info(`[sgg:layout-profile] ${label} ${durationMs.toFixed(2)}ms${formatMetadata(metadata)}`)
+  const metric = { label, durationMs, metadata }
+  for (const listener of layoutPerformanceMetricListeners) listener(metric)
+  if (!isLayoutProfilingSilent()) {
+    console.info(`[sgg:layout-profile] ${label} ${durationMs.toFixed(2)}ms${formatMetadata(metadata)}`)
+  }
+}
+
+export function addLayoutPerformanceMetricListener(
+  listener: LayoutPerformanceMetricListener,
+): () => void {
+  layoutPerformanceMetricListeners.add(listener)
+  return () => {
+    layoutPerformanceMetricListeners.delete(listener)
+  }
 }
 
 export function measureLayoutPerformance<T>(

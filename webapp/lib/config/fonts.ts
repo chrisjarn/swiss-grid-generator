@@ -107,6 +107,9 @@ export type FontVariant = {
 
 export const DEFAULT_BASE_FONT: FontFamily = "Inter"
 const INTERNAL_FONT_FAMILIES = new Set<FontFamily>(["Noto Sans Symbols 2"])
+const LEGACY_FONT_FAMILY_REPLACEMENTS = new Map<string, FontFamily>([
+  ["Libre Franklin", DEFAULT_BASE_FONT],
+])
 
 export const USER_FONT_DEFINITIONS = FONT_DEFINITIONS.filter(({ value }) => (
   !INTERNAL_FONT_FAMILIES.has(value)
@@ -192,6 +195,15 @@ const FONT_VARIANTS_MAP = new Map<FontFamily, readonly FontVariant[]>(
 
 export function isFontFamily(value: unknown): value is FontFamily {
   return typeof value === "string" && FONT_FAMILY_SET.has(value as FontFamily)
+}
+
+export function resolveFontFamily(value: unknown, fallback: FontFamily = DEFAULT_BASE_FONT): FontFamily {
+  if (isFontFamily(value)) return value
+  if (typeof value === "string") {
+    const replacement = LEGACY_FONT_FAMILY_REPLACEMENTS.get(value.trim())
+    if (replacement) return replacement
+  }
+  return fallback
 }
 
 export function getFontAssetSlug(fontFamily: FontFamily): string {

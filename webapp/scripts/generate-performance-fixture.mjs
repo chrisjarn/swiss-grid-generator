@@ -5,9 +5,16 @@ import { fileURLToPath } from "node:url"
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const SOURCE_PATH = path.join(ROOT, "lib", "presets", "data", "030 Performance.json")
 const OUTPUT_DIR = path.join(ROOT, "tests", "fixtures")
-const OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages.json")
+const PLACEHOLDER_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages-placeholder.json")
+const STATIC_TEXT_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages-static-text.json")
 
 const TARGET_PAGE_COUNT = 1000
+const STATIC_LOREM_TEXT = [
+  "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+  "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+  "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.",
+  "Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+].join(" ")
 const BASELINE_CYCLE = [6, 7, 8, 9, 10, 11, 12, 14, 16, 18, 20, 24, 28]
 const RHYTHM_PROFILES = [
   {
@@ -130,6 +137,24 @@ function buildPage(templatePage, pageIndex) {
   }
 }
 
+function replaceLoremPlaceholdersWithStaticText(page) {
+  const staticPage = clone(page)
+  const textContent = staticPage.previewLayout?.textContent
+  if (!textContent || typeof textContent !== "object") return staticPage
+
+  for (const [key, value] of Object.entries(textContent)) {
+    if (typeof value !== "string" || !value.includes("<%lorem%>")) continue
+    textContent[key] = value.replaceAll("<%lorem%>", STATIC_LOREM_TEXT)
+  }
+
+  return staticPage
+}
+
+async function writeFixture(outputPath, payload) {
+  await fs.writeFile(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8")
+  console.log(`Generated ${outputPath}`)
+}
+
 async function main() {
   const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8"))
   if (!Array.isArray(source.pages) || source.pages.length === 0) {
@@ -144,17 +169,23 @@ async function main() {
     return buildPage(templatePage, pageIndex)
   })
 
-  const payload = {
+  const placeholderPayload = {
     ...source,
     exportedAt: new Date().toISOString(),
-    title: "Performance 1000 Pages",
-    description: "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, and systematic baseline + grid-rhythm variation across the document.",
+    title: "Performance 1000 Pages Placeholder",
+    description: "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, lorem document-variable placeholders, and systematic baseline + grid-rhythm variation across the document.",
     pages,
+  }
+  const staticTextPayload = {
+    ...placeholderPayload,
+    title: "Performance 1000 Pages Static Text",
+    description: "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, static lorem text blocks, and systematic baseline + grid-rhythm variation across the document.",
+    pages: pages.map(replaceLoremPlaceholdersWithStaticText),
   }
 
   await fs.mkdir(OUTPUT_DIR, { recursive: true })
-  await fs.writeFile(OUTPUT_PATH, `${JSON.stringify(payload, null, 2)}\n`, "utf8")
-  console.log(`Generated ${OUTPUT_PATH}`)
+  await writeFixture(PLACEHOLDER_OUTPUT_PATH, placeholderPayload)
+  await writeFixture(STATIC_TEXT_OUTPUT_PATH, staticTextPayload)
 }
 
 main().catch((error) => {

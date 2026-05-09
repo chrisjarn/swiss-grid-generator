@@ -1,7 +1,7 @@
 import jsPDFModule from "jspdf"
 import { strToU8, zipSync } from "fflate"
 
-import { getStyleDefaultFontWeight, isFontFamily, resolveFontVariant } from "@/lib/config/fonts"
+import { getStyleDefaultFontWeight, resolveFontFamily, resolveFontVariant } from "@/lib/config/fonts"
 import { buildExportBox } from "@/lib/export-box"
 import type { PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
 import { attachPdfOutputIntent } from "@/lib/pdf-output-intent"
@@ -21,6 +21,7 @@ import {
 import type { IdmlPageSetArtifacts } from "@/lib/idml/types"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
+  resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
 } from "@/lib/layout-engine-contract"
 import {
@@ -38,6 +39,7 @@ import {
   type SvgExportFile,
   type SvgPageSetRenderOptions,
 } from "@/lib/svg-page-set-export"
+import { createTextMetricsService } from "@/lib/text-metrics-service"
 
 export type ExportEngineFormat = "pdf" | "svg" | "idml"
 export type ExportEngineSvgPackaging = "files" | "zip"
@@ -119,6 +121,7 @@ const DEFAULT_EXPORT_PAGE_SET_SIZE = 25
 const PLANNING_PROGRESS_PAGE_INTERVAL = DEFAULT_EXPORT_PAGE_SET_SIZE
 const MAX_BROWSER_EXPORT_WORKERS = 4
 const MAX_EXPORT_PAGE_SET_CACHE_ENTRIES = 48
+const EXPORT_PLANNING_TEXT_METRICS_CACHE_LIMIT = 50000
 const EXPORT_CACHE_KEY_PREVIEW_LENGTH = 48
 const PDF_CANCEL_CHECK_PAGE_INTERVAL = 10
 
@@ -274,9 +277,7 @@ function collectPdfFontFaces(pages: readonly ResolvedProjectPageExportSource[]):
     blockKeys.forEach((key) => {
       const styleKey = layout.styleAssignments[key] ?? "body"
       const style = page.result.typography.styles[styleKey]
-      const fontFamily = isFontFamily(layout.blockFontFamilies?.[key])
-        ? layout.blockFontFamilies[key]
-        : page.baseFont
+      const fontFamily = resolveFontFamily(layout.blockFontFamilies?.[key], page.baseFont)
       const fontWeight = typeof layout.blockFontWeights?.[key] === "number" && Number.isFinite(layout.blockFontWeights[key])
         ? layout.blockFontWeights[key]!
         : getStyleDefaultFontWeight(style?.weight)
@@ -285,7 +286,7 @@ function collectPdfFontFaces(pages: readonly ResolvedProjectPageExportSource[]):
 
       layout.blockTextFormatRuns?.[key]?.forEach((run) => {
         addFontFace(faces, {
-          fontFamily: isFontFamily(run.fontFamily) ? run.fontFamily : fontFamily,
+          fontFamily: resolveFontFamily(run.fontFamily, fontFamily),
           fontWeight: typeof run.fontWeight === "number" && Number.isFinite(run.fontWeight)
             ? run.fontWeight
             : fontWeight,
@@ -552,10 +553,14 @@ async function buildPlannedPagesWithProgress(
   const plannedPages: PlannedProjectPageExportSource[] = []
   const total = options.pages.length
   const progressFormat = options.formats[0] ?? "pdf"
+  const textMetricsService = createTextMetricsService({
+    cacheLimit: EXPORT_PLANNING_TEXT_METRICS_CACHE_LIMIT,
+    metricsEngineFactory: resolveLayoutTextMetricsEngineFactory(layoutEngine),
+  })
 
   for (const [index, source] of options.pages.entries()) {
     options.assertNotCancelled?.()
-    const planned = buildPlannedProjectPageExportSource(source, layoutEngine)
+    const planned = buildPlannedProjectPageExportSource(source, layoutEngine, textMetricsService)
     plannedPages.push(planned)
 
     const completed = index + 1
