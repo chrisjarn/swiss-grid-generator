@@ -46,9 +46,9 @@ type Tone = {
 const GOOGLE_FONTS_SPECIMEN_BASE_URL = "https://fonts.google.com/specimen/"
 const FONT_CATEGORY_ORDER = ["Sans-Serif", "Serif", "Display"] as const
 const FONT_CATEGORY_LABEL: Record<(typeof FONT_CATEGORY_ORDER)[number], string> = {
-  "Sans-Serif": "Sans-Serif",
-  Serif: "Serif",
-  Display: "Poster",
+  "Sans-Serif": translateMessage("editor.fontGroups.sansSerif"),
+  Serif: translateMessage("editor.fontGroups.serif"),
+  Display: translateMessage("editor.fontGroups.poster"),
 }
 const AVAILABLE_FONT_GROUPS = FONT_CATEGORY_ORDER.map((category) => ({
   category,

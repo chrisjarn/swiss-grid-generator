@@ -5,12 +5,12 @@ import { translateMessage } from "@/lib/i18n/messages"
 export type PreviewTypographyStyleKey = keyof GridResult["typography"]["styles"]
 
 export const PREVIEW_STYLE_OPTIONS: BlockEditorStyleOption<PreviewTypographyStyleKey>[] = [
-  { value: "display", label: "Display" },
-  { value: "headline", label: "Headline" },
-  { value: "subhead", label: "Subhead" },
-  { value: "body", label: "Body" },
-  { value: "caption", label: "Caption" },
-  { value: "fx", label: "Custom" },
+  { value: "display", label: translateMessage("editor.hierarchyLabels.display") },
+  { value: "headline", label: translateMessage("editor.hierarchyLabels.headline") },
+  { value: "subhead", label: translateMessage("editor.hierarchyLabels.subhead") },
+  { value: "body", label: translateMessage("editor.hierarchyLabels.body") },
+  { value: "caption", label: translateMessage("editor.hierarchyLabels.caption") },
+  { value: "fx", label: translateMessage("editor.hierarchyLabels.custom") },
 ]
 
 const DEFAULT_COPYRIGHT_YEAR = new Date().getFullYear()

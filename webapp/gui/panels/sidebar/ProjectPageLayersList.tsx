@@ -19,6 +19,7 @@ import {
 } from "@/lib/sidebar-card-drag"
 import { getTextLayerDisplayName } from "@/lib/layer-display-name"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
+import { translateMessage } from "@/lib/i18n/messages"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
@@ -55,18 +56,18 @@ type LayerThumb = {
 }
 
 const STYLE_LABELS: Record<string, string> = {
-  fx: "Custom",
-  display: "Display",
-  headline: "Headline",
-  subhead: "Subhead",
-  body: "Body",
-  caption: "Caption",
+  fx: translateMessage("editor.hierarchyLabels.custom"),
+  display: translateMessage("editor.hierarchyLabels.display"),
+  headline: translateMessage("editor.hierarchyLabels.headline"),
+  subhead: translateMessage("editor.hierarchyLabels.subhead"),
+  body: translateMessage("editor.hierarchyLabels.body"),
+  caption: translateMessage("editor.hierarchyLabels.caption"),
 }
 
 const LOCK_BUTTON_DOUBLE_CLICK_WINDOW_MS = 320
 
 function toLabel(value: string): string {
-  return STYLE_LABELS[value] ?? (value ? value.charAt(0).toUpperCase() + value.slice(1) : "Body")
+  return STYLE_LABELS[value] ?? (value ? value.toLowerCase() : translateMessage("editor.hierarchyLabels.body"))
 }
 
 function reconcileLayerOrder(
@@ -146,7 +147,7 @@ export function ProjectPageLayersList({
         kind: "text",
         hierarchy: toLabel(layout?.styleAssignments?.[key] ?? "body"),
         font: layout?.blockFontFamilies?.[key] ?? baseFont,
-        textPreview: getTextLayerDisplayName(rawText),
+        textPreview: getTextLayerDisplayName(rawText, t("projectPanel.layersList.emptyParagraph")),
         color: typeof rawColor === "string" && isImagePlaceholderColor(rawColor)
           ? rawColor.toLowerCase()
           : defaultTextColor,
@@ -158,7 +159,7 @@ export function ProjectPageLayersList({
       next.set(key, {
         key,
         kind: "image",
-        hierarchy: "Image Placeholder",
+        hierarchy: t("projectPanel.layersList.imagePlaceholder"),
         font: "—",
         textPreview: "",
         color: resolveImageSchemeColor(rawColor, imageColorScheme),
@@ -166,7 +167,7 @@ export function ProjectPageLayersList({
       })
     }
     return next
-  }, [baseFont, blockOrder, imageColorScheme, imageOrder, layout])
+  }, [baseFont, blockOrder, imageColorScheme, imageOrder, layout, t])
 
   const visibleOrder = useMemo(() => [...layerOrder].reverse(), [layerOrder])
   const visibleThumbs = visibleOrder

@@ -1,44 +1,44 @@
 {
   "dialogs": {
     "notice": {
-      "actions": "Actions",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "ok": "OK"
+      "actions": "actions",
+      "cancel": "cancel",
+      "confirm": "confirm",
+      "ok": "ok"
     },
     "saveLibrary": {
-      "title": "Save",
-      "description": "Store the project in the local library.",
-      "confirm": "Save"
+      "title": "save",
+      "description": "store the project in the local library.",
+      "confirm": "save"
     },
     "export": {
-      "title": "Export",
-      "description": "PDF, SVG, and IDML consume the page plan. JSON remains editable.",
-      "input": "Input",
-      "preview": "Preview",
-      "output": "Output",
-      "bleed": "Bleed",
-      "bleedWidth": "Bleed width",
-      "pages": "Pages",
+      "title": "export",
+      "description": "PDF, SVG and IDML consume the canonical page plan. JSON remains editable.",
+      "input": "input",
+      "preview": "preview",
+      "output": "output",
+      "bleed": "bleed",
+      "bleedWidth": "bleed width",
+      "pages": "pages",
       "pageRangePlaceholder": "1-5;7;25;550-650",
-      "filename": "Filename",
-      "titleField": "Title",
-      "subject": "Subject",
-      "author": "Author",
+      "filename": "filename",
+      "titleField": "title",
+      "subject": "subject",
+      "author": "author",
       "exportPdf": "PDF",
       "exportSvg": "SVG",
       "exportIdml": "IDML",
       "saveJson": "JSON",
-      "toggleBaselines": "Include baselines",
-      "toggleMargins": "Include margins",
-      "toggleModules": "Include modular field",
-      "toggleTypography": "Include typography",
-      "toggleImagePlaceholders": "Include placeholders",
-      "previewCanvas": "Selected page",
-      "previewBuildError": "Preview failed.",
-      "previewDrawError": "Preview draw failed.",
-      "previewPrepareError": "Preview preparation failed.",
-      "previewNoPage": "No page available for preview."
+      "toggleBaselines": "include baselines",
+      "toggleMargins": "include margins",
+      "toggleModules": "include modular field",
+      "toggleTypography": "include typography",
+      "toggleImagePlaceholders": "include placeholders",
+      "previewCanvas": "selected page",
+      "previewBuildError": "preview failed.",
+      "previewDrawError": "preview draw failed.",
+      "previewPrepareError": "preview preparation failed.",
+      "previewNoPage": "no page available."
     }
   }
 }

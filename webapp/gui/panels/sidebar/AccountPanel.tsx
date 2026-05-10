@@ -41,8 +41,12 @@ type Props = {
   onSignOut: () => Promise<void>
 }
 
-function formatActivityTimestamp(value: string | null | undefined, mode: "full" | "time" = "full"): string {
-  if (!value) return "no events"
+function formatActivityTimestamp(
+  value: string | null | undefined,
+  mode: "full" | "time" = "full",
+  emptyLabel = "no events",
+): string {
+  if (!value) return emptyLabel
   const date = new Date(value)
   if (Number.isNaN(date.getTime())) return value
   if (mode === "time") {
@@ -289,7 +293,7 @@ export function AccountPanel({
                 {activityEntries.slice(0, 12).map((entry) => (
                   <div key={entry.id} className="grid grid-cols-[54px_1fr] gap-2 py-1 text-[11px] leading-snug">
                     <div className={`tabular-nums ${tone.caption}`}>
-                      {formatActivityTimestamp(entry.createdAt, "time")}
+                      {formatActivityTimestamp(entry.createdAt, "time", t("common.noEvents"))}
                     </div>
                     <div className="min-w-0">
                       <div className={getActivityLevelClassName(entry.level, isDarkMode)}>
@@ -352,9 +356,9 @@ export function AccountPanel({
                   <div className={tone.caption}>{t("common.project")}</div>
                   <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || t("rightPanel.account.untitledProject")}</div>
                   <div className={tone.caption}>{t("rightPanel.account.localEdit")}</div>
-                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.localUpdatedAt)}</div>
+                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.localUpdatedAt, "full", t("common.noEvents"))}</div>
                   <div className={tone.caption}>{t("rightPanel.account.lastSync")}</div>
-                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.lastSyncedAt)}</div>
+                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.lastSyncedAt, "full", t("common.noEvents"))}</div>
                   <div className={tone.caption}>{t("rightPanel.account.revision")}</div>
                   <div className={tone.body}>
                     {typeof activeConflictDetails.localRevision === "number"

@@ -723,7 +723,9 @@ export function PagesPanel({
               <button
                 type="button"
                 data-card-drag-ignore="true"
-                aria-label={isExpanded ? `Collapse ${page.name}` : `Expand ${page.name}`}
+                aria-label={isExpanded
+                  ? t("projectPanel.collapsePage", { name: page.name })
+                  : t("projectPanel.expandPage", { name: page.name })}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${tone.close}`}
                 onClick={(event) => {
                   event.stopPropagation()

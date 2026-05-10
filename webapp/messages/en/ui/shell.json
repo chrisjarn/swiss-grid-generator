@@ -1,94 +1,94 @@
 {
   "topBar": {
     "supportMenu": {
-      "open": "Open menu",
-      "close": "Close menu",
-      "more": "More",
-      "darkMode": "Dark mode",
-      "lightMode": "Light mode",
-      "help": "Help",
-      "feedback": "Feedback",
-      "legalNotice": "Legal notice"
+      "open": "open menu",
+      "close": "close menu",
+      "more": "more",
+      "darkMode": "dark mode",
+      "lightMode": "light mode",
+      "help": "help",
+      "feedback": "feedback",
+      "legalNotice": "legal notice"
     },
     "actions": {
       "presets": {
-        "aria": "Show presets",
-        "tooltip": "Presets"
+        "aria": "presets",
+        "tooltip": "presets"
       },
       "save": {
-        "aria": "Save",
-        "tooltip": "Save",
-        "status": "Library: {status}"
+        "aria": "save",
+        "tooltip": "save",
+        "status": "library: {status}"
       },
       "import": {
-        "aria": "Import",
-        "tooltip": "Import"
+        "aria": "import",
+        "tooltip": "import"
       },
       "export": {
-        "aria": "Export",
-        "tooltip": "Export"
+        "aria": "export",
+        "tooltip": "export"
       },
       "undo": {
-        "aria": "Undo",
-        "tooltip": "Undo"
+        "aria": "undo",
+        "tooltip": "undo"
       },
       "redo": {
-        "aria": "Redo",
-        "tooltip": "Redo"
+        "aria": "redo",
+        "tooltip": "redo"
       },
       "smartTextZoom": {
-        "enable": "Enable paragraph zoom",
-        "disable": "Disable paragraph zoom",
-        "tooltip": "Paragraph zoom"
+        "enable": "enable paragraph zoom",
+        "disable": "disable paragraph zoom",
+        "tooltip": "paragraph zoom"
       },
       "baselines": {
-        "aria": "Toggle baselines",
-        "tooltip": "Baselines\nShift-click applies to all pages"
+        "aria": "toggle baselines",
+        "tooltip": "baselines\nshift-click applies to all pages"
       },
       "margins": {
-        "aria": "Toggle margins",
-        "tooltip": "Margin frame\nShift-click applies to all pages"
+        "aria": "toggle margins",
+        "tooltip": "margin frame\nshift-click applies to all pages"
       },
       "modules": {
-        "aria": "Toggle modular field",
-        "tooltip": "Modular field\nShift-click applies to all pages"
+        "aria": "toggle modular field",
+        "tooltip": "modular field\nshift-click applies to all pages"
       },
       "typography": {
-        "aria": "Toggle typography",
-        "tooltip": "Typography\nShift-click applies to all pages"
+        "aria": "toggle typography",
+        "tooltip": "typography\nshift-click applies to all pages"
       },
       "imagePlaceholders": {
-        "aria": "Toggle image placeholders",
-        "tooltip": "Image placeholders\nShift-click applies to all pages"
+        "aria": "toggle image placeholders",
+        "tooltip": "image placeholders\nshift-click applies to all pages"
       },
       "layers": {
-        "show": "Show project panel",
-        "hide": "Hide project panel",
-        "tooltip": "Project panel"
+        "show": "show project panel",
+        "hide": "hide project panel",
+        "tooltip": "project panel"
       },
       "account": {
-        "show": "Show account panel",
-        "hide": "Hide account panel",
-        "tooltipSignedIn": "Cloud\n{email}\n{status}",
-        "tooltipSignedOut": "Cloud\nNot connected\n{status}"
+        "show": "show account panel",
+        "hide": "hide account panel",
+        "tooltipSignedIn": "cloud\n{email}\n{status}",
+        "tooltipSignedOut": "cloud\nnot connected\n{status}"
       }
     }
   },
   "shortcuts": {
-    "importProject": "Import project",
-    "saveToLibrary": "Save to library",
-    "exportDialog": "Export dialog",
-    "undo": "Undo",
-    "redo": "Redo",
-    "toggleDarkMode": "Toggle dark mode",
-    "toggleBaselines": "Toggle baselines",
-    "toggleMargins": "Toggle margins",
-    "toggleModules": "Toggle modular field",
-    "toggleTypography": "Toggle typography",
-    "toggleImagePlaceholders": "Toggle image placeholders",
-    "toggleProjectPanel": "Toggle project panel",
-    "toggleHelp": "Toggle help",
-    "toggleLegalNotice": "Toggle legal notice",
-    "togglePresets": "Toggle presets"
+    "importProject": "import project",
+    "saveToLibrary": "save to library",
+    "exportDialog": "export dialog",
+    "undo": "undo",
+    "redo": "redo",
+    "toggleDarkMode": "toggle dark mode",
+    "toggleBaselines": "toggle baselines",
+    "toggleMargins": "toggle margins",
+    "toggleModules": "toggle modular field",
+    "toggleTypography": "toggle typography",
+    "toggleImagePlaceholders": "toggle image placeholders",
+    "toggleProjectPanel": "toggle project panel",
+    "toggleHelp": "toggle help",
+    "toggleLegalNotice": "toggle legal notice",
+    "togglePresets": "toggle presets"
   }
 }

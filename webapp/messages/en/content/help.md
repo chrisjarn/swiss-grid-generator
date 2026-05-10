@@ -1,277 +1,260 @@
-# Help
+# help
 
-Edit this file to update the in-app Help panel.
+Edit this file to update the in-app help panel.
 
 Format:
 - `## Group Title` starts an index group.
 - `### Section Title {#section-id}` starts a top-level section.
 - Add `[noindex]` after the id to keep a section out of the index.
 - `#### Subsection Title {#section-id}` starts a subsection.
+- Use paragraphs and short bullets.
 - Use `{{AVAILABLE_FONTS}}`, `{{SHORTCUT_TABLE}}`, and `{{DOCUMENT_VARIABLE_TOKENS}}` where needed.
 
-## Quick Start
+## first sequence
 
-### Quick Start {#help-quick-start}
-- Set `Canvas`: ratio, orientation, rotation.
-- Set `Baseline`: vertical rhythm.
-- Set `Margins`: page frame.
-- Set `Grid`: columns, rows, gutters, rhythm.
-- Set `Typography`: hierarchy and base family.
-- Use header toggles to inspect structure.
+### first sequence {#help-quick-start}
+- set ratio, orientation, and rotation in `format`.
+- set the baseline first. it governs the vertical rhythm.
+- choose a margin canon or custom baseline-unit frame.
+- define columns, rows, gutter, and grid rhythm.
+- set type rhythm and base family.
+- inspect baselines, margins, modules, typography, and placeholders before export.
 
-## General Guidance
+## settings
 
-### Settings Reference {#help-settings-overview} [noindex]
-Core page system controls.
+### settings reference {#help-settings-overview} [noindex]
+Core system controls.
 
-### Canvas {#help-canvas-ratio}
-- Ratio defines page proportion.
-- Orientation swaps axes.
-- Rotation turns the preview and export page.
-- Custom ratio preserves A4-equivalent area.
+### format {#help-canvas-ratio}
+- `ratio` sets page proportion.
+- custom ratio preserves A4-equivalent area before orientation is applied.
+- `orientation` changes the axis.
+- `rotation` turns the planned page without changing its geometry.
 
-### Baseline {#help-baseline-grid}
-- Baseline sets vertical rhythm.
-- Grid unit controls margins, modules, and leading.
-- Larger units reduce available lines.
+### baseline {#help-baseline-grid}
+- the baseline is the shared vertical unit.
+- type leading, margins, module height, and many movement steps depend on it.
+- choose the smallest rhythm that still gives the page calm.
 
-### Margins {#help-margins}
-- Margin method defines page frame.
-- Progressive, Van de Graaf, and Baseline are canon presets.
-- Custom margins use baseline-unit sides.
+### margins {#help-margins}
+- margin methods express the content field in baseline units.
+- progressive gives a measured lower weight.
+- van de Graaf creates a classical asymmetric field.
+- baseline gives an equal frame.
+- custom margins should be used when the page needs a precise exception.
 
-### Grid {#help-gutter}
-- Columns and rows define the modular field.
-- Gutter multiple sets module separation.
-- Rhythm distributes modules by equal, Fibonacci, golden, fourth, or fifth proportion.
-- Direction controls non-repetitive rhythm flow.
+### grid {#help-gutter}
+- columns and rows define the modular field.
+- gutter multiple sets the distance between modules in baseline units.
+- repetitive rhythm is the neutral control.
+- non-repetitive rhythms should strengthen proportion, not decorate the page.
 
-### Typography {#help-typo}
-- Base family sets default rendering.
-- Rhythm sets type scale.
-- Hierarchy remains the primary structure.
-- `Custom` is paragraph-local.
+### typography {#help-typo}
+- base family sets the document default.
+- type rhythm controls the hierarchy scale.
+- fibonacci rhythm can shift its sequence while remaining tied to the A4 body reference.
+- custom type belongs to individual paragraphs, not the global system.
 
-### Color {#help-color-scheme}
-- Base scheme defines placeholder color families.
-- Background swatches set page ground per page.
-- Active swatch click clears the ground.
+### color {#help-color-scheme}
+- base scheme defines the placeholder palette.
+- page ground is stored per page.
+- color is a signal. use it sparingly.
 
-### General Guidance {#help-general-overview} [noindex]
+## general guidance
+
+### general guidance {#help-general-overview} [noindex]
 Core editing and layout workflows.
 
-### Preview Workspace {#help-preview-workspace}
-- The preview is the active page surface.
-- Pages appear after the final page plan is ready.
-- Double-click an empty module for text. `Shift` + double-click for image.
-- Hold `1..5` while creating text: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`.
-- New blocks clamp to the remaining field.
-- Hover layers for edit access and guides.
-- Drag to place. Arrow keys refine.
-- `+` duplicates. `Shift` copies paragraph geometry. `Alt/Option` copies type. Both copy both.
-- Visibility toggles control preview and export.
-- Locked layers remain visible but fixed.
-- Snapped axes move on grid. Unsnapped axes move in fine steps.
-- `Page Up`, `Page Down`, `Home`, and `End` navigate pages.
-- Undo and redo cover settings, placement, deletion, and editor changes.
+### preview workspace {#help-preview-workspace}
+- the preview is the live layout surface for the active page.
+- a loaded page appears only after its snapshot and first final page plan are ready.
+- double-click inside a module to add text.
+- `shift` + double-click adds an image placeholder.
+- hold `1..5` while double-clicking to set the new paragraph hierarchy: `1` caption, `2` body, `3` subhead, `4` headline, `5` display.
+- hover a layer to reveal edit access and placement guides.
+- drag to place, then nudge with arrow keys.
+- preview visibility toggles also control export visibility.
+- locked layers show guides, but cannot be moved, edited, duplicated, deleted, or retargeted.
+- `page up`, `page down`, `home`, and `end` navigate pages.
+- undo and redo cover settings, content, placement, duplication, deletion, and editor changes.
 
-### Text Editor {#help-editor}
-- Open from preview or an unlocked text layer card.
-- Select another unlocked paragraph to retarget.
-- The sidebar becomes `Paragraph`, `Typography`, `Symbols`, `Placeholders`, `Info`.
-- Section state is document-local.
-- `Esc` or outside click exits.
-- Double-click selects word. Triple-click selects sentence. Four clicks select paragraph.
-- `Alt+A` or `Cmd/Ctrl+A` selects all.
+### text editor {#help-editor}
+- open from the preview affordance or an unlocked text layer card.
+- retarget an open editor by selecting another unlocked paragraph.
+- the left sidebar switches to `paragraph`, `typography`, `symbols`, `placeholders`, and `info`.
+- editor sections remember their open state within the current document.
+- `esc` or outside click exits edit mode.
+- inline editing follows the rendered line layout.
 
-#### Paragraph Section {#help-editor-paragraph}
-- Set rows, baselines, columns, alignment, flow, snap, rotation.
-- Frame height is `Rows + Baselines`.
-- `Rows` may be `0` when `Baselines` is greater than `0`.
-- `Rows`, `Baselines`, and `Cols` preview on rollover.
-- `Snap to Columns (X)` locks column anchors.
-- `Snap to Baseline (Y)` locks baseline rhythm.
+#### paragraph section {#help-editor-paragraph}
+- set rows, baselines, columns, alignment, reflow, hyphenation, x/y snap, and rotation.
+- height is `rows + baselines`.
+- `rows` may be `0` when `baselines` is greater than `0`.
+- `rows`, `baselines`, and `cols` preview on hover before commit.
+- column snap locks x to column anchors.
+- baseline snap locks y to the editorial rhythm.
 
-#### Typography Section {#help-editor-typo}
-- Set hierarchy, family, cut, color, kerning, tracking, custom size, leading.
-- `Custom` starts from resolved paragraph metrics.
-- Selection receives type and color changes.
-- Family, cut, hierarchy, kerning, and scheme preview on rollover.
+#### typography section {#help-editor-typo}
+- set family, cut, hierarchy, color, kerning, tracking, and custom size or leading.
+- selecting `custom` seeds size and leading from the paragraph's resolved metrics.
+- if text is selected, type and color controls apply to the selection.
+- font, cut, hierarchy, and scheme preview on hover before commit.
 
-#### Symbols Section {#help-editor-symbols}
-- Insert symbols at caret or selection.
-- Groups: arrows, bullets, marks, math, Greek, geometry, editorial.
-- Symbols export through `Noto Sans Symbols 2`.
-- Recent symbols appear after first use.
+#### symbols section {#help-editor-symbols}
+- insert typographic symbols at the caret or over the current selection.
+- the palette includes arrows, bullets, marks, math, Greek lowercase, geometry, and editorial punctuation.
+- symbols export through `Noto Sans Symbols 2` for stable geometry.
+- recent symbols appear after first use.
 
-#### Placeholders Section {#help-editor-placeholders}
-- Insert document-variable tokens.
-- `<%lorem%>` fills the active frame.
-- `<%page%>` and `<%pages%>` use physical page counts.
-- Available tokens: {{DOCUMENT_VARIABLE_TOKENS}}.
+#### placeholders section {#help-editor-placeholders}
+- insert document-variable tokens at the caret or over the current selection.
+- `<%lorem%>` fills the active frame using current geometry and reflow.
+- `<%page%>` and `<%pages%>` use physical page counts. on facing spreads, the right side resolves to the next physical page number.
+- available tokens: {{DOCUMENT_VARIABLE_TOKENS}}.
 
-#### Info Section {#help-editor-info}
-Geometry, type summary, counts, line capacity.
+#### info section {#help-editor-info}
+- shows geometry, type summary, counts, and maximum line length.
 
-### Image Editor {#help-image-editor}
-- `Shift` + double-click an empty module creates an image placeholder.
-- Open from preview or an unlocked image layer card.
-- The sidebar becomes `Geometry`, `Color`, `Info`.
-- Section state is document-local.
-- `Esc` or outside click exits.
-- Double-click another unlocked image card to retarget.
+### image editor {#help-image-editor}
+- `shift` + double-click creates a new image placeholder.
+- open from the preview affordance or an unlocked image layer card.
+- the left sidebar switches to `geometry`, `color`, and `info`.
+- editor sections remember their open state within the current document.
+- `esc` or outside click exits edit mode.
 
-#### Geometry Section {#help-image-editor-geometry}
-- Set rows, baselines, columns, snap, rotation.
-- Frame height is `Rows + Baselines`.
-- `Rows`, `Baselines`, and `Cols` preview on rollover.
+#### geometry section {#help-image-editor-geometry}
+- set rows, baselines, columns, x/y snap, and rotation.
+- height is `rows + baselines`.
+- `rows`, `baselines`, and `cols` preview on hover before commit.
 
-#### Color Section {#help-image-editor-color}
-Scheme, swatch, transparency.
+#### color section {#help-image-editor-color}
+- set scheme, swatch color, and transparency.
 
-#### Info Section {#help-image-editor-info}
-Geometry, snap, rotation, scheme, color, transparency.
+#### info section {#help-image-editor-info}
+- shows geometry, snap state, rotation, scheme, color, and transparency.
 
-### Drag and Placement {#help-drag-placement}
-- Drag follows X and Y snap.
-- Baseline snap uses module tops.
-- `Shift` drag moves Y by baseline rows.
-- Unsnapped layers stay within bounds.
-- Column snap off allows one-column side overhang.
-- Cursor keys move selected layers. `Shift` increases step.
+### drag and placement {#help-drag-placement}
+- drag respects each layer's x/y snap settings.
+- with baseline snap on, normal drag uses module tops.
+- hold `shift` during drag to move y by baseline rows.
+- unsnapped layers stay inside allowed placement bounds.
+- with column snap off, layers may overhang by one column into the side margins.
+- selected layers can be moved with arrow keys. `shift` increases unsnapped movement and switches snapped y to baseline steps.
 
-### History and Reflow {#help-history-reflow}
-- Undo and redo cover settings, content, placement.
-- Grid reduction never moves layers silently.
-- Out-of-bounds content blocks reduction.
+### history and reflow {#help-history-reflow}
+- undo and redo cover settings, content, and placement.
+- reducing rows or columns never auto-repositions existing layers.
+- if a grid reduction would push content out of bounds, the change is blocked.
 
-### Save and Load {#help-save-load}
-- Save stores metadata, pages, settings, layers, tours.
-- `Save to library` stores a compressed local archive.
-- `Import` restores JSON or `.swissgridgenerator`.
-- Imported projects require the 2.0 `pages` schema.
-- Logical anchors keep layouts stable across grid changes.
-- Supabase auth is only for cloud sync.
+### save and load {#help-save-load}
+- save stores metadata, pages, settings, layers, and tours.
+- `save to library` stores a compressed local archive.
+- `import` restores JSON or `.swissgridgenerator`.
+- imported projects require the 2.0 `pages` schema.
+- positioned layers use logical anchors so layouts stay stable across grid changes.
+- Supabase email-code auth is optional and used only for cloud sync.
 
-### Export {#help-export}
-- Formats: JSON, PDF, SVG, IDML.
-- Multi-page projects export ranges or explicit pages.
-- Export uses project guide visibility.
-- PDF, SVG, and IDML are vector exports from the shared page plan.
-- Text exports as frozen outline geometry.
-- Workers keep long exports responsive where supported.
-- SVG and IDML can reuse exact-request page artifacts.
-- JSON remains editable.
-- Export metadata does not alter the live project unless JSON is saved.
-- Metadata is written to PDF, SVG, and IDML where supported.
-- One bleed control defines trim, bleed, media, origin, crop marks, guides.
-- PDF uses RGB vector geometry with sRGB output intent.
-- Multi-page SVG exports a ZIP.
-- IDML separates guide, typography, and placeholder layers.
-- `Esc` closes or cancels.
+### export {#help-export}
+- export supports JSON, vector PDF, SVG, and IDML.
+- multi-page projects can export a range or explicit page selection.
+- export uses current guide visibility.
+- PDF, SVG and IDML consume the canonical page plan.
+- typography exports as shared glyph-outline geometry in the normal vector path.
+- JSON exports an editable project document with metadata and layout state.
+- export metadata can be adjusted without changing the live project unless JSON is saved.
+- bleed is shared by PDF, SVG, and IDML and changes the export box, not the layout math.
+- `esc` closes the dialog when no export is running and cancels an active export at the next safe point.
 
-### Project Tours {#help-project-tours}
-- Projects may include a guided tour.
-- Reopen closed tours from `Open tour`.
-- Steps can change pages, highlight layers, open editors, open help, or wait for a layer click.
+### project tours {#help-project-tours}
+- a loaded project may include a guided tour overlay.
+- reopen closed tours from `open tour`.
+- steps can move between pages, highlight layers, open editors, jump to help topics, or wait for a layer selection.
 
-### Layout Tooltips {#help-layout-tooltips}
-- Presets and projects may open workflow tips.
-- `Next` advances the sequence.
-- Help hover connects tips to reference sections.
+### layout tooltips {#help-layout-tooltips}
+- loading a preset or project opens a short workflow note at the bottom of the preview.
+- `next` advances the sequence.
+- when help is open, marked tooltip areas jump to their matching help topic on hover.
 
-## Application Controls
+## application controls
 
-### UX Reference {#help-ux-overview} [noindex]
+### ux reference {#help-ux-overview} [noindex]
 Global controls and panel behavior.
 
-### Application Controls {#help-application-controls-overview} [noindex]
+### application controls {#help-application-controls-overview} [noindex]
 
-### Header and Sidebars {#help-sidebars-header}
-- Header: presets, import, save, export, undo, redo, zoom, visibility, Project, account, more.
-- More: theme, Help, Feedback, Legal.
-- Project panel: `Cmd/Ctrl+Shift+P`.
+### header and sidebars {#help-sidebars-header}
+- header actions cover presets, import, save, export, undo, redo, paragraph zoom, display toggles, project, cloud account, and the more menu.
+- the more menu contains light/dark mode, help, feedback, and legal notice.
+- the project panel can be toggled with `cmd/ctrl+shift+p`.
 
-### Help Navigation {#help-help-navigation}
-- Open Help, then hover marked targets.
-- Header, settings, editor sections, preview, and presets are covered.
-- Up-arrow returns to index.
+### help navigation {#help-help-navigation}
+- open help, then hover marked targets.
+- markers cover header actions, settings panels, preview surface, editor sections, tooltip popup, and preset browser.
+- use the up arrow beside a help title to return to the index.
 
-### Presets {#help-header-examples}
-- Opens preset browser.
-- Groups: `Presets`, `Examples`, `Users`.
-- `Users` appears when saved layouts exist.
-- The info marker covers local storage, data clearing, cloud sync.
-- Hover shows metadata.
-- Green dot means signed in and synced.
-- Delete confirms, removes locally, then reports cloud state.
-- Double-click loads.
-- `Esc` closes.
-- Shortcut: `Cmd/Ctrl+Shift+4`.
+### presets {#help-header-examples}
+- opens the preset browser.
+- bundled files are grouped into `presets` and `examples`.
+- user files appear under `users` when local or cloud layouts exist.
+- user storage is local to the browser unless cloud sync is active.
+- double-click a thumbnail to load it.
+- `esc` closes without loading.
+- shortcut: `cmd/ctrl+shift+4`.
 
-### Import {#help-header-load}
-Imports JSON or `.swissgridgenerator`. Shortcut: `Cmd/Ctrl+O`.
+### import {#help-header-load}
+imports JSON or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`.
 
-### Save {#help-header-save}
-Stores the project in `Users`. Red dot: unsaved. Orange: local. Green: cloud-synced. Shortcut: `Cmd/Ctrl+S`.
+### save {#help-header-save}
+opens `save to library`, then stores the project in the local `users` library. the status dot is red when unsaved, orange when saved locally, and green only when signed in and cloud-synced. shortcut: `cmd/ctrl+s`.
 
-### Cloud Account {#help-cloud-account}
-- Opens cloud account.
-- Green dot means signed in and synced.
-- Sign-in uses Supabase email code.
-- `Cloud state` shows local account and sync events.
-- `Sync now` runs manual sync.
-- Saved projects auto-save locally and sync when possible.
-- Remote deletions apply locally unless local changes are newer.
-- Conflicts require source selection.
-- Failures use translated status messages.
-- Hidden or closed tabs attempt local autosave and cloud sync.
+### cloud account {#help-cloud-account}
+- opens the cloud account panel.
+- the account dot is green only when signed in and fully synced.
+- email-code sign-in uses Supabase browser auth.
+- signed-in saved projects auto-save locally and sync when possible.
+- remote deletions apply locally when no newer unsynced local change exists.
+- failures are translated into rate-limit, permission, offline, session, and setup messages.
 
-### Export {#help-header-export}
-Opens export. Shortcut: `Cmd/Ctrl+Shift+E`.
+### export {#help-header-export}
+opens export. shortcut: `cmd/ctrl+shift+e`.
 
-### Undo {#help-header-undo}
-Reverts one step. Shortcut: `Cmd/Ctrl+Z`.
+### undo {#help-header-undo}
+Reverts the latest history step. Shortcut: `cmd/ctrl+z`.
 
-### Redo {#help-header-redo}
-Reapplies one step. Shortcut: `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y`.
+### redo {#help-header-redo}
+Reapplies an undone history step. Shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`.
 
-### Dark Mode {#help-header-dark-mode}
-Toggles light and dark UI. Shortcut: `Cmd/Ctrl+Shift+D`.
+### dark mode {#help-header-dark-mode}
+toggles light and dark UI. shortcut: `cmd/ctrl+shift+d`.
 
-### Paragraph Zoom {#help-header-smart-text-zoom}
-Toggles zoom-to-paragraph during text editing.
+### paragraph zoom {#help-header-smart-text-zoom}
+toggles zoom-to-paragraph during text editing.
 
-### Baselines Toggle {#help-header-baselines}
-Shows baseline rhythm. Shortcut: `Cmd/Ctrl+Shift+B`.
+### baselines toggle {#help-header-baselines}
+shows baseline rhythm. shortcut: `cmd/ctrl+shift+b`.
 
-### Margins Toggle {#help-header-margins}
-Shows margin frame. Shortcut: `Cmd/Ctrl+Shift+M`.
+### margins toggle {#help-header-margins}
+shows margin frame. shortcut: `cmd/ctrl+shift+m`.
 
-### Modules Toggle {#help-header-modules}
-Shows modular field and gutters. Shortcut: `Cmd/Ctrl+Shift+G`.
+### modules toggle {#help-header-modules}
+shows modular field and gutters. shortcut: `cmd/ctrl+shift+g`.
 
-### Typography Toggle {#help-header-typography}
-Shows typography overlay. Shortcut: `Cmd/Ctrl+Shift+T`.
+### typography toggle {#help-header-typography}
+shows typography overlay. shortcut: `cmd/ctrl+shift+t`.
 
-### Image Placeholders Toggle {#help-header-image-placeholders}
-Shows image placeholders. Shortcut: `Cmd/Ctrl+Shift+J`.
+### image placeholders toggle {#help-header-image-placeholders}
+shows image placeholders. shortcut: `cmd/ctrl+shift+j`.
 
-### Project Panel {#help-header-layers}
-- Metadata, page order, layers.
-- `i` toggles document data.
-- Double-click project title to edit metadata.
-- Page header returns to page list.
-- Page counter shows physical page position. Double-click jumps.
-- Click page row to activate. Double-click opens layers.
-- `Page Up`, `Page Down`, `Home`, `End` navigate.
-- Drag page rows to reorder.
-- Rename and delete controls sit in each row.
-- Last page cannot be deleted.
-- `Facing pages` creates one spread record.
-- `+` adds a page. `Shift` + `+` duplicates content.
-- Maximum: `1000` pages.
-- Layer cards mirror preview hover.
-- Drag unlocked layer cards to reorder z-index.
-- Lock and delete controls sit in each card.
-- Double-click unlocked card to open or retarget editor.
+### project panel {#help-header-layers}
+shows project metadata, page order, and page layers. shortcut: `cmd/ctrl+shift+p`.
+
+### information toggle {#help-header-information}
+shows contextual help markers. shortcut: `cmd/ctrl+shift+i`.
+
+## reference
+
+### fonts {#help-reference-fonts}
+{{AVAILABLE_FONTS}}
+
+### shortcuts {#help-reference-shortcuts}
+{{SHORTCUT_TABLE}}

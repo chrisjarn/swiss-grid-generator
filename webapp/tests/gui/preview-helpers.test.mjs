@@ -48,16 +48,16 @@ test("resolveCurrentPreviewLayout falls back to the committed layout when no liv
   assert.equal(resolved, committedLayout)
 })
 
-test("preview style options list Custom after Caption", () => {
+test("preview style options list custom after caption", () => {
   assert.deepEqual(
     PREVIEW_STYLE_OPTIONS.map((option) => `${option.value}:${option.label}`),
     [
-      "display:Display",
-      "headline:Headline",
-      "subhead:Subhead",
-      "body:Body",
-      "caption:Caption",
-      "fx:Custom",
+      "display:display",
+      "headline:headline",
+      "subhead:subhead",
+      "body:body",
+      "caption:caption",
+      "fx:custom",
     ],
   )
 })
