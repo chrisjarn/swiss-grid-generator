@@ -10,7 +10,7 @@ function readText(relPath) {
 }
 
 test("browser preview caches only exact canonical page plans, not mutable canvas adapter maps", () => {
-  const source = readText("hooks/useTypographyRenderer.ts")
+  const source = readText("gui/preview/hooks/useTypographyRenderer.ts")
   assert.match(source, /const\s+MAX_PREVIEW_PAGE_EXPORT_PLAN_CACHE_ENTRIES\s*=\s*12/)
   assert.match(source, /type\s+PreviewPageExportPlanCacheEntry\s*=\s*\{[\s\S]*?exportPlan:\s*PageExportPlan/)
   assert.match(source, /function\s+buildPreviewPageExportPlanCacheKey/)
@@ -25,9 +25,9 @@ test("browser preview caches only exact canonical page plans, not mutable canvas
 })
 
 test("browser preview holds the previous complete frame until a fresh plan commits", () => {
-  const previewSource = readText("components/grid-preview.tsx")
-  const rendererSource = readText("hooks/useTypographyRenderer.ts")
-  const stageSource = readText("components/preview/GridPreviewCanvasStage.tsx")
+  const previewSource = readText("gui/preview/GridPreview.tsx")
+  const rendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
+  const stageSource = readText("gui/preview/GridPreviewCanvasStage.tsx")
 
   assert.match(previewSource, /useLayoutEffect/)
   assert.match(previewSource, /const\s+previewSurfaceSignatureRef\s*=\s*useRef<string\s*\|\s*null>\(null\)/)

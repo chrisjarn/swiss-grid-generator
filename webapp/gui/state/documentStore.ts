@@ -602,6 +602,7 @@ export const useDocumentStore = create<DocumentStoreState>((set) => ({
   },
 
   requestLayerDelete: (target, _kind) => {
+    void _kind
     set((state) => {
       const nextCommandToken = state.commandToken + 1
       return {

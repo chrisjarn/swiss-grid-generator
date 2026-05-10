@@ -5,8 +5,6 @@ const config: Config = {
   content: [
     "./.storybook/**/*.{ts,tsx,mdx}",
     "./pages/**/*.{ts,tsx}",
-    "./components/**/*.{ts,tsx}",
-    "./components/**/*.stories.{ts,tsx,mdx}",
     "./gui/**/*.{ts,tsx}",
     "./gui/**/*.stories.{ts,tsx,mdx}",
     "./shared/**/*.{ts,tsx}",

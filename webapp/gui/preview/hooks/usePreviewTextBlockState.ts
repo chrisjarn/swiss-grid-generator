@@ -1,0 +1,447 @@
+import { useCallback, useRef } from "react"
+
+import type { BlockEditorTextAlign, BlockEditorVerticalAlign } from "@/gui/editors/block-editor-types"
+import { normalizeHeightMetrics } from "@/lib/block-height"
+import { useLayoutSnapshot } from "@/gui/preview/hooks/useLayoutSnapshot"
+import { useStateCommands, type Updater } from "@/gui/editors/hooks/useStateCommands"
+import { clampRotation } from "@/lib/block-constraints"
+import {
+  getStyleDefaultFontWeight,
+  isFontFamily,
+  resolveFontVariant,
+  type FontFamily,
+} from "@/lib/config/fonts"
+import {
+  BASE_BLOCK_IDS,
+  DEFAULT_STYLE_ASSIGNMENTS,
+  createDefaultTextContent,
+  isBaseBlockId,
+} from "@/lib/document-defaults"
+import type { GridResult } from "@/lib/grid-calculator"
+import type { PreviewTextLayerCollectionsState } from "@/lib/preview-text-layer-state"
+import {
+  DEFAULT_OPTICAL_KERNING,
+  DEFAULT_TRACKING_SCALE,
+  normalizeOpticalKerning,
+  normalizeTrackingScale,
+} from "@/lib/text-rendering"
+import { normalizeTextFormatRuns, type TextFormatRun } from "@/lib/text-format-runs"
+import { normalizeTextTrackingRuns, type TextTrackingRun } from "@/lib/text-tracking-runs"
+import type { PreviewLayoutState as SharedPreviewLayoutState, TextBlockPosition } from "@/lib/types/preview-layout"
+import { getDefaultColumnSpan } from "@/lib/text-layout"
+import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
+
+type BlockId = string
+type TypographyStyleKey = keyof GridResult["typography"]["styles"]
+type TextAlignMode = BlockEditorTextAlign
+type TextVerticalAlignMode = BlockEditorVerticalAlign
+type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily, BlockId>
+
+export type PreviewTextBlockCollectionsState = PreviewTextLayerCollectionsState<BlockId, TypographyStyleKey>
+
+type TrackingRunsCacheEntry = {
+  text: string
+  runs: TextTrackingRun[] | undefined
+  trackingScale: number
+  result: TextTrackingRun[]
+}
+
+type TextFormatRunsCacheEntry = {
+  text: string
+  runs: TextFormatRun<TypographyStyleKey, FontFamily>[] | undefined
+  fontFamily: FontFamily
+  fontWeight: number
+  italic: boolean
+  styleKey: TypographyStyleKey
+  color: string
+  result: TextFormatRun<TypographyStyleKey, FontFamily>[]
+}
+
+type Args = {
+  result: GridResult
+  baseFont: FontFamily
+}
+
+function createInitialBlockCollectionsState(): PreviewTextBlockCollectionsState {
+  return {
+    blockOrder: [...BASE_BLOCK_IDS],
+    textContent: createDefaultTextContent() as Record<BlockId, string>,
+    blockTextEdited: BASE_BLOCK_IDS.reduce((acc, key) => {
+      acc[key] = true
+      return acc
+    }, {} as Record<BlockId, boolean>),
+    styleAssignments: Object.fromEntries(BASE_BLOCK_IDS.map((key) => [key, key])) as Record<BlockId, TypographyStyleKey>,
+    blockModulePositions: {},
+    blockColumnSpans: {},
+    blockRowSpans: {},
+    blockHeightBaselines: {},
+    blockTextAlignments: {},
+    blockVerticalAlignments: {},
+    blockTextReflow: {},
+    blockSyllableDivision: {},
+    blockSnapToColumns: {},
+    blockSnapToBaseline: {},
+    blockFontFamilies: {},
+    blockFontWeights: {},
+    blockOpticalKerning: {},
+    blockTrackingScales: {},
+    blockTrackingRuns: {},
+    blockTextFormatRuns: {},
+    blockItalic: {},
+    blockRotations: {},
+  }
+}
+
+export function usePreviewTextBlockState({
+  result,
+  baseFont,
+}: Args) {
+  const trackingRunsCacheRef = useRef(new Map<BlockId, TrackingRunsCacheEntry>())
+  const textFormatRunsCacheRef = useRef(new Map<BlockId, TextFormatRunsCacheEntry>())
+  const {
+    state: blockCollectionsState,
+    merge: setBlockCollections,
+    setField: setBlockCollectionField,
+  } = useStateCommands<PreviewTextBlockCollectionsState>(createInitialBlockCollectionsState)
+  const {
+    blockOrder,
+    textContent,
+    blockTextEdited,
+    styleAssignments,
+    blockModulePositions,
+    blockColumnSpans,
+    blockRowSpans,
+    blockHeightBaselines,
+    blockTextAlignments,
+    blockVerticalAlignments,
+    blockTextReflow,
+    blockSyllableDivision,
+    blockSnapToColumns,
+    blockSnapToBaseline,
+    blockFontFamilies,
+    blockFontWeights,
+    blockOpticalKerning,
+    blockTrackingScales,
+    blockTrackingRuns,
+    blockTextFormatRuns,
+    blockItalic,
+    blockRotations,
+  } = blockCollectionsState
+
+  const setBlockOrder = useCallback((next: Updater<BlockId[]>) => {
+    setBlockCollectionField("blockOrder", next)
+  }, [setBlockCollectionField])
+
+  const setTextContent = useCallback((next: Updater<Record<BlockId, string>>) => {
+    setBlockCollectionField("textContent", next)
+  }, [setBlockCollectionField])
+
+  const setBlockTextEdited = useCallback((next: Updater<Record<BlockId, boolean>>) => {
+    setBlockCollectionField("blockTextEdited", next)
+  }, [setBlockCollectionField])
+
+  const setStyleAssignments = useCallback((next: Updater<Record<BlockId, TypographyStyleKey>>) => {
+    setBlockCollectionField("styleAssignments", next)
+  }, [setBlockCollectionField])
+
+  const setBlockColumnSpans = useCallback((next: Updater<Partial<Record<BlockId, number>>>) => {
+    setBlockCollectionField("blockColumnSpans", next)
+  }, [setBlockCollectionField])
+
+  const setBlockTextAlignments = useCallback((next: Updater<Partial<Record<BlockId, TextAlignMode>>>) => {
+    setBlockCollectionField("blockTextAlignments", next)
+  }, [setBlockCollectionField])
+
+  const setBlockVerticalAlignments = useCallback((next: Updater<Partial<Record<BlockId, TextVerticalAlignMode>>>) => {
+    setBlockCollectionField("blockVerticalAlignments", next)
+  }, [setBlockCollectionField])
+
+  const setBlockModulePositions = useCallback((next: Updater<Partial<Record<BlockId, TextBlockPosition>>>) => {
+    setBlockCollectionField("blockModulePositions", next)
+  }, [setBlockCollectionField])
+
+  const getBlockSpan = useCallback((key: BlockId) => {
+    const raw = blockColumnSpans[key] ?? getDefaultColumnSpan(key, result.settings.gridCols)
+    return Math.max(1, Math.min(result.settings.gridCols, raw))
+  }, [blockColumnSpans, result.settings.gridCols])
+
+  const getBlockRows = useCallback((key: BlockId) => {
+    return normalizeHeightMetrics({
+      rows: blockRowSpans[key],
+      baselines: blockHeightBaselines[key],
+      gridRows: result.settings.gridRows,
+    }).rows
+  }, [blockHeightBaselines, blockRowSpans, result.settings.gridRows])
+
+  const getBlockHeightBaselines = useCallback((key: BlockId) => {
+    return normalizeHeightMetrics({
+      rows: blockRowSpans[key],
+      baselines: blockHeightBaselines[key],
+      gridRows: result.settings.gridRows,
+    }).baselines
+  }, [blockHeightBaselines, blockRowSpans, result.settings.gridRows])
+
+  const getStyleKeyForBlock = useCallback((key: BlockId): TypographyStyleKey => {
+    const assigned = styleAssignments[key]
+    if (
+      assigned === "fx"
+      || assigned === "display"
+      || assigned === "headline"
+      || assigned === "subhead"
+      || assigned === "body"
+      || assigned === "caption"
+    ) {
+      return assigned
+    }
+    return isBaseBlockId(key) ? DEFAULT_STYLE_ASSIGNMENTS[key] : "body"
+  }, [styleAssignments])
+
+  const isTextReflowEnabled = useCallback((key: BlockId) => {
+    const styleKey = getStyleKeyForBlock(key)
+    return resolveTextReflowEnabled(key, styleKey, getBlockSpan(key), blockTextReflow)
+  }, [blockTextReflow, getBlockSpan, getStyleKeyForBlock])
+
+  const isSyllableDivisionEnabled = useCallback((key: BlockId) => {
+    const styleKey = getStyleKeyForBlock(key)
+    return resolveSyllableDivisionEnabled(key, styleKey, blockSyllableDivision)
+  }, [blockSyllableDivision, getStyleKeyForBlock])
+
+  const isSnapToColumnsEnabled = useCallback((key: BlockId) => (
+    blockSnapToColumns[key] !== false
+  ), [blockSnapToColumns])
+
+  const isSnapToBaselineEnabled = useCallback((key: BlockId) => (
+    blockSnapToBaseline[key] !== false
+  ), [blockSnapToBaseline])
+
+  const getBlockFont = useCallback((key: BlockId): FontFamily => {
+    return blockFontFamilies[key] ?? baseFont
+  }, [baseFont, blockFontFamilies])
+
+  const getResolvedFontVariantForBlock = useCallback((key: BlockId) => {
+    const styleKey = getStyleKeyForBlock(key)
+    const requestedWeight = blockFontWeights[key] ?? getStyleDefaultFontWeight(result.typography.styles[styleKey]?.weight)
+    const requestedItalic = (blockItalic[key] ?? result.typography.styles[styleKey]?.blockItalic) === true
+    return resolveFontVariant(getBlockFont(key), requestedWeight, requestedItalic)
+  }, [blockFontWeights, blockItalic, getBlockFont, getStyleKeyForBlock, result.typography.styles])
+
+  const isBlockOpticalKerningEnabled = useCallback((key: BlockId): boolean => {
+    return normalizeOpticalKerning(blockOpticalKerning[key] ?? DEFAULT_OPTICAL_KERNING)
+  }, [blockOpticalKerning])
+
+  const getBlockTrackingScale = useCallback((key: BlockId): number => {
+    return normalizeTrackingScale(blockTrackingScales[key] ?? DEFAULT_TRACKING_SCALE)
+  }, [blockTrackingScales])
+
+  const getBlockTrackingRuns = useCallback((key: BlockId): TextTrackingRun[] => {
+    const text = textContent[key] ?? ""
+    const runs = blockTrackingRuns[key]
+    const trackingScale = getBlockTrackingScale(key)
+    const cached = trackingRunsCacheRef.current.get(key)
+    if (
+      cached
+      && cached.text === text
+      && cached.runs === runs
+      && cached.trackingScale === trackingScale
+    ) {
+      return cached.result
+    }
+    const resultRuns = normalizeTextTrackingRuns(text, runs, trackingScale)
+    trackingRunsCacheRef.current.set(key, {
+      text,
+      runs,
+      trackingScale,
+      result: resultRuns,
+    })
+    return resultRuns
+  }, [blockTrackingRuns, getBlockTrackingScale, textContent])
+
+  const getStyleSize = useCallback((styleKey: TypographyStyleKey): number => {
+    const fallback = result.typography.styles.body?.size ?? result.grid.gridUnit
+    return result.typography.styles[styleKey]?.size ?? fallback
+  }, [result.grid.gridUnit, result.typography.styles])
+
+  const getStyleLeading = useCallback((styleKey: TypographyStyleKey): number => {
+    const fallback = result.typography.styles.body?.leading ?? result.grid.gridUnit
+    return result.typography.styles[styleKey]?.leading ?? fallback
+  }, [result.grid.gridUnit, result.typography.styles])
+
+  const isBlockBold = useCallback((key: BlockId): boolean => {
+    return getResolvedFontVariantForBlock(key).weight >= 700
+  }, [getResolvedFontVariantForBlock])
+
+  const isBlockItalic = useCallback((key: BlockId): boolean => {
+    return getResolvedFontVariantForBlock(key).italic
+  }, [getResolvedFontVariantForBlock])
+
+  const getBlockFontWeight = useCallback((key: BlockId): number => {
+    return getResolvedFontVariantForBlock(key).weight
+  }, [getResolvedFontVariantForBlock])
+
+  const getBlockRotation = useCallback((key: BlockId): number => {
+    const raw = blockRotations[key]
+    if (typeof raw !== "number" || !Number.isFinite(raw)) return 0
+    return clampRotation(raw)
+  }, [blockRotations])
+
+  const getBlockTextFormatRuns = useCallback((key: BlockId, color: string): TextFormatRun<TypographyStyleKey, FontFamily>[] => {
+    const styleKey = getStyleKeyForBlock(key)
+    const fontFamily = getBlockFont(key)
+    const fontWeight = getBlockFontWeight(key)
+    const italic = isBlockItalic(key)
+    const text = textContent[key] ?? ""
+    const runs = blockTextFormatRuns[key]
+    const cached = textFormatRunsCacheRef.current.get(key)
+    if (
+      cached
+      && cached.text === text
+      && cached.runs === runs
+      && cached.fontFamily === fontFamily
+      && cached.fontWeight === fontWeight
+      && cached.italic === italic
+      && cached.styleKey === styleKey
+      && cached.color === color
+    ) {
+      return cached.result
+    }
+    const resultRuns = normalizeTextFormatRuns(text, runs, {
+      fontFamily,
+      fontWeight,
+      italic,
+      styleKey,
+      color,
+    })
+    textFormatRunsCacheRef.current.set(key, {
+      text,
+      runs,
+      fontFamily,
+      fontWeight,
+      italic,
+      styleKey,
+      color,
+      result: resultRuns,
+    })
+    return resultRuns
+  }, [
+    blockTextFormatRuns,
+    getBlockFont,
+    getBlockFontWeight,
+    getStyleKeyForBlock,
+    isBlockItalic,
+    textContent,
+  ])
+
+  const toTextSnapshot = useCallback((value: PreviewTextBlockCollectionsState) => (
+    value as PreviewLayoutState
+  ), [])
+
+  const fromTextSnapshot = useCallback((snapshot: PreviewLayoutState): PreviewTextBlockCollectionsState => ({
+    blockOrder: [...snapshot.blockOrder],
+    textContent: { ...snapshot.textContent },
+    blockTextEdited: { ...snapshot.blockTextEdited },
+    styleAssignments: { ...snapshot.styleAssignments },
+    blockFontFamilies: { ...(snapshot.blockFontFamilies ?? {}) },
+    blockFontWeights: { ...(snapshot.blockFontWeights ?? {}) },
+    blockOpticalKerning: { ...(snapshot.blockOpticalKerning ?? {}) },
+    blockTrackingScales: { ...(snapshot.blockTrackingScales ?? {}) },
+    blockTrackingRuns: { ...(snapshot.blockTrackingRuns ?? {}) },
+    blockTextFormatRuns: { ...(snapshot.blockTextFormatRuns ?? {}) },
+    blockItalic: { ...(snapshot.blockItalic ?? {}) },
+    blockRotations: { ...(snapshot.blockRotations ?? {}) },
+    blockColumnSpans: { ...snapshot.blockColumnSpans },
+    blockRowSpans: { ...(snapshot.blockRowSpans ?? {}) },
+    blockHeightBaselines: { ...(snapshot.blockHeightBaselines ?? {}) },
+    blockTextAlignments: { ...snapshot.blockTextAlignments },
+    blockVerticalAlignments: { ...(snapshot.blockVerticalAlignments ?? {}) },
+    blockTextReflow: { ...(snapshot.blockTextReflow ?? {}) },
+    blockSyllableDivision: { ...(snapshot.blockSyllableDivision ?? {}) },
+    blockSnapToColumns: { ...(snapshot.blockSnapToColumns ?? {}) },
+    blockSnapToBaseline: { ...(snapshot.blockSnapToBaseline ?? {}) },
+    blockModulePositions: { ...snapshot.blockModulePositions },
+  }), [])
+
+  const { buildSnapshot: buildTextSnapshot, applySnapshot: applyTextSnapshot } = useLayoutSnapshot<
+    BlockId,
+    TypographyStyleKey,
+    FontFamily,
+    TextAlignMode,
+    TextBlockPosition,
+    PreviewLayoutState
+  >({
+    state: blockCollectionsState,
+    gridCols: result.settings.gridCols,
+    baseFont,
+    getDefaultColumnSpan,
+    getBlockRows,
+    getBlockHeightBaselines,
+    isTextReflowEnabled,
+    isSyllableDivisionEnabled,
+    isSnapToColumnsEnabled,
+    isSnapToBaselineEnabled,
+    getBlockFontWeight,
+    isBlockOpticalKerningEnabled,
+    getBlockTrackingScale,
+    isBlockItalic,
+    getBlockRotation,
+    isFontFamily,
+    toSnapshot: toTextSnapshot,
+    fromSnapshot: fromTextSnapshot,
+    setState: setBlockCollections,
+  })
+
+  return {
+    blockCollectionsState,
+    setBlockCollections,
+    blockOrder,
+    textContent,
+    blockTextEdited,
+    styleAssignments,
+    blockModulePositions,
+    blockColumnSpans,
+    blockRowSpans,
+    blockHeightBaselines,
+    blockTextAlignments,
+    blockVerticalAlignments,
+    blockTextReflow,
+    blockSyllableDivision,
+    blockSnapToColumns,
+    blockSnapToBaseline,
+    blockFontFamilies,
+    blockFontWeights,
+    blockOpticalKerning,
+    blockTrackingScales,
+    blockTrackingRuns,
+    blockTextFormatRuns,
+    blockItalic,
+    blockRotations,
+    setBlockOrder,
+    setTextContent,
+    setBlockTextEdited,
+    setStyleAssignments,
+    setBlockColumnSpans,
+    setBlockTextAlignments,
+    setBlockVerticalAlignments,
+    setBlockModulePositions,
+    getBlockSpan,
+    getBlockRows,
+    getBlockHeightBaselines,
+    getStyleKeyForBlock,
+    isTextReflowEnabled,
+    isSyllableDivisionEnabled,
+    isSnapToColumnsEnabled,
+    isSnapToBaselineEnabled,
+    getBlockFont,
+    getStyleSize,
+    getStyleLeading,
+    getBlockFontWeight,
+    isBlockOpticalKerningEnabled,
+    getBlockTrackingScale,
+    getBlockTrackingRuns,
+    getBlockTextFormatRuns,
+    isBlockBold,
+    isBlockItalic,
+    getBlockRotation,
+    buildTextSnapshot,
+    applyTextSnapshot,
+  }
+}

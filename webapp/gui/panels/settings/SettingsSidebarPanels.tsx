@@ -1,0 +1,371 @@
+"use client"
+
+import { memo, useCallback, useLayoutEffect, useRef, useState } from "react"
+
+import { BaselineGridPanel } from "@/gui/panels/settings/BaselineGridPanel"
+import { CanvasRatioPanel } from "@/gui/panels/settings/CanvasRatioPanel"
+import { ColorSchemePanel } from "@/gui/panels/settings/ColorSchemePanel"
+import { GutterPanel } from "@/gui/panels/settings/GutterPanel"
+import { MarginsPanel } from "@/gui/panels/settings/MarginsPanel"
+import { SettingsHelpNavigationProvider } from "@/gui/panels/settings/help-navigation-context"
+import { SidebarSectionScrollFrame } from "@/gui/panels/SidebarSectionScrollFrame"
+import { TypographyPanel } from "@/gui/panels/settings/TypographyPanel"
+import type {
+  GridRhythm,
+  GridRhythmColsDirection,
+  GridRhythmRowsDirection,
+  TypographyScale,
+} from "@/lib/config/defaults"
+import type { FontFamily } from "@/lib/config/fonts"
+import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
+import type { CanvasRatioKey, GridResult } from "@/lib/grid-calculator"
+import type { SectionKey } from "@/lib/workspace-ui-schema"
+
+type CustomMarginMultipliers = {
+  top: number
+  left: number
+  right: number
+  bottom: number
+}
+
+type Props = {
+  collapsed: Record<SectionKey, boolean>
+  showSectionHelpIcons: boolean
+  showRolloverInfo: boolean
+  interactionsDisabled?: boolean
+  onHelpNavigate: (section: SectionKey) => void
+  onSectionHeaderClick: (section: SectionKey) => (event: React.MouseEvent) => void
+  onSectionHeaderDoubleClick: (event: React.MouseEvent) => void
+  canvasRatio: CanvasRatioKey
+  onCanvasRatioChange: (value: CanvasRatioKey) => void
+  onCanvasRatioPreviewChange?: (value: CanvasRatioKey | null) => void
+  customRatioWidth: number
+  onCustomRatioWidthChange: (value: number) => void
+  customRatioHeight: number
+  onCustomRatioHeightChange: (value: number) => void
+  orientation: "portrait" | "landscape"
+  onOrientationChange: (value: "portrait" | "landscape") => void
+  onOrientationPreviewChange?: (value: "portrait" | "landscape" | null) => void
+  rotation: number
+  onRotationChange: (value: number) => void
+  customBaseline: number
+  availableBaselineOptions: number[]
+  onCustomBaselineChange: (value: number) => void
+  marginMethod: 1 | 2 | 3
+  onMarginMethodChange: (value: 1 | 2 | 3) => void
+  onMarginMethodPreviewChange?: (value: "1" | "2" | "3" | "custom" | null) => void
+  useCustomMargins: boolean
+  onUseCustomMarginsChange: (value: boolean) => void
+  customMarginMultipliers: CustomMarginMultipliers
+  onCustomMarginMultipliersChange: (value: CustomMarginMultipliers) => void
+  currentMargins: GridResult["grid"]["margins"]
+  gridUnit: number
+  gridCols: number
+  onGridColsChange: (value: number) => void
+  gridRows: number
+  onGridRowsChange: (value: number) => void
+  gutterMultiple: number
+  onGutterMultipleChange: (value: number) => void
+  rhythm: GridRhythm
+  onRhythmChange: (value: GridRhythm) => void
+  onRhythmPreviewChange?: (value: GridRhythm | null) => void
+  rhythmRowsEnabled: boolean
+  onRhythmRowsEnabledChange: (value: boolean) => void
+  rhythmRowsDirection: GridRhythmRowsDirection
+  onRhythmRowsDirectionChange: (value: GridRhythmRowsDirection) => void
+  onRhythmRowsDirectionPreviewChange?: (value: GridRhythmRowsDirection | null) => void
+  rhythmColsEnabled: boolean
+  onRhythmColsEnabledChange: (value: boolean) => void
+  rhythmColsDirection: GridRhythmColsDirection
+  onRhythmColsDirectionChange: (value: GridRhythmColsDirection) => void
+  onRhythmColsDirectionPreviewChange?: (value: GridRhythmColsDirection | null) => void
+  typographyScale: TypographyScale
+  onTypographyScaleChange: (value: TypographyScale) => void
+  onTypographyScalePreviewChange?: (value: TypographyScale | null) => void
+  fibonacciSequenceStartIndex: number
+  onFibonacciSequenceStartIndexChange: (value: number) => void
+  typographyStyles: GridResult["typography"]["styles"]
+  baseFont: FontFamily
+  onBaseFontChange: (value: FontFamily) => void
+  onBaseFontPreviewChange?: (value: FontFamily | null) => void
+  colorScheme: ImageColorSchemeId
+  onColorSchemeChange: (value: ImageColorSchemeId) => void
+  onColorSchemePreviewChange?: (value: ImageColorSchemeId | null) => void
+  canvasBackground: string | null
+  onCanvasBackgroundChange: (value: string | null) => void
+  onCanvasBackgroundPreviewChange?: (value: string | null) => void
+  isDarkMode: boolean
+}
+
+function scrollSectionIntoVisiblePanelArea(
+  scrollRoot: HTMLDivElement,
+  sectionNode: HTMLDivElement,
+): void {
+  const rootRect = scrollRoot.getBoundingClientRect()
+  const sectionRect = sectionNode.getBoundingClientRect()
+
+  if (sectionRect.top < rootRect.top) {
+    scrollRoot.scrollTo({
+      top: Math.max(0, scrollRoot.scrollTop + sectionRect.top - rootRect.top),
+      behavior: "auto",
+    })
+    return
+  }
+
+  if (sectionRect.bottom <= rootRect.bottom) return
+
+  const offset = sectionRect.height >= rootRect.height
+    ? sectionRect.top - rootRect.top
+    : sectionRect.bottom - rootRect.bottom
+
+  scrollRoot.scrollTo({
+    top: Math.max(0, scrollRoot.scrollTop + offset),
+    behavior: "auto",
+  })
+}
+
+export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
+  collapsed,
+  showSectionHelpIcons,
+  showRolloverInfo,
+  interactionsDisabled = false,
+  onHelpNavigate,
+  onSectionHeaderClick,
+  onSectionHeaderDoubleClick,
+  canvasRatio,
+  onCanvasRatioChange,
+  onCanvasRatioPreviewChange,
+  customRatioWidth,
+  onCustomRatioWidthChange,
+  customRatioHeight,
+  onCustomRatioHeightChange,
+  orientation,
+  onOrientationChange,
+  onOrientationPreviewChange,
+  rotation,
+  onRotationChange,
+  customBaseline,
+  availableBaselineOptions,
+  onCustomBaselineChange,
+  marginMethod,
+  onMarginMethodChange,
+  onMarginMethodPreviewChange,
+  useCustomMargins,
+  onUseCustomMarginsChange,
+  customMarginMultipliers,
+  onCustomMarginMultipliersChange,
+  currentMargins,
+  gridUnit,
+  gridCols,
+  onGridColsChange,
+  gridRows,
+  onGridRowsChange,
+  gutterMultiple,
+  onGutterMultipleChange,
+  rhythm,
+  onRhythmChange,
+  onRhythmPreviewChange,
+  rhythmRowsEnabled,
+  onRhythmRowsEnabledChange,
+  rhythmRowsDirection,
+  onRhythmRowsDirectionChange,
+  onRhythmRowsDirectionPreviewChange,
+  rhythmColsEnabled,
+  onRhythmColsEnabledChange,
+  rhythmColsDirection,
+  onRhythmColsDirectionChange,
+  onRhythmColsDirectionPreviewChange,
+  typographyScale,
+  onTypographyScaleChange,
+  onTypographyScalePreviewChange,
+  fibonacciSequenceStartIndex,
+  onFibonacciSequenceStartIndexChange,
+  typographyStyles,
+  baseFont,
+  onBaseFontChange,
+  onBaseFontPreviewChange,
+  colorScheme,
+  onColorSchemeChange,
+  onColorSchemePreviewChange,
+  canvasBackground,
+  onCanvasBackgroundChange,
+  onCanvasBackgroundPreviewChange,
+  isDarkMode,
+}: Props) {
+  const scrollRootRef = useRef<HTMLDivElement | null>(null)
+  const sectionRefs = useRef<Partial<Record<SectionKey, HTMLDivElement | null>>>({})
+  const [hoverOpenSection, setHoverOpenSection] = useState<SectionKey | null>(null)
+  const [bottomSpacerHeight, setBottomSpacerHeight] = useState(0)
+  const isSectionCollapsed = useCallback((section: SectionKey) => (
+    collapsed[section] && hoverOpenSection !== section
+  ), [collapsed, hoverOpenSection])
+  const registerSectionRef = useCallback((section: SectionKey) => (node: HTMLDivElement | null) => {
+    sectionRefs.current[section] = node
+  }, [])
+  const handleSectionMouseEnter = useCallback((section: SectionKey) => {
+    if (interactionsDisabled || !collapsed[section]) return
+    setHoverOpenSection(section)
+  }, [collapsed, interactionsDisabled])
+  const handleSectionMouseLeave = useCallback((section: SectionKey) => {
+    setHoverOpenSection((current) => current === section ? null : current)
+  }, [])
+  const getSectionWrapperProps = useCallback((section: SectionKey) => ({
+    ref: registerSectionRef(section),
+    onMouseEnter: () => handleSectionMouseEnter(section),
+    onMouseLeave: () => handleSectionMouseLeave(section),
+  }), [handleSectionMouseEnter, handleSectionMouseLeave, registerSectionRef])
+
+  useLayoutEffect(() => {
+    const scrollRoot = scrollRootRef.current
+    if (!scrollRoot || typeof ResizeObserver === "undefined") return
+
+    const updateBottomSpacerHeight = () => setBottomSpacerHeight(scrollRoot.clientHeight)
+    const resizeObserver = new ResizeObserver(updateBottomSpacerHeight)
+    resizeObserver.observe(scrollRoot)
+    updateBottomSpacerHeight()
+
+    return () => resizeObserver.disconnect()
+  }, [])
+
+  useLayoutEffect(() => {
+    if (!hoverOpenSection) return
+
+    const scrollRoot = scrollRootRef.current
+    const sectionNode = sectionRefs.current[hoverOpenSection]
+    if (!scrollRoot || !sectionNode) return
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollSectionIntoVisiblePanelArea(scrollRoot, sectionNode)
+    })
+
+    return () => window.cancelAnimationFrame(frame)
+  }, [hoverOpenSection])
+
+  return (
+    <SidebarSectionScrollFrame bottomSpacerHeight={bottomSpacerHeight} scrollRootRef={scrollRootRef}>
+      <SettingsHelpNavigationProvider
+        value={{
+          showHelpIcons: showSectionHelpIcons,
+          showRolloverInfo,
+          interactionsDisabled,
+          onNavigate: onHelpNavigate,
+        }}
+      >
+        <div {...getSectionWrapperProps("format")}>
+          <CanvasRatioPanel
+            collapsed={isSectionCollapsed("format")}
+            onHeaderClick={onSectionHeaderClick("format")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            canvasRatio={canvasRatio}
+            onCanvasRatioChange={onCanvasRatioChange}
+            onCanvasRatioPreviewChange={onCanvasRatioPreviewChange}
+            customRatioWidth={customRatioWidth}
+            onCustomRatioWidthChange={onCustomRatioWidthChange}
+            customRatioHeight={customRatioHeight}
+            onCustomRatioHeightChange={onCustomRatioHeightChange}
+            orientation={orientation}
+            onOrientationChange={onOrientationChange}
+            onOrientationPreviewChange={onOrientationPreviewChange}
+            rotation={rotation}
+            onRotationChange={onRotationChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <div {...getSectionWrapperProps("baseline")}>
+          <BaselineGridPanel
+            collapsed={isSectionCollapsed("baseline")}
+            onHeaderClick={onSectionHeaderClick("baseline")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            customBaseline={customBaseline}
+            availableBaselineOptions={availableBaselineOptions}
+            onCustomBaselineChange={onCustomBaselineChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <div {...getSectionWrapperProps("margins")}>
+          <MarginsPanel
+            collapsed={isSectionCollapsed("margins")}
+            onHeaderClick={onSectionHeaderClick("margins")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            marginMethod={marginMethod}
+            onMarginMethodChange={onMarginMethodChange}
+            onMarginMethodPreviewChange={onMarginMethodPreviewChange}
+            useCustomMargins={useCustomMargins}
+            onUseCustomMarginsChange={onUseCustomMarginsChange}
+            customMarginMultipliers={customMarginMultipliers}
+            onCustomMarginMultipliersChange={onCustomMarginMultipliersChange}
+            currentMargins={currentMargins}
+            gridUnit={gridUnit}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <div {...getSectionWrapperProps("gutter")}>
+          <GutterPanel
+            collapsed={isSectionCollapsed("gutter")}
+            onHeaderClick={onSectionHeaderClick("gutter")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            gridCols={gridCols}
+            onGridColsChange={onGridColsChange}
+            gridRows={gridRows}
+            onGridRowsChange={onGridRowsChange}
+            gutterMultiple={gutterMultiple}
+            onGutterMultipleChange={onGutterMultipleChange}
+            rhythm={rhythm}
+            onRhythmChange={onRhythmChange}
+            onRhythmPreviewChange={onRhythmPreviewChange}
+            rhythmRowsEnabled={rhythmRowsEnabled}
+            onRhythmRowsEnabledChange={onRhythmRowsEnabledChange}
+            rhythmRowsDirection={rhythmRowsDirection}
+            onRhythmRowsDirectionChange={onRhythmRowsDirectionChange}
+            onRhythmRowsDirectionPreviewChange={onRhythmRowsDirectionPreviewChange}
+            rhythmColsEnabled={rhythmColsEnabled}
+            onRhythmColsEnabledChange={onRhythmColsEnabledChange}
+            rhythmColsDirection={rhythmColsDirection}
+            onRhythmColsDirectionChange={onRhythmColsDirectionChange}
+            onRhythmColsDirectionPreviewChange={onRhythmColsDirectionPreviewChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <div {...getSectionWrapperProps("typo")}>
+          <TypographyPanel
+            collapsed={isSectionCollapsed("typo")}
+            onHeaderClick={onSectionHeaderClick("typo")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            typographyScale={typographyScale}
+            onTypographyScaleChange={onTypographyScaleChange}
+            onTypographyScalePreviewChange={onTypographyScalePreviewChange}
+            fibonacciSequenceStartIndex={fibonacciSequenceStartIndex}
+            onFibonacciSequenceStartIndexChange={onFibonacciSequenceStartIndexChange}
+            typographyStyles={typographyStyles}
+            gridUnit={gridUnit}
+            baseFont={baseFont}
+            onBaseFontChange={onBaseFontChange}
+            onBaseFontPreviewChange={onBaseFontPreviewChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
+        <div {...getSectionWrapperProps("color")}>
+          <ColorSchemePanel
+            collapsed={isSectionCollapsed("color")}
+            onHeaderClick={onSectionHeaderClick("color")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            colorScheme={colorScheme}
+            onColorSchemeChange={onColorSchemeChange}
+            onColorSchemePreviewChange={onColorSchemePreviewChange}
+            canvasBackground={canvasBackground}
+            onCanvasBackgroundChange={onCanvasBackgroundChange}
+            onCanvasBackgroundPreviewChange={onCanvasBackgroundPreviewChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+      </SettingsHelpNavigationProvider>
+    </SidebarSectionScrollFrame>
+  )
+})
+
+SettingsSidebarPanels.displayName = "SettingsSidebarPanels"

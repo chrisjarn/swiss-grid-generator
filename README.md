@@ -209,7 +209,6 @@ Current source layout:
 - `webapp/core/`: new pure TypeScript domain boundary for config, document, export, layout, presets, typography, and shared types. It must not import React.
 - `webapp/gui/`: React shell, preview, panels, editors, dialogs, and the two new state stores.
 - `webapp/shared/`: reusable UI primitives and utilities.
-- `webapp/components/ui/`: compatibility re-export shims during import cleanup.
 - `webapp/gui/shell/Shell.tsx`: production workspace shell backed by `documentStore` and `workspaceStore`.
 
 `webapp/gui/preview/SwissCanvas.tsx` is a plan-only canvas foundation. It consumes `PageExportPlan`; it does not calculate layout.

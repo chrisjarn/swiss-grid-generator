@@ -1,4 +1,4 @@
-import type { BlockEditorStyleOption } from "@/components/editor/block-editor-types"
+import type { BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
 import type { GridResult } from "@/lib/grid-calculator"
 
 export type PreviewTypographyStyleKey = keyof GridResult["typography"]["styles"]

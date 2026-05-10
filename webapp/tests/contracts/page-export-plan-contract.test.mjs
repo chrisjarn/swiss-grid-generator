@@ -151,7 +151,7 @@ test("page export plan replaces removed Libre Franklin layout references", () =>
 test("layout profiling is dev-only instrumentation around existing planning and drawing calls", () => {
   const profilerSource = readText("lib/layout-performance.ts")
   const planSource = readText("lib/page-export-plan.ts")
-  const rendererSource = readText("hooks/useTypographyRenderer.ts")
+  const rendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
 
   assert.match(profilerSource, /NEXT_PUBLIC_LAYOUT_PROFILING/)
   assert.match(profilerSource, /console\.info/)

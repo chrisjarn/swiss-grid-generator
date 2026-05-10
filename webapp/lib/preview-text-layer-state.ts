@@ -1,4 +1,4 @@
-import type { BlockEditorState, BlockEditorTextAlign } from "@/components/editor/block-editor-types"
+import type { BlockEditorState, BlockEditorTextAlign } from "@/gui/editors/block-editor-types"
 import { normalizeHeightMetrics } from "@/lib/block-height"
 import { clampRotation, hasSignificantRotation } from "@/lib/block-constraints"
 import type { FontFamily } from "@/lib/config/fonts"

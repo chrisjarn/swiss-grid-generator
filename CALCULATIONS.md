@@ -609,7 +609,7 @@ The raw source string remains unchanged in editor state and saved project JSON. 
 
 ## Preview Placement + Reflow
 
-Interactive placement is currently orchestrated in the production interaction canvas `webapp/components/grid-preview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/lib/`. The new `webapp/gui/preview/SwissCanvas.tsx` foundation is intentionally narrower: it is a `PageExportPlan` consumer only and does not perform placement, reflow, or export-specific calculation.
+Interactive placement is currently orchestrated in the production interaction canvas `webapp/gui/preview/GridPreview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/lib/`. The newer `webapp/gui/preview/SwissCanvas.tsx` foundation is intentionally narrower: it is a `PageExportPlan` consumer only and does not perform placement, reflow, or export-specific calculation.
 
 ### Logical Grid Anchor Model
 

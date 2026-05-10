@@ -3,10 +3,10 @@
 import { MoreVertical } from "lucide-react"
 import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
-import { HeaderIconButton } from "@/components/ui/header-icon-button"
-import { HelpIndicatorLine } from "@/components/ui/help-indicator-line"
+import { HeaderIconButton } from "@/shared/ui/header-icon-button"
+import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
-import type { HeaderAction, HeaderItem } from "@/hooks/useHeaderActions"
+import type { HeaderAction, HeaderItem } from "@/gui/shell/hooks/useHeaderActions"
 
 export type TopBarProps = {
   fileGroup: HeaderItem[]

@@ -134,18 +134,18 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 - Collapsed snapshot resolution and normalization builders into single-pass loops in `webapp/lib/preview-layout-snapshot.ts`.
 - Gated full-document `projectInfoStats` and `totalLayerCount` work behind the actual `showProjectInfo` state.
 - Cached `activeParagraphCount` instead of rescanning `blockOrder` on paragraph-limit checks.
-- Reused planner maps more directly and reduced render-plan allocation churn in `webapp/hooks/useTypographyRenderer.ts`.
+- Reused planner maps more directly and reduced render-plan allocation churn in `webapp/gui/preview/hooks/useTypographyRenderer.ts`.
 - Collapsed text-override and image-snapshot builders into single passes in:
-  - `webapp/hooks/usePreviewTextBlockOverrides.ts`
-  - `webapp/hooks/useImagePlaceholderState.ts`
-- Made preview history revision-aware in `webapp/hooks/usePreviewHistory.ts` so unchanged revisions do not rebuild and re-record identical snapshots.
+  - `webapp/gui/preview/hooks/usePreviewTextBlockOverrides.ts`
+  - `webapp/gui/preview/hooks/useImagePlaceholderState.ts`
+- Made preview history revision-aware in `webapp/gui/preview/hooks/usePreviewHistory.ts` so unchanged revisions do not rebuild and re-record identical snapshots.
 - Removed readonly-array `Array.from(...)` copies from interactive geometry helpers and keyboard nudge paths.
-- Added input-sensitive normalized tracking/format-run caches in `webapp/hooks/usePreviewTextBlockState.ts`.
+- Added input-sensitive normalized tracking/format-run caches in `webapp/gui/preview/hooks/usePreviewTextBlockState.ts`.
 - Removed duplicate text-run normalization on editor-open and duplicate-layer snapshot paths in:
   - `webapp/lib/preview-block-editor-state.ts`
   - `webapp/lib/preview-text-layer-state.ts`
-- Replaced phased page-load hydration with one atomic preview snapshot apply in `webapp/hooks/usePreviewDocumentLifecycle.ts`.
-- Gated preview reveal on the first committed final plan for the loaded page in `webapp/components/grid-preview.tsx`, so fast paging never shows provisional geometry during hydration.
+- Replaced phased page-load hydration with one atomic preview snapshot apply in `webapp/gui/preview/hooks/usePreviewDocumentLifecycle.ts`.
+- Gated preview reveal on the first committed final plan for the loaded page in `webapp/gui/preview/GridPreview.tsx`, so fast paging never shows provisional geometry during hydration.
 
 ### What This Improves
 
@@ -454,15 +454,15 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 
 - Removed stale root package entry points and obsolete public/layout artifacts; `webapp/` is the active frontend boundary.
 - Kept screenshots and documentation assets.
-- Moved shared UI primitives to `webapp/shared/ui/` and left compatibility re-export shims in `webapp/components/ui/` so existing imports keep working during the next cleanup pass.
+- Moved shared UI primitives to `webapp/shared/ui/` as the reusable primitive boundary.
 - Added pure type staging under `webapp/core/types/` for `PageExportPlan`, document state, grid config, and workspace state.
-- Added minimal GUI foundations under `webapp/gui/`: shell layout, plan-only Swiss canvas, one representative grid panel, and separate document/workspace Zustand stores.
+- Added minimal GUI foundations under `webapp/gui/`: shell layout, plan-only Swiss canvas, and separate document/workspace Zustand stores.
 - Moved the production workspace shell to `webapp/gui/shell/Shell.tsx`; `webapp/app/page.tsx` is now a thin Next.js boundary.
 
 ### Boundaries
 
 - `webapp/gui/preview/SwissCanvas.tsx` consumes `PageExportPlan` only and does not compute layout.
-- The current production workspace routes through `webapp/gui/shell/Shell.tsx` and still uses `webapp/components/grid-preview.tsx` as the interaction canvas until the next preview decomposition pass.
+- The current production workspace routes through `webapp/gui/shell/Shell.tsx` and uses `webapp/gui/preview/GridPreview.tsx` as the interaction canvas until the next preview decomposition pass.
 - `webapp/core/` must stay React-free.
 - `documentStore` is the authored-document owner, and `workspaceStore` owns transient UI state.
 
@@ -500,3 +500,37 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 [+ 106.8s]   idml write                1.70s size=427.73MB
 [+ 106.8s]   total                   106.79s
 ```
+
+## 2026-05-10 Legacy Folder Cleanup
+
+This pass completed the frontend boundary cleanup without changing planner math, export geometry, text metrics, or export serialization.
+
+### Kept Changes
+
+- Removed the legacy `webapp/components/` and `webapp/hooks/` folders entirely.
+- Moved live UI into `webapp/gui/` by ownership:
+  - dialogs under `webapp/gui/dialogs/`
+  - editors under `webapp/gui/editors/`
+  - settings and project panels under `webapp/gui/panels/`
+  - preview components and preview-owned hooks under `webapp/gui/preview/`
+  - shell-owned hooks under `webapp/gui/shell/hooks/`
+- Moved reusable primitives to `webapp/shared/ui/`.
+- Removed compatibility re-export shims instead of preserving a second import path.
+- Updated contract tests that inspect source paths so they now read from `gui/` and `shared/`.
+- Updated lint and Tailwind source roots to scan the new frontend boundary.
+
+### Boundaries
+
+- `webapp/components/` and `webapp/hooks/` must stay removed.
+- New UI code belongs in `webapp/gui/` unless it is a reusable primitive.
+- Reusable primitives belong in `webapp/shared/ui/`.
+- Preview and export remain consumers of the canonical `PageExportPlan`; this cleanup did not create a new layout path.
+
+### Validation
+
+- `npx tsc --noEmit`
+- `npm run lint`
+- `npm run test:contracts`
+- `npm run test:gui`
+- `npm run test:editor-interactions`
+- `npm run test:preview-interactions`

@@ -5,24 +5,24 @@ import {
   getMaxBaseline,
 } from "@/lib/grid-calculator"
 import type { GridResult } from "@/lib/grid-calculator"
-import { SettingsSidebarPanels } from "@/components/layout/SettingsSidebarPanels"
+import { SettingsSidebarPanels } from "@/gui/panels/settings/SettingsSidebarPanels"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
 import { SECTION_KEYS, type SectionKey, type UiSettingsSnapshot } from "@/lib/workspace-ui-schema"
-import { useExportActions } from "@/hooks/useExportActions"
-import { useHeaderActions } from "@/hooks/useHeaderActions"
+import { useExportActions } from "@/gui/shell/hooks/useExportActions"
+import { useHeaderActions } from "@/gui/shell/hooks/useHeaderActions"
 import {
   HELP_SECTION_BY_HEADER_ACTION,
   HELP_SECTION_BY_SETTINGS_SECTION,
   type HelpSectionId,
 } from "@/lib/help-registry"
-import { WorkspaceDialogs } from "@/components/dialogs/WorkspaceDialogs"
-import { useShellKeyboardShortcuts } from "@/hooks/useShellKeyboardShortcuts"
-import { useWorkspaceUiActions } from "@/hooks/useWorkspaceUiActions"
-import { useUiSettingsPreview } from "@/hooks/useUiSettingsPreview"
-import { useProjectTourController } from "@/hooks/useProjectTourController"
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth"
-import { useCloudProjectSync } from "@/hooks/useCloudProjectSync"
-import { useSettledPageNavigation } from "@/hooks/useSettledPageNavigation"
+import { WorkspaceDialogs } from "@/gui/dialogs/WorkspaceDialogs"
+import { useShellKeyboardShortcuts } from "@/gui/shell/hooks/useShellKeyboardShortcuts"
+import { useWorkspaceUiActions } from "@/gui/shell/hooks/useWorkspaceUiActions"
+import { useUiSettingsPreview } from "@/gui/shell/hooks/useUiSettingsPreview"
+import { useProjectTourController } from "@/gui/shell/hooks/useProjectTourController"
+import { useSupabaseAuth } from "@/gui/shell/hooks/useSupabaseAuth"
+import { useCloudProjectSync } from "@/gui/shell/hooks/useCloudProjectSync"
+import { useSettledPageNavigation } from "@/gui/shell/hooks/useSettledPageNavigation"
 import {
   documentToLoadedProject,
   useDocumentStore,

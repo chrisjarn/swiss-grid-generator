@@ -173,9 +173,9 @@ test("pdf export action forwards placeholder visibility and active image color s
 })
 
 test("browser pdf export runs in a cancellable worker", () => {
-  const source = readText("hooks/useExportActions.ts")
+  const source = readText("gui/shell/hooks/useExportActions.ts")
   const workerSource = readText("workers/pdf-export.worker.ts")
-  assert.match(source, /new Worker\(new URL\("\.\.\/workers\/pdf-export\.worker\.ts",\s*import\.meta\.url\),\s*\{\s*type:\s*"module"\s*\}\)/)
+  assert.match(source, /new Worker\(new URL\("\.\.\/\.\.\/\.\.\/workers\/pdf-export\.worker\.ts",\s*import\.meta\.url\),\s*\{\s*type:\s*"module"\s*\}\)/)
   assert.match(source, /currentExportWorkerRef\.current\?\.terminate\(\)/)
   assert.match(source, /currentExportRejectRef\.current\?\.\(new ExportCancelledError\(\)\)/)
   assert.match(workerSource, /formats:\s*\["pdf"\]/)
@@ -194,8 +194,8 @@ test("pdf export registers inline format-run fonts before rendering text", () =>
 })
 
 test("canvas preview loads inline format-run fonts before measuring text", () => {
-  const previewSource = readText("components/grid-preview.tsx")
-  const metricsSource = readText("hooks/usePreviewTypographyMetrics.ts")
+  const previewSource = readText("gui/preview/GridPreview.tsx")
+  const metricsSource = readText("gui/preview/hooks/usePreviewTypographyMetrics.ts")
   assert.match(previewSource, /usePreviewTypographyMetrics<BlockId,\s*TypographyStyleKey>\(\{[\s\S]*?getBlockTextColor,[\s\S]*?getBlockTextFormatRuns,/)
   assert.match(metricsSource, /getBlockTextFormatRuns:\s*\(key:\s*Key,\s*color:\s*string\)\s*=>\s*TextFormatRun<StyleKey,\s*FontFamily>\[\]/)
   assert.match(metricsSource, /textFormatRuns:\s*getBlockTextFormatRuns\(key,\s*textColor\)/)
@@ -258,7 +258,7 @@ test("pdf output intent does not inject color spaces into the XObject dictionary
 })
 
 test("vector export options expose one shared bleed setting and keep pdf color management deterministic", () => {
-  const hookSource = readText("hooks/useExportActions.ts")
+  const hookSource = readText("gui/shell/hooks/useExportActions.ts")
   const engineSource = readText("lib/export-engine.ts")
   const optionsSource = readText("lib/export-format-options.ts")
   assert.match(optionsSource, /export\s+type\s+ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*boolean[\s\S]*widthMm:\s*number/)
@@ -272,7 +272,7 @@ test("vector export options expose one shared bleed setting and keep pdf color m
 })
 
 test("export dialog exposes shared bleed controls instead of print presets", () => {
-  const source = readText("components/dialogs/ExportDialog.tsx")
+  const source = readText("gui/dialogs/ExportDialog.tsx")
   assert.match(source, /SectionHeaderRow[\s\S]*Bleed/)
   assert.match(source, /Bleed Width/)
   assert.match(source, /bleedEnabledDraft/)
@@ -285,7 +285,7 @@ test("export dialog exposes shared bleed controls instead of print presets", () 
 })
 
 test("export dialog stays dark-mode-safe after removing size override controls", () => {
-  const source = readText("components/dialogs/ExportDialog.tsx")
+  const source = readText("gui/dialogs/ExportDialog.tsx")
   assert.match(source, /isDarkUi:\s*boolean/)
   assert.match(source, /getPopupSurfaceClassName/)
   assert.match(source, /getPopupInputClassName/)

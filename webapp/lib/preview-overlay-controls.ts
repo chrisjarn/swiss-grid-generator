@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react"
 
-import type { BlockEditorState, BlockEditorStyleOption } from "@/components/editor/block-editor-types"
+import type { BlockEditorState, BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import type { FontFamily } from "@/lib/config/fonts"
 import type { BaseTextFormat } from "@/lib/text-format-runs"

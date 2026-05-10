@@ -79,7 +79,7 @@ test("svg export converts positioned graphemes through the shared vector outline
 
 test("vector exports cache exact relative outline paths without touching preview rendering", () => {
   const outlineSource = readText("lib/vector-text-outline.ts")
-  const previewSource = readText("hooks/useTypographyRenderer.ts")
+  const previewSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
   assert.match(outlineSource, /relativeOutlineCommandCache = new Map<string,\s*readonly OpenTypePathCommand\[\]>\(\)/)
   assert.match(outlineSource, /translateOpenTypeCommands\(relativeCommands,\s*fragment\.x,\s*fragment\.y\)/)
   assert.doesNotMatch(previewSource, /createVectorTextOutlineResolver|resolveTextPlanVectorShapes/)
@@ -101,7 +101,7 @@ test("svg export keeps a narrow live-text fallback if outline loading fails unex
 })
 
 test("export actions support pdf, svg, idml, and json formats with format-specific filenames", () => {
-  const source = readText("hooks/useExportActions.ts")
+  const source = readText("gui/shell/hooks/useExportActions.ts")
   const formatSource = readText("lib/export-format-options.ts")
   assert.match(formatSource, /export\s+type\s+ExportFormat\s*=\s*"pdf"\s*\|\s*"svg"\s*\|\s*"idml"\s*\|\s*"json"/)
   assert.match(formatSource, /EXPORT_FORMAT_OPTIONS/)
@@ -145,7 +145,7 @@ test("export actions support pdf, svg, idml, and json formats with format-specif
 })
 
 test("multi-page svg export switches to zip packaging with one file per selected page", () => {
-  const source = readText("hooks/useExportActions.ts")
+  const source = readText("gui/shell/hooks/useExportActions.ts")
   const engineSource = readText("lib/export-engine.ts")
   const pageSetSource = readText("lib/svg-page-set-export.ts")
   const pageSetWorkerSource = readText("workers/svg-page-set.worker.ts")
@@ -170,9 +170,9 @@ test("multi-page svg export switches to zip packaging with one file per selected
 })
 
 test("export dialog exposes an explicit pdf-svg-idml-json format switch", () => {
-  const source = readText("components/dialogs/ExportDialog.tsx")
-  const hookSource = readText("hooks/useExportActions.ts")
-  const workspaceDialogsSource = readText("components/dialogs/WorkspaceDialogs.tsx")
+  const source = readText("gui/dialogs/ExportDialog.tsx")
+  const hookSource = readText("gui/shell/hooks/useExportActions.ts")
+  const workspaceDialogsSource = readText("gui/dialogs/WorkspaceDialogs.tsx")
   assert.match(source, /SectionHeaderRow\s+label="Input"/)
   assert.match(source, /SectionHeaderRow\s+label="Output"/)
   assert.doesNotMatch(source, /SectionHeaderRow\s+label="Pages"/)
@@ -218,7 +218,7 @@ test("export dialog exposes an explicit pdf-svg-idml-json format switch", () => 
 })
 
 test("save dialog remains focused on library metadata rather than json filename export", () => {
-  const source = readText("components/dialogs/SaveLibraryDialog.tsx")
+  const source = readText("gui/dialogs/SaveLibraryDialog.tsx")
   assert.match(source, /Save to Library/)
   assert.match(source, /Project Title/)
   assert.match(source, /Subject \(optional\)/)

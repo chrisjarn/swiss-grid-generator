@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 
 import {
   SIDEBAR_PANEL_WIDTH_CLASSNAME,
-} from "@/components/layout/sidebar-panel-layout"
+} from "@/gui/shell/sidebar-panel-layout"
 
 type RightPanelTheme = {
   sidebar: string

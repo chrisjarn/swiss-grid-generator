@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react"
 
-import { PreviewWorkspace } from "@/components/preview/PreviewWorkspace"
+import { PreviewWorkspace } from "@/gui/preview/PreviewWorkspace"
 
 export type CanvasContainerProps = ComponentProps<typeof PreviewWorkspace>
 

@@ -1,4 +1,4 @@
-import type { SnapshotState } from "@/hooks/useLayoutSnapshot"
+import type { SnapshotState } from "@/gui/preview/hooks/useLayoutSnapshot"
 import type { TextVerticalAlignMode } from "./types/layout-primitives.ts"
 import { clampRotation, hasSignificantRotation } from "./block-constraints.ts"
 import {

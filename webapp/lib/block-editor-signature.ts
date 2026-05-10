@@ -1,4 +1,4 @@
-import type { BlockEditorState } from "@/components/editor/block-editor-types"
+import type { BlockEditorState } from "@/gui/editors/block-editor-types"
 
 export function getBlockEditorLiveSignature<StyleKey extends string>(
   editorState: BlockEditorState<StyleKey>,

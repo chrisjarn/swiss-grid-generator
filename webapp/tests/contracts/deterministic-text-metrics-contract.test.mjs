@@ -56,7 +56,7 @@ test("current layout contract resolves to deterministic font-file metrics", () =
 })
 
 test("canonical planning and preview paths do not use browser text metrics", () => {
-  const sourceRoots = ["lib", "hooks", "components", "workers", "gui"]
+  const sourceRoots = ["lib", "workers", "gui", "shared"]
     .map((dir) => path.join(ROOT, dir))
   const metricFiles = sourceRoots
     .flatMap((dir) => collectSourceFiles(dir))
@@ -73,7 +73,7 @@ test("canonical planning and preview paths do not use browser text metrics", () 
 
   const pageExportSource = readText("lib/page-export-plan.ts")
   const canvasRendererSource = readText("lib/canvas-page-renderer.ts")
-  const typographyRendererSource = readText("hooks/useTypographyRenderer.ts")
+  const typographyRendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
 
   assert.match(
     pageExportSource,

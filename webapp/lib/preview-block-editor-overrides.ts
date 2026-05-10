@@ -1,4 +1,4 @@
-import type { BlockEditorState } from "@/components/editor/block-editor-types"
+import type { BlockEditorState } from "@/gui/editors/block-editor-types"
 import { clampFxLeading, clampFxSize } from "@/lib/block-constraints"
 import { isImagePlaceholderColor } from "@/lib/config/color-schemes"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"

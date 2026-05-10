@@ -2,7 +2,7 @@
 
 import type { ComponentProps } from "react"
 
-import { ControlSidebar } from "@/components/layout/ControlSidebar"
+import { ControlSidebar } from "@/gui/panels/ControlSidebar"
 
 export type LeftToolbarProps = ComponentProps<typeof ControlSidebar>
 
