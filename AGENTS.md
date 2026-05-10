@@ -51,13 +51,21 @@ The interface must feel professional, calm and precise.
 ### Workflow Requirements
 1. Always read the current `SETTINGS.md`, `CALCULATIONS.md`, `PERFORMANCE.md` and `DESIGN.md` first.
 2. Match existing code patterns unless there is a clear architectural improvement.
-3. After any change: run `npm run lint`, `npx tsc --noEmit` and relevant tests.
+3. After any change: run `npm run lint` (ESLint CLI), `npx tsc --noEmit` and relevant tests.
 4. Clearly report any remaining visual or export risks.
 
 ### Final Mindset
 Build like the lead engineer of a serious typography product.  
+**Write like a seasoned Swiss editorial designer** — precise, calm, understated, and authoritative.
+
+- Use **lowercase** for all UI labels, buttons, help text, tooltips, and status messages (Braun influence).
+- Language must be **minimal, exact, and professional** — never marketing-like, playful, or casual.
+- Prefer clarity and brevity over friendliness.
+- Help texts and documentation should feel like they were written by someone who respects the reader’s intelligence and time.
+- Avoid exclamation marks, emojis, and filler words in the interface.
+
 Make it **exact, explainable, and worthy of the Swiss tradition**.
 
 ---
 **Date:** May 2026  
-**Version:** 1.1
+**Version:** 1.2
