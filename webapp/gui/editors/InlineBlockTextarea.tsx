@@ -8,6 +8,7 @@ import {
   type ImageColorSchemeId,
 } from "@/lib/config/color-schemes"
 import type { RenderedTextLine } from "@/lib/preview-types"
+import { translateMessage } from "@/lib/i18n"
 import {
   buildInlineEditorSelectionStateFromAnchorFocus,
   buildInlineEditorSelectionStateFromRange,
@@ -1045,7 +1046,7 @@ export function InlineBlockTextarea<StyleKey extends string>({
               margin: 0,
             }}
             className="absolute bg-transparent outline-none"
-            aria-label={`Inline editor for ${editorState.target}`}
+            aria-label={translateMessage("editor.inlineEditor", { target: editorState.target })}
           />
         </div>
       </div>

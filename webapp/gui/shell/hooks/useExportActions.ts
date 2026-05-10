@@ -469,7 +469,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       current
         ? {
             ...current,
-            currentLabel: "Cancelling export",
+            currentLabel: translateMessage("status.export.cancelling"),
           }
         : current
     ))

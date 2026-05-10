@@ -7,13 +7,14 @@
     "releaseChannel": "beta"
   },
   "scripts": {
+    "messages:generate": "node scripts/build-message-bundle.mjs",
     "help:generate": "node scripts/generate-help-content.mjs",
     "tooltips:generate": "node scripts/generate-tooltip-content.mjs",
     "legal:generate": "node scripts/generate-legal-content.mjs",
     "manual:generate": "node scripts/generate-manual-preset.mjs",
     "presets:manifest": "node scripts/generate-preset-manifest.mjs",
     "fonts:verify": "node --import ./scripts/register-ts-alias-loader.mjs scripts/verify-font-assets.mjs",
-    "assets:generate": "npm run presets:manifest && npm run help:generate && npm run tooltips:generate && npm run legal:generate && npm run fonts:verify",
+    "assets:generate": "npm run messages:generate && npm run presets:manifest && npm run help:generate && npm run tooltips:generate && npm run legal:generate && npm run fonts:verify",
     "predev": "npm run assets:generate",
     "dev": "next dev",
     "predev:beta": "npm run assets:generate",

@@ -9,6 +9,7 @@ import {
   type GridRhythmColsDirection,
   type GridRhythmRowsDirection,
 } from "./config/defaults.ts"
+import { translateMessage } from "./i18n/messages.ts"
 
 export interface FormatDimensions {
   width: number;
@@ -167,7 +168,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "din_ab",
     category: "Universal",
-    label: "DIN",
+    label: translateMessage("settings.canvas.ratioOptions.din"),
     ratioLabel: "1:√2",
     ratioDecimal: Math.SQRT2,
     paperSizes: ["A6", "A5", "A4", "A3", "A2", "A1", "A0", "B6", "B5", "B4", "B3", "B2", "B1", "B0"],
@@ -175,7 +176,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "letter_ansi_ab",
     category: "Universal",
-    label: "ANSI",
+    label: translateMessage("settings.canvas.ratioOptions.ansi"),
     ratioLabel: "1:1.294",
     ratioDecimal: 1.294,
     paperSizes: ["LETTER", "LEGAL", "ANSI_B", "ANSI_C", "ANSI_D", "ANSI_E"],
@@ -183,7 +184,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "balanced_3_4",
     category: "Universal",
-    label: "Balanced",
+    label: translateMessage("settings.canvas.ratioOptions.balanced"),
     ratioLabel: "3:4",
     ratioDecimal: 1.333,
     paperSizes: ["BALANCED_3_4"],
@@ -191,7 +192,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "photo_2_3",
     category: "Universal",
-    label: "Photo",
+    label: translateMessage("settings.canvas.ratioOptions.photo"),
     ratioLabel: "2:3",
     ratioDecimal: 1.5,
     paperSizes: ["PHOTO_2_3"],
@@ -199,7 +200,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "screen_16_9",
     category: "Universal",
-    label: "Screen",
+    label: translateMessage("settings.canvas.ratioOptions.screen"),
     ratioLabel: "16:9",
     ratioDecimal: 1.778,
     paperSizes: ["SCREEN_16_9"],
@@ -207,7 +208,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "square_1_1",
     category: "Universal",
-    label: "Square",
+    label: translateMessage("settings.canvas.ratioOptions.square"),
     ratioLabel: "1:1",
     ratioDecimal: 1.0,
     paperSizes: ["SQUARE_1_1"],
@@ -215,7 +216,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "editorial_4_5",
     category: "Universal",
-    label: "Editorial",
+    label: translateMessage("settings.canvas.ratioOptions.editorial"),
     ratioLabel: "4:5",
     ratioDecimal: 1.25,
     paperSizes: ["EDITORIAL_4_5"],
@@ -223,7 +224,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "wide_2_1",
     category: "Universal",
-    label: "Wide Impact",
+    label: translateMessage("settings.canvas.ratioOptions.wideImpact"),
     ratioLabel: "2:1",
     ratioDecimal: 2.0,
     paperSizes: ["WIDE_2_1"],
@@ -231,7 +232,7 @@ export const CANVAS_RATIOS: CanvasRatioOption[] = [
   {
     key: "custom",
     category: "Universal",
-    label: "Custom Ratio",
+    label: translateMessage("settings.canvas.ratioOptions.custom"),
     ratioLabel: `${DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH}:${DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT}`,
     ratioDecimal: DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT / DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH,
     paperSizes: [CUSTOM_CANVAS_FORMAT],

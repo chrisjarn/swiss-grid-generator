@@ -2,6 +2,8 @@
 
 import { useEffect } from "react"
 
+import { useTranslation } from "@/lib/i18n"
+
 type WarningToastState = {
   id: number
   message: string
@@ -20,6 +22,8 @@ export function GridPreviewFeedback({
   dismissWarningToast,
   isDarkMode = false,
 }: Props) {
+  const { t } = useTranslation()
+
   useEffect(() => {
     if (!warningToast) return
     const timeoutId = window.setTimeout(() => {
@@ -45,7 +49,7 @@ export function GridPreviewFeedback({
       <div className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${
         isDarkMode ? "text-gray-400" : "text-gray-500"
       }`}>
-        Grid Unchanged
+        {t("preview.feedback.gridUnchanged")}
       </div>
       <div className={`mt-1 text-xs leading-5 ${
         isDarkMode ? "text-gray-200" : "text-gray-700"

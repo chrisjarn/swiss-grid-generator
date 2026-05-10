@@ -1,5 +1,7 @@
 "use client"
 
+import { useTranslation } from "@/lib/i18n"
+
 type Props = {
   title: string
   description?: string
@@ -35,6 +37,8 @@ export function ProjectTourOverlay({
   onBack,
   onNext,
 }: Props) {
+  const { t } = useTranslation()
+
   if (!isOpen) {
     return (
       <div className="pointer-events-none absolute bottom-4 left-1/2 z-30 -translate-x-1/2">
@@ -47,7 +51,7 @@ export function ProjectTourOverlay({
               : "border-gray-300 bg-white/95 text-gray-800 hover:border-gray-500"
           }`}
         >
-          Open Tour
+          {t("preview.tour.open")}
         </button>
       </div>
     )
@@ -80,13 +84,13 @@ export function ProjectTourOverlay({
               isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
             }`}
           >
-            Close
+            {t("preview.tour.close")}
           </button>
         </div>
 
         <div className={`mt-3 border-t pt-3 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
           <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
-            Step {Math.min(stepIndex + 1, stepCount)} / {Math.max(1, stepCount)}
+            {t("preview.tour.step")} {Math.min(stepIndex + 1, stepCount)} / {Math.max(1, stepCount)}
           </div>
           {stepTitle ? (
             <div className="mt-1 text-sm font-medium">
@@ -100,7 +104,7 @@ export function ProjectTourOverlay({
           ) : null}
           {waitingForLayerClick ? (
             <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
-              Click the highlighted layer to continue
+              {t("preview.tour.waitingForLayer")}
             </div>
           ) : null}
         </div>
@@ -120,7 +124,7 @@ export function ProjectTourOverlay({
                   : "border-gray-300 text-gray-800 hover:border-gray-500"
             }`}
           >
-            Back
+            {t("preview.tour.back")}
           </button>
           <button
             type="button"
@@ -134,7 +138,7 @@ export function ProjectTourOverlay({
                 : "bg-swiss-orange text-black hover:brightness-95"
             }`}
           >
-            {canGoNext ? "Next" : "Done"}
+            {canGoNext ? t("preview.tour.next") : t("preview.tour.done")}
           </button>
         </div>
       </div>

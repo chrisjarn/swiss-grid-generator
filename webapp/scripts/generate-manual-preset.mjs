@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url"
 
 const WEBAPP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const REPO_ROOT = path.resolve(WEBAPP_ROOT, "..")
-const MANUAL_PATH = path.join(REPO_ROOT, "MANUAL.md")
+const MANUAL_PATH = path.join(WEBAPP_ROOT, "messages", "en", "content", "manual.md")
 const SECTION_TEMPLATE_PATH = path.join(WEBAPP_ROOT, "lib", "presets", "templates", "manual-section-page-template.json")
 const OUTPUT_PATH = path.join(WEBAPP_ROOT, "lib", "presets", "data", "100 Swiss Grid Generator Manual.json")
 

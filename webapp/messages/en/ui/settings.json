@@ -1,0 +1,94 @@
+{
+  "settings": {
+    "canvas": {
+      "title": "Format",
+      "tooltip": "Page proportion, axis, rotation.",
+      "ratio": "Ratio",
+      "ratioAria": "Page ratio",
+      "ratioUnits": "Ratio units",
+      "width": "Width",
+      "height": "Height",
+      "customRatioWidth": "Custom ratio width unit",
+      "customRatioHeight": "Custom ratio height unit",
+      "orientation": "Orientation",
+      "portrait": "Portrait",
+      "portraitAria": "Portrait orientation",
+      "landscape": "Landscape",
+      "landscapeAria": "Landscape orientation",
+      "rotation": "Rotation",
+      "ratioOptions": {
+        "din": "DIN",
+        "ansi": "ANSI",
+        "balanced": "Balanced",
+        "photo": "Photo",
+        "screen": "Screen",
+        "square": "Square",
+        "editorial": "Editorial",
+        "wideImpact": "Wide impact",
+        "custom": "Custom ratio"
+      }
+    },
+    "baseline": {
+      "title": "Baseline",
+      "tooltip": "Shared vertical rhythm.",
+      "gridUnit": "Baseline unit"
+    },
+    "margins": {
+      "title": "Margins",
+      "tooltip": "Margin canon or baseline-unit frame.",
+      "method": "Method",
+      "methodAria": "Margin method",
+      "progressive": "Progressive",
+      "vanDeGraaf": "Van de Graaf",
+      "baseline": "Baseline",
+      "custom": "Custom margins",
+      "top": "Top",
+      "left": "Left",
+      "right": "Right",
+      "bottom": "Bottom",
+      "customSummary": "Custom T{top}x L{left}x R{right}x B{bottom}x"
+    },
+    "grid": {
+      "title": "Grid",
+      "tooltip": "Modular field, gutter, rhythm.",
+      "rhythms": "Rhythm",
+      "rhythmAria": "Grid rhythm",
+      "fibonacci": "Fibonacci",
+      "goldenRatio": "Golden ratio",
+      "perfectFifth": "Perfect fifth",
+      "perfectFourth": "Perfect fourth",
+      "repetitive": "Repetitive",
+      "rows": "Rows",
+      "cols": "Cols",
+      "columns": "Columns",
+      "leftToRight": "Left to right",
+      "rightToLeft": "Right to left",
+      "topToBottom": "Top to bottom",
+      "bottomToTop": "Bottom to top",
+      "gutterMultiple": "Gutter multiple"
+    },
+    "typography": {
+      "title": "Typography",
+      "tooltip": "Scale, hierarchy, base family.",
+      "base": "Base family",
+      "rhythm": "Type rhythm",
+      "rhythmAria": "Type rhythm",
+      "shiftFibonacciLeft": "Shift Fibonacci sequence left",
+      "shiftFibonacciRight": "Shift Fibonacci sequence right"
+    },
+    "color": {
+      "title": "Color",
+      "tooltip": "Base scheme and page ground.",
+      "baseScheme": "Base scheme",
+      "baseSchemeAria": "Base scheme",
+      "background": "Page ground",
+      "toggleBackground": "Toggle {slot} page ground",
+      "slots": {
+        "paper": "Paper",
+        "light": "Light",
+        "mid": "Mid",
+        "dark": "Dark"
+      }
+    }
+  }
+}

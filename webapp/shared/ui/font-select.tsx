@@ -10,6 +10,8 @@ import {
 } from "@/shared/ui/select"
 import type { CSSProperties, ReactNode } from "react"
 
+import { useTranslation } from "@/lib/i18n"
+
 export type FontOption = {
   value: string
   label: string
@@ -40,9 +42,9 @@ type Props = {
 }
 
 const FONT_GROUPS = [
-  { key: "Sans-Serif", label: "Sans-Serif" },
-  { key: "Serif", label: "Serif" },
-  { key: "Display", label: "Poster" },
+  { key: "Sans-Serif", labelKey: "editor.fontGroups.sansSerif" },
+  { key: "Serif", labelKey: "editor.fontGroups.serif" },
+  { key: "Display", labelKey: "editor.fontGroups.poster" },
 ] as const
 
 export function FontSelect({
@@ -61,6 +63,7 @@ export function FontSelect({
   getItemStyle,
   getItemPreviewProps,
 }: Props) {
+  const { t } = useTranslation()
   const resolvedTriggerStyle: CSSProperties | undefined = fitToLongestOption
     ? {
       minWidth: `${Math.max(10, options.reduce((max, option) => Math.max(max, option.label.length), 0) + 4)}ch`,
@@ -88,7 +91,7 @@ export function FontSelect({
           if (!groupOptions.length) return null
           return (
             <SelectGroup key={group.key}>
-              <SelectLabel>{group.label}</SelectLabel>
+              <SelectLabel>{t(group.labelKey)}</SelectLabel>
               {groupOptions.map((option) => (
                 <SelectItem
                   key={option.value}

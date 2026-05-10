@@ -1,0 +1,158 @@
+{
+  "editor": {
+    "mixed": "Mixed",
+    "inlineEditor": "Inline editor for {target}",
+    "paragraph": {
+      "title": "Paragraph",
+      "tooltip": "Measure, baseline, alignment, flow.",
+      "rows": "Rows",
+      "cols": "Cols",
+      "baselines": "Baselines",
+      "horizontalAlignment": "Horizontal alignment",
+      "verticalAlignment": "Vertical alignment",
+      "left": "Left",
+      "center": "Center",
+      "right": "Right",
+      "top": "Top",
+      "bottom": "Bottom",
+      "rotation": "Rotation",
+      "newspaperReflow": "Column reflow",
+      "reflowAvailable": "Flow across columns.",
+      "reflowUnavailable": "Requires two columns.",
+      "hyphenation": "Hyphenation",
+      "hyphenationHelp": "Allow syllable division.",
+      "snapColumns": "Column snap (X)",
+      "snapColumnsHelp": "Lock to column anchors.",
+      "snapBaseline": "Baseline snap (Y)",
+      "snapBaselineHelp": "Lock to baseline steps."
+    },
+    "typography": {
+      "title": "Typography",
+      "mixedTitle": "Mixed typography",
+      "tooltip": "Hierarchy, family, cut, spacing.",
+      "hierarchy": "Hierarchy",
+      "customSize": "Custom size",
+      "customLeading": "Custom leading",
+      "font": "Font",
+      "cut": "Cut",
+      "kerning": "Kerning",
+      "optical": "Optical",
+      "metric": "Metric",
+      "tracking": "Tracking"
+    },
+    "symbols": {
+      "title": "Symbols",
+      "tooltip": "Insert typographic symbols.",
+      "summary": "Arrows, bullets, marks, math, Greek",
+      "recent": "Recent",
+      "insert": "Insert {symbol}",
+      "groups": {
+        "arrows": "Arrows",
+        "bullets": "Bullets",
+        "marks": "Marks",
+        "math": "Math",
+        "greek": "Greek",
+        "geometry": "Geometry",
+        "editorial": "Editorial"
+      }
+    },
+    "placeholders": {
+      "title": "Placeholders",
+      "tooltip": "Insert document variables.",
+      "summary": "Lorem, project title, page, pages, date, time"
+    },
+    "info": {
+      "title": "Info",
+      "paragraphTooltip": "Paragraph metrics.",
+      "imageTooltip": "Placeholder metrics.",
+      "charsWords": "{chars} chars, {words} words",
+      "align": "Align",
+      "verticalAlign": "Vertical align",
+      "reflow": "Reflow",
+      "hyphen": "Hyphen",
+      "snapX": "Snap X",
+      "snapY": "Snap Y",
+      "scheme": "Scheme",
+      "chars": "Chars",
+      "words": "Words",
+      "maxLine": "Max line",
+      "renderTime": "Render time"
+    },
+    "color": {
+      "color": "Color",
+      "baseScheme": "Base scheme",
+      "selectColor": "Select {color}",
+      "baseSchemeAria": "Base scheme"
+    },
+    "image": {
+      "title": "Image",
+      "geometryTooltip": "Measure, baseline, snap, rotation.",
+      "colorTitle": "Color",
+      "colorTooltip": "Scheme, swatch, transparency.",
+      "transparency": "Transparency"
+    },
+    "format": {
+      "zeroBaselines": "0 baselines",
+      "row": "{count} row",
+      "rows": "{count} rows",
+      "column": "{count} col",
+      "columns": "{count} cols",
+      "baseline": "{count} baseline",
+      "baselines": "{count} baselines"
+    },
+    "fontGroups": {
+      "sansSerif": "Sans-Serif",
+      "serif": "Serif",
+      "poster": "Poster"
+    },
+    "trackingOptions": {
+      "ultraCondensed": "Ultra-condensed",
+      "extraCondensed": "Extra-condensed",
+      "condensed": "Condensed",
+      "semiCondensed": "Semi-condensed",
+      "normal": "Normal",
+      "semiExpanded": "Semi-expanded",
+      "expanded": "Expanded",
+      "extraExpanded": "Extra-expanded",
+      "ultraExpanded": "Ultra-expanded"
+    }
+  },
+  "overlayActions": {
+    "unlock": "Unlock {kind}",
+    "edit": "Edit {kind}",
+    "duplicateText": "Duplicate or copy",
+    "duplicateImage": "Duplicate image placeholder",
+    "duplicateImageTooltip": "Duplicate placeholder.",
+    "duplicateParagraph": "Duplicate paragraph",
+    "copyParagraphSettings": "Shift-click: paragraph settings",
+    "copyTypographySettings": "Alt-click: typography settings",
+    "copyParagraphTypographySettings": "Alt+Shift-click: all settings",
+    "delete": "Delete {kind}",
+    "paragraph": "paragraph",
+    "imagePlaceholder": "image placeholder",
+    "paragraphCopiedTitle": "Paragraph copied",
+    "paragraphCopiedMessage": "Select a target paragraph.",
+    "paragraphSettingsCopiedTitle": "Paragraph settings copied",
+    "paragraphSettingsCopiedMessage": "Select a target paragraph.",
+    "typographyCopiedTitle": "Typography settings copied",
+    "typographyCopiedMessage": "Select a target paragraph.",
+    "paragraphTypographyCopiedTitle": "Paragraph and typography copied",
+    "paragraphTypographyCopiedMessage": "Select a target paragraph."
+  },
+  "documentVariables": {
+    "lorem": "Fitted lorem ipsum.",
+    "projectTitle": "Project title.",
+    "pageTitle": "Page title.",
+    "page": "Page number.",
+    "pages": "Page count.",
+    "date": "Render date.",
+    "time": "Render time."
+  },
+  "defaultContent": {
+    "display": "Swiss Design",
+    "headline": "Modular Grid Systems",
+    "subhead": "Grid, baseline, measure.",
+    "body": "Field. Baseline. Measure.",
+    "caption": "Copyright {year} Swiss Grid Generator"
+  }
+}

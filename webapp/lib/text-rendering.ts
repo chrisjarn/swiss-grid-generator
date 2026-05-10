@@ -1,4 +1,5 @@
 import { getOpticalKerningPairAdjustment, type OpticalGlyphBounds } from "./optical-margin.ts"
+import { translateMessage } from "./i18n/messages.ts"
 
 type CanvasKerningValue = "auto" | "normal" | "none"
 
@@ -45,15 +46,15 @@ export const MIN_TRACKING_SCALE = -300
 export const MAX_TRACKING_SCALE = 300
 
 export const TRACKING_OPTIONS = [
-  { label: "Ultra-condensed", value: -120 },
-  { label: "Extra-condensed", value: -90 },
-  { label: "Condensed", value: -60 },
-  { label: "Semi-condensed", value: -30 },
-  { label: "Normal", value: DEFAULT_TRACKING_SCALE },
-  { label: "Semi-expanded", value: 30 },
-  { label: "Expanded", value: 60 },
-  { label: "Extra-expanded", value: 120 },
-  { label: "Ultra-expanded", value: 200 },
+  { label: translateMessage("editor.trackingOptions.ultraCondensed"), value: -120 },
+  { label: translateMessage("editor.trackingOptions.extraCondensed"), value: -90 },
+  { label: translateMessage("editor.trackingOptions.condensed"), value: -60 },
+  { label: translateMessage("editor.trackingOptions.semiCondensed"), value: -30 },
+  { label: translateMessage("editor.trackingOptions.normal"), value: DEFAULT_TRACKING_SCALE },
+  { label: translateMessage("editor.trackingOptions.semiExpanded"), value: 30 },
+  { label: translateMessage("editor.trackingOptions.expanded"), value: 60 },
+  { label: translateMessage("editor.trackingOptions.extraExpanded"), value: 120 },
+  { label: translateMessage("editor.trackingOptions.ultraExpanded"), value: 200 },
 ] as const
 
 export type TrackingOption = (typeof TRACKING_OPTIONS)[number]

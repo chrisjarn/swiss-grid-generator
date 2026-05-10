@@ -1,0 +1,27 @@
+{
+  "preview": {
+    "interactionHints": {
+      "edit": "Hover a layer and select edit.",
+      "createParagraph": "Double-click an empty module for text.",
+      "createImage": "Shift-double-click for an image placeholder.",
+      "duplicate": "+ duplicates. Shift-drag follows the baseline."
+    },
+    "feedback": {
+      "gridUnchanged": "Field unchanged"
+    },
+    "tour": {
+      "open": "Open tour",
+      "close": "Close",
+      "step": "Step",
+      "waitingForLayer": "Click the highlighted layer to continue",
+      "back": "Back",
+      "next": "Next",
+      "done": "Done"
+    }
+  },
+  "tooltips": {
+    "counter": "Tip {index} of {total}",
+    "next": "Next",
+    "close": "Close tip"
+  }
+}

@@ -4,10 +4,10 @@
     "screenTooSmall": "Screen too small",
     "screenTooSmallMessage": "Minimum width: 768 px.",
     "metadataTitle": "Swiss Grid Generator - Modular Typographic Grid System",
-    "metadataDescription": "Modular grids, baseline rhythm, margins, hierarchy, exports.",
+    "metadataDescription": "Modular grids, baseline rhythm, margin systems, hierarchy, export.",
     "metadataKeywords": "swiss grid generator, muller-brockmann grid, typographic grid calculator, modular grid tool, baseline grid generator, swiss design tool, international typographic style, grid systems in graphic design, a4 grid calculator, print design grid",
-    "metadataShortDescription": "Modular fields, baseline rhythm, margins, hierarchy.",
-    "metadataExportDescription": "Grids, baseline rhythm, margins, vector exports.",
+    "metadataShortDescription": "Modular fields, baseline rhythm, margin systems, hierarchy.",
+    "metadataExportDescription": "Grids, baseline rhythm, margin systems, vector export.",
     "metadataImageAlt": "A4 modular grid preview"
   },
   "common": {
@@ -55,12 +55,12 @@
       },
       "save": {
         "aria": "Save",
-        "tooltip": "Save to library",
+        "tooltip": "Save",
         "status": "Library: {status}"
       },
       "import": {
         "aria": "Import",
-        "tooltip": "Import project"
+        "tooltip": "Import"
       },
       "export": {
         "aria": "Export",
@@ -81,23 +81,23 @@
       },
       "baselines": {
         "aria": "Toggle baselines",
-        "tooltip": "Baseline rhythm\nShift-click: all pages"
+        "tooltip": "Baselines\nShift-click applies to all pages"
       },
       "margins": {
         "aria": "Toggle margins",
-        "tooltip": "Margin frame\nShift-click: all pages"
+        "tooltip": "Margin frame\nShift-click applies to all pages"
       },
       "modules": {
         "aria": "Toggle modular field",
-        "tooltip": "Modular field\nShift-click: all pages"
+        "tooltip": "Modular field\nShift-click applies to all pages"
       },
       "typography": {
         "aria": "Toggle typography",
-        "tooltip": "Typography\nShift-click: all pages"
+        "tooltip": "Typography\nShift-click applies to all pages"
       },
       "imagePlaceholders": {
         "aria": "Toggle image placeholders",
-        "tooltip": "Image placeholders\nShift-click: all pages"
+        "tooltip": "Image placeholders\nShift-click applies to all pages"
       },
       "layers": {
         "show": "Show project panel",
@@ -131,10 +131,10 @@
   },
   "settings": {
     "canvas": {
-      "title": "Canvas",
-      "tooltip": "Ratio, orientation, rotation.",
+      "title": "Format",
+      "tooltip": "Page proportion, axis, rotation.",
       "ratio": "Ratio",
-      "ratioAria": "Canvas ratio",
+      "ratioAria": "Page ratio",
       "ratioUnits": "Ratio units",
       "width": "Width",
       "height": "Height",
@@ -145,16 +145,27 @@
       "portraitAria": "Portrait orientation",
       "landscape": "Landscape",
       "landscapeAria": "Landscape orientation",
-      "rotation": "Rotation"
+      "rotation": "Rotation",
+      "ratioOptions": {
+        "din": "DIN",
+        "ansi": "ANSI",
+        "balanced": "Balanced",
+        "photo": "Photo",
+        "screen": "Screen",
+        "square": "Square",
+        "editorial": "Editorial",
+        "wideImpact": "Wide impact",
+        "custom": "Custom ratio"
+      }
     },
     "baseline": {
       "title": "Baseline",
       "tooltip": "Shared vertical rhythm.",
-      "gridUnit": "Grid unit"
+      "gridUnit": "Baseline unit"
     },
     "margins": {
       "title": "Margins",
-      "tooltip": "Canon or baseline-unit frame.",
+      "tooltip": "Margin canon or baseline-unit frame.",
       "method": "Method",
       "methodAria": "Margin method",
       "progressive": "Progressive",
@@ -169,7 +180,7 @@
     },
     "grid": {
       "title": "Grid",
-      "tooltip": "Modular field, gutters, rhythm.",
+      "tooltip": "Modular field, gutter, rhythm.",
       "rhythms": "Rhythm",
       "rhythmAria": "Grid rhythm",
       "fibonacci": "Fibonacci",
@@ -189,8 +200,8 @@
     "typography": {
       "title": "Typography",
       "tooltip": "Scale, hierarchy, base family.",
-      "base": "Base",
-      "rhythm": "Rhythm",
+      "base": "Base family",
+      "rhythm": "Type rhythm",
       "rhythmAria": "Type rhythm",
       "shiftFibonacciLeft": "Shift Fibonacci sequence left",
       "shiftFibonacciRight": "Shift Fibonacci sequence right"
@@ -200,8 +211,8 @@
       "tooltip": "Base scheme and page ground.",
       "baseScheme": "Base scheme",
       "baseSchemeAria": "Base scheme",
-      "background": "Background",
-      "toggleBackground": "Toggle {slot} page background",
+      "background": "Page ground",
+      "toggleBackground": "Toggle {slot} page ground",
       "slots": {
         "paper": "Paper",
         "light": "Light",
@@ -218,13 +229,13 @@
       "ok": "OK"
     },
     "saveLibrary": {
-      "title": "Save to library",
-      "description": "Store the document locally.",
-      "confirm": "Save to library"
+      "title": "Save",
+      "description": "Store the project in the local library.",
+      "confirm": "Save"
     },
     "export": {
       "title": "Export",
-      "description": "PDF, SVG, and IDML use the page plan. JSON edits.",
+      "description": "PDF, SVG, and IDML consume the page plan. JSON remains editable.",
       "input": "Input",
       "preview": "Preview",
       "output": "Output",
@@ -236,16 +247,16 @@
       "titleField": "Title",
       "subject": "Subject",
       "author": "Author",
-      "exportPdf": "Export PDF",
-      "exportSvg": "Export SVG",
-      "exportIdml": "Export IDML",
-      "saveJson": "Save JSON",
-      "toggleBaselines": "Export baselines",
-      "toggleMargins": "Export margins",
-      "toggleModules": "Export modular field",
-      "toggleTypography": "Export typography",
-      "toggleImagePlaceholders": "Export placeholders",
-      "previewCanvas": "Selected page preview",
+      "exportPdf": "PDF",
+      "exportSvg": "SVG",
+      "exportIdml": "IDML",
+      "saveJson": "JSON",
+      "toggleBaselines": "Include baselines",
+      "toggleMargins": "Include margins",
+      "toggleModules": "Include modular field",
+      "toggleTypography": "Include typography",
+      "toggleImagePlaceholders": "Include placeholders",
+      "previewCanvas": "Selected page",
       "previewBuildError": "Preview failed.",
       "previewDrawError": "Preview draw failed.",
       "previewPrepareError": "Preview preparation failed.",
@@ -257,7 +268,7 @@
       "title": "Help",
       "close": "Close help panel",
       "jumpToTop": "Return to index",
-      "currentVersion": "Current version: v {version}",
+      "currentVersion": "Version {version}",
       "action": "Action",
       "shortcut": "Shortcut"
     },
@@ -275,7 +286,7 @@
       "attachScreenshots": "Screenshots",
       "attachmentHelp": "{count} images. {size} each.",
       "attachLocalLog": "Local log",
-      "send": "Send feedback",
+      "send": "Send",
       "sending": "Sending",
       "sent": "Feedback sent.",
       "requiredAttention": "Required fields missing.",
@@ -320,7 +331,7 @@
       "queued": "Queued",
       "conflicts": "Conflicts",
       "noLocalActivity": "No cloud activity.",
-      "conflictMessage": "Local and cloud changed. Choose the source.",
+      "conflictMessage": "Local and cloud copies changed. Choose the source.",
       "untitledProject": "Untitled project",
       "localEdit": "Local edit",
       "lastSync": "Last sync",
@@ -329,19 +340,6 @@
       "localOnly": "Local only",
       "useCloud": "Use cloud",
       "keepLocal": "Keep local"
-    }
-  },
-  "tooltips": {
-    "counter": "Tooltip {index} of {total}",
-    "next": "Next",
-    "close": "Close tooltip"
-  },
-  "preview": {
-    "interactionHints": {
-      "edit": "Hover a layer and select edit.",
-      "createParagraph": "Double-click empty module: paragraph.",
-      "createImage": "Shift-double-click: image placeholder.",
-      "duplicate": "+ duplicates. Shift-drag follows baseline."
     }
   },
   "projectPanel": {
@@ -358,21 +356,22 @@
     "toggleFacingPages": "Toggle facing pages for {name}",
     "pageListTooltip": "Page list\nSelect Pages to return.",
     "pageNumber": "Page number",
+    "pagePosition": "Page position {page} of {total}",
     "pageOfTotal": "Page {page} of {total}",
     "editPageNumber": "Edit page number, currently {page} of {total}",
-    "pageCounterTooltip": "Page {page} of {total}\nDouble-click: jump.",
+    "pageCounterTooltip": "Page {page} of {total}\nDouble-click to jump.",
     "firstPage": "First page",
     "previousPage": "Previous page",
     "nextPage": "Next page",
     "lastPage": "Last page",
-    "addPageTooltip": "Add page\nShift-click: duplicate content",
+    "addPageTooltip": "Add page\nShift-click duplicates content",
     "pageLimitTooltip": "Maximum {count} pages reached.",
     "addCleanPage": "Add clean page",
     "duplicatePage": "Duplicate page with content",
     "close": "Close project panel",
     "showInfo": "Show document data",
     "hideInfo": "Hide document data",
-    "infoSentence": "Pages: {pages}. Layers: {layers}. Fonts: {fonts}. Cuts: {cuts}. Words: {words}. Chars: {characters}.{authorSentence}{createdSentence}{loadSentence}",
+    "infoSentence": "Pages: {pages}. Layers: {layers}. Fonts: {fonts}. Cuts: {cuts}. Words: {words}. Characters: {characters}.{authorSentence}{createdSentence}{loadSentence}",
     "authorSentence": " Author: {author}.",
     "noAuthorSentence": " Author: none.",
     "createdSentence": " Created: {date}.",
@@ -390,7 +389,7 @@
     },
     "layersList": {
       "empty": "No layers on this page.",
-      "emptyInstruction": "Double-click: text. Shift-double-click: image.",
+      "emptyInstruction": "Double-click for text. Shift-double-click for image.",
       "imageColor": "Image placeholder color",
       "lock": "Lock {kind}",
       "unlock": "Unlock {kind}",
@@ -398,6 +397,9 @@
       "paragraph": "paragraph",
       "imagePlaceholder": "image placeholder"
     }
+  },
+  "cloudActivity": {
+    "empty": "No cloud activity."
   },
   "presets": {
     "title": "Presets",
@@ -430,20 +432,25 @@
     "copyFailedMessage": "The selected user layout could not be duplicated.",
     "deleteTitle": "Delete from library",
     "deleteMessage": "Delete \"{title}\"?\n\n{cloudText}",
-    "deleteSyncedCloudText": "Synced cloud copy will be deleted.",
-    "deleteQueuedCloudText": "Cloud deletion will queue.",
+    "deleteSyncedCloudText": "The synced cloud copy will be deleted.",
+    "deleteQueuedCloudText": "Cloud deletion will be queued.",
     "deletedTitle": "Deleted from library",
     "deleteFailedTitle": "Delete failed",
     "deleteFailedMessage": "Layout removal failed.",
     "deleteNoHandlerMessage": "Removed locally. No remote handler.",
     "deleteSignedOutMessage": "Removed locally. Cloud not connected.",
-    "untitled": "Untitled project"
-  },
-  "cloudActivity": {
-    "empty": "No cloud activity."
+    "untitled": "Untitled project",
+    "actions": {
+      "more": "More actions for {title}",
+      "open": "Open",
+      "export": "Export",
+      "copy": "Copy",
+      "delete": "Delete"
+    }
   },
   "editor": {
     "mixed": "Mixed",
+    "inlineEditor": "Inline editor for {target}",
     "paragraph": {
       "title": "Paragraph",
       "tooltip": "Measure, baseline, alignment, flow.",
@@ -470,7 +477,7 @@
     },
     "typography": {
       "title": "Typography",
-      "mixedTitle": "Typography mixed",
+      "mixedTitle": "Mixed typography",
       "tooltip": "Hierarchy, family, cut, spacing.",
       "hierarchy": "Hierarchy",
       "customSize": "Custom size",
@@ -500,7 +507,7 @@
     },
     "placeholders": {
       "title": "Placeholders",
-      "tooltip": "Insert variables and proof marks.",
+      "tooltip": "Insert document variables.",
       "summary": "Lorem, project title, page, pages, date, time"
     },
     "info": {
@@ -517,7 +524,7 @@
       "scheme": "Scheme",
       "chars": "Chars",
       "words": "Words",
-      "maxLine": "Max/Line",
+      "maxLine": "Max line",
       "renderTime": "Render time"
     },
     "color": {
@@ -532,6 +539,31 @@
       "colorTitle": "Color",
       "colorTooltip": "Scheme, swatch, transparency.",
       "transparency": "Transparency"
+    },
+    "format": {
+      "zeroBaselines": "0 baselines",
+      "row": "{count} row",
+      "rows": "{count} rows",
+      "column": "{count} col",
+      "columns": "{count} cols",
+      "baseline": "{count} baseline",
+      "baselines": "{count} baselines"
+    },
+    "fontGroups": {
+      "sansSerif": "Sans-Serif",
+      "serif": "Serif",
+      "poster": "Poster"
+    },
+    "trackingOptions": {
+      "ultraCondensed": "Ultra-condensed",
+      "extraCondensed": "Extra-condensed",
+      "condensed": "Condensed",
+      "semiCondensed": "Semi-condensed",
+      "normal": "Normal",
+      "semiExpanded": "Semi-expanded",
+      "expanded": "Expanded",
+      "extraExpanded": "Extra-expanded",
+      "ultraExpanded": "Ultra-expanded"
     }
   },
   "overlayActions": {
@@ -548,13 +580,13 @@
     "paragraph": "paragraph",
     "imagePlaceholder": "image placeholder",
     "paragraphCopiedTitle": "Paragraph copied",
-    "paragraphCopiedMessage": "Select target paragraph.",
+    "paragraphCopiedMessage": "Select a target paragraph.",
     "paragraphSettingsCopiedTitle": "Paragraph settings copied",
-    "paragraphSettingsCopiedMessage": "Select target paragraph.",
+    "paragraphSettingsCopiedMessage": "Select a target paragraph.",
     "typographyCopiedTitle": "Typography settings copied",
-    "typographyCopiedMessage": "Select target paragraph.",
+    "typographyCopiedMessage": "Select a target paragraph.",
     "paragraphTypographyCopiedTitle": "Paragraph and typography copied",
-    "paragraphTypographyCopiedMessage": "Select target paragraph."
+    "paragraphTypographyCopiedMessage": "Select a target paragraph."
   },
   "documentVariables": {
     "lorem": "Fitted lorem ipsum.",
@@ -571,6 +603,31 @@
     "subhead": "Grid, baseline, measure.",
     "body": "Field. Baseline. Measure.",
     "caption": "Copyright {year} Swiss Grid Generator"
+  },
+  "preview": {
+    "interactionHints": {
+      "edit": "Hover a layer and select edit.",
+      "createParagraph": "Double-click an empty module for text.",
+      "createImage": "Shift-double-click for an image placeholder.",
+      "duplicate": "+ duplicates. Shift-drag follows the baseline."
+    },
+    "feedback": {
+      "gridUnchanged": "Field unchanged"
+    },
+    "tour": {
+      "open": "Open tour",
+      "close": "Close",
+      "step": "Step",
+      "waitingForLayer": "Click the highlighted layer to continue",
+      "back": "Back",
+      "next": "Next",
+      "done": "Done"
+    }
+  },
+  "tooltips": {
+    "counter": "Tip {index} of {total}",
+    "next": "Next",
+    "close": "Close tip"
   },
   "exportMetadata": {
     "generatedAuthor": "Generated by Swiss Grid Generator",
@@ -599,7 +656,7 @@
       "exportFailedPresetMessage": "Preset export failed.",
       "savedToLibraryTitle": "Saved",
       "savedToLibrarySignedInMessage": "Saved locally. Cloud sync follows.",
-      "savedToLibrarySignedOutMessage": "Saved locally. Cloud offline.",
+      "savedToLibrarySignedOutMessage": "Saved locally. Cloud not connected.",
       "librarySaveFailedTitle": "Save failed",
       "librarySaveFailedMessage": "Local save failed.",
       "conflictResolvedTitle": "Conflict resolved",
@@ -618,14 +675,14 @@
       "untitledProject": "Untitled project"
     },
     "gridReduction": {
-      "columns": "Columns blocked. Layers exceed field.",
-      "rows": "Rows blocked. Layers exceed field.",
-      "grid": "Grid blocked. Layers exceed field."
+      "columns": "Columns unchanged. Layers exceed the field.",
+      "rows": "Rows unchanged. Layers exceed the field.",
+      "grid": "Grid unchanged. Layers exceed the field."
     },
     "save": {
-      "notSavedLocally": "Not saved locally",
-      "syncedToCloud": "Synced to cloud",
-      "savedToLocalStore": "Saved locally"
+      "notSavedLocally": "Unsaved",
+      "syncedToCloud": "Synced",
+      "savedToLocalStore": "Local"
     },
     "auth": {
       "sendingCode": "Sending code to {email}.",
@@ -725,7 +782,17 @@
     },
     "export": {
       "preparing": "Preparing export",
-      "preparingIdml": "Preparing IDML"
+      "preparingIdml": "Preparing IDML",
+      "cancelling": "Cancelling export",
+      "pageSet": "{label} page set {current}/{total}",
+      "planning": "Planning {completed}/{total}",
+      "renderingPdfPages": "Rendering {count} PDF pages",
+      "renderingPdf": "Rendering PDF {completed}/{total}",
+      "finalizingPdf": "Finalizing PDF bytes",
+      "svgPageSet": "SVG page set {current}/{total}",
+      "packagingSvg": "Packaging SVG archive",
+      "idmlPageSet": "IDML page set {current}/{total}",
+      "packagingIdml": "Packaging IDML"
     }
   }
 }

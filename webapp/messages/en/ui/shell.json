@@ -1,0 +1,94 @@
+{
+  "topBar": {
+    "supportMenu": {
+      "open": "Open menu",
+      "close": "Close menu",
+      "more": "More",
+      "darkMode": "Dark mode",
+      "lightMode": "Light mode",
+      "help": "Help",
+      "feedback": "Feedback",
+      "legalNotice": "Legal notice"
+    },
+    "actions": {
+      "presets": {
+        "aria": "Show presets",
+        "tooltip": "Presets"
+      },
+      "save": {
+        "aria": "Save",
+        "tooltip": "Save",
+        "status": "Library: {status}"
+      },
+      "import": {
+        "aria": "Import",
+        "tooltip": "Import"
+      },
+      "export": {
+        "aria": "Export",
+        "tooltip": "Export"
+      },
+      "undo": {
+        "aria": "Undo",
+        "tooltip": "Undo"
+      },
+      "redo": {
+        "aria": "Redo",
+        "tooltip": "Redo"
+      },
+      "smartTextZoom": {
+        "enable": "Enable paragraph zoom",
+        "disable": "Disable paragraph zoom",
+        "tooltip": "Paragraph zoom"
+      },
+      "baselines": {
+        "aria": "Toggle baselines",
+        "tooltip": "Baselines\nShift-click applies to all pages"
+      },
+      "margins": {
+        "aria": "Toggle margins",
+        "tooltip": "Margin frame\nShift-click applies to all pages"
+      },
+      "modules": {
+        "aria": "Toggle modular field",
+        "tooltip": "Modular field\nShift-click applies to all pages"
+      },
+      "typography": {
+        "aria": "Toggle typography",
+        "tooltip": "Typography\nShift-click applies to all pages"
+      },
+      "imagePlaceholders": {
+        "aria": "Toggle image placeholders",
+        "tooltip": "Image placeholders\nShift-click applies to all pages"
+      },
+      "layers": {
+        "show": "Show project panel",
+        "hide": "Hide project panel",
+        "tooltip": "Project panel"
+      },
+      "account": {
+        "show": "Show account panel",
+        "hide": "Hide account panel",
+        "tooltipSignedIn": "Cloud\n{email}\n{status}",
+        "tooltipSignedOut": "Cloud\nNot connected\n{status}"
+      }
+    }
+  },
+  "shortcuts": {
+    "importProject": "Import project",
+    "saveToLibrary": "Save to library",
+    "exportDialog": "Export dialog",
+    "undo": "Undo",
+    "redo": "Redo",
+    "toggleDarkMode": "Toggle dark mode",
+    "toggleBaselines": "Toggle baselines",
+    "toggleMargins": "Toggle margins",
+    "toggleModules": "Toggle modular field",
+    "toggleTypography": "Toggle typography",
+    "toggleImagePlaceholders": "Toggle image placeholders",
+    "toggleProjectPanel": "Toggle project panel",
+    "toggleHelp": "Toggle help",
+    "toggleLegalNotice": "Toggle legal notice",
+    "togglePresets": "Toggle presets"
+  }
+}

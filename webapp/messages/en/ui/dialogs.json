@@ -1,0 +1,44 @@
+{
+  "dialogs": {
+    "notice": {
+      "actions": "Actions",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "ok": "OK"
+    },
+    "saveLibrary": {
+      "title": "Save",
+      "description": "Store the project in the local library.",
+      "confirm": "Save"
+    },
+    "export": {
+      "title": "Export",
+      "description": "PDF, SVG, and IDML consume the page plan. JSON remains editable.",
+      "input": "Input",
+      "preview": "Preview",
+      "output": "Output",
+      "bleed": "Bleed",
+      "bleedWidth": "Bleed width",
+      "pages": "Pages",
+      "pageRangePlaceholder": "1-5;7;25;550-650",
+      "filename": "Filename",
+      "titleField": "Title",
+      "subject": "Subject",
+      "author": "Author",
+      "exportPdf": "PDF",
+      "exportSvg": "SVG",
+      "exportIdml": "IDML",
+      "saveJson": "JSON",
+      "toggleBaselines": "Include baselines",
+      "toggleMargins": "Include margins",
+      "toggleModules": "Include modular field",
+      "toggleTypography": "Include typography",
+      "toggleImagePlaceholders": "Include placeholders",
+      "previewCanvas": "Selected page",
+      "previewBuildError": "Preview failed.",
+      "previewDrawError": "Preview draw failed.",
+      "previewPrepareError": "Preview preparation failed.",
+      "previewNoPage": "No page available for preview."
+    }
+  }
+}

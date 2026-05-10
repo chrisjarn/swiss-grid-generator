@@ -814,7 +814,7 @@ export function PreviewWorkspace({
       {!showPresetsBrowser && documentVariablePageCount > 1 ? (
         <div
           className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-px overflow-hidden"
-          aria-label={`Page position ${documentPagePosition} of ${documentVariablePageCount}`}
+          aria-label={t("projectPanel.pagePosition", { page: documentPagePosition, total: documentVariablePageCount })}
           role="progressbar"
           aria-valuemin={1}
           aria-valuemax={documentVariablePageCount}

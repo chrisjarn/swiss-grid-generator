@@ -329,7 +329,7 @@ export function ImageEditorDialog({
                     value={String(count)}
                     {...rowsSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {count} {count === 1 ? "row" : "rows"}
+                    {t(count === 1 ? "editor.format.row" : "editor.format.rows", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -350,7 +350,7 @@ export function ImageEditorDialog({
                     value={String(count)}
                     {...columnsSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {count} {count === 1 ? "col" : "cols"}
+                    {t(count === 1 ? "editor.format.column" : "editor.format.columns", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -368,14 +368,14 @@ export function ImageEditorDialog({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={baselinesSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>0 baselines</SelectItem>
+                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>{t("editor.format.zeroBaselines")}</SelectItem>
                 {Array.from({ length: maxHeightBaselines }, (_, index) => index + 1).map((count) => (
                   <SelectItem
                     key={`image-baselines-${count}`}
                     value={String(count)}
                     {...baselinesSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {count} {count === 1 ? "baseline" : "baselines"}
+                    {t(count === 1 ? "editor.format.baseline" : "editor.format.baselines", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>

@@ -1,0 +1,29 @@
+{
+  "common": {
+    "actions": "Actions",
+    "author": "Author",
+    "authorOptional": "Author (optional)",
+    "authorName": "Author name",
+    "cancel": "Cancel",
+    "close": "Close",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "email": "Email",
+    "filename": "Filename",
+    "index": "Index",
+    "message": "Message",
+    "metadata": "Metadata",
+    "noEvents": "No events",
+    "ok": "OK",
+    "on": "On",
+    "off": "Off",
+    "of": "of",
+    "project": "Project",
+    "projectTitle": "Project title",
+    "shortSubject": "Short subject",
+    "subject": "Subject",
+    "subjectOptional": "Subject (optional)",
+    "title": "Title",
+    "version": "Version"
+  }
+}

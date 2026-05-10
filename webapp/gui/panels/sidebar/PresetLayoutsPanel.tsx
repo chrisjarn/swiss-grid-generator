@@ -283,7 +283,7 @@ function PresetCard({
             <div ref={menuRef} className="relative shrink-0">
               <button
                 type="button"
-                aria-label={`More actions for ${preset.label}`}
+                aria-label={t("presets.actions.more", { title: preset.label })}
                 className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
                 onClick={(event) => {
                   event.preventDefault()
@@ -307,7 +307,7 @@ function PresetCard({
                       onLoadPreset(preset)
                     }}
                   >
-                    Open
+                    {t("presets.actions.open")}
                   </button>
                   {onExportPreset ? (
                     <button
@@ -320,7 +320,7 @@ function PresetCard({
                         onExportPreset(preset)
                       }}
                     >
-                      Export
+                      {t("presets.actions.export")}
                     </button>
                   ) : null}
                   <button
@@ -333,7 +333,7 @@ function PresetCard({
                       onCopyUserPreset(preset)
                     }}
                   >
-                    Copy
+                    {t("presets.actions.copy")}
                   </button>
                   <button
                     type="button"
@@ -345,7 +345,7 @@ function PresetCard({
                       onDeleteUserPreset(preset)
                     }}
                   >
-                    Delete
+                    {t("presets.actions.delete")}
                   </button>
                 </div>
               ) : null}
