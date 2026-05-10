@@ -7,6 +7,7 @@ import type { FontFamily } from "@/lib/config/fonts"
 import { PREVIEW_DRAG_CLICK_GUARD_MS } from "@/lib/preview-interaction-constants"
 import { insertTextLayerIntoCollections, type PreviewTextLayerCollectionsState } from "@/lib/preview-text-layer-state"
 import type { NoticeRequest, PagePoint } from "@/lib/preview-types"
+import { translateMessage } from "@/lib/i18n"
 import type { TextFormatRun } from "@/lib/text-format-runs"
 import type { TextTrackingRun } from "@/lib/text-tracking-runs"
 import type { ModulePosition, TextAlignMode, TextVerticalAlignMode } from "@/lib/types/layout-primitives"
@@ -237,8 +238,8 @@ export function useBlockEditorCanvasDoubleClick({
     const maxParagraphCount = resultGridCols * resultGridRows
     if (activeParagraphCount >= maxParagraphCount) {
       onRequestNotice?.({
-        title: "Paragraph Limit Reached",
-        message: `Maximum paragraphs reached (${maxParagraphCount}).`,
+        title: translateMessage("status.notices.paragraphLimitTitle"),
+        message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
       })
       return
     }

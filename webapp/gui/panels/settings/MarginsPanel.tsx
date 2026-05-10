@@ -2,6 +2,7 @@ import { memo } from "react"
 import { Label } from "@/shared/ui/label"
 import { DebouncedSlider } from "@/shared/ui/slider"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
+import { translateMessage, useTranslation } from "@/lib/i18n"
 import {
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,
@@ -14,10 +15,10 @@ type CustomMarginMultipliers = { top: number; left: number; right: number; botto
 type MarginMode = "1" | "2" | "3" | "custom"
 
 const MARGIN_METHOD_OPTIONS: Array<{ value: MarginMode; label: string; detail: string | null }> = [
-  { value: "1", label: "Progressive", detail: "1:2:2:3" },
-  { value: "2", label: "Van de Graaf", detail: "2:3:4:6" },
-  { value: "3", label: "Baseline", detail: "1:1:1:1" },
-  { value: "custom", label: "Custom Margins", detail: null },
+  { value: "1", label: translateMessage("settings.margins.progressive"), detail: "1:2:2:3" },
+  { value: "2", label: translateMessage("settings.margins.vanDeGraaf"), detail: "2:3:4:6" },
+  { value: "3", label: translateMessage("settings.margins.baseline"), detail: "1:1:1:1" },
+  { value: "custom", label: translateMessage("settings.margins.custom"), detail: null },
 ]
 
 type Props = {
@@ -52,6 +53,7 @@ export const MarginsPanel = memo(function MarginsPanel({
   gridUnit,
   isDarkMode,
 }: Props) {
+  const { t } = useTranslation()
   const clampCustomMarginMultiplier = (value: number) => Math.max(1, Math.min(9, Math.round(value)))
   const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
   const marginMethodListClassName = getSettingsOpenListClassName(isDarkMode)
@@ -74,15 +76,25 @@ export const MarginsPanel = memo(function MarginsPanel({
   const selectedMarginMode: MarginMode = useCustomMargins
     ? "custom"
     : (marginMethod.toString() as "1" | "2" | "3")
+  const sideLabels = {
+    top: t("settings.margins.top"),
+    left: t("settings.margins.left"),
+    right: t("settings.margins.right"),
+  }
 
   const collapsedSummary = useCustomMargins
-    ? `Custom T${customMarginMultipliers.top}x L${customMarginMultipliers.left}x R${customMarginMultipliers.right}x B${customMarginMultipliers.bottom}x`
-    : `${marginMethod === 1 ? "Progressive" : marginMethod === 2 ? "Van de Graaf" : "Baseline"}`
+    ? t("settings.margins.customSummary", {
+        top: customMarginMultipliers.top,
+        left: customMarginMultipliers.left,
+        right: customMarginMultipliers.right,
+        bottom: customMarginMultipliers.bottom,
+      })
+    : `${marginMethod === 1 ? t("settings.margins.progressive") : marginMethod === 2 ? t("settings.margins.vanDeGraaf") : t("settings.margins.baseline")}`
 
   return (
     <PanelCard
-      title="M A R G I N S"
-      tooltip="Margin method dropdown and custom per-side controls; margin method previews on rollover"
+      title={t("settings.margins.title")}
+      tooltip={t("settings.margins.tooltip")}
       collapsed={collapsed}
       collapsedSummary={collapsedSummary}
       onHeaderClick={onHeaderClick}
@@ -91,10 +103,10 @@ export const MarginsPanel = memo(function MarginsPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Method</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.margins.method")}</Label>
         <div
           role="listbox"
-          aria-label="Margin method"
+          aria-label={t("settings.margins.methodAria")}
           className={marginMethodListClassName}
           onMouseLeave={() => onMarginMethodPreviewChange?.(null)}
         >
@@ -126,7 +138,7 @@ export const MarginsPanel = memo(function MarginsPanel({
           {(["top", "left", "right"] as const).map((side) => (
             <div key={side} className="space-y-3">
               <div className="flex items-center justify-between">
-                <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{side}</Label>
+                <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{sideLabels[side]}</Label>
                 <span className={valueBadgeClassName}>
                   {customMarginMultipliers[side]}×
                 </span>
@@ -144,7 +156,7 @@ export const MarginsPanel = memo(function MarginsPanel({
           ))}
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Bottom</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.margins.bottom")}</Label>
               <span className={valueBadgeClassName}>
                 {customMarginMultipliers.bottom}×
               </span>

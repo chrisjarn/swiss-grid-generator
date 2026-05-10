@@ -10,6 +10,7 @@ import {
   getPopupMutedTextClassName,
 } from "@/shared/ui/popup-styles"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
+import { translateMessage, useTranslation } from "@/lib/i18n"
 import {
   addCloudActivityLogEntry,
   formatCloudActivityLogForSupport,
@@ -77,22 +78,22 @@ function isAcceptedScreenshotType(value: string): value is FeedbackScreenshot["t
 
 function getScreenshotValidationError(files: File[]) {
   if (files.length > MAX_SCREENSHOTS) {
-    return `Attach no more than ${MAX_SCREENSHOTS} screenshots.`
+    return translateMessage("rightPanel.feedback.tooManyScreenshots", { count: MAX_SCREENSHOTS })
   }
 
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0)
   if (totalBytes > MAX_TOTAL_SCREENSHOT_BYTES) {
-    return `Screenshots must stay below ${formatBytes(MAX_TOTAL_SCREENSHOT_BYTES)} total.`
+    return translateMessage("rightPanel.feedback.screenshotsTooLarge", { size: formatBytes(MAX_TOTAL_SCREENSHOT_BYTES) })
   }
 
   const invalidFile = files.find((file) => !isAcceptedScreenshotType(file.type))
   if (invalidFile) {
-    return `${invalidFile.name} is not a PNG, JPEG, or WebP image.`
+    return translateMessage("rightPanel.feedback.invalidScreenshotType", { name: invalidFile.name })
   }
 
   const oversizedFile = files.find((file) => file.size > MAX_SCREENSHOT_BYTES)
   if (oversizedFile) {
-    return `${oversizedFile.name} is larger than ${formatBytes(MAX_SCREENSHOT_BYTES)}.`
+    return translateMessage("rightPanel.feedback.screenshotTooLarge", { name: oversizedFile.name, size: formatBytes(MAX_SCREENSHOT_BYTES) })
   }
 
   return null
@@ -107,15 +108,15 @@ function getValidationErrors(
   const comment = values.comment.trim()
 
   if (!email) {
-    errors.email = "Email is required."
+    errors.email = translateMessage("rightPanel.feedback.emailRequired")
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.email = "Enter a valid email address."
+    errors.email = translateMessage("rightPanel.feedback.emailInvalid")
   }
 
   if (!comment) {
-    errors.comment = "Comment is required."
+    errors.comment = translateMessage("rightPanel.feedback.commentRequired")
   } else if (comment.length > 4000) {
-    errors.comment = "Keep the comment below 4000 characters."
+    errors.comment = translateMessage("rightPanel.feedback.commentTooLong")
   }
 
   const screenshotError = getScreenshotValidationError(screenshotFiles)
@@ -136,12 +137,12 @@ function readFileAsBase64(file: File) {
           resolve(base64Data)
           return
         }
-        reject(new Error("Screenshot could not be encoded."))
+        reject(new Error(translateMessage("rightPanel.feedback.encodeError")))
         return
       }
-      reject(new Error("Screenshot could not be read."))
+      reject(new Error(translateMessage("rightPanel.feedback.readError")))
     }
-    reader.onerror = () => reject(reader.error ?? new Error("Screenshot could not be read."))
+    reader.onerror = () => reject(reader.error ?? new Error(translateMessage("rightPanel.feedback.readError")))
     reader.readAsDataURL(file)
   })
 }
@@ -172,29 +173,30 @@ function getFeedbackSubmitErrorMessage(error: unknown): string {
   const diagnosticText = [rawMessage, rawDetails, rawHint].filter(Boolean).join(" ")
 
   if (/support_log|column .* does not exist|schema cache/i.test(diagnosticText)) {
-    return "Feedback log column is missing. Run the support_log SQL migration in Supabase, then try again."
+    return translateMessage("rightPanel.feedback.logColumnMissing")
   }
 
   if (/add_feedback_screenshot|feedback_screenshots|function .* does not exist/i.test(diagnosticText)) {
-    return "Feedback screenshot storage is missing. Run the feedback_screenshots SQL migration in Supabase, then try again."
+    return translateMessage("rightPanel.feedback.screenshotStorageMissing")
   }
 
   if (/ambiguous|column reference .* ambiguous|variable_conflict/i.test(diagnosticText)) {
-    return "Feedback screenshot storage failed because the Supabase RPC has an ambiguous SQL parameter. Replace the add_feedback_screenshot function with the corrected version."
+    return translateMessage("rightPanel.feedback.screenshotStorageAmbiguous")
   }
 
   if (/row-level security|violates row-level security|permission denied/i.test(diagnosticText)) {
-    return "Feedback could not be sent because the Supabase insert policy rejected it."
+    return translateMessage("rightPanel.feedback.policyRejected")
   }
 
   if (/screenshots|check constraint|feedback_messages_screenshots/i.test(diagnosticText)) {
-    return "Feedback could not be sent because an attachment exceeds the Supabase limits."
+    return translateMessage("rightPanel.feedback.attachmentLimit")
   }
 
-  return "Feedback could not be sent. Check Supabase configuration or try again later."
+  return translateMessage("rightPanel.feedback.submitFailed")
 }
 
 export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmail, onClose }: Props) {
+  const { t } = useTranslation()
   const rootRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [form, setForm] = useState<FeedbackFormState>(() => ({
@@ -299,7 +301,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      setSubmitMessage("Some required fields need attention.")
+      setSubmitMessage(t("rightPanel.feedback.requiredAttention"))
       scrollPanelToTop()
       return
     }
@@ -308,8 +310,8 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     setSubmitMessage(null)
     void addCloudActivityLogEntry({
       level: "info",
-      action: "Feedback submit requested",
-      message: attachSupportLog ? "local log attached" : undefined,
+      action: t("rightPanel.feedback.submitRequested"),
+      message: attachSupportLog ? t("rightPanel.feedback.localLogAttached") : undefined,
     })
 
     try {
@@ -337,9 +339,9 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       setAttachSupportLog(false)
       void addCloudActivityLogEntry({
         level: "success",
-        action: "Feedback sent",
+        action: t("rightPanel.feedback.feedbackSent"),
         message: screenshotFiles.length > 0
-          ? `${screenshotFiles.length} ${screenshotFiles.length === 1 ? "screenshot" : "screenshots"}`
+          ? `${screenshotFiles.length} ${screenshotFiles.length === 1 ? t("rightPanel.feedback.screenshot") : t("rightPanel.feedback.screenshotsPlural")}`
           : undefined,
       })
       scrollPanelToTop()
@@ -353,7 +355,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       setSubmitMessage(message)
       void addCloudActivityLogEntry({
         level: "error",
-        action: "Feedback failed",
+        action: t("rightPanel.feedback.feedbackFailed"),
         message: rawMessage ? `${message} (${rawMessage})` : message,
       })
       scrollPanelToTop()
@@ -395,7 +397,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         onChange={(event) => setField("comment", event.target.value)}
         rows={7}
         className={`min-h-20 w-full resize-none leading-[1.45] ${fieldClassName}`}
-        placeholder="Describe the issue, idea, or workflow problem."
+        placeholder={t("rightPanel.feedback.commentPlaceholder")}
       />
       <FieldError message={errors.comment} />
     </div>
@@ -404,7 +406,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
   const renderSupportLogCheckbox = () => (
     <label className="flex items-center justify-between gap-3">
       <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-swiss-orange-soft">
-        Attach Local Log
+        {t("rightPanel.feedback.attachLocalLog")}
       </span>
       <input
         type="checkbox"
@@ -419,9 +421,9 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     <div ref={rootRef} className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label="F E E D B A C K"
+          label={t("rightPanel.feedback.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel="Close feedback panel"
+          actionLabel={t("rightPanel.feedback.close")}
           actionClassName={tone.action}
           onActionClick={onClose}
         />
@@ -436,14 +438,14 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       {hasSubmitted ? (
         <div className="space-y-4">
           <div className={`rounded-md border px-3 py-2 text-xs ${tone.success}`}>
-            Thank you. Your feedback has been sent.
+            {t("rightPanel.feedback.sent")}
           </div>
         </div>
       ) : (
         <form className={`space-y-4 ${mutedTextClassName}`} onSubmit={handleSubmit} noValidate>
           <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
-              label="Your Email"
+              label={t("rightPanel.feedback.email")}
             />
             {renderInput({
               field: "email",
@@ -455,7 +457,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
 
           <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
-              label="Comment"
+              label={t("rightPanel.feedback.comment")}
               actions={(
                 <span className={`shrink-0 text-right text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
                   {form.comment.trim().length}/4000
@@ -465,7 +467,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             {renderTextarea()}
           </section>
 
-          <Section title="Screenshots">
+          <Section title={t("rightPanel.feedback.screenshots")}>
             <input
               ref={fileInputRef}
               type="file"
@@ -483,10 +485,10 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                 className={`${feedbackButtonClassName} inline-flex w-full items-center justify-center gap-1.5 disabled:cursor-not-allowed`}
               >
                 <Paperclip className="h-3 w-3" />
-                Attach Screenshots
+                {t("rightPanel.feedback.attachScreenshots")}
               </Button>
               <p className={`text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
-                Up to {MAX_SCREENSHOTS} images. {formatBytes(MAX_SCREENSHOT_BYTES)} each.
+                {t("rightPanel.feedback.attachmentHelp", { count: MAX_SCREENSHOTS, size: formatBytes(MAX_SCREENSHOT_BYTES) })}
               </p>
             </div>
             {screenshotFiles.length > 0 ? (
@@ -506,7 +508,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                     </div>
                     <button
                       type="button"
-                      aria-label={`Remove ${file.name}`}
+                      aria-label={t("rightPanel.feedback.removeScreenshot", { name: file.name })}
                       onClick={() => handleRemoveScreenshot(index)}
                       className={`inline-flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isDarkMode ? "text-gray-400 hover:text-gray-100" : "text-gray-500 hover:text-gray-900"}`}
                     >
@@ -530,12 +532,12 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
               disabled={isSubmitting}
               className={`${feedbackButtonClassName} w-full`}
             >
-              {isSubmitting ? "Sending..." : "Send Feedback"}
+              {isSubmitting ? t("rightPanel.feedback.sending") : t("rightPanel.feedback.send")}
             </Button>
           </div>
 
           <div className={`pt-1 text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
-            Version {appVersion}
+            {t("common.version")} {appVersion}
           </div>
         </form>
       )}

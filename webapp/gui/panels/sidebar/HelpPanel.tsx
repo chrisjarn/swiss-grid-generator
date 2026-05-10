@@ -13,6 +13,7 @@ import {
 } from "@/lib/generated-help-content"
 import { HELP_INDEX_GROUPS } from "@/lib/help-registry"
 import type { HelpSectionId } from "@/lib/help-registry"
+import { translateMessage, useTranslation } from "@/lib/i18n"
 import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 
@@ -73,7 +74,7 @@ function SectionHeading({
         label={children}
         labelClassName={labelClassName}
         actionIcon={<ChevronUp className="h-2 w-2" />}
-        actionLabel="Jump to top"
+        actionLabel={translateMessage("rightPanel.help.jumpToTop")}
         actionClassName={jumpButtonClassName}
         onActionClick={() => {
           document.getElementById("help-index")?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -163,8 +164,8 @@ function renderShortcutTable(tone: Tone) {
       <table className={`w-full border-collapse text-xs ${tone.body}`}>
         <thead>
           <tr className={`border-b ${tone.divider}`}>
-            <th className={`py-1 text-left font-semibold ${tone.heading}`}>Action</th>
-            <th className={`py-1 text-left font-semibold ${tone.heading}`}>Shortcut</th>
+            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("rightPanel.help.action")}</th>
+            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("rightPanel.help.shortcut")}</th>
           </tr>
         </thead>
         <tbody>
@@ -185,7 +186,7 @@ function renderDirective(name: HelpDirectiveName, tone: Tone, appVersion: string
     case "APP_VERSION":
       return (
         <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Current version: <span className={tone.emphasis}>V {appVersion}</span>
+          {translateMessage("rightPanel.help.currentVersion", { version: appVersion })}
         </p>
       )
     case "AVAILABLE_FONTS":
@@ -253,6 +254,7 @@ function renderSection(section: HelpSection, tone: Tone, appVersion: string) {
 }
 
 export function HelpPanel({ isDarkMode = false, onClose, activeSectionId, appVersion }: Props) {
+  const { t } = useTranslation()
   useEffect(() => {
     if (!activeSectionId) return
     const target = document.getElementById(activeSectionId)
@@ -303,16 +305,16 @@ export function HelpPanel({ isDarkMode = false, onClose, activeSectionId, appVer
     <div className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label="H E L P"
+          label={t("rightPanel.help.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel="Close help panel"
+          actionLabel={t("rightPanel.help.close")}
           actionClassName={tone.jumpButton}
           onActionClick={onClose}
         />
       </div>
 
       <div id="help-index" className="space-y-2 pt-[13px]">
-        <SectionHeaderRow label="Index" />
+        <SectionHeaderRow label={t("common.index")} />
         {HELP_INDEX_GROUPS.map((group, groupIndex) => (
           <div key={group.title} className={groupIndex > 0 ? "mt-2" : ""}>
             <SectionHeaderRow label={group.title} className="mb-1" />

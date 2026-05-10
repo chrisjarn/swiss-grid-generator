@@ -48,6 +48,11 @@ The interface must feel professional, calm and precise.
 - No casual spacing or alignment
 - No marketing-style layouts
 
+### Text Source Rule
+All user-facing interface text must be sourced from `webapp/messages/en.json` through the typed i18n helpers in `webapp/lib/i18n`.
+Long authored content belongs in locale markdown under `webapp/messages/en/` and must flow through the existing generators before it is rendered in the app.
+Do not add hardcoded labels, tooltips, status messages, validation text, or help/legal prose directly inside components.
+
 ### Workflow Requirements
 1. Always read the current `SETTINGS.md`, `CALCULATIONS.md`, `PERFORMANCE.md` and `DESIGN.md` first.
 2. Match existing code patterns unless there is a clear architectural improvement.

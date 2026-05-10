@@ -4,6 +4,7 @@ import { X } from "lucide-react"
 import { useCallback, useEffect, useRef, useState } from "react"
 
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
+import { useTranslation } from "@/lib/i18n"
 import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
 
 const FADE_DURATION_MS = 220
@@ -33,6 +34,7 @@ export function LayoutOpenTooltipOverlay({
   onNext,
   onHelpHover,
 }: Props) {
+  const { t } = useTranslation()
   const [isVisible, setIsVisible] = useState(false)
   const closeTimeoutRef = useRef<number | null>(null)
 
@@ -93,7 +95,7 @@ export function LayoutOpenTooltipOverlay({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
-                  Tooltip {index + 1} of {totalCount}
+                  {t("tooltips.counter", { index: index + 1, total: totalCount })}
                 </div>
                 <div className="mt-1 text-[12px] font-semibold leading-[1.55]">
                   {tooltip.title}
@@ -107,11 +109,11 @@ export function LayoutOpenTooltipOverlay({
                     isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  Next &gt;
+                  {t("tooltips.next")}
                 </button>
                 <button
                   type="button"
-                  aria-label="Close tooltip"
+                  aria-label={t("tooltips.close")}
                   onClick={closeForSessionWithFade}
                   className={`shrink-0 transition-colors ${
                     isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"

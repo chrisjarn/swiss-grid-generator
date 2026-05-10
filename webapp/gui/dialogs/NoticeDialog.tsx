@@ -1,4 +1,5 @@
 import { Button } from "@/shared/ui/button"
+import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 import {
   getCompactActionButtonClassName,
@@ -23,10 +24,11 @@ export function NoticeDialog({
   title,
   message,
   confirmLabel,
-  cancelLabel = "Cancel",
+  cancelLabel,
   onConfirm,
   onClose,
 }: Props) {
+  const { t } = useTranslation()
   if (!isOpen) return null
 
   return (
@@ -53,7 +55,7 @@ export function NoticeDialog({
           </p>
         </div>
         <div className="shrink-0 space-y-2 pt-4">
-          <SectionHeaderRow label="Actions" />
+          <SectionHeaderRow label={t("dialogs.notice.actions")} />
           {onConfirm ? (
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -62,20 +64,20 @@ export function NoticeDialog({
                 className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
                 onClick={onClose}
               >
-                {cancelLabel}
+                {cancelLabel ?? t("dialogs.notice.cancel")}
               </Button>
               <Button
                 size="sm"
                 className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
                 onClick={onConfirm}
               >
-                {confirmLabel ?? "Confirm"}
+                {confirmLabel ?? t("dialogs.notice.confirm")}
               </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2">
               <Button size="sm" className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`} onClick={onClose}>
-                OK
+                {t("dialogs.notice.ok")}
               </Button>
             </div>
           )}

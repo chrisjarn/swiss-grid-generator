@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
 import type { LoadedProject } from "@/lib/document-session"
+import { translateMessage, useTranslation } from "@/lib/i18n"
 import {
   collectPresetThumbnailFontLoadSpecs,
   collectPresetThumbnailFontMetricFaces,
@@ -55,6 +56,7 @@ export function ExportPreviewCanvas({
   visibilitySettings,
   isDarkUi,
 }: Props) {
+  const { t } = useTranslation()
   const hostRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const [drawError, setDrawError] = useState<string | null>(null)
@@ -88,7 +90,7 @@ export function ExportPreviewCanvas({
       }
     } catch (cause) {
       return {
-        error: cause instanceof Error ? cause.message : "Could not build preview.",
+        error: cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewBuildError"),
         page: null,
       }
     }
@@ -118,7 +120,7 @@ export function ExportPreviewCanvas({
           thumbnailRenderOptions,
         )
       } catch (cause) {
-        setDrawError(cause instanceof Error ? cause.message : "Could not draw preview.")
+        setDrawError(cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewDrawError"))
       }
     }
 
@@ -140,7 +142,7 @@ export function ExportPreviewCanvas({
         if (!cancelled) scheduleDraw()
       })
       .catch((cause) => {
-        setDrawError(cause instanceof Error ? cause.message : "Could not prepare preview.")
+        setDrawError(cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewPrepareError"))
         if (!cancelled) scheduleDraw()
       })
 
@@ -156,7 +158,7 @@ export function ExportPreviewCanvas({
     }
   }, [thumbnailPage.page, thumbnailRenderOptions])
 
-  const error = thumbnailPage.error ?? (thumbnailPage.page ? drawError : "No page available for preview.")
+  const error = thumbnailPage.error ?? (thumbnailPage.page ? drawError : t("dialogs.export.previewNoPage"))
 
   return (
     <div
@@ -166,7 +168,7 @@ export function ExportPreviewCanvas({
         isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-200 bg-white",
       )}
     >
-      <canvas ref={canvasRef} className="block h-full w-full" aria-label="Selected export page preview" />
+      <canvas ref={canvasRef} className="block h-full w-full" aria-label={t("dialogs.export.previewCanvas")} />
       {error ? (
         <div className={cn(
           "absolute inset-0 flex items-center justify-center px-3 text-center text-[11px] leading-tight",

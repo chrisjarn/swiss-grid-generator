@@ -23,6 +23,7 @@ import {
   SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/gui/panels/settings/settings-panel-styles"
+import { useTranslation } from "@/lib/i18n"
 
 const TYPOGRAPHY_SCALE_OPTIONS: Array<{ value: TypographyScale; label: string }> = Object
   .entries(TYPOGRAPHY_SCALE_LABELS)
@@ -67,6 +68,7 @@ export const TypographyPanel = memo(function TypographyPanel({
   onBaseFontPreviewChange,
   isDarkMode,
 }: Props) {
+  const { t } = useTranslation()
   const [previewTypographyScale, setPreviewTypographyScale] = useState<TypographyScale | null>(null)
   const baseFontSelectPreview = useSelectRolloverPreview<FontFamily>({
     value: baseFont,
@@ -130,8 +132,8 @@ export const TypographyPanel = memo(function TypographyPanel({
 
   return (
     <PanelCard
-      title="T Y P O"
-      tooltip="Typography scale, hierarchy table, and base font; hierarchy and font lists preview on rollover"
+      title={t("settings.typography.title")}
+      tooltip={t("settings.typography.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${activeTypographyScaleLabel}, ${baseFont}`}
       onHeaderClick={onHeaderClick}
@@ -140,7 +142,7 @@ export const TypographyPanel = memo(function TypographyPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Base</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.typography.base")}</Label>}>
           <FontSelect
             value={baseFont}
             onValueChange={(value) => baseFontSelectPreview.handleValueChange(value as FontFamily)}
@@ -155,10 +157,10 @@ export const TypographyPanel = memo(function TypographyPanel({
           />
         </LabeledControlRow>
         <div className="space-y-1.5">
-          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Rhythm</Label>
+          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.rhythm")}</Label>
           <div
             role="listbox"
-            aria-label="Type rhythm"
+            aria-label={t("settings.typography.rhythmAria")}
             className={typographyRhythmListClassName}
             onMouseLeave={clearTypographyScalePreview}
           >
@@ -183,7 +185,7 @@ export const TypographyPanel = memo(function TypographyPanel({
                       <span className="min-w-0 truncate">{displayLabel.label}</span>
                       <button
                         type="button"
-                        aria-label="Shift Fibonacci sequence left"
+                        aria-label={t("settings.typography.shiftFibonacciLeft")}
                         disabled={normalizedFibonacciStartIndex <= MIN_FIBONACCI_SEQUENCE_START_INDEX}
                         className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
                         onClick={handleFibonacciSequenceStep(-1)}
@@ -192,7 +194,7 @@ export const TypographyPanel = memo(function TypographyPanel({
                       </button>
                       <button
                         type="button"
-                        aria-label="Shift Fibonacci sequence right"
+                        aria-label={t("settings.typography.shiftFibonacciRight")}
                         disabled={normalizedFibonacciStartIndex >= MAX_FIBONACCI_SEQUENCE_START_INDEX}
                         className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
                         onClick={handleFibonacciSequenceStep(1)}

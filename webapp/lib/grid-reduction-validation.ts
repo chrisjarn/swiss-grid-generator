@@ -1,4 +1,5 @@
 import type { ModulePosition, TextBlockPosition } from "./types/layout-primitives.ts"
+import { translateMessage } from "@/lib/i18n"
 
 export type GridReductionAxis = "columns" | "rows" | "grid"
 
@@ -116,10 +117,10 @@ export function findTextLayerGridReductionConflicts<Key extends string>({
 export function getGridReductionWarningMessage(axis: GridReductionAxis): string {
   switch (axis) {
     case "columns":
-      return "Cannot reduce columns: Some paragraphs or image placeholders are positioned beyond the new grid size. Please reposition or delete them first."
+      return translateMessage("status.gridReduction.columns")
     case "rows":
-      return "Cannot reduce rows: Some paragraphs or image placeholders would fall outside the new grid. Please reposition or delete them first."
+      return translateMessage("status.gridReduction.rows")
     default:
-      return "Cannot reduce the grid: Some paragraphs or image placeholders would fall outside the new grid. Please reposition or delete them first."
+      return translateMessage("status.gridReduction.grid")
   }
 }

@@ -1,6 +1,8 @@
 import { X } from "lucide-react"
 import type { ReactNode } from "react"
 
+import { LEGAL_CONTENT_SECTIONS } from "@/lib/generated-legal-content"
+import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 
 type Props = {
@@ -8,27 +10,46 @@ type Props = {
   onClose: () => void
 }
 
-type LegalSectionProps = {
-  title: string
-  children: ReactNode
+type Tone = {
+  body: string
+  emphasis: string
+  caption: string
+  action: string
+  link: string
 }
 
-function LegalSection({ title, children }: LegalSectionProps) {
-  return (
-    <section className="space-y-2 pt-[13px]">
-      <SectionHeaderRow label={title} />
-      {children}
-    </section>
-  )
+function renderInlineContent(text: string, tone: Tone, keyPrefix: string): ReactNode[] {
+  const tokenPattern = /(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\)| {2}\n|\n)/g
+  return text.split(tokenPattern).flatMap((segment, index) => {
+    if (!segment) return []
+    const key = `${keyPrefix}-${index}`
+    if (segment === "\n" || segment === "  \n") return <br key={key} />
+    if (segment.startsWith("**") && segment.endsWith("**")) {
+      return (
+        <span key={key} className={`font-medium ${tone.emphasis}`}>
+          {segment.slice(2, -2)}
+        </span>
+      )
+    }
+    const linkMatch = segment.match(/^\[([^\]]+)\]\(([^)]+)\)$/)
+    if (linkMatch) {
+      return (
+        <a key={key} href={linkMatch[2]} className={tone.link}>
+          {linkMatch[1]}
+        </a>
+      )
+    }
+    return <span key={key}>{segment}</span>
+  })
 }
 
 export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
-  const tone = isDarkMode
+  const { t } = useTranslation()
+  const tone: Tone = isDarkMode
     ? {
         body: "text-[#A8B1BF]",
         emphasis: "text-[#F4F6F8]",
         caption: "text-[#8D98AA]",
-        divider: "border-[#313A47]",
         action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
         link: "text-blue-400 hover:underline",
       }
@@ -36,117 +57,45 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         body: "text-gray-600",
         emphasis: "text-gray-900",
         caption: "text-gray-400",
-        divider: "border-gray-200",
         action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
         link: "text-blue-600 hover:underline",
       }
+
+  const noteSection = LEGAL_CONTENT_SECTIONS.find((section) => section.title === "note")
+  const contentSections = LEGAL_CONTENT_SECTIONS.filter((section) => section.title !== "note")
 
   return (
     <div className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label="L E G A L"
+          label={t("rightPanel.legal.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel="Close legal notice panel"
+          actionLabel={t("rightPanel.legal.close")}
           actionClassName={tone.action}
           onActionClick={onClose}
         />
       </div>
 
-      <section className="space-y-2">
-        <SectionHeaderRow label="Legal Notice" />
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Information according to Section 5 DDG.
-        </p>
-      </section>
+      {contentSections.map((section, sectionIndex) => (
+        <section key={section.title} className={`space-y-2 ${sectionIndex > 0 ? "pt-[13px]" : ""}`}>
+          <SectionHeaderRow label={section.title} />
+          {section.blocks.map((block, blockIndex) => (
+            <p key={`${section.title}-${blockIndex}`} className={`text-xs leading-relaxed ${tone.body}`}>
+              {renderInlineContent(block.text, tone, `${section.title}-${blockIndex}`)}
+            </p>
+          ))}
+        </section>
+      ))}
 
-      <LegalSection title="Provider">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          <span className={`font-medium ${tone.emphasis}`}>Ingo Wörner</span>
-          <br />
-          Naststr. 1
-          <br />
-          70376 Stuttgart
-          <br />
-          Germany
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Contact">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          <a href="mailto:hello@swiss-grid-generator.com" className={tone.link}>
-            hello@swiss-grid-generator.com
-          </a>
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Responsible for Own Content">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Ingo Wörner
-          <br />
-          Naststr. 1
-          <br />
-          70376 Stuttgart
-          <br />
-          Germany
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Privacy">
-        <div className={`space-y-2 text-xs leading-relaxed ${tone.body}`}>
-          <p>
-            The controller for personal data processed by Swiss Grid Generator is Ingo Wörner, contactable at the email address above.
-          </p>
-          <p>
-            The app processes account email addresses, authentication data, cloud project data, feedback messages, attached screenshots, optional support logs, and technical data required to operate the service.
-          </p>
-          <p>
-            Processing is used to provide the editor, sign-in, cloud storage, feedback, support, security, and synchronization features. Legal bases are contract performance, legitimate interests, and consent where required.
-          </p>
-        </div>
-      </LegalSection>
-
-      <LegalSection title="Cloud Storage">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Signed-in users can store projects in Supabase. User projects and uploaded project content remain the responsibility of the respective user.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Local Storage">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          The app uses local storage and IndexedDB for editor preferences, offline cache, recent local activity logs, and project synchronization. These are required for the requested editor and cloud-sync features. The app does not use advertising or analytics cookies.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Feedback">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Feedback submissions are stored in Supabase and may include email, comment, screenshots, app version, and optional local support logs. They are used only to handle support, bug reports, and product feedback.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="User Rights">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Users may request access, correction, deletion, restriction, portability, or objection by email. Users may also lodge a complaint with a competent data protection supervisory authority.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Terms of Use">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          Swiss Grid Generator is provided as a professional design tool without a guarantee of uninterrupted availability. Users are responsible for their own documents, exports, backups, and lawful use of uploaded or stored content.
-        </p>
-      </LegalSection>
-
-      <LegalSection title="Consumer Dispute Resolution">
-        <p className={`text-xs leading-relaxed ${tone.body}`}>
-          We are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.
-        </p>
-      </LegalSection>
-
-      <section className="pt-[13px]">
-        <p className={`text-[11px] leading-relaxed ${tone.caption}`}>
-          This compact legal notice is provided in English because the app interface is English only.
-        </p>
-      </section>
+      {noteSection ? (
+        <section className="pt-[13px]">
+          {noteSection.blocks.map((block, blockIndex) => (
+            <p key={`note-${blockIndex}`} className={`text-[11px] leading-relaxed ${tone.caption}`}>
+              {renderInlineContent(block.text, tone, `note-${blockIndex}`)}
+            </p>
+          ))}
+        </section>
+      ) : null}
     </div>
   )
 }

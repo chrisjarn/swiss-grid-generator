@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "re
 
 import { HeaderIconButton } from "@/shared/ui/header-icon-button"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
+import { useTranslation } from "@/lib/i18n"
 import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
 import type { HeaderAction, HeaderItem } from "@/gui/shell/hooks/useHeaderActions"
 
@@ -76,6 +77,7 @@ export function TopBar({
   onToggleFeedbackPanel,
   onToggleLegalNoticePanel,
 }: TopBarProps) {
+  const { t } = useTranslation()
   const [supportMenuOpen, setSupportMenuOpen] = useState(false)
   const supportMenuRef = useRef<HTMLDivElement | null>(null)
 
@@ -120,8 +122,8 @@ export function TopBar({
           {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
           <div ref={supportMenuRef} className="relative inline-flex h-8 w-8 items-center justify-center">
             <HeaderIconButton
-              ariaLabel={supportMenuOpen ? "Close support menu" : "Open support menu"}
-              tooltip="More"
+              ariaLabel={supportMenuOpen ? t("topBar.supportMenu.close") : t("topBar.supportMenu.open")}
+              tooltip={t("topBar.supportMenu.more")}
               variant={supportMenuOpen ? "default" : "outline"}
               aria-pressed={supportMenuOpen}
               onClick={() => setSupportMenuOpen((current) => !current)}
@@ -140,7 +142,7 @@ export function TopBar({
                     onToggleDarkMode(event)
                   }}
                 >
-                  {isDarkUi ? "Light Mode" : "Dark Mode"}
+                  {isDarkUi ? t("topBar.supportMenu.lightMode") : t("topBar.supportMenu.darkMode")}
                 </button>
                 <button
                   type="button"
@@ -150,7 +152,7 @@ export function TopBar({
                     onToggleHelpPanel()
                   }}
                 >
-                  Help
+                  {t("topBar.supportMenu.help")}
                 </button>
                 <button
                   type="button"
@@ -160,7 +162,7 @@ export function TopBar({
                     onToggleFeedbackPanel()
                   }}
                 >
-                  Feedback
+                  {t("topBar.supportMenu.feedback")}
                 </button>
                 <button
                   type="button"
@@ -170,7 +172,7 @@ export function TopBar({
                     onToggleLegalNoticePanel()
                   }}
                 >
-                  Legal Notice
+                  {t("topBar.supportMenu.legalNotice")}
                 </button>
               </div>
             ) : null}

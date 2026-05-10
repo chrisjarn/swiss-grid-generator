@@ -1,0 +1,427 @@
+{
+  "app": {
+    "name": "swiss grid generator",
+    "screenTooSmall": "screen too small",
+    "screenTooSmallMessage": "use a wider viewport to edit the grid."
+  },
+  "common": {
+    "actions": "actions",
+    "author": "author",
+    "authorOptional": "author (optional)",
+    "authorName": "author name",
+    "cancel": "cancel",
+    "close": "close",
+    "confirm": "confirm",
+    "delete": "delete",
+    "email": "email",
+    "filename": "filename",
+    "index": "index",
+    "message": "message",
+    "metadata": "metadata",
+    "noEvents": "no events",
+    "ok": "ok",
+    "project": "project",
+    "projectTitle": "project title",
+    "shortSubject": "short subject",
+    "subject": "subject",
+    "subjectOptional": "subject (optional)",
+    "title": "title",
+    "version": "version"
+  },
+  "topBar": {
+    "supportMenu": {
+      "open": "open support menu",
+      "close": "close support menu",
+      "more": "more",
+      "darkMode": "dark mode",
+      "lightMode": "light mode",
+      "help": "help",
+      "feedback": "feedback",
+      "legalNotice": "legal notice"
+    },
+    "actions": {
+      "presets": {
+        "aria": "show presets",
+        "tooltip": "presets"
+      },
+      "save": {
+        "aria": "save",
+        "tooltip": "save to library",
+        "status": "save status: {status}"
+      },
+      "import": {
+        "aria": "import",
+        "tooltip": "import project json"
+      },
+      "export": {
+        "aria": "export",
+        "tooltip": "export"
+      },
+      "undo": {
+        "aria": "undo",
+        "tooltip": "undo"
+      },
+      "redo": {
+        "aria": "redo",
+        "tooltip": "redo"
+      },
+      "smartTextZoom": {
+        "enable": "enable smart text zoom",
+        "disable": "disable smart text zoom",
+        "tooltip": "smart text edit zoom"
+      },
+      "baselines": {
+        "aria": "toggle baselines",
+        "tooltip": "toggle baselines\nshift+click: all pages"
+      },
+      "margins": {
+        "aria": "toggle margins",
+        "tooltip": "toggle margin frame\nshift+click: all pages"
+      },
+      "modules": {
+        "aria": "toggle gutter grid",
+        "tooltip": "toggle modules and gutter\nshift+click: all pages"
+      },
+      "typography": {
+        "aria": "toggle typography",
+        "tooltip": "toggle type preview\nshift+click: all pages"
+      },
+      "imagePlaceholders": {
+        "aria": "toggle image placeholders",
+        "tooltip": "toggle image placeholders\nshift+click: all pages"
+      },
+      "layers": {
+        "show": "show project panel",
+        "hide": "hide project panel",
+        "tooltip": "project panel"
+      },
+      "account": {
+        "show": "show account panel",
+        "hide": "hide account panel",
+        "tooltipSignedIn": "cloud account\nsigned in as: {email}\ncloud status: {status}",
+        "tooltipSignedOut": "cloud account\nsigned in as: not signed in\ncloud status: {status}"
+      }
+    }
+  },
+  "shortcuts": {
+    "importProject": "import project json",
+    "saveToLibrary": "save to library",
+    "exportDialog": "export dialog",
+    "undo": "undo",
+    "redo": "redo",
+    "toggleDarkMode": "toggle dark mode",
+    "toggleBaselines": "toggle baselines",
+    "toggleMargins": "toggle margins",
+    "toggleModules": "toggle modules and gutter",
+    "toggleTypography": "toggle typography",
+    "toggleImagePlaceholders": "toggle image placeholders",
+    "toggleProjectPanel": "toggle project panel",
+    "toggleHelp": "toggle help",
+    "toggleLegalNotice": "toggle legal notice sidebar",
+    "togglePresets": "toggle presets browser"
+  },
+  "settings": {
+    "canvas": {
+      "title": "c a n v a s",
+      "tooltip": "ratio preset or custom width:height, orientation, and preview rotation. lists and orientation controls preview on rollover.",
+      "ratio": "ratio",
+      "ratioAria": "canvas ratio",
+      "ratioUnits": "ratio units",
+      "width": "width",
+      "height": "height",
+      "customRatioWidth": "custom ratio width unit",
+      "customRatioHeight": "custom ratio height unit",
+      "orientation": "orientation",
+      "portrait": "portrait",
+      "portraitAria": "portrait orientation",
+      "landscape": "landscape",
+      "landscapeAria": "landscape orientation",
+      "rotation": "rotation"
+    },
+    "baseline": {
+      "title": "b a s e l i n e",
+      "tooltip": "baseline unit for grid and typography.",
+      "gridUnit": "grid unit"
+    },
+    "margins": {
+      "title": "m a r g i n s",
+      "tooltip": "margin method and custom per-side controls. method options preview on rollover.",
+      "method": "method",
+      "methodAria": "margin method",
+      "progressive": "progressive",
+      "vanDeGraaf": "van de graaf",
+      "baseline": "baseline",
+      "custom": "custom margins",
+      "top": "top",
+      "left": "left",
+      "right": "right",
+      "bottom": "bottom",
+      "customSummary": "custom t{top}x l{left}x r{right}x b{bottom}x"
+    },
+    "grid": {
+      "title": "g r i d",
+      "tooltip": "columns, rows, gutter multiple, and rhythm controls. lists preview on rollover.",
+      "rhythms": "rhythms",
+      "rhythmAria": "grid rhythm",
+      "fibonacci": "fibonacci",
+      "goldenRatio": "golden ratio",
+      "perfectFifth": "perfect fifth",
+      "perfectFourth": "perfect fourth",
+      "repetitive": "repetitive",
+      "rows": "rows",
+      "cols": "cols",
+      "columns": "columns",
+      "leftToRight": "left to right",
+      "rightToLeft": "right to left",
+      "topToBottom": "top to bottom",
+      "bottomToTop": "bottom to top",
+      "gutterMultiple": "gutter multiple"
+    },
+    "typography": {
+      "title": "t y p o",
+      "tooltip": "typography scale, hierarchy table, and base font. hierarchy and font lists preview on rollover.",
+      "base": "base",
+      "rhythm": "rhythm",
+      "rhythmAria": "type rhythm",
+      "shiftFibonacciLeft": "shift fibonacci sequence left",
+      "shiftFibonacciRight": "shift fibonacci sequence right"
+    },
+    "color": {
+      "title": "c o l o r",
+      "tooltip": "color scheme and page background swatches for image placeholders. scheme list and swatches preview on rollover.",
+      "baseScheme": "base scheme",
+      "baseSchemeAria": "base scheme",
+      "background": "background",
+      "toggleBackground": "toggle {slot} page background",
+      "slots": {
+        "paper": "paper",
+        "light": "light",
+        "mid": "mid",
+        "dark": "dark"
+      }
+    }
+  },
+  "dialogs": {
+    "notice": {
+      "actions": "actions",
+      "cancel": "cancel",
+      "confirm": "confirm",
+      "ok": "ok"
+    },
+    "saveLibrary": {
+      "title": "save to library",
+      "description": "stores the current project in the local users library.",
+      "confirm": "save to library"
+    },
+    "export": {
+      "title": "e x p o r t",
+      "description": "vector exports follow the current preview exactly, including guides, typography, and placeholders. json exports preserve the editable project document.",
+      "input": "input",
+      "preview": "preview",
+      "output": "output",
+      "bleed": "bleed",
+      "bleedWidth": "bleed width",
+      "pages": "pages",
+      "filename": "filename",
+      "titleField": "title",
+      "subject": "subject",
+      "author": "author",
+      "exportPdf": "export pdf",
+      "exportSvg": "export svg",
+      "exportIdml": "export idml",
+      "saveJson": "save json",
+      "toggleBaselines": "toggle baselines in export",
+      "toggleMargins": "toggle margins in export",
+      "toggleModules": "toggle modules in export",
+      "toggleTypography": "toggle typography in export",
+      "toggleImagePlaceholders": "toggle image placeholders in export",
+      "previewCanvas": "selected export page preview",
+      "previewBuildError": "could not build preview.",
+      "previewDrawError": "could not draw preview.",
+      "previewPrepareError": "could not prepare preview.",
+      "previewNoPage": "no page available for preview."
+    }
+  },
+  "rightPanel": {
+    "help": {
+      "title": "h e l p",
+      "close": "close help panel",
+      "jumpToTop": "jump to top",
+      "currentVersion": "current version: v {version}",
+      "action": "action",
+      "shortcut": "shortcut"
+    },
+    "legal": {
+      "title": "l e g a l",
+      "close": "close legal notice panel"
+    },
+    "feedback": {
+      "title": "f e e d b a c k",
+      "close": "close feedback panel",
+      "email": "your email",
+      "comment": "comment",
+      "commentPlaceholder": "describe the issue, idea, or workflow problem.",
+      "screenshots": "screenshots",
+      "attachScreenshots": "attach screenshots",
+      "attachmentHelp": "up to {count} images. {size} each.",
+      "attachLocalLog": "attach local log",
+      "send": "send feedback",
+      "sending": "sending...",
+      "sent": "thank you. your feedback has been sent.",
+      "requiredAttention": "some required fields need attention.",
+      "emailRequired": "email is required.",
+      "emailInvalid": "enter a valid email address.",
+      "commentRequired": "comment is required.",
+      "commentTooLong": "keep the comment below 4000 characters.",
+      "tooManyScreenshots": "attach no more than {count} screenshots.",
+      "screenshotsTooLarge": "screenshots must stay below {size} total.",
+      "invalidScreenshotType": "{name} is not a png, jpeg, or webp image.",
+      "screenshotTooLarge": "{name} is larger than {size}.",
+      "encodeError": "screenshot could not be encoded.",
+      "readError": "screenshot could not be read.",
+      "removeScreenshot": "remove {name}",
+      "logColumnMissing": "feedback log column is missing. run the support_log sql migration in supabase, then try again.",
+      "screenshotStorageMissing": "feedback screenshot storage is missing. run the feedback_screenshots sql migration in supabase, then try again.",
+      "screenshotStorageAmbiguous": "feedback screenshot storage failed because the supabase rpc has an ambiguous sql parameter. replace the add_feedback_screenshot function with the corrected version.",
+      "policyRejected": "feedback could not be sent because the supabase insert policy rejected it.",
+      "attachmentLimit": "feedback could not be sent because an attachment exceeds the supabase limits.",
+      "submitFailed": "feedback could not be sent. check supabase configuration or try again later.",
+      "submitRequested": "feedback submit requested",
+      "localLogAttached": "local log attached",
+      "feedbackSent": "feedback sent",
+      "feedbackFailed": "feedback failed",
+      "screenshot": "screenshot",
+      "screenshotsPlural": "screenshots"
+    },
+    "account": {
+      "title": "a c c o u n t",
+      "close": "close account panel",
+      "signedInAs": "signed in as",
+      "signIn": "sign in",
+      "signOut": "sign out",
+      "sendCode": "send code",
+      "resendCode": "resend code",
+      "verifyCode": "verify code",
+      "code": "code",
+      "cloudStatus": "cloud status",
+      "syncNow": "sync now",
+      "queued": "queued",
+      "conflicts": "conflicts",
+      "noLocalActivity": "no local cloud activity yet.",
+      "conflictMessage": "the active project changed locally and in the cloud. choose which copy should win.",
+      "untitledProject": "untitled project",
+      "localEdit": "local edit",
+      "lastSync": "last sync",
+      "revision": "revision",
+      "localBaseRevision": "local base r{revision}",
+      "localOnly": "local only",
+      "useCloud": "use cloud",
+      "keepLocal": "keep local"
+    }
+  },
+  "tooltips": {
+    "counter": "tooltip {index} of {total}",
+    "next": "next >",
+    "close": "close tooltip"
+  },
+  "preview": {
+    "interactionHints": {
+      "edit": "hover a layer and click the edit icon to edit.",
+      "createParagraph": "double-click empty area to create paragraph.",
+      "createImage": "shift-double-click empty module to create image placeholder.",
+      "duplicate": "use + to duplicate, also across pages • shift-drag baseline snap (overset)."
+    }
+  },
+  "status": {
+    "notices": {
+      "pageLimitTitle": "page limit reached",
+      "pageLimitMessage": "projects are capped at {count} pages.",
+      "paragraphLimitTitle": "paragraph limit reached",
+      "paragraphLimitMessage": "maximum paragraphs reached ({count}).",
+      "loadFailedTitle": "load failed",
+      "loadFailedMessage": "could not load project file.",
+      "deletedFromCloudTitle": "deleted from cloud",
+      "deletedFromCloudMessage": "the selected user layout was removed from the local library and soft-deleted in supabase. cloud status: deleted in cloud.",
+      "deletedLocallyTitle": "deleted locally",
+      "deletedLocallyQueuedMessage": "the selected user layout was removed from the local library and will be deleted from supabase the next time cloud sync is available. cloud status: delete queued.",
+      "deletedFromUsersTitle": "deleted from users",
+      "deletedFromUsersMessage": "the selected user layout was removed from the local library. cloud status: no cloud copy.",
+      "exportFailedTitle": "export failed",
+      "exportFailedPresetMessage": "could not open export for the selected preset.",
+      "savedToLibraryTitle": "saved to library",
+      "savedToLibrarySignedInMessage": "project stored in the local users library. signed-in layouts sync to the cloud automatically.",
+      "savedToLibrarySignedOutMessage": "project stored in the local users library. sign in to sync saved layouts to the cloud.",
+      "librarySaveFailedTitle": "library save failed",
+      "librarySaveFailedMessage": "could not store the project in the local library.",
+      "conflictResolvedTitle": "conflict resolved",
+      "conflictResolutionFailedTitle": "conflict resolution failed",
+      "conflictResolvedMessage": "the local project will overwrite the cloud copy on the next successful sync.",
+      "conflictResolutionFailedMessage": "could not resolve the active project conflict. check the cloud activity log and try again.",
+      "conflictCloudLoadFailedMessage": "could not load the cloud copy for the active project.",
+      "cloudCopyRestoredTitle": "cloud copy restored",
+      "cloudCopyRestoredMessage": "the active project now uses the cloud copy and is marked synced locally.",
+      "conflictDeletedTitle": "conflict deleted",
+      "conflictDeletedCloudMessage": "the conflicted project was removed locally and soft-deleted in supabase.",
+      "conflictDeleteQueuedTitle": "conflict delete queued",
+      "conflictDeleteQueuedMessage": "the conflicted project was removed locally and will be soft-deleted in supabase when cloud sync is available.",
+      "conflictDeletedLocallyTitle": "conflict deleted locally",
+      "conflictDeletedLocallyMessage": "the conflicted local project was removed from the users library.",
+      "untitledProject": "untitled project"
+    },
+    "gridReduction": {
+      "columns": "cannot reduce columns: some paragraphs or image placeholders are positioned beyond the new grid size. reposition or delete them first.",
+      "rows": "cannot reduce rows: some paragraphs or image placeholders would fall outside the new grid. reposition or delete them first.",
+      "grid": "cannot reduce the grid: some paragraphs or image placeholders would fall outside the new grid. reposition or delete them first."
+    },
+    "save": {
+      "notSavedLocally": "not saved locally",
+      "syncedToCloud": "synced to cloud",
+      "savedToLocalStore": "saved to local store"
+    },
+    "auth": {
+      "signOutFailed": "could not sign out of the cloud account.",
+      "sessionRestoreFailed": "could not restore the cloud session.",
+      "verifyCodeFailed": "could not verify the sign-in code.",
+      "sendCodeFailed": "could not send the sign-in code.",
+      "authUnavailable": "cloud auth is unavailable. check the supabase url and anon key in the local environment.",
+      "emailRequired": "enter an email address before requesting a sign-in code.",
+      "codeRequired": "enter the six-digit sign-in code from your email.",
+      "codeInvalid": "this sign-in code is invalid or expired. request a new code and try again.",
+      "rateLimit": "too many sign-in codes were requested. wait a moment and try again. if this keeps happening, check the supabase auth rate limits and smtp setup.",
+      "signOutUnavailable": "supabase is temporarily unavailable and could not complete sign-out. wait a moment and try again.",
+      "sessionUnavailable": "supabase is temporarily unavailable and the cloud session could not be restored right now. wait a moment and try again.",
+      "verifyUnavailable": "supabase is temporarily unavailable and could not verify the sign-in code. wait a moment and try again.",
+      "sendUnavailable": "supabase is temporarily unavailable and could not send the sign-in code. wait a moment and try again.",
+      "emailNotAllowed": "this email address is not allowed by the current supabase mail configuration. check the smtp sender setup or authorized test addresses.",
+      "redirectNotAllowed": "this sign-in redirect is not allowed. check supabase authentication url configuration for the current app origin.",
+      "signOutNetwork": "could not reach supabase to sign out. check the network connection and try again.",
+      "sessionNetwork": "could not reach supabase to restore the cloud session. check the network connection and try again.",
+      "network": "could not reach supabase. check the network connection and the configured project url, then try again.",
+      "signOutWithRaw": "could not sign out of the cloud account. supabase said: {message}",
+      "sessionWithRaw": "could not restore the cloud session. supabase said: {message}",
+      "verifyWithRaw": "could not verify the sign-in code. supabase said: {message}",
+      "sendWithRaw": "could not send the sign-in code. supabase said: {message}"
+    },
+    "cloud": {
+      "conflictTitle": "cloud sync conflict",
+      "conflictMessage": "the local project and the cloud copy changed at the same time. the local project was kept and marked as conflicted.",
+      "failed": "cloud sync failed.",
+      "sessionExpiredTitle": "cloud session expired",
+      "sessionExpiredMessage": "the cloud session is no longer valid. sign in again to resume sync.",
+      "permissionsTitle": "cloud permissions error",
+      "permissionsMessage": "cloud sync is blocked by supabase permissions. check the projects table rls policies and the storage bucket policies.",
+      "storageMissingTitle": "cloud storage missing",
+      "storageMissingMessage": "the `project-archives` storage bucket is missing or inaccessible. check the bucket name and storage policies in supabase.",
+      "databaseMissingTitle": "cloud database setup incomplete",
+      "databaseMissingMessage": "the supabase `projects` table or its expected columns are missing. run the sql setup for the cloud project store again.",
+      "rateLimitTitle": "cloud rate limit reached",
+      "rateLimitMessage": "supabase temporarily refused more cloud requests. wait a moment and try again.",
+      "serviceUnavailableTitle": "cloud service unavailable",
+      "serviceUnavailableMessage": "supabase is temporarily unavailable. local changes remain safe in dexie and will sync when the service recovers.",
+      "offlineTitle": "cloud offline",
+      "offlineMessage": "could not reach supabase. local changes remain in dexie and can sync when the connection returns.",
+      "errorTitle": "cloud sync error",
+      "errorMessage": "cloud sync failed. supabase said: {message}"
+    }
+  }
+}

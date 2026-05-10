@@ -20,6 +20,7 @@ import {
   type CanvasRatioKey,
 } from "@/lib/grid-calculator"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
+import { useTranslation } from "@/lib/i18n"
 
 function parseCustomRatioUnitInput(value: string): number {
   const normalized = value.trim().replace(/\s+/g, "").replace(/,/g, ".")
@@ -64,6 +65,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
   onRotationChange,
   isDarkMode,
 }: Props) {
+  const { t } = useTranslation()
   const [customRatioWidthInput, setCustomRatioWidthInput] = useState(customRatioWidth.toString())
   const [customRatioHeightInput, setCustomRatioHeightInput] = useState(customRatioHeight.toString())
 
@@ -97,8 +99,8 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
 
   return (
     <PanelCard
-      title="C A N V A S"
-      tooltip="Ratio preset or custom width:height, orientation, and preview rotation; ratio lists and orientation controls preview on rollover"
+      title={t("settings.canvas.title")}
+      tooltip={t("settings.canvas.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${ratioLabel}, ${orientation}, ${rotation}°`}
       onHeaderClick={onHeaderClick}
@@ -107,10 +109,10 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>Ratio</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.canvas.ratio")}</Label>
         <div
           role="listbox"
-          aria-label="Canvas ratio"
+          aria-label={t("settings.canvas.ratioAria")}
           className={ratioListClassName}
           onMouseLeave={() => onCanvasRatioPreviewChange?.(null)}
         >
@@ -139,14 +141,14 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       {canvasRatio === "custom" ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Ratio Units</Label>
+            <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.ratioUnits")}</Label>
             <span className={valueBadgeClassName}>
               {customRatioText}
             </span>
           </div>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
             <div className="space-y-1">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Width</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.width")}</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -162,12 +164,12 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
                   ;(event.currentTarget as HTMLInputElement).blur()
                 }}
                 className={inputClassName}
-                aria-label="Custom ratio width unit"
+                aria-label={t("settings.canvas.customRatioWidth")}
               />
             </div>
             <span className="pb-2 text-sm text-gray-500">:</span>
             <div className="space-y-1">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Height</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.height")}</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -183,23 +185,23 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
                   ;(event.currentTarget as HTMLInputElement).blur()
                 }}
                 className={inputClassName}
-                aria-label="Custom ratio height unit"
+                aria-label={t("settings.canvas.customRatioHeight")}
               />
             </div>
           </div>
         </div>
       ) : null}
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Orientation</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.orientation")}</Label>}>
           <div
             className="grid grid-cols-2 gap-1.5"
             onMouseLeave={() => onOrientationPreviewChange?.(null)}
           >
             <button
               type="button"
-              aria-label="Portrait orientation"
+              aria-label={t("settings.canvas.portraitAria")}
               aria-pressed={orientation === "portrait"}
-              title="Portrait"
+              title={t("settings.canvas.portrait")}
               className={getSettingsIconButtonClassName(isDarkMode, orientation === "portrait")}
               onFocus={() => onOrientationPreviewChange?.("portrait")}
               onBlur={() => onOrientationPreviewChange?.(null)}
@@ -210,9 +212,9 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
             </button>
             <button
               type="button"
-              aria-label="Landscape orientation"
+              aria-label={t("settings.canvas.landscapeAria")}
               aria-pressed={orientation === "landscape"}
-              title="Landscape"
+              title={t("settings.canvas.landscape")}
               className={getSettingsIconButtonClassName(isDarkMode, orientation === "landscape")}
               onFocus={() => onOrientationPreviewChange?.("landscape")}
               onBlur={() => onOrientationPreviewChange?.(null)}
@@ -226,7 +228,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       </div>
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>Rotation</Label>
+          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.rotation")}</Label>
           <span className={valueBadgeClassName}>{rotation}°</span>
         </div>
         <DebouncedSlider

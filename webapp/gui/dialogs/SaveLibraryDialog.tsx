@@ -2,6 +2,7 @@
 
 import { Button } from "@/shared/ui/button"
 import { Label } from "@/shared/ui/label"
+import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 import {
   getCompactActionButtonClassName,
@@ -35,6 +36,7 @@ export function SaveLibraryDialog({
   onAuthorChange,
   onConfirm,
 }: Props) {
+  const { t } = useTranslation()
   if (!isOpen) return null
 
   const actionButtonClassName = getCompactActionButtonClassName({ isDarkMode: isDarkUi })
@@ -51,43 +53,43 @@ export function SaveLibraryDialog({
     >
       <div className={getPopupSurfaceClassName(isDarkUi, "flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden")}>
         <div className={`shrink-0 space-y-1 border-b pb-4 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
-          <SectionHeaderRow label="Save to Library" />
+          <SectionHeaderRow label={t("dialogs.saveLibrary.title")} />
           <p className={`text-xs leading-relaxed ${mutedTextClassName}`}>
-            Stores the current project in the local `Users` library.
+            {t("dialogs.saveLibrary.description")}
           </p>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto py-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <SectionHeaderRow label="Metadata" />
+              <SectionHeaderRow label={t("common.metadata")} />
               <div className="space-y-2">
-                <Label>Project Title</Label>
+                <Label>{t("common.projectTitle")}</Label>
                 <input
                   type="text"
                   value={title}
                   onChange={(event) => onTitleChange(event.target.value)}
                   className={inputClassName}
-                  placeholder="Project title"
+                  placeholder={t("common.projectTitle")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Subject (optional)</Label>
+                <Label>{t("common.subjectOptional")}</Label>
                 <textarea
                   value={description}
                   onChange={(event) => onDescriptionChange(event.target.value)}
                   className={`${inputClassName} min-h-20 leading-[1.45]`}
-                  placeholder="Short subject"
+                  placeholder={t("common.shortSubject")}
                 />
               </div>
               <div className="space-y-2">
-                <Label>Author (optional)</Label>
+                <Label>{t("common.authorOptional")}</Label>
                 <input
                   type="text"
                   value={author}
                   onChange={(event) => onAuthorChange(event.target.value)}
                   className={inputClassName}
-                  placeholder="Author name"
+                  placeholder={t("common.authorName")}
                 />
               </div>
             </div>
@@ -95,13 +97,13 @@ export function SaveLibraryDialog({
         </div>
 
         <div className="shrink-0 space-y-2 pt-4">
-          <SectionHeaderRow label="Actions" />
+          <SectionHeaderRow label={t("common.actions")} />
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" size="sm" className={`${actionButtonClassName} w-full`} onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button size="sm" className={`${actionButtonClassName} w-full`} onClick={onConfirm}>
-              Save to Library
+              {t("dialogs.saveLibrary.confirm")}
             </Button>
           </div>
         </div>

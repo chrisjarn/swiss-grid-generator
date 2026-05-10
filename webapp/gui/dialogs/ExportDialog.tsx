@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 import { Button } from "@/shared/ui/button"
 import { ExportPreviewCanvas } from "@/gui/dialogs/ExportPreviewCanvas"
 import { Label } from "@/shared/ui/label"
+import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 import {
   getCompactActionButtonClassName,
@@ -96,6 +97,7 @@ export function ExportDialog({
   exportProgress,
   previewProject,
 }: Props) {
+  const { t } = useTranslation()
   const [isRangeInvalid, setIsRangeInvalid] = useState(false)
   const rangeInputRef = useRef<HTMLInputElement | null>(null)
   if (!isOpen) return null
@@ -130,7 +132,13 @@ export function ExportDialog({
     if (!commitRangeInput()) return
     onConfirm()
   }
-  const idleActionLabel = isPdfExport ? "Export PDF" : isSvgExport ? "Export SVG" : isJsonExport ? "Save JSON" : "Export IDML"
+  const idleActionLabel = isPdfExport
+    ? t("dialogs.export.exportPdf")
+    : isSvgExport
+      ? t("dialogs.export.exportSvg")
+      : isJsonExport
+        ? t("dialogs.export.saveJson")
+        : t("dialogs.export.exportIdml")
   const activeActionLabel = exportProgress
     ? exportProgress.currentLabel || idleActionLabel
     : idleActionLabel
@@ -152,15 +160,15 @@ export function ExportDialog({
         </div>
         <div className="space-y-4">
           <div className="space-y-1">
-            <SectionHeaderRow label="E X P O R T" />
+            <SectionHeaderRow label={t("dialogs.export.title")} />
             <p className={helpTextClassName}>
-              Vector exports follow the current preview exactly, including guides, typography, and placeholders. JSON exports preserve the editable project document.
+              {t("dialogs.export.description")}
             </p>
           </div>
 
           <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-4">
             <div className="space-y-2">
-              <SectionHeaderRow label="Input" className="items-start" />
+              <SectionHeaderRow label={t("dialogs.export.input")} className="items-start" />
               <div className="grid grid-cols-1 gap-1.5">
                 <Button
                   type="button"
@@ -169,7 +177,7 @@ export function ExportDialog({
                   className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showBaselines })} w-full`}
                   disabled={isExporting}
                   onClick={onToggleBaselines}
-                  aria-label="Toggle baselines in export"
+                  aria-label={t("dialogs.export.toggleBaselines")}
                 >
                   <Rows3 className="h-3.5 w-3.5" />
                 </Button>
@@ -180,7 +188,7 @@ export function ExportDialog({
                   className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showMargins })} w-full`}
                   disabled={isExporting}
                   onClick={onToggleMargins}
-                  aria-label="Toggle margins in export"
+                  aria-label={t("dialogs.export.toggleMargins")}
                 >
                   <SquareDashed className="h-3.5 w-3.5" />
                 </Button>
@@ -191,7 +199,7 @@ export function ExportDialog({
                   className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showModules })} w-full`}
                   disabled={isExporting}
                   onClick={onToggleModules}
-                  aria-label="Toggle modules in export"
+                  aria-label={t("dialogs.export.toggleModules")}
                 >
                   <LayoutGrid className="h-3.5 w-3.5" />
                 </Button>
@@ -202,7 +210,7 @@ export function ExportDialog({
                   className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showTypography })} w-full`}
                   disabled={isExporting}
                   onClick={onToggleTypography}
-                  aria-label="Toggle typography in export"
+                  aria-label={t("dialogs.export.toggleTypography")}
                 >
                   <Type className="h-3.5 w-3.5" />
                 </Button>
@@ -213,7 +221,7 @@ export function ExportDialog({
                   className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: showImagePlaceholders })} w-full`}
                   disabled={isExporting}
                   onClick={onToggleImagePlaceholders}
-                  aria-label="Toggle image placeholders in export"
+                  aria-label={t("dialogs.export.toggleImagePlaceholders")}
                 >
                   <ImageIcon className="h-3.5 w-3.5" />
                 </Button>
@@ -221,7 +229,7 @@ export function ExportDialog({
             </div>
 
             <div className="space-y-2 md:col-span-2">
-              <SectionHeaderRow label="Preview" className="items-start" />
+              <SectionHeaderRow label={t("dialogs.export.preview")} className="items-start" />
               <ExportPreviewCanvas
                 project={previewProject}
                 pageNumber={exportRangeStartDraft}
@@ -237,7 +245,7 @@ export function ExportDialog({
             </div>
 
             <div className="space-y-2">
-              <SectionHeaderRow label="Output" className="items-start" />
+              <SectionHeaderRow label={t("dialogs.export.output")} className="items-start" />
               <div className="grid grid-cols-1 gap-1.5">
                 {EXPORT_FORMATS.map((format) => (
                   <Button
@@ -262,7 +270,7 @@ export function ExportDialog({
                     onClick={() => onBleedEnabledChange(!bleedEnabledDraft)}
                     aria-pressed={bleedEnabledDraft}
                   >
-                    Bleed
+                    {t("dialogs.export.bleed")}
                   </Button>
                 ) : null}
               </div>
@@ -271,7 +279,7 @@ export function ExportDialog({
 
           {isVectorExport && bleedEnabledDraft ? (
             <div className={sectionGridClassName}>
-              <Label className={centeredRowLabelClassName}>Bleed Width</Label>
+              <Label className={centeredRowLabelClassName}>{t("dialogs.export.bleedWidth")}</Label>
               <input
                 type="number"
                 min={0}
@@ -286,7 +294,7 @@ export function ExportDialog({
 
           {showPageRangeControls ? (
             <div className={sectionGridClassName}>
-              <Label className={centeredRowLabelClassName}>Pages</Label>
+              <Label className={centeredRowLabelClassName}>{t("dialogs.export.pages")}</Label>
               <input
                 ref={rangeInputRef}
                 type="text"
@@ -314,7 +322,7 @@ export function ExportDialog({
           ) : null}
 
           <div className={sectionGridClassName}>
-            <Label className={centeredRowLabelClassName}>Filename</Label>
+            <Label className={centeredRowLabelClassName}>{t("dialogs.export.filename")}</Label>
             <input
               type="text"
               value={exportFilenameDraft}
@@ -326,38 +334,38 @@ export function ExportDialog({
           </div>
 
           <div className={sectionGridClassName}>
-            <Label className={centeredRowLabelClassName}>Title</Label>
+            <Label className={centeredRowLabelClassName}>{t("dialogs.export.titleField")}</Label>
             <input
               type="text"
               value={jsonTitleDraft}
               onChange={(event) => onJsonTitleChange(event.target.value)}
               disabled={isExporting}
               className={`${compactInputClassName} col-span-3`}
-              placeholder="Project title"
+              placeholder={t("common.projectTitle")}
             />
-            <Label className={`${SECTION_HEADLINE_CLASSNAME} flex min-h-20 items-start pt-2 text-left leading-none`}>Subject</Label>
+            <Label className={`${SECTION_HEADLINE_CLASSNAME} flex min-h-20 items-start pt-2 text-left leading-none`}>{t("dialogs.export.subject")}</Label>
             <textarea
               value={jsonDescriptionDraft}
               onChange={(event) => onJsonDescriptionChange(event.target.value)}
               disabled={isExporting}
               className={`${compactInputClassName} col-span-3 min-h-20 leading-[1.45]`}
-              placeholder="Short subject"
+              placeholder={t("common.shortSubject")}
             />
-            <Label className={centeredRowLabelClassName}>Author</Label>
+            <Label className={centeredRowLabelClassName}>{t("dialogs.export.author")}</Label>
             <input
               type="text"
               value={jsonAuthorDraft}
               onChange={(event) => onJsonAuthorChange(event.target.value)}
               disabled={isExporting}
               className={`${compactInputClassName} col-span-3`}
-              placeholder="Author name"
+              placeholder={t("common.authorName")}
             />
           </div>
 
           <div className="grid grid-cols-4 items-start gap-3">
-            <Label className={centeredRowLabelClassName}>Actions</Label>
+            <Label className={centeredRowLabelClassName}>{t("common.actions")}</Label>
             <Button variant="outline" size="sm" className={`${actionButtonClassName} w-full`} onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button size="sm" className={`${actionButtonClassName} col-span-2 w-full justify-center gap-1.5`} onClick={confirmExport} disabled={isExporting}>
               {isExporting ? (

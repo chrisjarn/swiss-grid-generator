@@ -15,6 +15,7 @@ import {
   UserRound,
   ZoomIn,
 } from "lucide-react"
+import { translateMessage } from "@/lib/i18n"
 import type { PreviewHeaderShortcutId } from "@/lib/preview-header-shortcuts"
 
 export type SidebarPanel = "help" | "legal" | "layers" | "feedback" | "account" | null
@@ -73,17 +74,18 @@ type Args = {
 export function useHeaderActions(args: Args) {
   const canSaveOrExport = args.hasPreviewLayout && !args.showPresetsBrowser
   const canUseLayerControls = args.hasPreviewLayout && !args.showPresetsBrowser
+  const t = translateMessage
   const accountTooltip = args.accountUserEmail
-    ? `Cloud account\nSigned in as: ${args.accountUserEmail}\nCloud status: ${args.accountCloudStatusLabel}`
-    : `Cloud account\nSigned in as: Not signed in\nCloud status: ${args.accountCloudStatusLabel}`
+    ? t("topBar.actions.account.tooltipSignedIn", { email: args.accountUserEmail, status: args.accountCloudStatusLabel })
+    : t("topBar.actions.account.tooltipSignedOut", { status: args.accountCloudStatusLabel })
 
   const fileGroup: HeaderItem[] = [
     {
       type: "action",
       action: {
         key: "presets",
-        ariaLabel: "Show presets",
-        tooltip: "Presets",
+        ariaLabel: t("topBar.actions.presets.aria"),
+        tooltip: t("topBar.actions.presets.tooltip"),
         shortcutId: "toggle_example_panel",
         variant: args.showPresetsBrowser ? "default" : "outline",
         pressed: args.showPresetsBrowser,
@@ -95,8 +97,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "save",
-        ariaLabel: "Save",
-        tooltip: `Save to Library\nSave status: ${args.saveStatusLabel}`,
+        ariaLabel: t("topBar.actions.save.aria"),
+        tooltip: `${t("topBar.actions.save.tooltip")}\n${t("topBar.actions.save.status", { status: args.saveStatusLabel })}`,
         shortcutId: "save_to_library",
         showStatusDot: args.hasPreviewLayout,
         statusDotClassName: args.saveStatusDotClassName,
@@ -109,8 +111,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "import",
-        ariaLabel: "Import",
-        tooltip: "Import project JSON",
+        ariaLabel: t("topBar.actions.import.aria"),
+        tooltip: t("topBar.actions.import.tooltip"),
         shortcutId: "import_project",
         onClick: args.onImportProject,
         icon: <Download className="h-4 w-4" />,
@@ -120,8 +122,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "export",
-        ariaLabel: "Export",
-        tooltip: "Export",
+        ariaLabel: t("topBar.actions.export.aria"),
+        tooltip: t("topBar.actions.export.tooltip"),
         shortcutId: "open_export",
         disabled: !canSaveOrExport,
         onClick: args.onOpenExportDialog,
@@ -133,8 +135,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "undo",
-        ariaLabel: "Undo",
-        tooltip: "Undo",
+        ariaLabel: t("topBar.actions.undo.aria"),
+        tooltip: t("topBar.actions.undo.tooltip"),
         shortcutId: "undo",
         disabled: !args.canUndo,
         onClick: args.onUndo,
@@ -145,8 +147,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "redo",
-        ariaLabel: "Redo",
-        tooltip: "Redo",
+        ariaLabel: t("topBar.actions.redo.aria"),
+        tooltip: t("topBar.actions.redo.tooltip"),
         shortcutId: "redo",
         disabled: !args.canRedo,
         onClick: args.onRedo,
@@ -160,8 +162,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "smart-text-zoom",
-        ariaLabel: args.smartTextZoomEnabled ? "Disable smart text zoom" : "Enable smart text zoom",
-        tooltip: "Smart text edit zoom",
+        ariaLabel: args.smartTextZoomEnabled ? t("topBar.actions.smartTextZoom.disable") : t("topBar.actions.smartTextZoom.enable"),
+        tooltip: t("topBar.actions.smartTextZoom.tooltip"),
         variant: args.smartTextZoomEnabled ? "default" : "outline",
         pressed: args.smartTextZoomEnabled,
         disabled: !args.hasPreviewLayout,
@@ -174,8 +176,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "baselines",
-        ariaLabel: "Toggle baselines",
-        tooltip: "Toggle baselines\nShift+click: all pages",
+        ariaLabel: t("topBar.actions.baselines.aria"),
+        tooltip: t("topBar.actions.baselines.tooltip"),
         shortcutId: "toggle_baselines",
         variant: args.showBaselines ? "default" : "outline",
         pressed: args.showBaselines,
@@ -188,8 +190,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "margins",
-        ariaLabel: "Toggle margins",
-        tooltip: "Toggle margin frame\nShift+click: all pages",
+        ariaLabel: t("topBar.actions.margins.aria"),
+        tooltip: t("topBar.actions.margins.tooltip"),
         shortcutId: "toggle_margins",
         variant: args.showMargins ? "default" : "outline",
         pressed: args.showMargins,
@@ -202,8 +204,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "modules",
-        ariaLabel: "Toggle gutter grid",
-        tooltip: "Toggle modules and gutter\nShift+click: all pages",
+        ariaLabel: t("topBar.actions.modules.aria"),
+        tooltip: t("topBar.actions.modules.tooltip"),
         shortcutId: "toggle_modules",
         variant: args.showModules ? "default" : "outline",
         pressed: args.showModules,
@@ -216,8 +218,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "typography",
-        ariaLabel: "Toggle typography",
-        tooltip: "Toggle type preview\nShift+click: all pages",
+        ariaLabel: t("topBar.actions.typography.aria"),
+        tooltip: t("topBar.actions.typography.tooltip"),
         shortcutId: "toggle_typography",
         variant: args.showTypography ? "default" : "outline",
         pressed: args.showTypography,
@@ -230,8 +232,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "image-placeholders",
-        ariaLabel: "Toggle image placeholders",
-        tooltip: "Toggle image placeholders\nShift+click: all pages",
+        ariaLabel: t("topBar.actions.imagePlaceholders.aria"),
+        tooltip: t("topBar.actions.imagePlaceholders.tooltip"),
         shortcutId: "toggle_image_placeholders",
         variant: args.showImagePlaceholders ? "default" : "outline",
         pressed: args.showImagePlaceholders,
@@ -245,8 +247,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "layers",
-        ariaLabel: args.showLayers ? "Hide project panel" : "Show project panel",
-        tooltip: "Project panel",
+        ariaLabel: args.showLayers ? t("topBar.actions.layers.hide") : t("topBar.actions.layers.show"),
+        tooltip: t("topBar.actions.layers.tooltip"),
         shortcutId: "toggle_layers_panel",
         variant: args.showLayers ? "default" : "outline",
         pressed: args.showLayers,
@@ -260,7 +262,7 @@ export function useHeaderActions(args: Args) {
   const sidebarGroup: HeaderAction[] = [
     {
       key: "account",
-      ariaLabel: args.activeSidebarPanel === "account" ? "Hide account panel" : "Show account panel",
+      ariaLabel: args.activeSidebarPanel === "account" ? t("topBar.actions.account.hide") : t("topBar.actions.account.show"),
       tooltip: accountTooltip,
       showStatusDot: true,
       statusDotClassName: args.accountStatusDotClassName,

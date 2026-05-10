@@ -80,6 +80,7 @@ import {
   getSaveStatusIndicatorLabel,
   type SaveStatusIndicatorStatus,
 } from "@/lib/cloud-status-indicator"
+import { translateMessage } from "@/lib/i18n"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
 const LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY = "swiss-grid-generator.layout-open-tooltip-cursor"
@@ -433,8 +434,8 @@ export function ShellModelView() {
   }, [activeLayoutOpenTooltip, setLayoutOpenTooltipByIndex])
   const handleProjectPageLimitReached = useCallback((limit: number) => {
     handleRequestNotice({
-      title: "Page Limit Reached",
-      message: `This project already has ${limit} pages. Delete a page before adding another.`,
+      title: translateMessage("status.notices.pageLimitTitle"),
+      message: translateMessage("status.notices.pageLimitMessage", { count: limit }),
     })
   }, [handleRequestNotice])
   const handleRequestGridReductionWarning = useCallback((message: string) => {
@@ -1138,8 +1139,8 @@ export function ShellModelView() {
   const projectMetadata = project.metadata
   const handleProjectLoadFailed = useCallback(() => {
     handleRequestNotice({
-      title: "Load Failed",
-      message: "Could not load project file.",
+      title: translateMessage("status.notices.loadFailedTitle"),
+      message: translateMessage("status.notices.loadFailedMessage"),
     })
   }, [handleRequestNotice])
 
@@ -1239,24 +1240,24 @@ export function ShellModelView() {
 
     if (deleteResult === "deleted_cloud") {
       handleRequestNotice({
-        title: "Deleted from Cloud",
-        message: "The selected user layout was removed from the local library and soft-deleted in Supabase. Cloud status: deleted in cloud.",
+        title: translateMessage("status.notices.deletedFromCloudTitle"),
+        message: translateMessage("status.notices.deletedFromCloudMessage"),
       })
       return
     }
 
     if (deleteResult === "queued_cloud_delete") {
       handleRequestNotice({
-        title: "Deleted Locally",
-        message: "The selected user layout was removed from the local library and will be deleted from Supabase the next time cloud sync is available. Cloud status: delete queued.",
+        title: translateMessage("status.notices.deletedLocallyTitle"),
+        message: translateMessage("status.notices.deletedLocallyQueuedMessage"),
       })
       return
     }
 
     if (deleteResult === "purged_local") {
       handleRequestNotice({
-        title: "Deleted from Users",
-        message: "The selected user layout was removed from the local library. Cloud status: no cloud copy.",
+        title: translateMessage("status.notices.deletedFromUsersTitle"),
+        message: translateMessage("status.notices.deletedFromUsersMessage"),
       })
     }
   }, [activeUserProjectId, deleteProjectByLocalId, handleRequestNotice])
@@ -1625,8 +1626,8 @@ export function ShellModelView() {
     } catch (error) {
       console.error(error)
       handleRequestNotice({
-        title: "Export Failed",
-        message: "Could not open export for the selected preset.",
+        title: translateMessage("status.notices.exportFailedTitle"),
+        message: translateMessage("status.notices.exportFailedPresetMessage"),
       })
     }
   }, [exportActions, handleRequestNotice])
@@ -1634,7 +1635,7 @@ export function ShellModelView() {
   const persistActiveUserProjectPromiseRef = useRef<Promise<void> | null>(null)
 
   const handleSaveToLibrary = useCallback(async () => {
-    const fallbackStem = toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || "Untitled Project"
+    const fallbackStem = toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("status.notices.untitledProject")
     const trimmedTitle = effectiveProjectMetadata.title.trim()
     const trimmedDescription = effectiveProjectMetadata.description.trim()
     const trimmedAuthor = effectiveProjectMetadata.author.trim()
@@ -1682,16 +1683,16 @@ export function ShellModelView() {
       exportActions.setIsSaveLibraryDialogOpen(false)
       markClean()
       handleRequestNotice({
-        title: "Saved to Library",
+        title: translateMessage("status.notices.savedToLibraryTitle"),
         message: user
-          ? "Project stored in the local Users library. Signed-in layouts sync to the cloud automatically."
-          : "Project stored in the local Users library. Sign in to sync saved layouts to the cloud.",
+          ? translateMessage("status.notices.savedToLibrarySignedInMessage")
+          : translateMessage("status.notices.savedToLibrarySignedOutMessage"),
       })
     } catch (error) {
       console.error(error)
       handleRequestNotice({
-        title: "Library Save Failed",
-        message: "Could not store the project in the local library.",
+        title: translateMessage("status.notices.librarySaveFailedTitle"),
+        message: translateMessage("status.notices.librarySaveFailedMessage"),
       })
     }
   }, [
@@ -1733,7 +1734,7 @@ export function ShellModelView() {
       try {
         const savedId = await saveProjectToUserLibrary({
           id: activeUserProjectId,
-          label: normalizedMetadata.title || toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || "Untitled Project",
+          label: normalizedMetadata.title || toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("status.notices.untitledProject"),
           title: normalizedMetadata.title,
           description: normalizedMetadata.description,
           author: normalizedMetadata.author,
@@ -1793,10 +1794,12 @@ export function ShellModelView() {
     if (!activeUserProjectId) return
     const resolved = await resolveConflictByLocalId(activeUserProjectId, "keep_local")
     handleRequestNotice({
-      title: resolved ? "Conflict Resolved" : "Conflict Resolution Failed",
+      title: resolved
+        ? translateMessage("status.notices.conflictResolvedTitle")
+        : translateMessage("status.notices.conflictResolutionFailedTitle"),
       message: resolved
-        ? "The local project will overwrite the cloud copy on the next successful sync."
-        : "Could not resolve the active project conflict. Check the cloud activity log and try again.",
+        ? translateMessage("status.notices.conflictResolvedMessage")
+        : translateMessage("status.notices.conflictResolutionFailedMessage"),
     })
   }, [activeUserProjectId, handleRequestNotice, resolveConflictByLocalId])
 
@@ -1805,8 +1808,8 @@ export function ShellModelView() {
     const resolved = await resolveConflictByLocalId(activeUserProjectId, "use_cloud")
     if (!resolved) {
       handleRequestNotice({
-        title: "Conflict Resolution Failed",
-        message: "Could not load the cloud copy for the active project.",
+        title: translateMessage("status.notices.conflictResolutionFailedTitle"),
+        message: translateMessage("status.notices.conflictCloudLoadFailedMessage"),
       })
       return
     }
@@ -1817,8 +1820,8 @@ export function ShellModelView() {
       markClean()
     }
     handleRequestNotice({
-      title: "Cloud Copy Restored",
-      message: "The active project now uses the cloud copy and is marked synced locally.",
+      title: translateMessage("status.notices.cloudCopyRestoredTitle"),
+      message: translateMessage("status.notices.cloudCopyRestoredMessage"),
     })
   }, [activeUserProjectId, handleApplyLoadedProject, handleRequestNotice, markClean, resolveConflictByLocalId])
 
@@ -1830,23 +1833,23 @@ export function ShellModelView() {
 
     if (deleteResult === "deleted_cloud") {
       handleRequestNotice({
-        title: "Conflict Deleted",
-        message: "The conflicted project was removed locally and soft-deleted in Supabase.",
+        title: translateMessage("status.notices.conflictDeletedTitle"),
+        message: translateMessage("status.notices.conflictDeletedCloudMessage"),
       })
       return
     }
 
     if (deleteResult === "queued_cloud_delete") {
       handleRequestNotice({
-        title: "Conflict Delete Queued",
-        message: "The conflicted project was removed locally and will be soft-deleted in Supabase when cloud sync is available.",
+        title: translateMessage("status.notices.conflictDeleteQueuedTitle"),
+        message: translateMessage("status.notices.conflictDeleteQueuedMessage"),
       })
       return
     }
 
     handleRequestNotice({
-      title: "Conflict Deleted Locally",
-      message: "The conflicted local project was removed from the Users library.",
+      title: translateMessage("status.notices.conflictDeletedLocallyTitle"),
+      message: translateMessage("status.notices.conflictDeletedLocallyMessage"),
     })
   }, [
     activeUserProjectId,

@@ -1,3 +1,5 @@
+import { translateMessage } from "@/lib/i18n"
+
 export type CloudSyncIndicatorStatus = "signed_out" | "idle" | "syncing" | "synced" | "offline" | "error" | "conflict"
 export type PresetSyncIndicatorStatus = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type SaveStatusIndicatorStatus = "unsaved" | "local" | "synced"
@@ -39,7 +41,7 @@ export function getSaveStatusIndicatorClassName(status: SaveStatusIndicatorStatu
 }
 
 export function getSaveStatusIndicatorLabel(status: SaveStatusIndicatorStatus): string {
-  if (status === "unsaved") return "Not saved locally"
-  if (status === "synced") return "Synced to cloud"
-  return "Saved to local store"
+  if (status === "unsaved") return translateMessage("status.save.notSavedLocally")
+  if (status === "synced") return translateMessage("status.save.syncedToCloud")
+  return translateMessage("status.save.savedToLocalStore")
 }

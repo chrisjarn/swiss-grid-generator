@@ -1,5 +1,7 @@
 "use client"
 
+import { translateMessage } from "@/lib/i18n"
+
 export type UserFacingNotice = {
   title: string
   message: string
@@ -34,10 +36,10 @@ function isAuthRateLimitMessage(message: string): boolean {
 }
 
 function getSupabaseAuthFallback(context: SupabaseAuthErrorContext): string {
-  if (context === "sign_out") return "Could not sign out of the cloud account."
-  if (context === "session") return "Could not restore the cloud session."
-  if (context === "verify_sign_in_code") return "Could not verify the sign-in code."
-  return "Could not send the sign-in code."
+  if (context === "sign_out") return translateMessage("status.auth.signOutFailed")
+  if (context === "session") return translateMessage("status.auth.sessionRestoreFailed")
+  if (context === "verify_sign_in_code") return translateMessage("status.auth.verifyCodeFailed")
+  return translateMessage("status.auth.sendCodeFailed")
 }
 
 export function mapSupabaseAuthError(error: unknown, context: SupabaseAuthErrorContext = "send_sign_in_code"): string {
@@ -45,128 +47,128 @@ export function mapSupabaseAuthError(error: unknown, context: SupabaseAuthErrorC
   const { status } = toErrorLike(error)
 
   if (/supabase environment variables are missing/i.test(rawMessage)) {
-    return "Cloud auth is unavailable. Check the Supabase URL and anon key in the local environment."
+    return translateMessage("status.auth.authUnavailable")
   }
 
   if (/email is required/i.test(rawMessage)) {
-    return "Enter an email address before requesting a sign-in code."
+    return translateMessage("status.auth.emailRequired")
   }
 
   if (/code is required/i.test(rawMessage)) {
-    return "Enter the six-digit sign-in code from your email."
+    return translateMessage("status.auth.codeRequired")
   }
 
   if (/token.*expired|expired.*token|invalid.*token|otp.*expired|otp.*invalid/i.test(rawMessage)) {
-    return "This sign-in code is invalid or expired. Request a new code and try again."
+    return translateMessage("status.auth.codeInvalid")
   }
 
   if (status === 429 || isAuthRateLimitMessage(rawMessage)) {
-    return "Too many sign-in codes were requested. Wait a moment and try again. If this keeps happening, check the Supabase Auth rate limits and SMTP setup."
+    return translateMessage("status.auth.rateLimit")
   }
 
   if (typeof status === "number" && status >= 500) {
     if (context === "sign_out") {
-      return "Supabase is temporarily unavailable and could not complete sign-out. Wait a moment and try again."
+      return translateMessage("status.auth.signOutUnavailable")
     }
     if (context === "session") {
-      return "Supabase is temporarily unavailable and the cloud session could not be restored right now. Wait a moment and try again."
+      return translateMessage("status.auth.sessionUnavailable")
     }
     if (context === "verify_sign_in_code") {
-      return "Supabase is temporarily unavailable and could not verify the sign-in code. Wait a moment and try again."
+      return translateMessage("status.auth.verifyUnavailable")
     }
-    return "Supabase is temporarily unavailable and could not send the sign-in code. Wait a moment and try again."
+    return translateMessage("status.auth.sendUnavailable")
   }
 
   if (/email address not authorized/i.test(rawMessage)) {
-    return "This email address is not allowed by the current Supabase mail configuration. Check the SMTP sender setup or authorized test addresses."
+    return translateMessage("status.auth.emailNotAllowed")
   }
 
   if (/redirect/i.test(rawMessage) && /invalid|not allowed|mismatch/i.test(rawMessage)) {
-    return "This sign-in redirect is not allowed. Check Supabase Authentication URL Configuration for the current app origin."
+    return translateMessage("status.auth.redirectNotAllowed")
   }
 
   if (isNetworkLikeMessage(rawMessage)) {
     if (context === "sign_out") {
-      return "Could not reach Supabase to sign out. Check the network connection and try again."
+      return translateMessage("status.auth.signOutNetwork")
     }
     if (context === "session") {
-      return "Could not reach Supabase to restore the cloud session. Check the network connection and try again."
+      return translateMessage("status.auth.sessionNetwork")
     }
-    return "Could not reach Supabase. Check the network connection and the configured project URL, then try again."
+    return translateMessage("status.auth.network")
   }
 
   if (context === "sign_out") {
-    return `Could not sign out of the cloud account. Supabase said: ${rawMessage}`
+    return translateMessage("status.auth.signOutWithRaw", { message: rawMessage })
   }
   if (context === "session") {
-    return `Could not restore the cloud session. Supabase said: ${rawMessage}`
+    return translateMessage("status.auth.sessionWithRaw", { message: rawMessage })
   }
   if (context === "verify_sign_in_code") {
-    return `Could not verify the sign-in code. Supabase said: ${rawMessage}`
+    return translateMessage("status.auth.verifyWithRaw", { message: rawMessage })
   }
-  return `Could not send the sign-in code. Supabase said: ${rawMessage}`
+  return translateMessage("status.auth.sendWithRaw", { message: rawMessage })
 }
 
 export const CLOUD_SYNC_CONFLICT_NOTICE: UserFacingNotice = {
-  title: "Cloud Sync Conflict",
-  message: "The local project and the cloud copy changed at the same time. The local project was kept and marked as conflicted.",
+  title: translateMessage("status.cloud.conflictTitle"),
+  message: translateMessage("status.cloud.conflictMessage"),
 }
 
 export function mapCloudSyncError(error: unknown): UserFacingNotice {
-  const rawMessage = getErrorMessage(error, "Cloud sync failed.")
+  const rawMessage = getErrorMessage(error, translateMessage("status.cloud.failed"))
   const { status, code } = toErrorLike(error)
 
   if (status === 401 || /jwt|token.*expired|auth session missing|invalid token|not authenticated/i.test(rawMessage)) {
     return {
-      title: "Cloud Session Expired",
-      message: "The cloud session is no longer valid. Sign in again to resume sync.",
+      title: translateMessage("status.cloud.sessionExpiredTitle"),
+      message: translateMessage("status.cloud.sessionExpiredMessage"),
     }
   }
 
   if (status === 403 || /permission denied|row-level security|violates row-level security/i.test(rawMessage)) {
     return {
-      title: "Cloud Permissions Error",
-      message: "Cloud sync is blocked by Supabase permissions. Check the projects table RLS policies and the storage bucket policies.",
+      title: translateMessage("status.cloud.permissionsTitle"),
+      message: translateMessage("status.cloud.permissionsMessage"),
     }
   }
 
   if (/bucket.*not found|project-archives.*not found|storage.*not found/i.test(rawMessage)) {
     return {
-      title: "Cloud Storage Missing",
-      message: "The `project-archives` storage bucket is missing or inaccessible. Check the bucket name and storage policies in Supabase.",
+      title: translateMessage("status.cloud.storageMissingTitle"),
+      message: translateMessage("status.cloud.storageMissingMessage"),
     }
   }
 
   if (/relation .*projects.* does not exist|column .* does not exist|schema cache/i.test(rawMessage)) {
     return {
-      title: "Cloud Database Setup Incomplete",
-      message: "The Supabase `projects` table or its expected columns are missing. Run the SQL setup for the cloud project store again.",
+      title: translateMessage("status.cloud.databaseMissingTitle"),
+      message: translateMessage("status.cloud.databaseMissingMessage"),
     }
   }
 
   if (status === 429 || /rate limit/i.test(rawMessage)) {
     return {
-      title: "Cloud Rate Limit Reached",
-      message: "Supabase temporarily refused more cloud requests. Wait a moment and try again.",
+      title: translateMessage("status.cloud.rateLimitTitle"),
+      message: translateMessage("status.cloud.rateLimitMessage"),
     }
   }
 
   if (typeof status === "number" && status >= 500) {
     return {
-      title: "Cloud Service Unavailable",
-      message: "Supabase is temporarily unavailable. Local changes remain safe in Dexie and will sync when the service recovers.",
+      title: translateMessage("status.cloud.serviceUnavailableTitle"),
+      message: translateMessage("status.cloud.serviceUnavailableMessage"),
     }
   }
 
   if (isNetworkLikeMessage(rawMessage) || code === "20") {
     return {
-      title: "Cloud Offline",
-      message: "Could not reach Supabase. Local changes remain in Dexie and can sync when the connection returns.",
+      title: translateMessage("status.cloud.offlineTitle"),
+      message: translateMessage("status.cloud.offlineMessage"),
     }
   }
 
   return {
-    title: "Cloud Sync Error",
-    message: `Cloud sync failed. Supabase said: ${rawMessage}`,
+    title: translateMessage("status.cloud.errorTitle"),
+    message: translateMessage("status.cloud.errorMessage", { message: rawMessage }),
   }
 }
