@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-04-24T16:36:40.456Z",
-  "title": "Swiss Style Poster Example 001",
-  "description": "Swiss-style A0 poster preset with a contrasting multi-block poster layout.",
+  "title": "swiss style poster example 001",
+  "description": "swiss-style a0 poster preset with contrasting typographic blocks.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-03-16T14:40:58.992Z",
   "visibilitySettings": {
@@ -15,7 +15,7 @@
   "pages": [
     {
       "id": "page-b28b5ad2-6c39-4e4e-9a95-a79cfdefe8ce",
-      "name": "Poster AO",
+      "name": "poster a0",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,

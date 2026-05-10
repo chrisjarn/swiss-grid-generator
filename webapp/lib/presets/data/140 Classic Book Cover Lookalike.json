@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-05-04T18:41:25.391Z",
-  "title": "Classic Book Cover Lookalike",
-  "description": "Book Cover Lookalike from Anton Stankowski 1978.",
+  "title": "classic book cover lookalike",
+  "description": "book cover lookalike from Anton Stankowski, 1978.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {
@@ -24,7 +24,7 @@
   "pages": [
     {
       "id": "page-blank-start",
-      "name": "Blank Start Page",
+      "name": "blank start page",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,

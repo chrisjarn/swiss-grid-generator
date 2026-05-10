@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-04-24T14:12:47.439Z",
-  "title": "Poster Template portrait 4x5 12pt",
-  "description": "Blank Poster Template to get you started.",
+  "title": "poster template portrait 4x5 12pt",
+  "description": "blank poster template.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {
@@ -15,7 +15,7 @@
   "pages": [
     {
       "id": "page-blank-start",
-      "name": "Blank Start Page",
+      "name": "blank start page",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,

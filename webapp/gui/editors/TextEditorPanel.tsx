@@ -59,6 +59,8 @@ import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnaps
 import type { HelpSectionId } from "@/lib/help-registry"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import type { MessageKey } from "@/lib/i18n/messages"
+import type { BlockEditorTextAlign, BlockEditorVerticalAlign } from "@/gui/editors/block-editor-types"
 
 type TextEditorPanelProps<StyleKey extends string> = {
   controls: SharedTextEditorControls<StyleKey>
@@ -90,6 +92,18 @@ const TEXT_EDITOR_HELP_SECTION_BY_KEY: Record<SectionKey, HelpSectionId> = {
   placeholders: "help-editor-placeholders",
   info: "help-editor-info",
 }
+
+const HORIZONTAL_ALIGN_MESSAGE_KEYS = {
+  left: "editor.paragraph.left",
+  center: "editor.paragraph.center",
+  right: "editor.paragraph.right",
+} satisfies Record<BlockEditorTextAlign, MessageKey>
+
+const VERTICAL_ALIGN_MESSAGE_KEYS = {
+  top: "editor.paragraph.top",
+  center: "editor.paragraph.center",
+  bottom: "editor.paragraph.bottom",
+} satisfies Record<BlockEditorVerticalAlign, MessageKey>
 
 function readTotalRenderTimeMs(): number | null {
   if (typeof window === "undefined") return null
@@ -735,8 +749,8 @@ export function TextEditorPanel<StyleKey extends string>({
     [t("editor.paragraph.baselines"), String(controls.editorState.draftHeightBaselines)],
     [t("editor.paragraph.cols"), String(controls.editorState.draftColumns)],
     [t("editor.paragraph.rotation"), `${Math.round(controls.editorState.draftRotation)}deg`],
-    [t("editor.info.align"), controls.editorState.draftAlign.charAt(0).toUpperCase() + controls.editorState.draftAlign.slice(1)],
-    [t("editor.info.verticalAlign"), controls.editorState.draftVerticalAlign.charAt(0).toUpperCase() + controls.editorState.draftVerticalAlign.slice(1)],
+    [t("editor.info.align"), t(HORIZONTAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftAlign])],
+    [t("editor.info.verticalAlign"), t(VERTICAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftVerticalAlign])],
     [t("editor.info.reflow"), controls.editorState.draftReflow && canUseNewspaperReflow ? t("common.on") : t("common.off")],
     [t("editor.info.hyphen"), controls.editorState.draftSyllableDivision ? t("common.on") : t("common.off")],
     [t("editor.info.snapX"), controls.editorState.draftSnapToColumns ? t("common.on") : t("common.off")],

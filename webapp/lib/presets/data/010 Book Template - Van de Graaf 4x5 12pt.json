@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-04-24T16:34:52.257Z",
-  "title": "Book Template Van de Graaf 4x5 12pt",
-  "description": "Book Starter incl. Cover and Content templates with pagination.",
+  "title": "book template van de Graaf 4x5 12pt",
+  "description": "book starter with cover and content templates.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {
@@ -15,7 +15,7 @@
   "pages": [
     {
       "id": "page-91be039f-3601-486e-ba90-1bdc8d78833e",
-      "name": "Right Page",
+      "name": "right page",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,
@@ -132,7 +132,7 @@
     },
     {
       "id": "page-6f29a40d-f8da-4a48-9687-2ce41563fff0",
-      "name": "Left Page",
+      "name": "left page",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,
@@ -249,7 +249,7 @@
     },
     {
       "id": "page-203ffd56-50fe-4346-a127-777a298f1760",
-      "name": "Facing Pages",
+      "name": "facing pages",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,

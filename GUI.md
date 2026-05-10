@@ -250,3 +250,8 @@ flowchart LR
 - export UI passes project snapshots and options to the shared export path; it does not rebuild format-specific layout data.
 - `webapp/components/` and `webapp/hooks/` must stay removed. Do not recreate compatibility folders, shims, or imports.
 - do not import from `@/components` or `@/hooks`.
+
+---
+**Date:** May 2026
+
+**Version:** 001

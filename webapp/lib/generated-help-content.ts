@@ -64,7 +64,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Core system controls."
+            "text": "core system controls."
           }
         ],
         "subsections": []
@@ -78,7 +78,7 @@ export const HELP_CONTENT_GROUPS = [
             "type": "list",
             "items": [
               "`ratio` sets page proportion.",
-              "custom ratio preserves A4-equivalent area before orientation is applied.",
+              "custom ratio preserves a4-equivalent area before orientation is applied.",
               "`orientation` changes the axis.",
               "`rotation` turns the planned page without changing its geometry."
             ]
@@ -147,7 +147,7 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "base family sets the document default.",
               "type rhythm controls the hierarchy scale.",
-              "fibonacci rhythm can shift its sequence while remaining tied to the A4 body reference.",
+              "fibonacci rhythm can shift its sequence while remaining tied to the a4 body reference.",
               "custom type belongs to individual paragraphs, not the global system."
             ]
           }
@@ -182,7 +182,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Core editing and layout workflows."
+            "text": "core editing and layout workflows."
           }
         ],
         "subsections": []
@@ -272,7 +272,7 @@ export const HELP_CONTENT_GROUPS = [
                 "type": "list",
                 "items": [
                   "insert typographic symbols at the caret or over the current selection.",
-                  "the palette includes arrows, bullets, marks, math, Greek lowercase, geometry, and editorial punctuation.",
+                  "the palette includes arrows, bullets, marks, math, greek lowercase, geometry, and editorial punctuation.",
                   "symbols export through `Noto Sans Symbols 2` for stable geometry.",
                   "recent symbols appear after first use."
                 ]
@@ -415,10 +415,10 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "save stores metadata, pages, settings, layers, and tours.",
               "`save to library` stores a compressed local archive.",
-              "`import` restores JSON or `.swissgridgenerator`.",
+              "`import` restores json or `.swissgridgenerator`.",
               "imported projects require the 2.0 `pages` schema.",
               "positioned layers use logical anchors so layouts stay stable across grid changes.",
-              "Supabase email-code auth is optional and used only for cloud sync."
+              "supabase email-code auth is optional and used only for cloud sync."
             ]
           }
         ],
@@ -432,14 +432,14 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "export supports JSON, vector PDF, SVG, and IDML.",
+              "export supports `JSON`, vector `PDF`, `SVG`, and `IDML`.",
               "multi-page projects can export a range or explicit page selection.",
               "export uses current guide visibility.",
-              "PDF, SVG and IDML consume the canonical page plan.",
+              "`PDF`, `SVG`, and `IDML` consume the canonical page plan.",
               "typography exports as shared glyph-outline geometry in the normal vector path.",
-              "JSON exports an editable project document with metadata and layout state.",
-              "export metadata can be adjusted without changing the live project unless JSON is saved.",
-              "bleed is shared by PDF, SVG, and IDML and changes the export box, not the layout math.",
+              "`JSON` exports an editable project document with metadata and layout state.",
+              "export metadata can be adjusted without changing the live project unless `JSON` is saved.",
+              "bleed is shared by `PDF`, `SVG`, and `IDML` and changes the export box, not the layout math.",
               "`esc` closes the dialog when no export is running and cancels an active export at the next safe point."
             ]
           }
@@ -490,7 +490,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Global controls and panel behavior."
+            "text": "global controls and panel behavior."
           }
         ],
         "subsections": []
@@ -561,7 +561,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "imports JSON or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`."
+            "text": "imports json or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`."
           }
         ],
         "subsections": []
@@ -588,7 +588,7 @@ export const HELP_CONTENT_GROUPS = [
             "items": [
               "opens the cloud account panel.",
               "the account dot is green only when signed in and fully synced.",
-              "email-code sign-in uses Supabase browser auth.",
+              "email-code sign-in uses supabase browser auth.",
               "signed-in saved projects auto-save locally and sync when possible.",
               "remote deletions apply locally when no newer unsynced local change exists.",
               "failures are translated into rate-limit, permission, offline, session, and setup messages."
@@ -616,7 +616,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Reverts the latest history step. Shortcut: `cmd/ctrl+z`."
+            "text": "reverts the latest history step. shortcut: `cmd/ctrl+z`."
           }
         ],
         "subsections": []
@@ -628,7 +628,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Reapplies an undone history step. Shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`."
+            "text": "reapplies an undone history step. shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`."
           }
         ],
         "subsections": []
@@ -640,7 +640,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "toggles light and dark UI. shortcut: `cmd/ctrl+shift+d`."
+            "text": "toggles light and dark ui. shortcut: `cmd/ctrl+shift+d`."
           }
         ],
         "subsections": []

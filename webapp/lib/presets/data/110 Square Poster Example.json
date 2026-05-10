@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-05-04T18:30:40.670Z",
-  "title": "Square Poster Example",
-  "description": "Poster Example \nRatio 1x1 \nGrid 4x6 \nBaseline 12pt",
+  "title": "square poster example",
+  "description": "poster example\nratio 1x1\nmodular field 4x6\nbaseline 12pt",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {
@@ -24,7 +24,7 @@
   "pages": [
     {
       "id": "page-blank-start",
-      "name": "Blank Start Page",
+      "name": "blank start page",
       "uiSettings": {
         "canvasRatio": "square_1_1",
         "customRatioWidth": 4,

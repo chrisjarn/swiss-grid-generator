@@ -42,13 +42,13 @@ function formatTitlePageTitle(rawTitle) {
     return {
       text: "Swiss \nGrid\nGenerator",
       formatRuns: [{ start: 7, end: 11, fontWeight: 600 }],
-      pageName: "Title",
+      pageName: "title",
     }
   }
   return {
     text: rawTitle,
     formatRuns: [],
-    pageName: "Title",
+    pageName: "title",
   }
 }
 
@@ -58,7 +58,7 @@ function makePageId(index) {
 
 function parseManualMarkdown(source) {
   const lines = source.split("\n")
-  const title = lines[0]?.replace(/^#\s+/, "").trim() || "Swiss Grid Generator Manual"
+  const title = lines[0]?.replace(/^#\s+/, "").trim() || "Swiss Grid Generator manual"
 
   let cursor = 1
   while (cursor < lines.length && lines[cursor].trim() === "") cursor += 1
@@ -146,7 +146,7 @@ async function main() {
     page.id = makePageId(index)
     page.name = titleInfo.pageName
     page.previewLayout.textContent["cover-title"] = titleInfo.text
-    page.previewLayout.textContent["cover-step-1"] = "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>"
+    page.previewLayout.textContent["cover-step-1"] = "swiss grid generator - manual - page <%page%> of <%pages%>"
     page.previewLayout.textContent["paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"] = section.subheadline
     page.previewLayout.textContent["paragraph-1094c876-1831-4124-a765-f078fb4a84f9"] = ""
     page.previewLayout.textContent["paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b"] = ""
@@ -168,7 +168,7 @@ async function main() {
     schemaVersion: 2,
     exportedAt: new Date().toISOString(),
     title,
-    description: "Swiss Grid Generator Software Manual",
+    description: "swiss grid generator software manual",
     author: "Swiss Grid Generator",
     createdAt: "2026-04-07T12:00:00.000Z",
     visibilitySettings: {

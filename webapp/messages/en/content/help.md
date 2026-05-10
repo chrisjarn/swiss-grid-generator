@@ -1,14 +1,14 @@
 # help
 
-Edit this file to update the in-app help panel.
+edit this file to update the in-app help panel.
 
-Format:
-- `## Group Title` starts an index group.
-- `### Section Title {#section-id}` starts a top-level section.
-- Add `[noindex]` after the id to keep a section out of the index.
-- `#### Subsection Title {#section-id}` starts a subsection.
-- Use paragraphs and short bullets.
-- Use `{{AVAILABLE_FONTS}}`, `{{SHORTCUT_TABLE}}`, and `{{DOCUMENT_VARIABLE_TOKENS}}` where needed.
+format:
+- `## group title` starts an index group.
+- `### section title {#section-id}` starts a top-level section.
+- add `[noindex]` after the id to keep a section out of the index.
+- `#### subsection title {#section-id}` starts a subsection.
+- use paragraphs and short bullets.
+- use `{{AVAILABLE_FONTS}}`, `{{SHORTCUT_TABLE}}`, and `{{DOCUMENT_VARIABLE_TOKENS}}` where needed.
 
 ## first sequence
 
@@ -23,11 +23,11 @@ Format:
 ## settings
 
 ### settings reference {#help-settings-overview} [noindex]
-Core system controls.
+core system controls.
 
 ### canvas {#help-canvas-ratio}
 - `ratio` sets page proportion.
-- custom ratio preserves A4-equivalent area before orientation is applied.
+- custom ratio preserves a4-equivalent area before orientation is applied.
 - `orientation` changes the axis.
 - `rotation` turns the planned page without changing its geometry.
 
@@ -52,7 +52,7 @@ Core system controls.
 ### typography {#help-typo}
 - base family sets the document default.
 - type rhythm controls the hierarchy scale.
-- fibonacci rhythm can shift its sequence while remaining tied to the A4 body reference.
+- fibonacci rhythm can shift its sequence while remaining tied to the a4 body reference.
 - custom type belongs to individual paragraphs, not the global system.
 
 ### color {#help-color-scheme}
@@ -63,7 +63,7 @@ Core system controls.
 ## general guidance
 
 ### general guidance {#help-general-overview} [noindex]
-Core editing and layout workflows.
+core editing and layout workflows.
 
 ### preview workspace {#help-preview-workspace}
 - the preview is the live layout surface for the active page.
@@ -102,7 +102,7 @@ Core editing and layout workflows.
 
 #### symbols section {#help-editor-symbols}
 - insert typographic symbols at the caret or over the current selection.
-- the palette includes arrows, bullets, marks, math, Greek lowercase, geometry, and editorial punctuation.
+- the palette includes arrows, bullets, marks, math, greek lowercase, geometry, and editorial punctuation.
 - symbols export through `Noto Sans Symbols 2` for stable geometry.
 - recent symbols appear after first use.
 
@@ -149,20 +149,20 @@ Core editing and layout workflows.
 ### save and load {#help-save-load}
 - save stores metadata, pages, settings, layers, and tours.
 - `save to library` stores a compressed local archive.
-- `import` restores JSON or `.swissgridgenerator`.
+- `import` restores json or `.swissgridgenerator`.
 - imported projects require the 2.0 `pages` schema.
 - positioned layers use logical anchors so layouts stay stable across grid changes.
-- Supabase email-code auth is optional and used only for cloud sync.
+- supabase email-code auth is optional and used only for cloud sync.
 
 ### export {#help-export}
-- export supports JSON, vector PDF, SVG, and IDML.
+- export supports `JSON`, vector `PDF`, `SVG`, and `IDML`.
 - multi-page projects can export a range or explicit page selection.
 - export uses current guide visibility.
-- PDF, SVG and IDML consume the canonical page plan.
+- `PDF`, `SVG`, and `IDML` consume the canonical page plan.
 - typography exports as shared glyph-outline geometry in the normal vector path.
-- JSON exports an editable project document with metadata and layout state.
-- export metadata can be adjusted without changing the live project unless JSON is saved.
-- bleed is shared by PDF, SVG, and IDML and changes the export box, not the layout math.
+- `JSON` exports an editable project document with metadata and layout state.
+- export metadata can be adjusted without changing the live project unless `JSON` is saved.
+- bleed is shared by `PDF`, `SVG`, and `IDML` and changes the export box, not the layout math.
 - `esc` closes the dialog when no export is running and cancels an active export at the next safe point.
 
 ### project tours {#help-project-tours}
@@ -178,7 +178,7 @@ Core editing and layout workflows.
 ## application controls
 
 ### ux reference {#help-ux-overview} [noindex]
-Global controls and panel behavior.
+global controls and panel behavior.
 
 ### application controls {#help-application-controls-overview} [noindex]
 
@@ -202,7 +202,7 @@ Global controls and panel behavior.
 - shortcut: `cmd/ctrl+shift+4`.
 
 ### import {#help-header-load}
-imports JSON or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`.
+imports json or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`.
 
 ### save {#help-header-save}
 opens `save to library`, then stores the project in the local `users` library. the status dot is red when unsaved, orange when saved locally, and green only when signed in and cloud-synced. shortcut: `cmd/ctrl+s`.
@@ -210,7 +210,7 @@ opens `save to library`, then stores the project in the local `users` library. t
 ### cloud account {#help-cloud-account}
 - opens the cloud account panel.
 - the account dot is green only when signed in and fully synced.
-- email-code sign-in uses Supabase browser auth.
+- email-code sign-in uses supabase browser auth.
 - signed-in saved projects auto-save locally and sync when possible.
 - remote deletions apply locally when no newer unsynced local change exists.
 - failures are translated into rate-limit, permission, offline, session, and setup messages.
@@ -219,13 +219,13 @@ opens `save to library`, then stores the project in the local `users` library. t
 opens export. shortcut: `cmd/ctrl+shift+e`.
 
 ### undo {#help-header-undo}
-Reverts the latest history step. Shortcut: `cmd/ctrl+z`.
+reverts the latest history step. shortcut: `cmd/ctrl+z`.
 
 ### redo {#help-header-redo}
-Reapplies an undone history step. Shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`.
+reapplies an undone history step. shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`.
 
 ### dark mode {#help-header-dark-mode}
-toggles light and dark UI. shortcut: `cmd/ctrl+shift+d`.
+toggles light and dark ui. shortcut: `cmd/ctrl+shift+d`.
 
 ### paragraph zoom {#help-header-smart-text-zoom}
 toggles zoom-to-paragraph during text editing.

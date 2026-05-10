@@ -19,7 +19,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Set canvas, baseline, margins, grid, rhythm, type scale, and base family before placing many layers."
+        "text": "set canvas, baseline, margins, modular field, rhythm, type scale, and base family before placing many layers."
       },
       {
         "type": "paragraph",
@@ -33,11 +33,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `rows`, `baselines`, and `cols` to define the text frame before refining wording, tracking, or color."
+        "text": "use `rows`, `baselines`, and `cols` to define the text frame before refining wording, tracking, or color."
       },
       {
         "type": "paragraph",
-        "text": "The frame is the editorial decision. Styling should clarify it, not compensate for it."
+        "text": "the frame is the editorial decision. styling should clarify it, not compensate for it."
       }
     ]
   },
@@ -47,11 +47,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Judge the page first in `repetitive` rhythm. It gives the clearest reading of margins, baseline, hierarchy, and measure."
+        "text": "judge the page first in `repetitive` rhythm. it gives the clearest reading of margins, baseline, hierarchy, and measure."
       },
       {
         "type": "paragraph",
-        "text": "Use fibonacci, golden ratio, perfect fourth, or perfect fifth only when asymmetry strengthens the field."
+        "text": "use fibonacci, golden ratio, perfect fourth, or perfect fifth only when asymmetry strengthens the field."
       }
     ]
   },
@@ -61,11 +61,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Double-click inside a module to create a paragraph where the structure suggests it belongs."
+        "text": "double-click inside a module to create a paragraph where the structure suggests it belongs."
       },
       {
         "type": "paragraph",
-        "text": "The block starts on the clicked module, with hyphenation off, and clamps to the available columns."
+        "text": "the block starts on the clicked module, with hyphenation off, and clamps to the available columns."
       }
     ]
   },
@@ -75,11 +75,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Hold `1..5` while double-clicking to assign hierarchy immediately."
+        "text": "hold `1..5` while double-clicking to assign hierarchy immediately."
       },
       {
         "type": "paragraph",
-        "text": "`1` caption, `2` body, `3` subhead, `4` headline, `5` display. The initial measure follows the role and the remaining column field."
+        "text": "`1` caption, `2` body, `3` subhead, `4` headline, `5` display. the initial measure follows the role and the remaining column field."
       }
     ]
   },
@@ -89,11 +89,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `shift` + double-click on an empty module to create an image placeholder."
+        "text": "use `shift` + double-click on an empty module to create an image placeholder."
       },
       {
         "type": "paragraph",
-        "text": "Placeholders share the same snap, span, baseline height, and rotation discipline as text."
+        "text": "placeholders share the same snap, span, baseline height, and rotation discipline as text."
       }
     ]
   },
@@ -103,11 +103,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Insert `<%lorem%>` to test whether a paragraph frame can carry the intended density."
+        "text": "insert `<%lorem%>` to test whether a paragraph frame can carry the intended density."
       },
       {
         "type": "paragraph",
-        "text": "The token fills the active frame using current rows, baselines, columns, reflow, and hyphenation."
+        "text": "the token fills the active frame using current rows, baselines, columns, reflow, and hyphenation."
       }
     ]
   },
@@ -117,11 +117,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Drag to establish position. Use cursor keys for final placement."
+        "text": "drag to establish position. use cursor keys for final placement."
       },
       {
         "type": "paragraph",
-        "text": "Nudging follows the same logical grid model as dragging, so movement stays tied to the page system."
+        "text": "nudging follows the same logical grid model as dragging, so movement stays tied to the page system."
       }
     ]
   },
@@ -131,11 +131,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "With snapped axes enabled, arrow keys move the selected unlocked layer by columns and module rows."
+        "text": "with snapped axes enabled, arrow keys move the selected unlocked layer by columns and module rows."
       },
       {
         "type": "paragraph",
-        "text": "Hold `shift` to move snapped y by baseline rows. On unsnapped axes, `shift` increases the fine step."
+        "text": "hold `shift` to move snapped y by baseline rows. on unsnapped axes, `shift` increases the fine step."
       }
     ]
   },
@@ -145,11 +145,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the visible `+` control for duplication and transfer."
+        "text": "use the visible `+` control for duplication and transfer."
       },
       {
         "type": "paragraph",
-        "text": "For text, `+` duplicates the paragraph. `shift` copies paragraph settings, `alt/option` copies typography, and `alt/option` + `shift` copies both. Image placeholders duplicate directly."
+        "text": "for text, `+` duplicates the paragraph. `shift` copies paragraph settings, `alt/option` copies typography, and `alt/option` + `shift` copies both. image placeholders duplicate directly."
       }
     ]
   },
@@ -159,11 +159,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Turn off column or baseline snap only for a controlled optical exception."
+        "text": "turn off column or baseline snap only for a controlled optical exception."
       },
       {
         "type": "paragraph",
-        "text": "Free x placement can create a disciplined side-margin overhang. It is not for casual drift."
+        "text": "free x placement can create a disciplined side-margin overhang. it is not for casual drift."
       }
     ]
   },
@@ -173,11 +173,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Keep paragraph zoom on for text-heavy pages."
+        "text": "keep paragraph zoom on for text-heavy pages."
       },
       {
         "type": "paragraph",
-        "text": "Entering text edit focuses the active paragraph. Text and style edits keep the view stable. Frame changes refit the paragraph."
+        "text": "entering text edit focuses the active paragraph. text and style edits keep the view stable. frame changes refit the paragraph."
       }
     ]
   },
@@ -187,11 +187,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "With an editor open, select another unlocked preview paragraph to retarget immediately."
+        "text": "with an editor open, select another unlocked preview paragraph to retarget immediately."
       },
       {
         "type": "paragraph",
-        "text": "Use this to move through a page without repeatedly closing the editor."
+        "text": "use this to move through a page without repeatedly closing the editor."
       }
     ]
   },
@@ -201,11 +201,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Double-click an unlocked layer card in the project panel to open or retarget its editor."
+        "text": "double-click an unlocked layer card in the project panel to open or retarget its editor."
       },
       {
         "type": "paragraph",
-        "text": "Single-click still selects the layer for nudging and ordering."
+        "text": "single-click still selects the layer for nudging and ordering."
       }
     ]
   },
@@ -215,11 +215,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Inline editing follows the rendered line layout."
+        "text": "inline editing follows the rendered line layout."
       },
       {
         "type": "paragraph",
-        "text": "Double-click selects a word, triple-click selects a sentence, and `alt+a` or `cmd/ctrl+a` selects the paragraph."
+        "text": "double-click selects a word, triple-click selects a sentence, and `alt+a` or `cmd/ctrl+a` selects the paragraph."
       }
     ]
   },
@@ -229,11 +229,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Document variables stay visible as raw tokens while editing and render as live values outside edit mode."
+        "text": "document variables stay visible as raw tokens while editing and render as live values outside edit mode."
       },
       {
         "type": "paragraph",
-        "text": "Use them for folios, project titles, dates, times, and proof text with predictable control."
+        "text": "use them for folios, project titles, dates, times, and proof text with predictable control."
       }
     ]
   },
@@ -247,7 +247,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
       },
       {
         "type": "paragraph",
-        "text": "Use full rows for modular blocks and baseline-only height for captions, folios, and shallow editorial frames."
+        "text": "use full rows for modular blocks and baseline-only height for captions, folios, and shallow editorial frames."
       }
     ]
   },
@@ -257,11 +257,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Choose `cols` before judging paragraph flow."
+        "text": "choose `cols` before judging paragraph flow."
       },
       {
         "type": "paragraph",
-        "text": "A weak line length is usually a measure problem. Reflow and hyphenation work best after the measure is correct."
+        "text": "a weak line length is usually a measure problem. reflow and hyphenation work best after the measure is correct."
       }
     ]
   },
@@ -271,11 +271,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Alignment positions text inside the configured frame."
+        "text": "alignment positions text inside the configured frame."
       },
       {
         "type": "paragraph",
-        "text": "Use it as a compositional decision within a clear frame, not as a repair."
+        "text": "use it as a compositional decision within a clear frame, not as a repair."
       }
     ]
   },
@@ -285,11 +285,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "When first selected, `custom` copies the paragraph's resolved size and leading."
+        "text": "when first selected, `custom` copies the paragraph's resolved size and leading."
       },
       {
         "type": "paragraph",
-        "text": "Treat custom type as a local editorial exception after the hierarchy is clear."
+        "text": "treat custom type as a local editorial exception after the hierarchy is clear."
       }
     ]
   },
@@ -299,11 +299,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Single-click a layer card to select it, then use arrow keys to nudge."
+        "text": "single-click a layer card to select it, then use arrow keys to nudge."
       },
       {
         "type": "paragraph",
-        "text": "This keeps positional edits precise and avoids entering edit mode by accident."
+        "text": "this keeps positional edits precise and avoids entering edit mode by accident."
       }
     ]
   },
@@ -313,11 +313,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Lock layers once their position and role are resolved."
+        "text": "lock layers once their position and role are resolved."
       },
       {
         "type": "paragraph",
-        "text": "Locked layers still show rollover guides, but cannot be moved, edited, duplicated, deleted, or retargeted until unlocked."
+        "text": "locked layers still show rollover guides, but cannot be moved, edited, duplicated, deleted, or retargeted until unlocked."
       }
     ]
   },
@@ -327,11 +327,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the `page` header or list icon to return from a layer stack to the page list."
+        "text": "use the `page` header or list icon to return from a layer stack to the page list."
       },
       {
         "type": "paragraph",
-        "text": "Page order is part of the design. Treat it with the same discipline as grid and hierarchy."
+        "text": "page order is part of the design. treat it with the same discipline as modular field and hierarchy."
       }
     ]
   },
@@ -341,11 +341,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `facing pages` only when two physical pages need one continuous editorial field."
+        "text": "use `facing pages` only when two physical pages need one continuous editorial field."
       },
       {
         "type": "paragraph",
-        "text": "A facing spread doubles the column field, mirrors inner and outer margins, and affects physical page variables."
+        "text": "a facing spread doubles the column field, mirrors inner and outer margins, and affects physical page variables."
       }
     ]
   },
@@ -355,11 +355,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the header toggles to inspect baselines, margins, modules, typography, and image placeholders."
+        "text": "use the header toggles to inspect baselines, margins, modules, typography, and image placeholders."
       },
       {
         "type": "paragraph",
-        "text": "Judge the same layout with and without construction lines. The rhythm should remain visible after the guides disappear."
+        "text": "judge the same layout with and without construction lines. the rhythm should remain visible after the guides disappear."
       }
     ]
   },
@@ -369,7 +369,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Hover a layer to see its edit access and placement guides."
+        "text": "hover a layer to see its edit access and placement guides."
       },
       {
         "type": "paragraph",
@@ -397,7 +397,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
       },
       {
         "type": "paragraph",
-        "text": "Check page order, page range, visible guide toggles, rotation, page numbering, and document variables before export."
+        "text": "check page order, page range, visible guide toggles, rotation, page numbering, and document variables before export."
       }
     ]
   },
@@ -407,11 +407,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `JSON` for editable project exchange, `PDF` for faithful vector output, `SVG` for frozen per-page geometry, and `IDML` for InDesign continuation."
+        "text": "use `JSON` for editable project exchange, `PDF` for faithful vector output, `SVG` for frozen per-page geometry, and `IDML` for InDesign continuation."
       },
       {
         "type": "paragraph",
-        "text": "PDF, SVG and IDML freeze typography as planned geometry in the normal vector path."
+        "text": "the normal vector path freezes typography as planned geometry for `PDF`, `SVG`, and `IDML`."
       }
     ]
   },
@@ -421,11 +421,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Bleed applies to PDF, SVG and IDML from one shared control."
+        "text": "bleed applies to `PDF`, `SVG`, and `IDML` from one shared control."
       },
       {
         "type": "paragraph",
-        "text": "It changes the export box and crop marks, not the page layout math."
+        "text": "it changes the export box and crop marks, not the page layout math."
       }
     ]
   },
@@ -439,7 +439,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
       },
       {
         "type": "paragraph",
-        "text": "Turn off construction guides before final output unless they are part of the deliverable."
+        "text": "turn off construction guides before final output unless they are part of the deliverable."
       }
     ]
   },
@@ -459,11 +459,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Return to baseline, margins, and grid rhythm before editing individual paragraphs."
+        "text": "return to baseline, margins, and grid rhythm before editing individual paragraphs."
       },
       {
         "type": "paragraph",
-        "text": "Loose layouts usually need a clearer field, not more local styling."
+        "text": "loose layouts usually need a clearer field, not more local styling."
       }
     ]
   },
@@ -473,11 +473,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Check hierarchy, measure, leading, and baseline alignment before changing tracking."
+        "text": "check hierarchy, measure, leading, and baseline alignment before changing tracking."
       },
       {
         "type": "paragraph",
-        "text": "Tracking changes paragraph color. It refines texture; it does not replace hierarchy."
+        "text": "tracking changes paragraph color. it refines texture; it does not replace hierarchy."
       }
     ]
   },
@@ -491,7 +491,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
       },
       {
         "type": "paragraph",
-        "text": "Resolve layer placement first, then reduce rows or columns."
+        "text": "resolve layer placement first, then reduce rows or columns."
       }
     ]
   },
@@ -501,7 +501,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use paragraph zoom, keep one editor open, and retarget from paragraph to paragraph."
+        "text": "use paragraph zoom, keep one editor open, and retarget from paragraph to paragraph."
       },
       {
         "type": "paragraph",

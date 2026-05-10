@@ -257,3 +257,9 @@ Current capability inventory for Swiss Grid Generator.
 - Account and sync events are recorded locally as capped support diagnostics with `info`, `success`, `warning`, or `error` severity.
 - The local cloud activity log can be attached to feedback submissions for support.
 - Remote-backed deletions are soft-deleted in Supabase via `deleted_at`, while local-only deletions purge the local cache record immediately.
+
+---
+
+**Date:** May 2026
+
+**Version:** 001

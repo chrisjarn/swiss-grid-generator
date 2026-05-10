@@ -273,8 +273,8 @@ test("vector export options expose one shared bleed setting and keep pdf color m
 
 test("export dialog exposes shared bleed controls instead of print presets", () => {
   const source = readText("gui/dialogs/ExportDialog.tsx")
-  assert.match(source, /SectionHeaderRow[\s\S]*Bleed/)
-  assert.match(source, /Bleed Width/)
+  assert.match(source, /t\("dialogs\.export\.bleed"\)/)
+  assert.match(source, /t\("dialogs\.export\.bleedWidth"\)/)
   assert.match(source, /bleedEnabledDraft/)
   assert.match(source, /onBleedEnabledChange/)
   assert.doesNotMatch(source, /Print Pro/)

@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
   "exportedAt": "2026-04-24T15:46:43.623Z",
-  "title": "Classic Poster Lookalike",
-  "description": "Classic Swiss poster lookalike preset with strong typographic contrast and image framing.",
+  "title": "classic poster lookalike",
+  "description": "classic swiss poster lookalike with strong typographic contrast and image framing.",
   "author": "Swiss Grid Generator",
   "createdAt": "2026-04-07T12:00:00.000Z",
   "visibilitySettings": {
@@ -15,7 +15,7 @@
   "pages": [
     {
       "id": "page-blank-start",
-      "name": "Classic Poster Lookalike",
+      "name": "classic poster lookalike",
       "uiSettings": {
         "canvasRatio": "din_ab",
         "customRatioWidth": 4,
