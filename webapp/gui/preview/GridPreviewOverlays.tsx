@@ -18,6 +18,7 @@ import {
   resolvePreviewHoverDeleteActionLeft,
   resolvePreviewHoverPrimaryActionLeft,
 } from "@/lib/preview-hover-affordance"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type Props<StyleKey extends string> = {
   showEditorHelpIcon: boolean
@@ -70,12 +71,12 @@ function getCopyAffordanceIntent(altKey: boolean, shiftKey: boolean): CopyAfford
   return "duplicate"
 }
 
-function getTextCopyRolloverTitle(): string {
+function getTextCopyRolloverTitle(t: ReturnType<typeof useTranslation>["t"]): string {
   return [
-    "Duplicate paragraph",
-    "Shift-click: copy paragraph settings",
-    "Alt-click: copy typo settings",
-    "Alt+Shift-click: copy paragraph + typo settings",
+    t("overlayActions.duplicateParagraph"),
+    t("overlayActions.copyParagraphSettings"),
+    t("overlayActions.copyTypographySettings"),
+    t("overlayActions.copyParagraphTypographySettings"),
   ].join("\n")
 }
 
@@ -113,6 +114,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
   onOpenHelpSection,
   isDarkMode = false,
 }: Props<StyleKey>) {
+  const { t } = useTranslation()
   const [copyAffordanceIntent, setCopyAffordanceIntent] = useState<CopyAffordanceIntent>("duplicate")
   const [copyAffordanceHovered, setCopyAffordanceHovered] = useState(false)
   const activeEditorTarget = editorState?.target ?? imageEditorState?.target ?? null
@@ -142,6 +144,9 @@ export function GridPreviewOverlays<StyleKey extends string>({
   const actionGroupTop = hoverBandRect
     ? resolvePreviewHoverActionTop(hoverBandRect)
     : 0
+  const hoveredKindLabel = hoveredEditTarget?.kind === "text"
+    ? t("overlayActions.paragraph")
+    : t("overlayActions.imagePlaceholder")
   const copyButtonClassName = (() => {
     if (hoveredEditTarget?.kind !== "text" || copyAffordanceIntent === "duplicate") {
       return isDarkMode
@@ -261,8 +266,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 event.stopPropagation()
                 onHoveredLayerLockToggle(hoveredEditTarget.key, false)
               }}
-              aria-label={`Unlock ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
-              title={hoveredEditTarget.kind === "text" ? "Unlock paragraph" : "Unlock image placeholder"}
+              aria-label={t("overlayActions.unlock", { kind: hoveredKindLabel })}
+              title={t("overlayActions.unlock", { kind: hoveredKindLabel })}
             >
               <Lock className="h-3 w-3" />
             </button>
@@ -304,8 +309,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
                     }
                     openImageEditor(hoveredEditTarget.key)
                   }}
-                  aria-label={`Edit ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
-                  title={hoveredEditTarget.kind === "text" ? "Edit paragraph" : "Edit image placeholder"}
+                  aria-label={t("overlayActions.edit", { kind: hoveredKindLabel })}
+                  title={t("overlayActions.edit", { kind: hoveredKindLabel })}
                 >
                   <SquarePen className="h-3 w-3" />
                 </button>
@@ -348,11 +353,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
                     })
                   }}
                   aria-label={hoveredEditTarget.kind === "text"
-                    ? "Duplicate paragraph or copy settings"
-                    : "Duplicate image placeholder"}
+                    ? t("overlayActions.duplicateText")
+                    : t("overlayActions.duplicateImage")}
                   title={hoveredEditTarget.kind === "text"
-                    ? getTextCopyRolloverTitle()
-                    : "Duplicate image placeholder, even across pages."}
+                    ? getTextCopyRolloverTitle(t)
+                    : t("overlayActions.duplicateImageTooltip")}
                 >
                   <Plus className="h-3 w-3" />
                 </button>
@@ -381,8 +386,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
                   event.stopPropagation()
                   deletePreviewTarget(hoveredEditTarget.key)
                 }}
-                aria-label={`Delete ${hoveredEditTarget.kind === "text" ? "paragraph" : "image placeholder"}`}
-                title={hoveredEditTarget.kind === "text" ? "Delete paragraph" : "Delete image placeholder"}
+                aria-label={t("overlayActions.delete", { kind: hoveredKindLabel })}
+                title={t("overlayActions.delete", { kind: hoveredKindLabel })}
               >
                 <Trash2 className="h-3 w-3" />
               </button>

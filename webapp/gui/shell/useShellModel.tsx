@@ -562,7 +562,7 @@ export function ShellModelView() {
   }, [setShowLayers, setWorkspaceActivePanel])
 
   useEffect(() => {
-    if (noticeState?.title !== "Cloud Sync Conflict") return
+    if (noticeState?.title !== translateMessage("status.cloud.conflictTitle")) return
     openSidebarPanel("account")
   }, [noticeState, openSidebarPanel])
 
@@ -2251,10 +2251,9 @@ export function ShellModelView() {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-6 text-white">
         <div className="w-full max-w-md rounded-lg border border-white/20 bg-white/5 p-6">
-          <h2 className="text-lg font-semibold">Screen Too Small</h2>
+          <h2 className="text-lg font-semibold">{translateMessage("app.screenTooSmall")}</h2>
           <p className="mt-3 text-sm leading-relaxed text-white/85">
-            Swiss Grid Generator requires a viewport width of at least 768 pixels.
-            Open it on a tablet, laptop, or desktop screen, or enlarge this window to continue.
+            {translateMessage("app.screenTooSmallMessage")}
           </p>
         </div>
       </div>

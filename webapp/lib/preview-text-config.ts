@@ -1,5 +1,6 @@
 import type { BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
 import type { GridResult } from "@/lib/grid-calculator"
+import { translateMessage } from "@/lib/i18n/messages"
 
 export type PreviewTypographyStyleKey = keyof GridResult["typography"]["styles"]
 
@@ -15,12 +16,12 @@ export const PREVIEW_STYLE_OPTIONS: BlockEditorStyleOption<PreviewTypographyStyl
 const DEFAULT_COPYRIGHT_YEAR = new Date().getFullYear()
 
 const PREVIEW_DUMMY_TEXT_BY_STYLE: Record<PreviewTypographyStyleKey, string> = {
-  fx: "Swiss Design",
-  display: "Swiss Design",
-  headline: "Modular Grid Systems",
-  subhead: "A grid creates coherent visual structure and establishes a consistent spatial rhythm",
-  body: "The modular grid allows designers to organize content with clarity and purpose. All typography aligns to the baseline grid, ensuring harmony across the page. Modular proportions guide contrast and emphasis while preserving coherence across complex layouts. Structure becomes a tool for expression rather than a constraint, enabling flexible yet unified systems.",
-  caption: `Copyright ${DEFAULT_COPYRIGHT_YEAR} Swiss Grid Generator`,
+  fx: translateMessage("defaultContent.display"),
+  display: translateMessage("defaultContent.display"),
+  headline: translateMessage("defaultContent.headline"),
+  subhead: translateMessage("defaultContent.subhead"),
+  body: translateMessage("defaultContent.body"),
+  caption: translateMessage("defaultContent.caption", { year: DEFAULT_COPYRIGHT_YEAR }),
 }
 
 export function formatPtSize(size: number): string {

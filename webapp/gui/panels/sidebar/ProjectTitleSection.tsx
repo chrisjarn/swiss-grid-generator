@@ -4,6 +4,7 @@ import { Pencil, X } from "lucide-react"
 import { useState } from "react"
 
 import { ProjectMetadataSection } from "@/gui/panels/sidebar/ProjectMetadataSection"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type Props = {
   projectTitle: string
@@ -24,10 +25,11 @@ export function ProjectTitleSection({
   onProjectAuthorChange,
   isDarkMode = false,
 }: Props) {
+  const { t } = useTranslation()
   const [isExpanded, setIsExpanded] = useState(false)
   const [shouldAutoFocusTitle, setShouldAutoFocusTitle] = useState(false)
 
-  const visibleProjectTitle = projectTitle.trim() || "Untitled Project"
+  const visibleProjectTitle = projectTitle.trim() || t("projectPanel.metadata.untitled")
   const tone = isDarkMode
     ? {
         title: "text-[#F4F6F8]",
@@ -67,7 +69,7 @@ export function ProjectTitleSection({
         </button>
         <button
           type="button"
-          aria-label={isExpanded ? "Close project metadata" : "Edit project metadata"}
+          aria-label={isExpanded ? t("projectPanel.metadata.close") : t("projectPanel.metadata.edit")}
           className={`inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${tone.action}`}
           onClick={() => {
             if (isExpanded) {

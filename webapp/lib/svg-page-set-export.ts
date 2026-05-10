@@ -1,4 +1,5 @@
 import { buildExportBox } from "@/lib/export-box"
+import { translateMessage } from "@/lib/i18n/messages"
 import {
   DEFAULT_EXPORT_BLEED_OPTIONS,
   type ExportBleedOptions,
@@ -81,10 +82,10 @@ export async function renderSvgPageSetFiles({
       title: metadata.title.trim()
         ? `${metadata.title.trim()} - Page ${pageNumber}`
         : `${baseName} - Page ${pageNumber}`,
-      description: metadata.description.trim() || `Swiss Grid Vector Export - Page ${pageNumber}`,
+      description: metadata.description.trim() || translateMessage("exportMetadata.vectorPageDescription", { page: pageNumber }),
       author: metadata.author.trim(),
       createdAt: metadata.createdAt,
-      creatorTool: "Swiss Grid Generator",
+      creatorTool: translateMessage("exportMetadata.creatorTool"),
       exportPlan: page.exportPlan,
       exportBox,
       outlineResolver,

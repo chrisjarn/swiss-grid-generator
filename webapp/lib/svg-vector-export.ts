@@ -3,6 +3,7 @@ import {
   DEFAULT_BASE_FONT,
   type FontFamily,
 } from "@/lib/config/fonts"
+import { translateMessage } from "@/lib/i18n/messages"
 import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
 import { formatSvgColor } from "@/lib/export-colors"
 import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
@@ -124,11 +125,11 @@ async function renderSwissGridVectorSvgInternal({
   showImagePlaceholders,
   showTypography,
   layoutEngine = CURRENT_LAYOUT_ENGINE_CONTRACT,
-  title = "Swiss Grid Vector Export",
-  description = "Swiss Grid Generator SVG export",
+  title = translateMessage("exportMetadata.vectorTitle"),
+  description = translateMessage("exportMetadata.svgDescription"),
   author = "",
   createdAt = "",
-  creatorTool = "Swiss Grid Generator",
+  creatorTool = translateMessage("exportMetadata.creatorTool"),
   exportBox,
   exportPlan: providedExportPlan,
   outlineResolver,

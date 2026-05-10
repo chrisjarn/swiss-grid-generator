@@ -33,6 +33,7 @@ import {
   type ProjectPageVisibilitySettings,
 } from "@/lib/project-page-export-source"
 import { runProjectExport } from "@/lib/project-export-runner"
+import { translateMessage } from "@/lib/i18n/messages"
 
 export type ExportProgressState = {
   format: ExportFormat
@@ -736,7 +737,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         completedSteps: 0,
         totalSteps: exportSelectedPageCount,
         currentPageNumber: parsedPageSelection.fromPage,
-        currentLabel: "Preparing export",
+        currentLabel: translateMessage("status.export.preparing"),
         phase: "preparing",
       })
     })
@@ -766,7 +767,7 @@ export function useExportActions(ctx: ExportActionsContext) {
             ...current,
             totalSteps: exportSelectedPageCount,
             currentPageNumber: parsedPageSelection.fromPage,
-            currentLabel: currentProjectSnapshot.pages[parsedPageSelection.fromPage - 1]?.name || "Preparing IDML",
+            currentLabel: currentProjectSnapshot.pages[parsedPageSelection.fromPage - 1]?.name || translateMessage("status.export.preparingIdml"),
           } : current)
         }
         await exportVector(exportFormatDraft, currentProjectSnapshot, parsedPageSelection.pageNumbers, currentProjectSnapshot.visibilitySettings, filename, bleed, normalizedMetadata)

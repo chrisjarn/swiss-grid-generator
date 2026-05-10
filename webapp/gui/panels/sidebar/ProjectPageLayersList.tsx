@@ -19,6 +19,7 @@ import {
 } from "@/lib/sidebar-card-drag"
 import { getTextLayerDisplayName } from "@/lib/layer-display-name"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
 
@@ -118,6 +119,7 @@ export function ProjectPageLayersList({
   onDeleteLayer,
   isDarkMode = false,
 }: Props) {
+  const { t } = useTranslation()
   const [draggingKey, setDraggingKey] = useState<string | null>(null)
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null)
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -354,7 +356,7 @@ export function ProjectPageLayersList({
         onDoubleClick={(event) => event.stopPropagation()}
         className={`rounded-md border border-dashed px-3 py-2 text-[11px] ${tone.empty} ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}
       >
-        No layers on this page yet. <strong className="font-semibold">Just double-click onto module / Shift + click for image placeholder.</strong>
+        {t("projectPanel.layersList.empty")} <strong className="font-semibold">{t("projectPanel.layersList.emptyInstruction")}</strong>
       </div>
     )
   }
@@ -483,7 +485,7 @@ export function ProjectPageLayersList({
                             backgroundColor: thumb.color,
                             opacity: thumb.opacity,
                           }}
-                          aria-label="Image placeholder color"
+                          aria-label={t("projectPanel.layersList.imageColor")}
                         />
                       )}
                     </div>
@@ -494,7 +496,9 @@ export function ProjectPageLayersList({
                     <button
                       type="button"
                       data-card-drag-ignore="true"
-                      aria-label={`${isLocked ? "Unlock" : "Lock"} ${thumb.kind === "image" ? "image placeholder" : "paragraph"}`}
+                      aria-label={t(isLocked ? "projectPanel.layersList.unlock" : "projectPanel.layersList.lock", {
+                        kind: thumb.kind === "image" ? t("projectPanel.layersList.imagePlaceholder") : t("projectPanel.layersList.paragraph"),
+                      })}
                       aria-pressed={isLocked}
                       className={`rounded-sm p-1 transition-colors ${
                         isLocked
@@ -530,7 +534,9 @@ export function ProjectPageLayersList({
                     <button
                       type="button"
                       data-card-drag-ignore="true"
-                      aria-label={`Delete ${thumb.kind === "image" ? "image placeholder" : "paragraph"}`}
+                      aria-label={t("projectPanel.layersList.delete", {
+                        kind: thumb.kind === "image" ? t("projectPanel.layersList.imagePlaceholder") : t("projectPanel.layersList.paragraph"),
+                      })}
                       className={`rounded-sm p-1 ${tone.rowMuted} hover:text-red-500`}
                       onClick={(event) => {
                         event.stopPropagation()

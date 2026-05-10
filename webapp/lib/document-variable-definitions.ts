@@ -1,3 +1,5 @@
+import { translateMessage } from "@/lib/i18n/messages"
+
 export type DocumentVariableDefinition = {
   token: string
   description: string
@@ -6,30 +8,30 @@ export type DocumentVariableDefinition = {
 export const DOCUMENT_VARIABLE_DEFINITIONS: readonly DocumentVariableDefinition[] = [
   {
     token: "<%lorem%>",
-    description: "Fill the active paragraph frame with fitted lorem ipsum.",
+    description: translateMessage("documentVariables.lorem"),
   },
   {
     token: "<%project_title%>",
-    description: "Insert the current project title.",
+    description: translateMessage("documentVariables.projectTitle"),
   },
   {
     token: "<%page_title%>",
-    description: "Insert the current page title.",
+    description: translateMessage("documentVariables.pageTitle"),
   },
   {
     token: "<%page%>",
-    description: "Insert the current page number.",
+    description: translateMessage("documentVariables.page"),
   },
   {
     token: "<%pages%>",
-    description: "Insert the total page count.",
+    description: translateMessage("documentVariables.pages"),
   },
   {
     token: "<%date%>",
-    description: "Insert the local render date.",
+    description: translateMessage("documentVariables.date"),
   },
   {
     token: "<%time%>",
-    description: "Insert the local render time.",
+    description: translateMessage("documentVariables.time"),
   },
 ] as const

@@ -1,3 +1,5 @@
+import { translateMessage } from "@/lib/i18n/messages"
+
 export const BASE_BLOCK_IDS = ["display", "headline", "subhead", "body", "caption"] as const
 
 export type BaseBlockId = typeof BASE_BLOCK_IDS[number]
@@ -5,11 +7,11 @@ export type BaseBlockId = typeof BASE_BLOCK_IDS[number]
 const DEFAULT_COPYRIGHT_YEAR = new Date().getFullYear()
 
 export const DEFAULT_TEXT_CONTENT: Readonly<Record<BaseBlockId, string>> = {
-  display: "Swiss Design",
-  headline: "Modular Grid Systems",
-  subhead: "A grid creates coherent visual structure and establishes a consistent spatial rhythm",
-  body: "The modular grid allows designers to organize content with clarity and purpose. All typography aligns to the baseline grid, ensuring harmony across the page. Modular proportions guide contrast and emphasis while preserving coherence across complex layouts. Structure becomes a tool for expression rather than a constraint, enabling flexible yet unified systems.",
-  caption: `Copyright ${DEFAULT_COPYRIGHT_YEAR} Swiss Grid Generator`,
+  display: translateMessage("defaultContent.display"),
+  headline: translateMessage("defaultContent.headline"),
+  subhead: translateMessage("defaultContent.subhead"),
+  body: translateMessage("defaultContent.body"),
+  caption: translateMessage("defaultContent.caption", { year: DEFAULT_COPYRIGHT_YEAR }),
 }
 
 export const DEFAULT_STYLE_ASSIGNMENTS: Readonly<Record<BaseBlockId, BaseBlockId>> = {

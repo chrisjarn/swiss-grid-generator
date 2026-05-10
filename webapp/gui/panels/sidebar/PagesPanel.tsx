@@ -15,6 +15,7 @@ import {
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
 import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
 type TransientExpandedReason = "editor" | "page-navigation" | "paragraph" | "preview-hover"
@@ -96,6 +97,7 @@ export function PagesPanel({
   onLayerDelete,
   isDarkMode = false,
 }: Props) {
+  const { t } = useTranslation()
   const [editingPageId, setEditingPageId] = useState<string | null>(null)
   const [pageNameDraft, setPageNameDraft] = useState("")
   const [draggingPageId, setDraggingPageId] = useState<string | null>(null)
@@ -738,7 +740,7 @@ export function PagesPanel({
               <button
                 type="button"
                 data-card-drag-ignore="true"
-                aria-label={`Rename ${page.name}`}
+                aria-label={t("projectPanel.renamePage", { name: page.name })}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${tone.close}`}
                 onClick={(event) => {
                   event.stopPropagation()
@@ -750,7 +752,7 @@ export function PagesPanel({
               <button
                 type="button"
                 data-card-drag-ignore="true"
-                aria-label={`Delete ${page.name}`}
+                aria-label={t("projectPanel.deletePage", { name: page.name })}
                 disabled={deleteDisabled}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${
                   deleteDisabled
@@ -761,10 +763,10 @@ export function PagesPanel({
                   event.stopPropagation()
                   if (deleteDisabled) return
                   onRequestNotice?.({
-                    title: "Delete Page",
-                    message: `Delete ${page.name}?`,
-                    confirmLabel: "Delete",
-                    cancelLabel: "Cancel",
+                    title: t("projectPanel.deletePageTitle"),
+                    message: t("projectPanel.deletePageMessage", { name: page.name }),
+                    confirmLabel: t("common.delete"),
+                    cancelLabel: t("common.cancel"),
                     onConfirm: () => {
                       cancelRename()
                       onDeletePage(page.id)
@@ -780,14 +782,14 @@ export function PagesPanel({
             <div data-card-drag-ignore="true" className="px-4 pb-4 md:px-6">
               <div className="flex items-center justify-between gap-3">
                 <span className={`text-[10px] font-semibold uppercase tracking-[0.08em] ${tone.rowMuted}`}>
-                  Facing Pages
+                  {t("projectPanel.facingPages")}
                 </span>
                 <button
                   type="button"
                   data-card-drag-ignore="true"
                   role="checkbox"
                   aria-checked={isFacingPage}
-                  aria-label={`Toggle facing pages for ${page.name}`}
+                  aria-label={t("projectPanel.toggleFacingPages", { name: page.name })}
                   className={`rounded-sm p-1 transition-colors ${tone.close}`}
                   onClick={(event) => {
                     event.stopPropagation()
@@ -798,7 +800,7 @@ export function PagesPanel({
                 </button>
               </div>
               <SectionHeaderRow
-                label="L A Y E R S"
+                label={t("projectPanel.layers")}
                 className="mt-3"
                 labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
               />

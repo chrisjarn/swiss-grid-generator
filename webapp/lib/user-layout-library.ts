@@ -10,6 +10,7 @@ import {
   toArrayBuffer,
 } from "@/lib/project-transfer"
 import { sha256Hex } from "@/lib/cloud-sync/hash"
+import { translateMessage } from "@/lib/i18n/messages"
 
 export type UserProjectSyncState = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type CloudActivityLevel = "info" | "success" | "warning" | "error"
@@ -461,7 +462,7 @@ export async function upsertCloudProjectToUserLibrary({
 
   return saveProjectToUserLibrary({
     id: existing?.id ?? remoteProjectId,
-    label: project.metadata.title.trim() || project.pages[0]?.name || "Untitled Project",
+    label: project.metadata.title.trim() || project.pages[0]?.name || translateMessage("presets.untitled"),
     title: project.metadata.title,
     description: project.metadata.description,
     author: project.metadata.author,
@@ -744,7 +745,7 @@ export function formatCloudActivityLogForSupport(entries: readonly CloudActivity
     ].filter(Boolean)
     return parts.join(" | ")
   })
-  return lines.length > 0 ? lines.join("\n") : "No local cloud activity log entries."
+  return lines.length > 0 ? lines.join("\n") : translateMessage("cloudActivity.empty")
 }
 
 export async function listUserLayoutPresets(): Promise<LayoutPreset[]> {

@@ -10,6 +10,7 @@ import {
   duplicateTextLayerInCollections,
 } from "@/lib/preview-text-layer-state"
 import type { ModulePosition } from "@/lib/types/preview-layout"
+import { translateMessage } from "@/lib/i18n/messages"
 
 type Args<Key extends string, StyleKey extends string> = Pick<
   PreviewCanvasInteractionArgs<Key, StyleKey>,
@@ -81,8 +82,8 @@ export function usePreviewTextLayerInteractions<Key extends string, StyleKey ext
       const maxParagraphCount = gridCols * gridRows
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
-          title: "Paragraph Limit Reached",
-          message: `Maximum paragraphs reached (${maxParagraphCount}).`,
+          title: translateMessage("status.notices.paragraphLimitTitle"),
+          message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
         })
         return
       }

@@ -40,6 +40,7 @@ import {
 import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
 import { RightPanel } from "@/gui/shell/RightPanel"
 import { TopBar } from "@/gui/shell/TopBar"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -305,6 +306,7 @@ export function PreviewWorkspace({
   onNextLayoutOpenTooltip,
   tourState = null,
 }: Props) {
+  const { t } = useTranslation()
   const [previewHoveredLayerKey, setPreviewHoveredLayerKey] = useState<string | null>(null)
   const [layerPanelHoveredLayerKey, setLayerPanelHoveredLayerKey] = useState<string | null>(null)
   const [previewEditorOpenToken, setPreviewEditorOpenToken] = useState(0)
@@ -499,16 +501,16 @@ export function PreviewWorkspace({
     setPageListRequestToken((current) => current + 1)
   }
 
-  const pagesSectionHeadlineLabel = isSingleProjectPage ? "P A G E" : (
+  const pagesSectionHeadlineLabel = isSingleProjectPage ? t("projectPanel.page") : (
       <HoverTooltip
         inline
-        label={"Show page list\nClick P A G E S to return from a page submenu to the page list."}
+        label={t("projectPanel.pageListTooltip")}
         tooltipClassName="w-64 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-popover-foreground shadow-lg"
         horizontalAlign="start"
       >
         <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
           <List className="h-3 w-3" strokeWidth={1.9} />
-          <span>P A G E S</span>
+          <span>{t("projectPanel.pages")}</span>
         </span>
       </HoverTooltip>
     )
@@ -539,13 +541,13 @@ export function PreviewWorkspace({
   const pageNavigationControlsBefore = (
     <span className="mr-1 inline-flex items-center -space-x-1">
       {renderPageNavigationButton(
-        "First page",
+        t("projectPanel.firstPage"),
         1,
         documentPagePosition <= 1,
         <ChevronsLeft className="h-3 w-3" strokeWidth={1.9} />,
       )}
       {renderPageNavigationButton(
-        "Previous page",
+        t("projectPanel.previousPage"),
         documentPagePosition - 1,
         documentPagePosition <= 1,
         <ChevronLeft className="h-3 w-3" strokeWidth={1.9} />,
@@ -556,13 +558,13 @@ export function PreviewWorkspace({
   const pageNavigationControlsAfter = (
     <span className="ml-1 inline-flex items-center -space-x-1">
       {renderPageNavigationButton(
-        "Next page",
+        t("projectPanel.nextPage"),
         documentPagePosition + 1,
         documentPagePosition >= documentVariablePageCount,
         <ChevronRight className="h-3 w-3" strokeWidth={1.9} />,
       )}
       {renderPageNavigationButton(
-        "Last page",
+        t("projectPanel.lastPage"),
         documentVariablePageCount,
         documentPagePosition >= documentVariablePageCount,
         <ChevronsRight className="h-3 w-3" strokeWidth={1.9} />,
@@ -578,7 +580,7 @@ export function PreviewWorkspace({
         ref={pageNumberInputRef}
         type="text"
         inputMode="numeric"
-        aria-label="Page number"
+        aria-label={t("projectPanel.pageNumber")}
         value={pageNumberDraft}
         onChange={(event) => {
           const nextValue = event.target.value
@@ -599,7 +601,7 @@ export function PreviewWorkspace({
         }}
         className="h-4 w-9 cursor-text rounded-sm border border-input bg-background px-1 text-right text-[11px] leading-none text-foreground outline-none focus:border-swiss-orange"
       />
-      <span className="px-1">of</span>
+      <span className="px-1">{t("common.of")}</span>
       <span>{documentVariablePageCount}</span>
       {pageNavigationControlsAfter}
     </span>
@@ -608,20 +610,20 @@ export function PreviewWorkspace({
       {pageNavigationControlsBefore}
       <HoverTooltip
         inline
-        label={`Page ${documentPagePosition} of ${documentVariablePageCount}\nDouble-click the current page number to jump to a page.`}
+        label={t("projectPanel.pageCounterTooltip", { page: documentPagePosition, total: documentVariablePageCount })}
         tooltipClassName="w-56 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] leading-snug text-popover-foreground shadow-lg"
         horizontalAlign="end"
       >
         <button
           type="button"
-          aria-label={`Edit page number, currently ${documentPagePosition} of ${documentVariablePageCount}`}
+          aria-label={t("projectPanel.editPageNumber", { page: documentPagePosition, total: documentVariablePageCount })}
           onDoubleClick={beginPageNumberEdit}
           className="inline-flex min-w-0 cursor-text items-center leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           {documentPagePosition}
         </button>
       </HoverTooltip>
-      <span className="px-1">of</span>
+      <span className="px-1">{t("common.of")}</span>
       <span>{documentVariablePageCount}</span>
       {pageNavigationControlsAfter}
     </span>
@@ -635,8 +637,8 @@ export function PreviewWorkspace({
   }, [editorMode])
 
   const activePageTitle = useMemo(() => {
-    return activeProjectPage?.name?.trim() || `Page ${activePageNumber}`
-  }, [activePageNumber, activeProjectPage])
+    return activeProjectPage?.name?.trim() || `${t("projectPanel.page")} ${activePageNumber}`
+  }, [activePageNumber, activeProjectPage, t])
 
   const totalLayerCount = useMemo(() => {
     if (!showProjectInfo) return 0
@@ -721,17 +723,33 @@ export function PreviewWorkspace({
 
   const projectInfoSentence = useMemo(() => {
     if (!showProjectInfo) return ""
-    const authorText = projectAuthor.trim()
-      ? ` It was created by ${projectAuthor.trim()}`
-      : " It has no saved author"
-    const createdAtText = formattedProjectCreatedAt
-      ? ` on ${formattedProjectCreatedAt}.`
-      : "."
-    const loadTimeText = formattedProjectLoadTime
-      ? ` Last load: ${formattedProjectLoadTime}.`
+    const authorSentence = projectAuthor.trim()
+      ? t("projectPanel.authorSentence", { author: projectAuthor.trim() })
+      : t("projectPanel.noAuthorSentence")
+    const createdSentence = formattedProjectCreatedAt
+      ? t("projectPanel.createdSentence", { date: formattedProjectCreatedAt })
       : ""
-    return `This document consists of ${documentVariablePageCount} ${documentVariablePageCount === 1 ? "page" : "pages"} with ${totalLayerCount} ${totalLayerCount === 1 ? "layer" : "layers"}, uses ${projectInfoStats.fontCount} ${projectInfoStats.fontCount === 1 ? "font" : "fonts"} and ${projectInfoStats.cutCount} ${projectInfoStats.cutCount === 1 ? "cut" : "cuts"}, and contains ${projectInfoStats.wordCount} ${projectInfoStats.wordCount === 1 ? "word" : "words"} and ${projectInfoStats.characterCount} ${projectInfoStats.characterCount === 1 ? "character" : "characters"}.${authorText}${createdAtText}${loadTimeText}`
-  }, [documentVariablePageCount, formattedProjectCreatedAt, formattedProjectLoadTime, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, totalLayerCount])
+    const loadSentence = formattedProjectLoadTime
+      ? t("projectPanel.loadSentence", { duration: formattedProjectLoadTime })
+      : ""
+    return t("projectPanel.infoSentence", {
+      pages: documentVariablePageCount,
+      pageWord: documentVariablePageCount === 1 ? "page" : "pages",
+      layers: totalLayerCount,
+      layerWord: totalLayerCount === 1 ? "layer" : "layers",
+      fonts: projectInfoStats.fontCount,
+      fontWord: projectInfoStats.fontCount === 1 ? "font" : "fonts",
+      cuts: projectInfoStats.cutCount,
+      cutWord: projectInfoStats.cutCount === 1 ? "cut" : "cuts",
+      words: projectInfoStats.wordCount,
+      wordWord: projectInfoStats.wordCount === 1 ? "word" : "words",
+      characters: projectInfoStats.characterCount,
+      characterWord: projectInfoStats.characterCount === 1 ? "character" : "characters",
+      authorSentence,
+      createdSentence,
+      loadSentence,
+    })
+  }, [documentVariablePageCount, formattedProjectCreatedAt, formattedProjectLoadTime, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, t, totalLayerCount])
 
   const documentVariableContext = useMemo(() => ({
     projectTitle,
@@ -756,8 +774,8 @@ export function PreviewWorkspace({
       ? "border-swiss-orange bg-swiss-orange text-background hover:brightness-95"
       : ""
     const tooltip = pageAddDisabled
-      ? `Maximum ${MAX_GUI_PROJECT_PAGES} pages reached.`
-      : "Add page with layout only\nShift-click duplicates page with content"
+      ? t("projectPanel.pageLimitTooltip", { count: MAX_GUI_PROJECT_PAGES })
+      : t("projectPanel.addPageTooltip")
 
     return (
       <div className="flex shrink-0 items-center gap-1.5">
@@ -768,7 +786,7 @@ export function PreviewWorkspace({
         >
           <button
             type="button"
-            aria-label={addShiftActive ? "Duplicate page with content" : "Add clean copy page"}
+            aria-label={addShiftActive ? t("projectPanel.duplicatePage") : t("projectPanel.addCleanPage")}
             disabled={pageAddDisabled}
             onMouseEnter={(event) => {
               setPageAddHovered(true)
@@ -964,13 +982,13 @@ export function PreviewWorkspace({
                 <div className="shrink-0 px-4 pt-4 md:px-6">
                   <div className="rounded-md py-2">
                     <SectionHeaderRow
-                      label="P R O J E C T"
+                      label={t("projectPanel.title")}
                       labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
                       actions={(
                         <div className="flex shrink-0 items-center gap-1">
                           <button
                             type="button"
-                            aria-label={showProjectInfo ? "Hide document info" : "Show document info"}
+                            aria-label={showProjectInfo ? t("projectPanel.hideInfo") : t("projectPanel.showInfo")}
                             aria-pressed={showProjectInfo}
                             onClick={() => setShowProjectInfo((current) => !current)}
                             className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors ${
@@ -983,7 +1001,7 @@ export function PreviewWorkspace({
                           </button>
                           <button
                             type="button"
-                            aria-label="Close project panel"
+                            aria-label={t("projectPanel.close")}
                             onClick={closeSidebarPanel}
                             className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
                           >
@@ -1020,7 +1038,7 @@ export function PreviewWorkspace({
                   </div>
                   {!isSingleProjectPage ? (
                     <div className={`mb-2 mt-1 flex min-h-[18px] w-full items-center justify-between gap-2 rounded-md pb-1 text-[12px] font-normal leading-none normal-case tracking-normal ${uiTheme.sidebarBody}`}>
-                      <span className="min-w-0">Page</span>
+                      <span className="min-w-0">{t("projectPanel.page")}</span>
                       <span className="inline-flex min-w-0 items-center gap-2">
                         <span className="min-w-0 truncate text-[11px] font-normal leading-none">
                           {pagePositionValue}

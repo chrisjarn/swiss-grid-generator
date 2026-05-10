@@ -76,6 +76,7 @@ import {
 } from "@/lib/config/color-schemes"
 import { usePreviewTextEditor } from "@/gui/preview/hooks/usePreviewTextEditor"
 import type { DocumentVariableContext } from "@/lib/document-variable-text"
+import { translateMessage } from "@/lib/i18n/messages"
 import {
   memo,
   useCallback,
@@ -793,28 +794,28 @@ export const GridPreview = memo(function GridPreview({
     if (!onRequestNotice) return
     if (mode === "full") {
       onRequestNotice({
-        title: "Paragraph Copied",
-        message: "Click another paragraph, even on a different page or layout, to replace its text and paragraph settings with the copied paragraph.",
+        title: translateMessage("overlayActions.paragraphCopiedTitle"),
+        message: translateMessage("overlayActions.paragraphCopiedMessage"),
       })
       return
     }
     if (mode === "paragraph") {
       onRequestNotice({
-        title: "Paragraph Settings Copied",
-        message: "Click another paragraph, even on a different page or layout, to apply rows, baselines, columns, alignment, reflow, snap, and rotation.",
+        title: translateMessage("overlayActions.paragraphSettingsCopiedTitle"),
+        message: translateMessage("overlayActions.paragraphSettingsCopiedMessage"),
       })
       return
     }
     if (mode === "typo") {
       onRequestNotice({
-        title: "Typo Settings Copied",
-        message: "Click another paragraph, even on a different page or layout, to apply hierarchy, font, cut, kerning, tracking, and local type overrides.",
+        title: translateMessage("overlayActions.typographyCopiedTitle"),
+        message: translateMessage("overlayActions.typographyCopiedMessage"),
       })
       return
     }
     onRequestNotice({
-      title: "Paragraph And Typo Copied",
-      message: "Click another paragraph, even on a different page or layout, to apply both paragraph and typo settings.",
+      title: translateMessage("overlayActions.paragraphTypographyCopiedTitle"),
+      message: translateMessage("overlayActions.paragraphTypographyCopiedMessage"),
     })
   }, [onRequestNotice])
 
@@ -1157,8 +1158,8 @@ export const GridPreview = memo(function GridPreview({
       const maxParagraphCount = result.settings.gridCols * result.settings.gridRows
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
-          title: "Paragraph Limit Reached",
-          message: `Maximum paragraphs reached (${maxParagraphCount}).`,
+          title: translateMessage("status.notices.paragraphLimitTitle"),
+          message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
         })
         return true
       }

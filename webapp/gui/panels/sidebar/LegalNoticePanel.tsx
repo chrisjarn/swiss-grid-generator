@@ -61,8 +61,8 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
         link: "text-blue-600 hover:underline",
       }
 
-  const noteSection = LEGAL_CONTENT_SECTIONS.find((section) => section.title === "note")
-  const contentSections = LEGAL_CONTENT_SECTIONS.filter((section) => section.title !== "note")
+  const noteSection = LEGAL_CONTENT_SECTIONS.find((section) => section.title.toLowerCase() === "note")
+  const contentSections = LEGAL_CONTENT_SECTIONS.filter((section) => section.title.toLowerCase() !== "note")
 
   return (
     <div className="space-y-4">

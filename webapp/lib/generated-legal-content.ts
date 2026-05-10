@@ -14,25 +14,25 @@ export type LegalSection = {
 
 export const LEGAL_CONTENT_SECTIONS = [
   {
-    "title": "legal notice",
+    "title": "Legal Notice",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "information according to section 5 ddg."
+        "text": "Information according to Section 5 DDG."
       }
     ]
   },
   {
-    "title": "provider",
+    "title": "Provider",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "**ingo wörner**\nnaststr. 1\n70376 stuttgart\ngermany"
+        "text": "**Ingo Wörner**\nNaststr. 1\n70376 Stuttgart\nGermany"
       }
     ]
   },
   {
-    "title": "contact",
+    "title": "Contact",
     "blocks": [
       {
         "type": "paragraph",
@@ -41,91 +41,115 @@ export const LEGAL_CONTENT_SECTIONS = [
     ]
   },
   {
-    "title": "responsible for own content",
+    "title": "Responsible For Own Content",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "ingo wörner\nnaststr. 1\n70376 stuttgart\ngermany"
+        "text": "Ingo Wörner\nNaststr. 1\n70376 Stuttgart\nGermany"
       }
     ]
   },
   {
-    "title": "privacy",
+    "title": "Privacy",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "the controller for personal data processed by swiss grid generator is ingo wörner, contactable at the email address above."
+        "text": "Controller: Ingo Wörner. Contact: email above."
       },
       {
         "type": "paragraph",
-        "text": "the app processes account email addresses, authentication data, cloud project data, feedback messages, attached screenshots, optional support logs, and technical data required to operate the service."
+        "text": "Processed data:\n- Account email\n- Authentication data\n- Cloud projects\n- Feedback\n- Screenshots\n- Optional support logs\n- Service operation data"
       },
       {
         "type": "paragraph",
-        "text": "processing is used to provide the editor, sign-in, cloud storage, feedback, support, security, and synchronization features. legal bases are contract performance, legitimate interests, and consent where required."
+        "text": "Purpose: editor operation, sign-in, cloud storage, feedback, support, security, synchronization."
+      },
+      {
+        "type": "paragraph",
+        "text": "Legal bases: contract performance, legitimate interest, consent where required."
       }
     ]
   },
   {
-    "title": "cloud storage",
+    "title": "Cloud Storage",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "signed-in users can store projects in supabase. user projects and uploaded project content remain the responsibility of the respective user."
+        "text": "Signed-in users can store projects in Supabase. Users remain responsible for project content."
       }
     ]
   },
   {
-    "title": "local storage",
+    "title": "Local Storage",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "the app uses local storage and indexeddb for editor preferences, offline cache, recent local activity logs, and project synchronization. these are required for the requested editor and cloud-sync features. the app does not use advertising or analytics cookies."
+        "text": "The app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync."
+      },
+      {
+        "type": "paragraph",
+        "text": "No advertising or analytics cookies are used."
       }
     ]
   },
   {
-    "title": "feedback",
+    "title": "Feedback",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "feedback submissions are stored in supabase and may include email, comment, screenshots, app version, and optional local support logs. they are used only to handle support, bug reports, and product feedback."
+        "text": "Feedback is stored in Supabase."
+      },
+      {
+        "type": "paragraph",
+        "text": "It may include email, comment, screenshots, app version, and optional support logs."
+      },
+      {
+        "type": "paragraph",
+        "text": "Use is limited to support and defect review."
       }
     ]
   },
   {
-    "title": "user rights",
+    "title": "User Rights",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "users may request access, correction, deletion, restriction, portability, or objection by email. users may also lodge a complaint with a competent data protection supervisory authority."
+        "text": "Users may request access, correction, deletion, restriction, portability, or objection by email."
+      },
+      {
+        "type": "paragraph",
+        "text": "Complaints may be lodged with a competent supervisory authority."
       }
     ]
   },
   {
-    "title": "terms of use",
+    "title": "Terms Of Use",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "swiss grid generator is provided as a professional design tool without a guarantee of uninterrupted availability. users are responsible for their own documents, exports, backups, and lawful use of uploaded or stored content."
+        "text": "Swiss Grid Generator is provided without guaranteed uninterrupted availability."
+      },
+      {
+        "type": "paragraph",
+        "text": "Users are responsible for documents, exports, backups, and lawful content use."
       }
     ]
   },
   {
-    "title": "consumer dispute resolution",
+    "title": "Consumer Dispute Resolution",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "we are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board."
+        "text": "We do not participate in consumer arbitration proceedings."
       }
     ]
   },
   {
-    "title": "note",
+    "title": "Note",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "this compact legal notice is provided in english because the app interface is english only."
+        "text": "This notice is English because the app interface is English."
       }
     ]
   }

@@ -17,6 +17,8 @@ import {
   saveProjectToUserLibrary,
   userLayoutPresetQuery,
 } from "@/lib/user-layout-library"
+import { useTranslation } from "@/lib/i18n/useTranslation"
+import { translateMessage } from "@/lib/i18n/messages"
 
 type PresetGroupCategory = (typeof LAYOUT_PRESET_GROUPS)[number]["category"]
 const PRESET_GROUP_COLLAPSED_STORAGE_KEY = "swiss-grid-generator.preset-browser.collapsed-groups"
@@ -53,10 +55,6 @@ function formatPresetNumber(value: number): string {
 
 function formatPresetGroupHeaderLabel(label: string): string {
   return label
-    .toUpperCase()
-    .split(/\s+/)
-    .map((word) => Array.from(word).join(" "))
-    .join("  ")
 }
 
 function getPresetThumbnailDimensions(preset: LayoutPreset, compact: boolean): { width: number; height: number } {
@@ -68,14 +66,18 @@ function getPresetThumbnailDimensions(preset: LayoutPreset, compact: boolean): {
   return { width, height }
 }
 
-function getPresetCloudStatusLabel(syncState: LayoutPreset["syncState"], isCloudSignedIn: boolean): string {
-  if (!isCloudSignedIn) return "Not connected"
-  if (syncState === "synced") return "Cloud synced"
-  if (syncState === "syncing") return "Cloud syncing"
-  if (syncState === "conflict") return "Cloud conflict"
-  if (syncState === "error") return "Cloud error"
-  if (syncState === "deleted") return "Cloud delete queued"
-  return "Cloud pending"
+function getPresetCloudStatusLabel(
+  syncState: LayoutPreset["syncState"],
+  isCloudSignedIn: boolean,
+  t: ReturnType<typeof useTranslation>["t"],
+): string {
+  if (!isCloudSignedIn) return t("presets.notConnected")
+  if (syncState === "synced") return t("presets.cloudSynced")
+  if (syncState === "syncing") return t("presets.cloudSyncing")
+  if (syncState === "conflict") return t("presets.cloudConflict")
+  if (syncState === "error") return t("presets.cloudError")
+  if (syncState === "deleted") return t("presets.cloudDeleteQueued")
+  return t("presets.cloudPending")
 }
 
 function PresetGroupHeaderLabel({
@@ -105,19 +107,19 @@ function PresetGroupHeaderLabel({
         label={(
           <div className="space-y-1">
             <div>
-              User layouts are stored in the local offline library of this browser.
+              {translateMessage("presets.storageLocal")}
             </div>
             <div>
-              Local layouts exist only on this machine/browser and can be lost if browser data is cleared.
+              {translateMessage("presets.storageRisk")}
             </div>
             <div>
-              When signed in, saved user layouts sync to Supabase so they can be restored on other sessions after cloud sync completes.
+              {translateMessage("presets.storageCloud")}
             </div>
           </div>
         )}
       >
         <span
-          aria-label="User library storage info"
+          aria-label={translateMessage("presets.storageInfo")}
           className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-swiss-orange-soft/70 text-[9px] font-semibold normal-case leading-none tracking-normal text-swiss-orange-soft"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
@@ -166,6 +168,7 @@ function PresetCard({
   onDeleteUserPreset,
   isCloudSignedIn,
   compact,
+  t,
 }: {
   preset: LayoutPreset
   onLoadPreset: (preset: LayoutPreset) => void
@@ -178,6 +181,7 @@ function PresetCard({
   onDeleteUserPreset: (preset: LayoutPreset) => void
   isCloudSignedIn: boolean
   compact: boolean
+  t: ReturnType<typeof useTranslation>["t"]
 }) {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const isUserPreset = preset.source === "user"
@@ -186,7 +190,7 @@ function PresetCard({
     : null
   const result = preset.browserPage.result
   const baselineGrid = result.typography.metadata.baselineGrid
-  const cloudStatusLabel = getPresetCloudStatusLabel(preset.syncState, isCloudSignedIn)
+  const cloudStatusLabel = getPresetCloudStatusLabel(preset.syncState, isCloudSignedIn, t)
   const thumbnailDimensions = getPresetThumbnailDimensions(preset, compact)
 
   useEffect(() => {
@@ -223,19 +227,19 @@ function PresetCard({
       }`}
       label={(
         <div className="space-y-1">
-          <PresetTooltipRow label="Title" value={preset.title ?? preset.label} />
-          <PresetTooltipRow label="Subject" value={preset.description || "—"} />
-          <PresetTooltipRow label="Author" value={preset.author || "—"} />
-          <PresetTooltipRow label="Created" value={formatPresetCreatedAt(preset.createdAt)} />
-          <PresetTooltipRow label="Format" value={`${result.format} / ${result.settings.orientation}`} />
-          <PresetTooltipRow label="Grid" value={`${result.settings.gridCols} x ${result.settings.gridRows}`} />
-          <PresetTooltipRow label="Baseline" value={`${formatPresetNumber(baselineGrid)} pt`} />
-          <PresetTooltipRow label="Margins" value={result.settings.marginMethod} />
-          <PresetTooltipRow label="Rhythm" value={result.settings.rhythm} />
+          <PresetTooltipRow label={t("presets.titleLabel")} value={preset.title ?? preset.label} />
+          <PresetTooltipRow label={t("presets.subjectLabel")} value={preset.description || "—"} />
+          <PresetTooltipRow label={t("presets.authorLabel")} value={preset.author || "—"} />
+          <PresetTooltipRow label={t("presets.createdLabel")} value={formatPresetCreatedAt(preset.createdAt)} />
+          <PresetTooltipRow label={t("presets.formatLabel")} value={`${result.format} / ${result.settings.orientation}`} />
+          <PresetTooltipRow label={t("presets.gridLabel")} value={`${result.settings.gridCols} x ${result.settings.gridRows}`} />
+          <PresetTooltipRow label={t("presets.baselineLabel")} value={`${formatPresetNumber(baselineGrid)} pt`} />
+          <PresetTooltipRow label={t("presets.marginsLabel")} value={result.settings.marginMethod} />
+          <PresetTooltipRow label={t("presets.rhythmLabel")} value={result.settings.rhythm} />
           {isUserPreset ? (
             <div className={`mt-1 border-t pt-1 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
               <div className="grid grid-cols-[82px_1fr] gap-2">
-                <span className="font-semibold">Cloud</span>
+                <span className="font-semibold">{t("presets.cloudLabel")}</span>
                 <span className="inline-flex min-w-0 items-center gap-1.5">
                   {syncIndicatorClassName ? (
                     <span
@@ -363,6 +367,7 @@ export function PresetLayoutsPanel({
   showRolloverInfo = true,
   onRequestNotice,
 }: Props) {
+  const { t } = useTranslation()
   const [userPresets, setUserPresets] = useState<LayoutPreset[]>([])
   const [openMenuPresetId, setOpenMenuPresetId] = useState<string | null>(null)
   const [collapsedGroups, setCollapsedGroups] = useState<Partial<Record<PresetGroupCategory, boolean>>>({})
@@ -411,8 +416,8 @@ export function PresetLayoutsPanel({
   const handleCopyUserPreset = useCallback(async (preset: LayoutPreset) => {
     try {
       const sourceProject = JSON.parse(preset.projectSourceJson) as Record<string, unknown>
-      const nextTitle = (preset.title ?? preset.label).trim() || "Untitled Project"
-      const duplicatedTitle = `${nextTitle} Copy`
+      const nextTitle = (preset.title ?? preset.label).trim() || t("presets.untitled")
+      const duplicatedTitle = `${nextTitle} ${t("presets.copySuffix")}`
       const duplicatedDescription = preset.description ?? ""
       const duplicatedAuthor = preset.author ?? ""
       const createdAt = preset.createdAt && !Number.isNaN(Date.parse(preset.createdAt))
@@ -437,31 +442,31 @@ export function PresetLayoutsPanel({
       })
 
       onRequestNotice?.({
-        title: "Copied to Users",
-        message: "A duplicated user layout was added to the local library.",
+        title: t("presets.copiedTitle"),
+        message: t("presets.copiedMessage"),
       })
     } catch (error) {
       console.error(error)
       onRequestNotice?.({
-        title: "Copy Failed",
-        message: "Could not duplicate the selected user layout.",
+        title: t("presets.copyFailedTitle"),
+        message: t("presets.copyFailedMessage"),
       })
     }
-  }, [onRequestNotice])
+  }, [onRequestNotice, t])
 
   const handleDeleteUserPreset = useCallback(async (preset: LayoutPreset) => {
     const targetId = preset.userProjectId ?? preset.id
     if (!targetId) return
 
-    const presetLabel = (preset.title ?? preset.label).trim() || "Untitled Project"
+    const presetLabel = (preset.title ?? preset.label).trim() || t("presets.untitled")
     const cloudText = isCloudSignedIn
-      ? "The cloud copy will be soft-deleted if it is already synced."
-      : "If this layout has a cloud copy, deletion will be queued until cloud sync is available."
+      ? t("presets.deleteSyncedCloudText")
+      : t("presets.deleteQueuedCloudText")
     onRequestNotice?.({
-      title: "Delete from Users",
-      message: `Delete "${presetLabel}" from Users?\n\n${cloudText}`,
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
+      title: t("presets.deleteTitle"),
+      message: t("presets.deleteMessage", { title: presetLabel, cloudText }),
+      confirmLabel: t("common.delete"),
+      cancelLabel: t("common.cancel"),
       onConfirm: () => {
         void (async () => {
           try {
@@ -472,22 +477,22 @@ export function PresetLayoutsPanel({
 
             await deleteUserProjectFromLibrary(targetId)
             onRequestNotice?.({
-              title: "Deleted from Users",
+              title: t("presets.deletedTitle"),
               message: isCloudSignedIn
-                ? "The selected user layout was removed from the local library. Cloud status: no remote delete handler was available."
-                : "The selected user layout was removed from the local library. Cloud status: not connected.",
+                ? t("presets.deleteNoHandlerMessage")
+                : t("presets.deleteSignedOutMessage"),
             })
           } catch (error) {
             console.error(error)
             onRequestNotice?.({
-              title: "Delete Failed",
-              message: "Could not remove the selected user layout.",
+              title: t("presets.deleteFailedTitle"),
+              message: t("presets.deleteFailedMessage"),
             })
           }
         })()
       },
     })
-  }, [isCloudSignedIn, onDeleteUserPreset, onRequestNotice])
+  }, [isCloudSignedIn, onDeleteUserPreset, onRequestNotice, t])
 
   const cardGapClass = compact ? "gap-2" : "gap-3"
   const groupToggleClassName = isDarkMode
@@ -501,10 +506,10 @@ export function PresetLayoutsPanel({
       {!compact ? (
         <>
           <h3 className={`text-sm font-semibold mb-2 flex items-center gap-1.5 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}>
-            <span>Presets</span>
+            <span>{t("presets.title")}</span>
           </h3>
           <p className={`text-xs mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-            Double-click a thumbnail to load a preset layout, or press `Esc` to close the browser.
+            {t("presets.description")}
           </p>
         </>
       ) : null}
@@ -565,6 +570,7 @@ export function PresetLayoutsPanel({
                       onDeleteUserPreset={handleDeleteUserPreset}
                       isCloudSignedIn={isCloudSignedIn}
                       compact={compact}
+                      t={t}
                     />
                   ))}
                 </div>

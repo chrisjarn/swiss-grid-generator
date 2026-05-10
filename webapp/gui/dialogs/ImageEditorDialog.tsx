@@ -33,6 +33,7 @@ import { usePersistedSectionState } from "@/gui/editors/hooks/usePersistedSectio
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
 import type { HelpSectionId } from "@/lib/help-registry"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 export type ImageEditorState = {
   target: string
@@ -91,6 +92,7 @@ export function ImageEditorDialog({
   showRolloverInfo = true,
   isDarkMode = false,
 }: ImageEditorDialogProps) {
+  const { t } = useTranslation()
   const [editorColorScheme, setEditorColorScheme] = useState<ImageColorSchemeId>(selectedColorScheme)
   const [previewColorScheme, setPreviewColorScheme] = useState<ImageColorSchemeId | null>(null)
   const [transparencyInput, setTransparencyInput] = useState("")
@@ -247,15 +249,15 @@ export function ImageEditorDialog({
   const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
   const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
   const infoRows = [
-    ["Rows", String(editorState.draftRows)],
-    ["Baselines", String(editorState.draftHeightBaselines)],
-    ["Cols", String(editorState.draftColumns)],
-    ["Snap X", editorState.draftSnapToColumns ? "On" : "Off"],
-    ["Snap Y", editorState.draftSnapToBaseline ? "On" : "Off"],
-    ["Rotation", `${Math.round(editorState.draftRotation)}deg`],
-    ["Scheme", colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme],
-    ["Color", editorState.draftColor],
-    ["Transparency", `${transparencyPercent}%`],
+    [t("editor.paragraph.rows"), String(editorState.draftRows)],
+    [t("editor.paragraph.baselines"), String(editorState.draftHeightBaselines)],
+    [t("editor.paragraph.cols"), String(editorState.draftColumns)],
+    [t("editor.info.snapX"), editorState.draftSnapToColumns ? t("common.on") : t("common.off")],
+    [t("editor.info.snapY"), editorState.draftSnapToBaseline ? t("common.on") : t("common.off")],
+    [t("editor.paragraph.rotation"), `${Math.round(editorState.draftRotation)}deg`],
+    [t("editor.info.scheme"), colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme],
+    [t("editor.color.color"), editorState.draftColor],
+    [t("editor.image.transparency"), `${transparencyPercent}%`],
   ]
 
   const commitTransparencyInput = () => {
@@ -287,9 +289,9 @@ export function ImageEditorDialog({
           <EditorSidebarSection
             title={(
               <span className="inline-flex items-center gap-2">
-                <span>I. Paragraph</span>
+                <span>I. {t("editor.paragraph.title")}</span>
                 <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
-                  <span>IMAGE</span>
+                  <span>{t("editor.image.title")}</span>
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-sm border border-black/10"
                     style={{ backgroundColor: editorState.draftColor }}
@@ -298,7 +300,7 @@ export function ImageEditorDialog({
                 </span>
               </span>
             )}
-            tooltip="Rows, baselines, columns, axis snap, and rotation; geometry dropdowns preview on rollover"
+            tooltip={t("editor.image.geometryTooltip")}
             collapsed={collapsed.geometry}
             collapsedSummary={`${editorState.draftRows} rows, ${editorState.draftColumns} cols, ${Math.round(editorState.draftRotation)}deg`}
             onHeaderClick={handleSectionHeaderClick("geometry")}
@@ -309,8 +311,8 @@ export function ImageEditorDialog({
             onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.geometry)}
           >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <Label className={sectionLabelClassName}>Rows</Label>
-            <Label className={`${sectionLabelClassName} text-right`}>Cols</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.rows")}</Label>
+            <Label className={`${sectionLabelClassName} text-right`}>{t("editor.paragraph.cols")}</Label>
 
             <Select
               value={rowsSelectPreview.value}
@@ -354,7 +356,7 @@ export function ImageEditorDialog({
               </TopSelectContent>
             </Select>
 
-            <Label className={sectionLabelClassName}>Baselines</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.baselines")}</Label>
             <div aria-hidden="true" />
 
             <Select
@@ -383,7 +385,7 @@ export function ImageEditorDialog({
           <div className="mt-4 space-y-3">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label className={sectionLabelClassName}>Rotation</Label>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.rotation")}</Label>
                 <span className={`rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
                   {Math.round(editorState.draftRotation)}°
                 </span>
@@ -410,8 +412,8 @@ export function ImageEditorDialog({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Snap to Columns (X)</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>Lock horizontal placement to column anchors.</p>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapColumns")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapColumnsHelp")}</p>
               </div>
               <Switch
                 checked={editorState.draftSnapToColumns}
@@ -423,8 +425,8 @@ export function ImageEditorDialog({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Snap to Baseline (Y)</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>Lock vertical placement to baseline steps.</p>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapBaseline")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapBaselineHelp")}</p>
               </div>
               <Switch
                 checked={editorState.draftSnapToBaseline}
@@ -439,8 +441,8 @@ export function ImageEditorDialog({
 
         <div ref={registerSectionRef("color")}>
           <EditorSidebarSection
-            title="II. Color"
-            tooltip="Scheme, swatch color, and transparency; scheme dropdown previews on rollover"
+            title={`II. ${t("editor.image.colorTitle")}`}
+            tooltip={t("editor.image.colorTooltip")}
             collapsed={collapsed.color}
             collapsedSummary={`${colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("color")}
@@ -470,7 +472,7 @@ export function ImageEditorDialog({
           />
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Transparency</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.image.transparency")}</Label>}>
             <input
               type="number"
               min={0}
@@ -495,8 +497,8 @@ export function ImageEditorDialog({
 
         <div ref={registerSectionRef("info")}>
           <EditorSidebarSection
-            title="III. Info"
-            tooltip="Placeholder summary"
+            title={`III. ${t("editor.info.title")}`}
+            tooltip={t("editor.info.imageTooltip")}
             collapsed={collapsed.info}
             collapsedSummary={`${editorState.draftColor}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("info")}

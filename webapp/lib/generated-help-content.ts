@@ -41,12 +41,12 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Set ratio, orientation, and rotation in `I. Canvas`.",
-              "Set the baseline first. It drives everything.",
-              "Set margins in `III. Margins`.",
-              "Set columns, rows, gutter, and rhythm in `IV. Grid`.",
-              "Set the type scale and base font in `V. Typo`.",
-              "Use the header toggles to inspect baselines, margins, modules, and type."
+              "Set `Canvas`: ratio, orientation, rotation.",
+              "Set `Baseline`: vertical rhythm.",
+              "Set `Margins`: page frame.",
+              "Set `Grid`: columns, rows, gutters, rhythm.",
+              "Set `Typography`: hierarchy and base family.",
+              "Use header toggles to inspect structure."
             ]
           }
         ],
@@ -57,6 +57,117 @@ export const HELP_CONTENT_GROUPS = [
   {
     "title": "General Guidance",
     "sections": [
+      {
+        "title": "Settings Reference",
+        "id": "help-settings-overview",
+        "indexed": false,
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Core page system controls."
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Canvas",
+        "id": "help-canvas-ratio",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Ratio defines page proportion.",
+              "Orientation swaps axes.",
+              "Rotation turns the preview and export page.",
+              "Custom ratio preserves A4-equivalent area."
+            ]
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Baseline",
+        "id": "help-baseline-grid",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Baseline sets vertical rhythm.",
+              "Grid unit controls margins, modules, and leading.",
+              "Larger units reduce available lines."
+            ]
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Margins",
+        "id": "help-margins",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Margin method defines page frame.",
+              "Progressive, Van de Graaf, and Baseline are canon presets.",
+              "Custom margins use baseline-unit sides."
+            ]
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Grid",
+        "id": "help-gutter",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Columns and rows define the modular field.",
+              "Gutter multiple sets module separation.",
+              "Rhythm distributes modules by equal, Fibonacci, golden, fourth, or fifth proportion.",
+              "Direction controls non-repetitive rhythm flow."
+            ]
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Typography",
+        "id": "help-typo",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Base family sets default rendering.",
+              "Rhythm sets type scale.",
+              "Hierarchy remains the primary structure.",
+              "`Custom` is paragraph-local."
+            ]
+          }
+        ],
+        "subsections": []
+      },
+      {
+        "title": "Color",
+        "id": "help-color-scheme",
+        "indexed": true,
+        "blocks": [
+          {
+            "type": "list",
+            "items": [
+              "Base scheme defines placeholder color families.",
+              "Background swatches set page ground per page.",
+              "Active swatch click clears the ground."
+            ]
+          }
+        ],
+        "subsections": []
+      },
       {
         "title": "General Guidance",
         "id": "help-general-overview",
@@ -77,19 +188,19 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "The preview is the live layout surface for the active page.",
-              "When you load a preset, project, or another page, the new preview is only revealed after the full page snapshot and first final plan commit are ready, so provisional image/text geometry is not shown mid-load.",
-              "Double-click inside a module to add text with hyphenation off by default. `Shift` + double-click adds an image placeholder.",
-              "Hold `1..5` while double-clicking empty space to choose the new paragraph hierarchy: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`. New hierarchy blocks start as Caption `1x1`, Body/Subhead `1x2`, Headline/Display `1x3`, clamped to the remaining columns from the clicked module.",
-              "Hover a layer to reveal edit access and placement guides.",
-              "Drag to move.",
-              "Hovered text paragraphs expose a `+` affordance: click to duplicate the paragraph, then click the target placement, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.",
-              "Hovered image placeholders expose a `+` affordance for duplication.",
-              "Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown for the layout. The same project-level visibility state is used for export.",
-              "Locked layers still show preview rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked in the Project panel.",
-              "Arrow keys nudge the selected unlocked layer. Snapped axes move by the grid; unsnapped axes move in fine steps. `Shift` increases the unsnapped step and switches snapped Y to baseline movement.",
-              "`Page Up`, `Page Down`, `Home`, and `End` navigate project pages.",
-              "Undo/redo includes placement, duplication, deletion, and editor changes."
+              "The preview is the active page surface.",
+              "Pages appear after the final page plan is ready.",
+              "Double-click an empty module for text. `Shift` + double-click for image.",
+              "Hold `1..5` while creating text: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`.",
+              "New blocks clamp to the remaining field.",
+              "Hover layers for edit access and guides.",
+              "Drag to place. Arrow keys refine.",
+              "`+` duplicates. `Shift` copies paragraph geometry. `Alt/Option` copies type. Both copy both.",
+              "Visibility toggles control preview and export.",
+              "Locked layers remain visible but fixed.",
+              "Snapped axes move on grid. Unsnapped axes move in fine steps.",
+              "`Page Up`, `Page Down`, `Home`, and `End` navigate pages.",
+              "Undo and redo cover settings, placement, deletion, and editor changes."
             ]
           }
         ],
@@ -103,14 +214,13 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Open text edit from the preview affordance, or by double-clicking an unlocked text layer card in the Project panel.",
-              "Retarget an open text editor by clicking another unlocked preview block or by double-clicking another unlocked text layer card in the Project panel.",
-              "While editing, the left sidebar switches to `Paragraph`, `Typo`, `Symbols`, `Placeholders`, and `Info`.",
-              "Those editor sections remember their last open/closed GUI state and panel scroll position across pages and paragraphs inside the current document. First use starts with all sections closed, and opening another document or preset resets the editor panels to the closed, top-aligned state.",
-              "Opening a settings or editor section moves that whole section shell to the top of the panel. Closing a section while other open sections remain above it moves back to the nearest still-open section above, and closing all sections returns the panel to its default top-aligned view.",
-              "The editor title uses the same layer label shown in the Project panel.",
-              "`Esc` or outside click exits edit mode.",
-              "Inside inline text edit: double-click selects a word, triple-click selects a sentence, four clicks select the whole paragraph text, `Alt+A` or `Cmd/Ctrl+A` selects all, and `Arrow` / `Home` / `End` follow the rendered line layout."
+              "Open from preview or an unlocked text layer card.",
+              "Select another unlocked paragraph to retarget.",
+              "The sidebar becomes `Paragraph`, `Typography`, `Symbols`, `Placeholders`, `Info`.",
+              "Section state is document-local.",
+              "`Esc` or outside click exits.",
+              "Double-click selects word. Triple-click selects sentence. Four clicks select paragraph.",
+              "`Alt+A` or `Cmd/Ctrl+A` selects all."
             ]
           }
         ],
@@ -123,28 +233,28 @@ export const HELP_CONTENT_GROUPS = [
               {
                 "type": "list",
                 "items": [
-                  "Set rows, baselines, columns, alignment, reflow, hyphenation, X/Y snap, and rotation.",
-                  "Height is `rows + baselines`.",
-                  "`Rows` may be `0` when `Baselines` is greater than `0`, so shallow editorial frames stay possible.",
-                  "`Rows`, `Baselines`, and `Cols` preview on dropdown hover before commit.",
-                  "`Snap to Columns (X)` locks to columns. Off allows free horizontal placement with controlled side overhang.",
-                  "`Snap to Baseline (Y)` locks to the editorial Y system. Off allows free vertical placement."
+                  "Set rows, baselines, columns, alignment, flow, snap, rotation.",
+                  "Frame height is `Rows + Baselines`.",
+                  "`Rows` may be `0` when `Baselines` is greater than `0`.",
+                  "`Rows`, `Baselines`, and `Cols` preview on rollover.",
+                  "`Snap to Columns (X)` locks column anchors.",
+                  "`Snap to Baseline (Y)` locks baseline rhythm."
                 ]
               }
             ]
           },
           {
-            "title": "Typo Section",
+            "title": "Typography Section",
             "id": "help-editor-typo",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "Set font family, cut, hierarchy, color, kerning, tracking, and `Custom` size/leading.",
-                  "Choosing `Custom` seeds the size and leading fields from the paragraph's current resolved metrics.",
-                  "If text is selected, type and color controls apply to the selection instead of the whole paragraph.",
-                  "Font, cut, hierarchy, and scheme preview on dropdown hover before commit."
+                  "Set hierarchy, family, cut, color, kerning, tracking, custom size, leading.",
+                  "`Custom` starts from resolved paragraph metrics.",
+                  "Selection receives type and color changes.",
+                  "Family, cut, hierarchy, kerning, and scheme preview on rollover."
                 ]
               }
             ]
@@ -157,10 +267,10 @@ export const HELP_CONTENT_GROUPS = [
               {
                 "type": "list",
                 "items": [
-                  "Insert typographic symbols at the caret or over the current selection.",
-                  "The grouped symbol palette includes arrows, bullets, marks, math, Greek lowercase letters, geometry, and editorial punctuation.",
-                  "Symbol insertion stores normal paragraph text plus a run-level `Noto Sans Symbols 2` font assignment for stable canvas and export rendering.",
-                  "Recent symbols appear above the grouped palette after first use."
+                  "Insert symbols at caret or selection.",
+                  "Groups: arrows, bullets, marks, math, Greek, geometry, editorial.",
+                  "Symbols export through `Noto Sans Symbols 2`.",
+                  "Recent symbols appear after first use."
                 ]
               }
             ]
@@ -173,9 +283,9 @@ export const HELP_CONTENT_GROUPS = [
               {
                 "type": "list",
                 "items": [
-                  "Insert document-variable tokens at the caret or over the current selection.",
-                  "`<%lorem%>` fills the active frame using its current geometry and reflow settings.",
-                  "`<%page%>` and `<%pages%>` use physical page counts. On facing spreads, the right side resolves to the next physical page number.",
+                  "Insert document-variable tokens.",
+                  "`<%lorem%>` fills the active frame.",
+                  "`<%page%>` and `<%pages%>` use physical page counts.",
                   "Available tokens: {{DOCUMENT_VARIABLE_TOKENS}}."
                 ]
               }
@@ -187,10 +297,8 @@ export const HELP_CONTENT_GROUPS = [
             "indexed": true,
             "blocks": [
               {
-                "type": "list",
-                "items": [
-                  "Shows geometry, type summary, counts, and `Max/Line`."
-                ]
+                "type": "paragraph",
+                "text": "Geometry, type summary, counts, line capacity."
               }
             ]
           }
@@ -204,14 +312,12 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "`Shift` + double-click on an empty space in the preview to create a new image placeholder.",
-              "Open from the preview affordance or by double-clicking the corresponding unlocked image layer card in the Project panel.",
-              "The left sidebar switches to `Geometry`, `Color`, and `Info`.",
-              "Those editor sections remember their last open/closed GUI state and panel scroll position across pages and image placeholders inside the current document. First use starts with all sections closed, and opening another document or preset resets the editor panels to the closed, top-aligned state.",
-              "Opening a settings or editor section moves that whole section shell to the top of the panel. Closing a section while other open sections remain above it moves back to the nearest still-open section above, and closing all sections returns the panel to its default top-aligned view.",
-              "The editor title shows `IMAGE` plus the current placeholder swatch color.",
-              "`Esc` or outside click exits edit mode.",
-              "Double-clicking another unlocked active-page image layer card retargets the open image editor."
+              "`Shift` + double-click an empty module creates an image placeholder.",
+              "Open from preview or an unlocked image layer card.",
+              "The sidebar becomes `Geometry`, `Color`, `Info`.",
+              "Section state is document-local.",
+              "`Esc` or outside click exits.",
+              "Double-click another unlocked image card to retarget."
             ]
           }
         ],
@@ -224,9 +330,9 @@ export const HELP_CONTENT_GROUPS = [
               {
                 "type": "list",
                 "items": [
-                  "Set rows, baselines, columns, X/Y snap, and rotation.",
-                  "Height is `rows + baselines`.",
-                  "`Rows`, `Baselines`, and `Cols` preview on dropdown hover before commit."
+                  "Set rows, baselines, columns, snap, rotation.",
+                  "Frame height is `Rows + Baselines`.",
+                  "`Rows`, `Baselines`, and `Cols` preview on rollover."
                 ]
               }
             ]
@@ -237,10 +343,8 @@ export const HELP_CONTENT_GROUPS = [
             "indexed": true,
             "blocks": [
               {
-                "type": "list",
-                "items": [
-                  "Set scheme, swatch color, and transparency."
-                ]
+                "type": "paragraph",
+                "text": "Scheme, swatch, transparency."
               }
             ]
           },
@@ -250,10 +354,8 @@ export const HELP_CONTENT_GROUPS = [
             "indexed": true,
             "blocks": [
               {
-                "type": "list",
-                "items": [
-                  "Shows the current geometry, snap state, rotation, scheme, color, and transparency."
-                ]
+                "type": "paragraph",
+                "text": "Geometry, snap, rotation, scheme, color, transparency."
               }
             ]
           }
@@ -267,12 +369,12 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Drag respects each layer's current X/Y snap settings.",
-              "With `Snap to Baseline (Y)` on, normal drag uses module tops.",
-              "Holding `Shift` during drag switches Y movement to baseline rows.",
-              "Unsnapped layers still stay inside their allowed placement bounds.",
-              "With `Snap to Columns (X)` off, paragraphs and image placeholders may overhang by one column into the side margins.",
-              "Selected layers can also be moved via cursor keys `UP`, `DOWN`, `LEFT`, `RIGHT`. `SHIFT` + `Cursor Keys` increments the steps 10x."
+              "Drag follows X and Y snap.",
+              "Baseline snap uses module tops.",
+              "`Shift` drag moves Y by baseline rows.",
+              "Unsnapped layers stay within bounds.",
+              "Column snap off allows one-column side overhang.",
+              "Cursor keys move selected layers. `Shift` increases step."
             ]
           }
         ],
@@ -286,28 +388,28 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Undo/redo covers settings, content edits, and placement changes.",
-              "Reducing rows or columns never auto-repositions existing layers.",
-              "If a grid reduction would push content out of bounds, the change is blocked and a warning is shown."
+              "Undo and redo cover settings, content, placement.",
+              "Grid reduction never moves layers silently.",
+              "Out-of-bounds content blocks reduction."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "Save and Load Project JSON",
+        "title": "Save and Load",
         "id": "help-save-load",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "Save stores project metadata, pages, page settings, layout state, and optional tours.",
-              "`Save to Library` opens a metadata dialog for project title plus optional subject and author, then stores the full project in the local `Users` library as a gzip-compressed archive.",
-              "`Import` restores the full project from either a saved project JSON or a compressed `.swissgridgenerator` archive and always opens on the first page in the loaded `pages` array.",
-              "Imported projects must use the 2.0 project schema with an explicit `pages` array.",
-              "Positioned layers are stored with logical anchors so layouts stay stable across grid changes.",
-              "Supabase email-code auth is optional and used only for cloud sync."
+              "Save stores metadata, pages, settings, layers, tours.",
+              "`Save to library` stores a compressed local archive.",
+              "`Import` restores JSON or `.swissgridgenerator`.",
+              "Imported projects require the 2.0 `pages` schema.",
+              "Logical anchors keep layouts stable across grid changes.",
+              "Supabase auth is only for cloud sync."
             ]
           }
         ],
@@ -321,27 +423,21 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Export supports JSON, vector PDF, SVG, and IDML.",
-              "Multi-page projects can export a page range or explicit page selection.",
-              "The dialog includes five display toggles, a live thumbnail preview, a format switcher, a page-selection field, filename and metadata fields, plus compact action-button progress with a thin top progress rail.",
-              "Exports are WYSIWYG with respect to the project-level visibility state for baselines, margins, modules, typography, and image placeholders.",
-              "PDF, SVG, and IDML exports are 100% vector based.",
-              "PDF, SVG, and IDML use one shared export runner and canonical page plan path.",
-              "PDF, SVG, and IDML render typography from the shared glyph-outline geometry generated from that plan; exported text is not live-editable in the normal vector path.",
-              "Long exports keep the browser responsive: PDF runs in a cancellable browser worker, and SVG/IDML can render page-set artifacts through one shared browser-worker scheduler before deterministic assembly.",
-              "PDF, SVG, and IDML share one browser vector export action for filename handling, progress, and download handoff before entering the shared export runner.",
-              "Repeated SVG/IDML exports can reuse unchanged page-set artifacts from an exact-request in-memory cache.",
-              "JSON exports the selected page range as an editable project document with metadata and current layout state.",
-              "Project Title, Subject, and Author can be adjusted in the export dialog for all formats without changing the live project until a JSON export is saved.",
-              "PDF exports store available project metadata in the PDF document info dictionary.",
-              "SVG exports embed available project metadata in the SVG metadata block.",
-              "IDML exports carry project metadata into the package XMP metadata.",
-              "PDF, SVG, and IDML share one bleed control, disabled by default with 3mm as the standard activation width. One shared export box defines trim, bleed, media canvas, export origin, crop marks, and guide clipping; enabled bleed extends visible production geometry through the bleed area, with a white crop-mark canvas and black crop marks outside it.",
-              "PDF exports RGB vector geometry with an embedded sRGB output intent.",
-              "Multi-page SVG exports a ZIP with one outlined SVG per selected page.",
-              "IDML exports separate guides, typography, and placeholder layers with frozen text geometry; guide lines and crop marks stay as real stroked line items.",
-              "`Esc` closes the dialog when no export is running and cancels an in-progress export; PDF cancellation terminates the active export worker.",
-              "Clicking outside the popup follows the same close/cancel behavior."
+              "Formats: JSON, PDF, SVG, IDML.",
+              "Multi-page projects export ranges or explicit pages.",
+              "Export uses project guide visibility.",
+              "PDF, SVG, and IDML are vector exports from the shared page plan.",
+              "Text exports as frozen outline geometry.",
+              "Workers keep long exports responsive where supported.",
+              "SVG and IDML can reuse exact-request page artifacts.",
+              "JSON remains editable.",
+              "Export metadata does not alter the live project unless JSON is saved.",
+              "Metadata is written to PDF, SVG, and IDML where supported.",
+              "One bleed control defines trim, bleed, media, origin, crop marks, guides.",
+              "PDF uses RGB vector geometry with sRGB output intent.",
+              "Multi-page SVG exports a ZIP.",
+              "IDML separates guide, typography, and placeholder layers.",
+              "`Esc` closes or cancels."
             ]
           }
         ],
@@ -355,9 +451,9 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "A loaded project may include an optional guided tour overlay.",
-              "Closed tours can be reopened from the `Open Tour` button at the bottom of the preview.",
-              "Tour steps can move between pages, highlight layers, open editors, jump to help topics, or wait for a specific layer click before advancing."
+              "Projects may include a guided tour.",
+              "Reopen closed tours from `Open tour`.",
+              "Steps can change pages, highlight layers, open editors, open help, or wait for a layer click."
             ]
           }
         ],
@@ -371,10 +467,9 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Loading a preset or project also opens a short workflow tooltip at the bottom of the preview.",
-              "The popup fades in, shows one authored tip at a time, and stays open until it is closed with `X`, outside click, or replaced with `Next >`.",
-              "`Next >` cycles through the tooltip sequence and updates the `Tooltip x of y` counter.",
-              "When Help is open, the tooltip popup becomes an orange-marked help target like the rest of the interface and hovering it jumps the Help panel to this section."
+              "Presets and projects may open workflow tips.",
+              "`Next` advances the sequence.",
+              "Help hover connects tips to reference sections."
             ]
           }
         ],
@@ -412,9 +507,9 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Header actions cover presets, import, save, export, undo/redo, smart text zoom, display toggles, Project, cloud account, and the vertical-more menu.",
-              "The vertical-more menu contains light/dark mode, Help, Feedback, and Legal Notice.",
-              "The Project panel can be toggled with `Cmd/Ctrl+Shift+P`."
+              "Header: presets, import, save, export, undo, redo, zoom, visibility, Project, account, more.",
+              "More: theme, Help, Feedback, Legal.",
+              "Project panel: `Cmd/Ctrl+Shift+P`."
             ]
           }
         ],
@@ -428,12 +523,9 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "When help is open, orange-marked UI targets jump to their matching help topic on hover.",
-              "Opening the Help panel also enables those contextual help markers across header actions, settings panels, the preview surface, and the preset browser.",
-              "The layout-tooltip popup uses the same help-hover logic and only shows its orange top indicator while Help is open.",
-              "The Help panel remains available while the preset browser is open.",
-              "While the preset browser is open and the left settings controls are inactive, the left-panel section headers still keep their help-hover targets.",
-              "Use the small up-arrow beside a help title to jump back to the index."
+              "Open Help, then hover marked targets.",
+              "Header, settings, editor sections, preview, and presets are covered.",
+              "Up-arrow returns to index."
             ]
           }
         ],
@@ -447,15 +539,15 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Opens the presets browser.",
-              "Bundled files are grouped into `Presets` and `Examples`. `Users` is reserved for user files.",
-              "When user layouts exist locally or through cloud sync, the `Users` section is listed after bundled `Presets` and `Examples`.",
-              "The `Users` header info marker explains that local layouts are browser/device-local and can be lost when browser data is cleared; signed-in cloud sync stores saved layouts in Supabase.",
-              "Hovering a preset thumbnail shows title, subject, author, date, format, grid, baseline, margin, and rhythm metadata.",
-              "User thumbnails in `Users` also show cloud status in the rollover; the thumbnail status dot is green only while signed in and synced, orange when signed out or pending, and red on signed-in sync error.",
-              "Deleting a user thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary.",
-              "Double-click a thumbnail to load it.",
-              "`Esc` closes the browser without loading.",
+              "Opens preset browser.",
+              "Groups: `Presets`, `Examples`, `Users`.",
+              "`Users` appears when saved layouts exist.",
+              "The info marker covers local storage, data clearing, cloud sync.",
+              "Hover shows metadata.",
+              "Green dot means signed in and synced.",
+              "Delete confirms, removes locally, then reports cloud state.",
+              "Double-click loads.",
+              "`Esc` closes.",
               "Shortcut: `Cmd/Ctrl+Shift+4`."
             ]
           }
@@ -469,7 +561,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Imports a saved project JSON or compressed `.swissgridgenerator` archive. Shortcut: `Cmd/Ctrl+O`."
+            "text": "Imports JSON or `.swissgridgenerator`. Shortcut: `Cmd/Ctrl+O`."
           }
         ],
         "subsections": []
@@ -481,7 +573,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Opens the `Save to Library` dialog for project title, subject, and author, then stores the current project in the local `Users` library as a gzip-compressed archive. The Save icon status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced. Shortcut: `Cmd/Ctrl+S`."
+            "text": "Stores the project in `Users`. Red dot: unsaved. Orange: local. Green: cloud-synced. Shortcut: `Cmd/Ctrl+S`."
           }
         ],
         "subsections": []
@@ -494,18 +586,16 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "The header account icon opens the right sidebar cloud account panel.",
-              "The account icon shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise it stays orange.",
-              "While signed out, the `STATUS` row reads `Not connected`.",
-              "Email-code sign-in uses Supabase browser auth.",
-              "The `STATUS` row expands to show recent local cloud/account events.",
-              "Signed-in users can trigger `Sync Now` from the account panel.",
-              "Signed-in projects continue to use the local offline cache while syncing to Supabase in the background.",
-              "Signed-in sessions request throttled background sync when the app regains focus, becomes visible, or opens the preset browser.",
-              "Existing saved user-library projects auto-save locally and sync debounced to the cloud while you edit.",
-              "Remote deletions are applied locally on sync when the local copy has no newer unsynced changes; otherwise the project is marked as a conflict.",
-              "Auth and cloud-sync failures are translated into user-facing messages for rate limits, permissions, offline state, session expiry, and setup errors.",
-              "When the tab is hidden or closed, the app performs a best-effort local autosave flush and a best-effort cloud sync for already-saved user-library projects."
+              "Opens cloud account.",
+              "Green dot means signed in and synced.",
+              "Sign-in uses Supabase email code.",
+              "`Cloud state` shows local account and sync events.",
+              "`Sync now` runs manual sync.",
+              "Saved projects auto-save locally and sync when possible.",
+              "Remote deletions apply locally unless local changes are newer.",
+              "Conflicts require source selection.",
+              "Failures use translated status messages.",
+              "Hidden or closed tabs attempt local autosave and cloud sync."
             ]
           }
         ],
@@ -518,7 +608,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Opens export for JSON, PDF, SVG, and IDML. Shortcut: `Cmd/Ctrl+Shift+E`."
+            "text": "Opens export. Shortcut: `Cmd/Ctrl+Shift+E`."
           }
         ],
         "subsections": []
@@ -530,7 +620,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Reverts the latest history step. Shortcut: `Cmd/Ctrl+Z`."
+            "text": "Reverts one step. Shortcut: `Cmd/Ctrl+Z`."
           }
         ],
         "subsections": []
@@ -542,7 +632,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Reapplies an undone history step. Shortcut: `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y`."
+            "text": "Reapplies one step. Shortcut: `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y`."
           }
         ],
         "subsections": []
@@ -554,19 +644,19 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "The vertical-more menu toggles light and dark UI themes. Shortcut: `Cmd/Ctrl+Shift+D`."
+            "text": "Toggles light and dark UI. Shortcut: `Cmd/Ctrl+Shift+D`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "Smart Text Zoom",
+        "title": "Paragraph Zoom",
         "id": "help-header-smart-text-zoom",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Toggles automatic zoom-to-paragraph while text editing. When enabled, entering text edit zooms to the active paragraph, ordinary text/style edits keep the current zoom, geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit returns to full-page fit."
+            "text": "Toggles zoom-to-paragraph during text editing."
           }
         ],
         "subsections": []
@@ -578,7 +668,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Shows or hides baseline guides for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+B`."
+            "text": "Shows baseline rhythm. Shortcut: `Cmd/Ctrl+Shift+B`."
           }
         ],
         "subsections": []
@@ -590,7 +680,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Shows or hides margin guides for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+M`."
+            "text": "Shows margin frame. Shortcut: `Cmd/Ctrl+Shift+M`."
           }
         ],
         "subsections": []
@@ -602,7 +692,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Shows or hides modules and gutters for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+G`."
+            "text": "Shows modular field and gutters. Shortcut: `Cmd/Ctrl+Shift+G`."
           }
         ],
         "subsections": []
@@ -614,7 +704,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Shows or hides typography overlays for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+T`."
+            "text": "Shows typography overlay. Shortcut: `Cmd/Ctrl+Shift+T`."
           }
         ],
         "subsections": []
@@ -626,7 +716,7 @@ export const HELP_CONTENT_GROUPS = [
         "blocks": [
           {
             "type": "paragraph",
-            "text": "Shows or hides image placeholders for the open project and its export path. Shortcut: `Cmd/Ctrl+Shift+J`."
+            "text": "Shows image placeholders. Shortcut: `Cmd/Ctrl+Shift+J`."
           }
         ],
         "subsections": []
@@ -639,232 +729,24 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "Opens the project title and page/layer management panel.",
-              "The small `i` toggle in the Project header shows or hides the document info text.",
-              "The compact project-title row always shows the real project title.",
-              "Double-click the compact project title to open or close the metadata section. Opening it focuses and selects the `Title` field immediately.",
-              "The expanded metadata section contains `Title`, `Subject`, and `Author`.",
-              "The `Subject` field is vertically resizable in the current session.",
-              "The document info text summarizes pages, layers, fonts, cuts, words, characters, author, and creation date when metadata exists.",
-              "The `Page` header and list icon return from an inline page submenu to the page list.",
-              "The page counter shows current physical page and total physical pages. Double-click the current page number to enter a page number up to the total page count.",
-              "Single-click a page row in list view to activate and display it while keeping the list open. Double-click a page row, or click its open toggle, to open its inline layer list.",
-              "`Page Up` / `Page Down` move through project pages, `Shift` + `Page Up` / `Page Down` jump by `10`, and the active page row is brought into view before its inline layers open.",
-              "Drag collapsed page rows to reorder the project.",
-              "Page rows include rename and delete controls. The last remaining page cannot be deleted.",
-              "`Facing pages` converts a page into a spread inside the same page record.",
-              "`+` inserts a new single page after the active page, preserving its page settings and layout mode but starting without copied layer content. `Shift` + `+` inserts a full duplicate of the active page with its content.",
-              "A project can contain up to `1000` pages.",
-              "`Page Up` / `Page Down` step one page. `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages. `Home` / `End` jump to the first or last page.",
-              "Active-page layer cards mirror preview hover/guides.",
-              "Hovering a preview layer opens the active page transiently and brings the matching layer card into view in the Project panel.",
-              "Hovering an active-page layer card temporarily routes keyboard layer nudging to that layer; leaving the card restores keyboard nudging to the selected layer.",
+              "Metadata, page order, layers.",
+              "`i` toggles document data.",
+              "Double-click project title to edit metadata.",
+              "Page header returns to page list.",
+              "Page counter shows physical page position. Double-click jumps.",
+              "Click page row to activate. Double-click opens layers.",
+              "`Page Up`, `Page Down`, `Home`, `End` navigate.",
+              "Drag page rows to reorder.",
+              "Rename and delete controls sit in each row.",
+              "Last page cannot be deleted.",
+              "`Facing pages` creates one spread record.",
+              "`+` adds a page. `Shift` + `+` duplicates content.",
+              "Maximum: `1000` pages.",
+              "Layer cards mirror preview hover.",
               "Drag unlocked layer cards to reorder z-index.",
-              "Layer cards include lock and delete controls.",
-              "Single-click a layer card to select it. Double-click an unlocked layer card to open or retarget its corresponding text or image editor.",
-              "Click a layer card's lock toggle to lock or unlock that layer. Double-click the lock toggle to apply the same lock state to every layer on that page.",
-              "Locked layers stay visible and selectable, and their preview rollover remains available for guides and unlocking, but move, edit, duplicate, delete, and editor retarget/open actions stay disabled until unlocked."
+              "Lock and delete controls sit in each card.",
+              "Double-click unlocked card to open or retarget editor."
             ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "Feedback",
-        "id": "help-feedback-panel",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "The vertical-more menu `Feedback` action opens a compact feedback sidebar.",
-              "It collects a required email, a required comment, and up to three small screenshots.",
-              "The optional log checkbox attaches the recent local cloud activity log for support.",
-              "If you are signed in, the account email is used in the form.",
-              "Submitting feedback stores the message in Supabase."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "Legal Notice",
-        "id": "help-legal-notice-panel",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "The vertical-more menu `Legal Notice` action opens the legal notice sidebar.",
-              "It includes provider details, contact, privacy notes, cloud storage notes, feedback handling, user rights, terms of use, and consumer dispute resolution."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "Keyboard Shortcuts",
-        "id": "help-shortcuts",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "paragraph",
-            "text": "`Cmd/Ctrl` means `Cmd` on macOS and `Ctrl` on Windows/Linux."
-          },
-          {
-            "type": "directive",
-            "name": "SHORTCUT_TABLE"
-          }
-        ],
-        "subsections": []
-      }
-    ]
-  },
-  {
-    "title": "Grid Generator Settings",
-    "sections": [
-      {
-        "title": "Grid Generator Settings",
-        "id": "help-grid-generator-settings-overview",
-        "indexed": false,
-        "blocks": [],
-        "subsections": []
-      },
-      {
-        "title": "I. Canvas",
-        "id": "help-canvas-ratio",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Choose a preset ratio or enter `Custom Ratio`.",
-              "`Custom Ratio` accepts fractional width/height values and also accepts decimal comma input.",
-              "`Ratio` and `Orientation` preview on dropdown hover before commit.",
-              "Rotation turns the full preview/export composition."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "II. Baseline",
-        "id": "help-baseline-grid",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "The baseline controls vertical rhythm for the grid and type.",
-              "Available baseline options run from `6pt` to `72pt` and are filtered so the current page still keeps a usable number of lines.",
-              "Top and bottom margins stay baseline-aligned."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "III. Margins",
-        "id": "help-margins",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Choose a margin method or `Custom Margins`.",
-              "Margin method previews on dropdown hover before commit.",
-              "`Custom Margins` exposes top, left, right, and bottom baseline-unit controls."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "IV. Grid",
-        "id": "help-gutter",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Set columns, rows, gutter, and rhythm.",
-              "Rhythm options preview on dropdown hover before commit.",
-              "Non-repetitive rhythms can be enabled and directed independently for rows and columns.",
-              "Reducing rows or columns is blocked when existing content would fall outside the new grid."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "V. Typo",
-        "id": "help-typo",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Set the type scale and base font for the document.",
-              "`Rhythm` and `Base` preview on dropdown hover before commit.",
-              "In the settings sidebar, dropdowns open upward.",
-              "The `Steps` table shows the resolved size/leading values for `Display`, `Headline`, `Subhead`, `Body`, and `Caption` on the active baseline.",
-              "Blocks without explicit overrides inherit the base font."
-            ]
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "VI. Available Fonts",
-        "id": "help-available-fonts",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Base-font and paragraph font pickers use the same grouped family list.",
-              "Font-family pickers preview hovered families live before commit.",
-              "Each listed family links to its Google Fonts specimen page."
-            ]
-          },
-          {
-            "type": "directive",
-            "name": "AVAILABLE_FONTS"
-          }
-        ],
-        "subsections": []
-      },
-      {
-        "title": "VII. Color",
-        "id": "help-color-scheme",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "list",
-            "items": [
-              "Sets the base scheme for new image placeholders.",
-              "`Base` uses an open list with palette preview swatches on the right.",
-              "`Background` applies a scheme color to the page through the swatches. Click the active swatch again to clear the background.",
-              "The same scheme system is used in the image editor, where individual placeholders can still override swatch color and transparency.",
-              "Base list items and background swatches preview on rollover before commit."
-            ]
-          }
-        ],
-        "subsections": []
-      }
-    ]
-  },
-  {
-    "title": "App Information",
-    "sections": [
-      {
-        "title": "Version",
-        "id": "help-app-version",
-        "indexed": true,
-        "blocks": [
-          {
-            "type": "directive",
-            "name": "APP_VERSION"
           }
         ],
         "subsections": []
@@ -887,6 +769,30 @@ export const HELP_INDEX_GROUPS = [
     "title": "General Guidance",
     "items": [
       {
+        "id": "help-canvas-ratio",
+        "label": "Canvas"
+      },
+      {
+        "id": "help-baseline-grid",
+        "label": "Baseline"
+      },
+      {
+        "id": "help-margins",
+        "label": "Margins"
+      },
+      {
+        "id": "help-gutter",
+        "label": "Grid"
+      },
+      {
+        "id": "help-typo",
+        "label": "Typography"
+      },
+      {
+        "id": "help-color-scheme",
+        "label": "Color"
+      },
+      {
         "id": "help-preview-workspace",
         "label": "Preview Workspace"
       },
@@ -908,7 +814,7 @@ export const HELP_INDEX_GROUPS = [
       },
       {
         "id": "help-save-load",
-        "label": "Save and Load Project JSON"
+        "label": "Save and Load"
       },
       {
         "id": "help-export",
@@ -969,7 +875,7 @@ export const HELP_INDEX_GROUPS = [
       },
       {
         "id": "help-header-smart-text-zoom",
-        "label": "Smart Text Zoom"
+        "label": "Paragraph Zoom"
       },
       {
         "id": "help-header-baselines",
@@ -994,60 +900,6 @@ export const HELP_INDEX_GROUPS = [
       {
         "id": "help-header-layers",
         "label": "Project Panel"
-      },
-      {
-        "id": "help-feedback-panel",
-        "label": "Feedback"
-      },
-      {
-        "id": "help-legal-notice-panel",
-        "label": "Legal Notice"
-      },
-      {
-        "id": "help-shortcuts",
-        "label": "Keyboard Shortcuts"
-      }
-    ]
-  },
-  {
-    "title": "Grid Generator Settings",
-    "items": [
-      {
-        "id": "help-canvas-ratio",
-        "label": "I. Canvas"
-      },
-      {
-        "id": "help-baseline-grid",
-        "label": "II. Baseline"
-      },
-      {
-        "id": "help-margins",
-        "label": "III. Margins"
-      },
-      {
-        "id": "help-gutter",
-        "label": "IV. Grid"
-      },
-      {
-        "id": "help-typo",
-        "label": "V. Typo"
-      },
-      {
-        "id": "help-available-fonts",
-        "label": "VI. Available Fonts"
-      },
-      {
-        "id": "help-color-scheme",
-        "label": "VII. Color"
-      }
-    ]
-  },
-  {
-    "title": "App Information",
-    "items": [
-      {
-        "id": "help-app-version",
-        "label": "Version"
       }
     ]
   }
@@ -1057,6 +909,34 @@ export const ALL_HELP_INDEX_ITEMS = [
   {
     "id": "help-quick-start",
     "label": "Quick Start"
+  },
+  {
+    "id": "help-settings-overview",
+    "label": "Settings Reference"
+  },
+  {
+    "id": "help-canvas-ratio",
+    "label": "Canvas"
+  },
+  {
+    "id": "help-baseline-grid",
+    "label": "Baseline"
+  },
+  {
+    "id": "help-margins",
+    "label": "Margins"
+  },
+  {
+    "id": "help-gutter",
+    "label": "Grid"
+  },
+  {
+    "id": "help-typo",
+    "label": "Typography"
+  },
+  {
+    "id": "help-color-scheme",
+    "label": "Color"
   },
   {
     "id": "help-general-overview",
@@ -1084,7 +964,7 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-save-load",
-    "label": "Save and Load Project JSON"
+    "label": "Save and Load"
   },
   {
     "id": "help-export",
@@ -1148,7 +1028,7 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-header-smart-text-zoom",
-    "label": "Smart Text Zoom"
+    "label": "Paragraph Zoom"
   },
   {
     "id": "help-header-baselines",
@@ -1173,54 +1053,6 @@ export const ALL_HELP_INDEX_ITEMS = [
   {
     "id": "help-header-layers",
     "label": "Project Panel"
-  },
-  {
-    "id": "help-feedback-panel",
-    "label": "Feedback"
-  },
-  {
-    "id": "help-legal-notice-panel",
-    "label": "Legal Notice"
-  },
-  {
-    "id": "help-shortcuts",
-    "label": "Keyboard Shortcuts"
-  },
-  {
-    "id": "help-grid-generator-settings-overview",
-    "label": "Grid Generator Settings"
-  },
-  {
-    "id": "help-canvas-ratio",
-    "label": "I. Canvas"
-  },
-  {
-    "id": "help-baseline-grid",
-    "label": "II. Baseline"
-  },
-  {
-    "id": "help-margins",
-    "label": "III. Margins"
-  },
-  {
-    "id": "help-gutter",
-    "label": "IV. Grid"
-  },
-  {
-    "id": "help-typo",
-    "label": "V. Typo"
-  },
-  {
-    "id": "help-available-fonts",
-    "label": "VI. Available Fonts"
-  },
-  {
-    "id": "help-color-scheme",
-    "label": "VII. Color"
-  },
-  {
-    "id": "help-app-version",
-    "label": "Version"
   }
 ] as const
 
@@ -1231,7 +1063,7 @@ export const EDITOR_HELP_SUBSECTION_ITEMS = [
   },
   {
     "id": "help-editor-typo",
-    "label": "Text Editor / Typo"
+    "label": "Text Editor / Typography"
   },
   {
     "id": "help-editor-symbols",

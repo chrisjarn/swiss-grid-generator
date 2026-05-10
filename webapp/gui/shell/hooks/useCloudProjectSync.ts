@@ -20,6 +20,7 @@ import {
   mapCloudSyncError,
   type UserFacingNotice,
 } from "@/lib/supabase/error-messages"
+import { translateMessage } from "@/lib/i18n/messages"
 import {
   addCloudActivityLogEntry,
   addProjectAuditEntry,
@@ -93,7 +94,7 @@ function isBrowserOffline(): boolean {
 }
 
 function queueStatusFromNotice(notice: UserFacingNotice): CloudSyncStatus {
-  return notice.title === "Cloud Offline" ? "offline" : "error"
+  return notice.title === translateMessage("status.cloud.offlineTitle") ? "offline" : "error"
 }
 
 export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
@@ -142,14 +143,14 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
     if (projectId) {
       await updateUserProjectSyncState({
         id: projectId,
-        syncState: notice.title === "Cloud Offline" ? "offline" : "error",
+        syncState: notice.title === translateMessage("status.cloud.offlineTitle") ? "offline" : "error",
         syncError: notice.message,
       })
     }
 
     void addCloudActivityLogEntry({
       level: "error",
-      action: "Project sync failed",
+      action: translateMessage("status.cloud.projectSyncFailed"),
       message: notice.message,
       projectTitle,
     })
@@ -192,7 +193,9 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
 
     void addCloudActivityLogEntry({
       level: "info",
-      action: localRecord.remoteProjectId ? "Project upload started" : "Project cloud create started",
+      action: localRecord.remoteProjectId
+        ? translateMessage("status.cloud.projectUploadStarted")
+        : translateMessage("status.cloud.projectCreateStarted"),
       projectTitle: localRecord.title,
     })
 
@@ -228,8 +231,10 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       })
       void addCloudActivityLogEntry({
         level: "success",
-        action: localRecord.remoteProjectId ? "Project uploaded" : "Project created in cloud",
-        message: `revision ${remoteRow.revision}`,
+        action: localRecord.remoteProjectId
+          ? translateMessage("status.cloud.projectUploaded")
+          : translateMessage("status.cloud.projectCreated"),
+        message: translateMessage("status.cloud.revision", { revision: remoteRow.revision }),
         projectTitle: localRecord.title,
       })
     } catch (error) {
@@ -257,7 +262,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         })
         void addCloudActivityLogEntry({
           level: "warning",
-          action: "Project sync conflict",
+          action: translateMessage("status.cloud.projectSyncConflict"),
           message: CLOUD_SYNC_CONFLICT_NOTICE.message,
           projectTitle: localRecord.title,
         })
@@ -287,7 +292,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
     try {
       void addCloudActivityLogEntry({
         level: "info",
-        action: "Cloud delete started",
+        action: translateMessage("status.cloud.deleteStarted"),
         projectTitle: localRecord?.title,
       })
       await deleteCloudProject(supabase, user.id, remoteProjectId)
@@ -301,7 +306,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       })
       void addCloudActivityLogEntry({
         level: "success",
-        action: "Cloud project deleted",
+        action: translateMessage("status.cloud.projectDeleted"),
         projectTitle: localRecord?.title,
       })
     } catch (error) {
@@ -397,7 +402,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         id: localRecord.id,
         ownerUserId: user.id,
         syncState: "offline",
-        syncError: "Cloud sync is queued until the browser is online.",
+        syncError: translateMessage("status.cloud.queuedOffline"),
       })
       setStatus("offline")
       return true
@@ -438,7 +443,9 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       setStatus(isBrowserOffline() ? "offline" : status)
       void addCloudActivityLogEntry({
         level: "warning",
-        action: isBrowserOffline() ? "Cloud delete queued offline" : "Cloud delete queued",
+        action: isBrowserOffline()
+          ? translateMessage("status.cloud.deleteQueuedOffline")
+          : translateMessage("status.cloud.deleteQueued"),
         projectTitle: localRecord.title,
       })
       return "queued_cloud_delete"
@@ -464,7 +471,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         setStatus("offline")
         void addCloudActivityLogEntry({
           level: "warning",
-          action: "Cloud sync skipped offline",
+          action: translateMessage("status.cloud.syncSkippedOffline"),
         })
         return
       }
@@ -474,7 +481,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       lastSyncAttemptAtRef.current = Date.now()
       void addCloudActivityLogEntry({
         level: "info",
-        action: "Cloud sync started",
+        action: translateMessage("status.cloud.syncStarted"),
         message: reason,
       })
 
@@ -521,7 +528,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
             })
             void addCloudActivityLogEntry({
               level: "success",
-              action: "Cloud project downloaded",
+              action: translateMessage("status.cloud.projectDownloaded"),
               projectTitle: remoteRow.title,
             })
             continue
@@ -547,7 +554,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
             setLastNotice({ ...CLOUD_SYNC_CONFLICT_NOTICE })
             void addCloudActivityLogEntry({
               level: "warning",
-              action: "Project sync conflict",
+              action: translateMessage("status.cloud.projectSyncConflict"),
               message: CLOUD_SYNC_CONFLICT_NOTICE.message,
               projectTitle: localRecord.title,
             })
@@ -574,8 +581,8 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
             })
             void addCloudActivityLogEntry({
               level: "success",
-              action: "Cloud project updated locally",
-              message: `revision ${remoteRow.revision}`,
+              action: translateMessage("status.cloud.projectUpdatedLocally"),
+              message: translateMessage("status.cloud.revision", { revision: remoteRow.revision }),
               projectTitle: remoteRow.title,
             })
           }
@@ -611,7 +618,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
               setLastNotice({ ...CLOUD_SYNC_CONFLICT_NOTICE })
               void addCloudActivityLogEntry({
                 level: "warning",
-                action: "Project deleted remotely conflict",
+                action: translateMessage("status.cloud.remoteDeleteConflict"),
                 message: CLOUD_SYNC_CONFLICT_NOTICE.message,
                 projectTitle: localRecord.title,
               })
@@ -621,7 +628,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
             await purgeUserProjectFromLibrary(localRecord.id)
             void addCloudActivityLogEntry({
               level: "success",
-              action: "Remote delete applied locally",
+              action: translateMessage("status.cloud.remoteDeleteApplied"),
               projectTitle: localRecord.title,
             })
             continue
@@ -646,7 +653,9 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
         }
         void addCloudActivityLogEntry({
           level: sawConflict ? "warning" : "success",
-          action: sawConflict ? "Cloud sync completed with conflict" : "Cloud sync completed",
+          action: sawConflict
+            ? translateMessage("status.cloud.syncCompletedWithConflict")
+            : translateMessage("status.cloud.syncCompleted"),
         })
       } catch (error) {
         await handleSyncError({ error })
@@ -672,7 +681,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       setStatus("offline")
       void addCloudActivityLogEntry({
         level: "warning",
-        action: "Cloud sync request skipped offline",
+        action: translateMessage("status.cloud.syncRequestSkippedOffline"),
         message: reason,
       })
       return false
@@ -741,7 +750,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       })
       void addCloudActivityLogEntry({
         level: "success",
-        action: "Conflict resolved from cloud",
+        action: translateMessage("status.cloud.conflictResolvedFromCloud"),
         projectTitle: remoteRow.title,
       })
       return true
@@ -800,7 +809,7 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
       setStatus("offline")
       void addCloudActivityLogEntry({
         level: "warning",
-        action: "Browser went offline",
+        action: translateMessage("status.cloud.browserWentOffline"),
       })
     }
     window.addEventListener("online", handleOnline)
@@ -825,15 +834,35 @@ export function useCloudProjectSync({ supabase, user, onRequestNotice }: Args) {
   ), [queueEntries])
 
   const statusLabel = useMemo(() => {
-    if (!supabase) return "Cloud unavailable"
-    if (!user) return "Not connected"
-    if (status === "idle") return pendingQueueCount > 0 ? `${pendingQueueCount} queued` : "Cloud idle"
-    if (status === "syncing") return pendingQueueCount > 0 ? `Cloud syncing (${pendingQueueCount})` : "Cloud syncing"
-    if (status === "synced") return "Cloud synced"
-    if (status === "offline") return pendingQueueCount > 0 ? `Cloud offline (${pendingQueueCount} queued)` : "Cloud offline"
-    if (status === "conflict") return conflictQueueCount > 0 ? `Cloud conflict (${conflictQueueCount})` : "Cloud conflict"
-    if (status === "error") return pendingQueueCount > 0 ? `Cloud error (${pendingQueueCount} queued)` : "Cloud error"
-    return "Not connected"
+    if (!supabase) return translateMessage("status.cloud.unavailable")
+    if (!user) return translateMessage("status.cloud.notConnected")
+    if (status === "idle") {
+      return pendingQueueCount > 0
+        ? translateMessage("status.cloud.queuedCount", { count: pendingQueueCount })
+        : translateMessage("status.cloud.idle")
+    }
+    if (status === "syncing") {
+      return pendingQueueCount > 0
+        ? translateMessage("status.cloud.syncingCount", { count: pendingQueueCount })
+        : translateMessage("status.cloud.syncing")
+    }
+    if (status === "synced") return translateMessage("status.cloud.synced")
+    if (status === "offline") {
+      return pendingQueueCount > 0
+        ? translateMessage("status.cloud.offlineCount", { count: pendingQueueCount })
+        : translateMessage("status.cloud.offline")
+    }
+    if (status === "conflict") {
+      return conflictQueueCount > 0
+        ? translateMessage("status.cloud.conflictCount", { count: conflictQueueCount })
+        : translateMessage("status.cloud.conflict")
+    }
+    if (status === "error") {
+      return pendingQueueCount > 0
+        ? translateMessage("status.cloud.errorCount", { count: pendingQueueCount })
+        : translateMessage("status.cloud.error")
+    }
+    return translateMessage("status.cloud.notConnected")
   }, [conflictQueueCount, pendingQueueCount, status, supabase, user])
 
   return {

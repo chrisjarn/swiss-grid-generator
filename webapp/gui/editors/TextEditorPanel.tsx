@@ -58,6 +58,7 @@ import { PREVIEW_PERF_UPDATED_EVENT, type PerfPayload } from "@/gui/preview/hook
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
 import type { HelpSectionId } from "@/lib/help-registry"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type TextEditorPanelProps<StyleKey extends string> = {
   controls: SharedTextEditorControls<StyleKey>
@@ -110,6 +111,7 @@ export function TextEditorPanel<StyleKey extends string>({
   showRolloverInfo = true,
   isDarkMode = false,
 }: TextEditorPanelProps<StyleKey>) {
+  const { t } = useTranslation()
   const [fxSizeInput, setFxSizeInput] = useState("")
   const [fxLeadingInput, setFxLeadingInput] = useState("")
   const [trackingInput, setTrackingInput] = useState("")
@@ -239,7 +241,7 @@ export function TextEditorPanel<StyleKey extends string>({
     ?? editorColorScheme
   const selectedStyleLabelForSelection = selectionStyleKey
     ? controls.styleOptions.find((option) => option.value === selectionStyleKey)?.label ?? selectionStyleKey
-    : "Mixed"
+    : t("editor.mixed")
   const resolvedFontFamilyForSelection = selectionFontFamily ?? controls.editorState.draftFont
 
   useEffect(() => {
@@ -729,33 +731,33 @@ export function TextEditorPanel<StyleKey extends string>({
   const placeholderButtonClassName = `w-full rounded-sm border px-3 py-2 text-left transition-colors ${tone.button}`
   const symbolButtonClassName = `flex h-9 w-full items-center justify-center rounded-sm border text-[17px] leading-none transition-colors ${tone.button}`
   const infoRows = [
-    ["Rows", String(controls.editorState.draftRows)],
-    ["Baselines", String(controls.editorState.draftHeightBaselines)],
-    ["Cols", String(controls.editorState.draftColumns)],
-    ["Rotation", `${Math.round(controls.editorState.draftRotation)}deg`],
-    ["Align", controls.editorState.draftAlign.charAt(0).toUpperCase() + controls.editorState.draftAlign.slice(1)],
-    ["V Align", controls.editorState.draftVerticalAlign.charAt(0).toUpperCase() + controls.editorState.draftVerticalAlign.slice(1)],
-    ["Reflow", controls.editorState.draftReflow && canUseNewspaperReflow ? "On" : "Off"],
-    ["Hyphen", controls.editorState.draftSyllableDivision ? "On" : "Off"],
-    ["Snap X", controls.editorState.draftSnapToColumns ? "On" : "Off"],
-    ["Snap Y", controls.editorState.draftSnapToBaseline ? "On" : "Off"],
-    ["Font", selectionFontFamily ?? "Mixed"],
-    ["Cut", selectedFontVariantForSelection?.label ?? "Mixed"],
-    ["Hierarchy", selectedStyleLabelForSelection],
-    ["Kerning", controls.editorState.draftOpticalKerning ? "Optical" : "Metric"],
-    ["Tracking", selectionTrackingScale !== null ? formatTrackingScale(selectionTrackingScale) : "Mixed"],
-    ["Scheme", selectedSchemeLabel],
-    ["Color", selectionColor ?? "Mixed"],
-    ["Chars", String(characterCount)],
-    ["Words", String(wordCount)],
-    ["Max/Line", String(controls.maxCharsPerLine ?? 0)],
-    ["Render Time", totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
+    [t("editor.paragraph.rows"), String(controls.editorState.draftRows)],
+    [t("editor.paragraph.baselines"), String(controls.editorState.draftHeightBaselines)],
+    [t("editor.paragraph.cols"), String(controls.editorState.draftColumns)],
+    [t("editor.paragraph.rotation"), `${Math.round(controls.editorState.draftRotation)}deg`],
+    [t("editor.info.align"), controls.editorState.draftAlign.charAt(0).toUpperCase() + controls.editorState.draftAlign.slice(1)],
+    [t("editor.info.verticalAlign"), controls.editorState.draftVerticalAlign.charAt(0).toUpperCase() + controls.editorState.draftVerticalAlign.slice(1)],
+    [t("editor.info.reflow"), controls.editorState.draftReflow && canUseNewspaperReflow ? t("common.on") : t("common.off")],
+    [t("editor.info.hyphen"), controls.editorState.draftSyllableDivision ? t("common.on") : t("common.off")],
+    [t("editor.info.snapX"), controls.editorState.draftSnapToColumns ? t("common.on") : t("common.off")],
+    [t("editor.info.snapY"), controls.editorState.draftSnapToBaseline ? t("common.on") : t("common.off")],
+    [t("editor.typography.font"), selectionFontFamily ?? t("editor.mixed")],
+    [t("editor.typography.cut"), selectedFontVariantForSelection?.label ?? t("editor.mixed")],
+    [t("editor.typography.hierarchy"), selectedStyleLabelForSelection],
+    [t("editor.typography.kerning"), controls.editorState.draftOpticalKerning ? t("editor.typography.optical") : t("editor.typography.metric")],
+    [t("editor.typography.tracking"), selectionTrackingScale !== null ? formatTrackingScale(selectionTrackingScale) : t("editor.mixed")],
+    [t("editor.info.scheme"), selectedSchemeLabel],
+    [t("editor.color.color"), selectionColor ?? t("editor.mixed")],
+    [t("editor.info.chars"), String(characterCount)],
+    [t("editor.info.words"), String(wordCount)],
+    [t("editor.info.maxLine"), String(controls.maxCharsPerLine ?? 0)],
+    [t("editor.info.renderTime"), totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
   ]
-  const selectedFontTriggerLabel = selectionFontFamily ?? "Mixed"
+  const selectedFontTriggerLabel = selectionFontFamily ?? t("editor.mixed")
   const selectedFontTriggerStyle = selectionFontFamily
     ? { fontFamily: getFontFamilyCss(selectionFontFamily) }
     : undefined
-  const selectedCutTriggerLabel = selectedFontVariantForSelection?.label ?? "Mixed"
+  const selectedCutTriggerLabel = selectedFontVariantForSelection?.label ?? t("editor.mixed")
   const selectedCutTriggerStyle = selectedFontVariantForSelection
     ? {
         fontFamily: getFontFamilyCss(resolvedFontFamilyForSelection),
@@ -777,10 +779,10 @@ export function TextEditorPanel<StyleKey extends string>({
       >
         <div ref={registerSectionRef("layout")}>
           <EditorSidebarSection
-            title="I. Paragraph"
-            tooltip="Rows, baselines, columns, alignment, flow, and rotation; geometry dropdowns preview on rollover"
+            title={`I. ${t("editor.paragraph.title")}`}
+            tooltip={t("editor.paragraph.tooltip")}
             collapsed={collapsed.layout}
-            collapsedSummary={`${controls.editorState.draftRows} rows, ${controls.editorState.draftColumns} cols`}
+            collapsedSummary={`${controls.editorState.draftRows} ${t("editor.paragraph.rows")}, ${controls.editorState.draftColumns} ${t("editor.paragraph.cols")}`}
             onHeaderClick={handleSectionHeaderClick("layout")}
             onHeaderDoubleClick={handleSectionHeaderDoubleClick}
             isDarkMode={isDarkMode}
@@ -789,8 +791,8 @@ export function TextEditorPanel<StyleKey extends string>({
             onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.layout)}
           >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <Label className={sectionLabelClassName}>Rows</Label>
-            <Label className={`${sectionLabelClassName} text-right`}>Cols</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.rows")}</Label>
+            <Label className={`${sectionLabelClassName} text-right`}>{t("editor.paragraph.cols")}</Label>
 
             <Select
               value={rowsSelectPreview.value}
@@ -826,7 +828,7 @@ export function TextEditorPanel<StyleKey extends string>({
               </TopSelectContent>
             </Select>
 
-            <Label className={sectionLabelClassName}>Baselines</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.baselines")}</Label>
             <div aria-hidden="true" />
 
             <Select
@@ -853,62 +855,62 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <Label className={sectionLabelClassName}>Horizontal Alignment</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.horizontalAlignment")}</Label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "left")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "left" } : prev)}
               >
-                Left
+                {t("editor.paragraph.left")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "center")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "center" } : prev)}
               >
-                Center
+                {t("editor.paragraph.center")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "right")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "right" } : prev)}
               >
-                Right
+                {t("editor.paragraph.right")}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className={sectionLabelClassName}>Vertical Alignment</Label>
+            <Label className={sectionLabelClassName}>{t("editor.paragraph.verticalAlignment")}</Label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "top")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "top" } : prev)}
               >
-                Top
+                {t("editor.paragraph.top")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "center")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "center" } : prev)}
               >
-                Center
+                {t("editor.paragraph.center")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "bottom")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "bottom" } : prev)}
               >
-                Bottom
+                {t("editor.paragraph.bottom")}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className={sectionLabelClassName}>Rotation</Label>
+              <Label className={sectionLabelClassName}>{t("editor.paragraph.rotation")}</Label>
               <span className={`rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
                 {Math.round(controls.editorState.draftRotation)}°
               </span>
@@ -936,9 +938,9 @@ export function TextEditorPanel<StyleKey extends string>({
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Newspaper Reflow</Label>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.newspaperReflow")}</Label>
                 <p className={`mt-1 text-[11px] ${tone.muted}`}>
-                  {canUseNewspaperReflow ? "Flow across configured columns." : "Requires at least two columns."}
+                  {canUseNewspaperReflow ? t("editor.paragraph.reflowAvailable") : t("editor.paragraph.reflowUnavailable")}
                 </p>
               </div>
               <Switch
@@ -952,8 +954,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Hyphenation</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>Enable syllable division.</p>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.hyphenation")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.hyphenationHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSyllableDivision}
@@ -965,8 +967,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Snap to Columns (X)</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>Lock horizontal placement to column anchors.</p>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapColumns")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapColumnsHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSnapToColumns}
@@ -978,8 +980,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>Snap to Baseline (Y)</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>Lock vertical placement to baseline steps.</p>
+                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapBaseline")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapBaselineHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSnapToBaseline}
@@ -996,15 +998,15 @@ export function TextEditorPanel<StyleKey extends string>({
         <EditorSidebarSection
           title={hasMixedTypeSettings ? (
             <>
-              II. Typo{" "}
+              II. {t("editor.typography.title")}{" "}
               <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
-                Mixed Type Settings
+                {t("editor.mixed")}
               </span>
             </>
-          ) : "II. Typo"}
-          tooltip="Font family, cut, hierarchy, color, Custom size, kerning, and tracking; supported dropdowns preview on rollover"
+          ) : `II. ${t("editor.typography.title")}`}
+          tooltip={t("editor.typography.tooltip")}
           collapsed={collapsed.type}
-          collapsedSummary={`${selectionFontFamily ?? "Mixed"}, ${selectedStyleLabelForSelection}`}
+          collapsedSummary={`${selectionFontFamily ?? t("editor.mixed")}, ${selectedStyleLabelForSelection}`}
           onHeaderClick={handleSectionHeaderClick("type")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1013,14 +1015,14 @@ export function TextEditorPanel<StyleKey extends string>({
           onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.type)}
         >
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Hierarchy</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.hierarchy")}</Label>}>
             <Select
               value={hierarchySelectPreview.value}
               onOpenChange={hierarchySelectPreview.handleOpenChange}
               onValueChange={hierarchySelectPreview.handleValueChange}
             >
               <SelectTrigger className={triggerClassName}>
-                <SelectValue placeholder="Mixed" />
+                <SelectValue placeholder={t("editor.mixed")} />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={hierarchySelectPreview.handleContentPointerLeave}>
                 {controls.styleOptions.map((option) => (
@@ -1040,7 +1042,7 @@ export function TextEditorPanel<StyleKey extends string>({
           {fxSelected ? (
             <div className="space-y-2">
               <div className="space-y-2">
-                <LabeledControlRow label={<Label className={sectionLabelClassName}>Custom Size</Label>}>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.customSize")}</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1071,7 +1073,7 @@ export function TextEditorPanel<StyleKey extends string>({
               </div>
 
               <div className="space-y-2">
-                <LabeledControlRow label={<Label className={sectionLabelClassName}>Custom Leading</Label>}>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.customLeading")}</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1104,7 +1106,7 @@ export function TextEditorPanel<StyleKey extends string>({
           ) : null}
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Font</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.font")}</Label>}>
             <FontSelect
               value={fontSelectPreview.value}
               onValueChange={fontSelectPreview.handleValueChange}
@@ -1114,7 +1116,7 @@ export function TextEditorPanel<StyleKey extends string>({
               renderTriggerValue={selectedFontTriggerLabel}
               triggerValueStyle={selectedFontTriggerStyle}
               contentClassName={tone.selectContent}
-              placeholder="Mixed"
+              placeholder={t("editor.mixed")}
               onOpenChange={fontSelectPreview.handleOpenChange}
               onContentPointerLeave={fontSelectPreview.handleContentPointerLeave}
               getItemStyle={(option) => ({ fontFamily: getFontFamilyCss(option.value as FontFamily) })}
@@ -1124,7 +1126,7 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Cut</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.cut")}</Label>}>
             <Select
               value={cutSelectPreview.value}
               onOpenChange={cutSelectPreview.handleOpenChange}
@@ -1156,7 +1158,7 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Kerning</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.kerning")}</Label>}>
             <Select
               value={kerningSelectPreview.value}
               onOpenChange={kerningSelectPreview.handleOpenChange}
@@ -1166,15 +1168,15 @@ export function TextEditorPanel<StyleKey extends string>({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={kerningSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="on" {...kerningSelectPreview.getItemPreviewProps("on")}>Optical</SelectItem>
-                <SelectItem value="off" {...kerningSelectPreview.getItemPreviewProps("off")}>Metric</SelectItem>
+                <SelectItem value="on" {...kerningSelectPreview.getItemPreviewProps("on")}>{t("editor.typography.optical")}</SelectItem>
+                <SelectItem value="off" {...kerningSelectPreview.getItemPreviewProps("off")}>{t("editor.typography.metric")}</SelectItem>
               </TopSelectContent>
             </Select>
             </LabeledControlRow>
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>Tracking</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.tracking")}</Label>}>
             <input
               type="number"
               min={MIN_TRACKING_SCALE}
@@ -1182,7 +1184,7 @@ export function TextEditorPanel<StyleKey extends string>({
               step={1}
               inputMode="numeric"
               value={trackingInput}
-              placeholder={selectionTrackingScale === null ? "Mixed" : undefined}
+              placeholder={selectionTrackingScale === null ? t("editor.mixed") : undefined}
               onChange={(event) => {
                 setTrackingInput(event.target.value)
               }}
@@ -1223,10 +1225,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("symbols")}>
         <EditorSidebarSection
-          title="III. Symbols"
-          tooltip="Insert typographic symbols at the caret or over the current selection"
+          title={`III. ${t("editor.symbols.title")}`}
+          tooltip={t("editor.symbols.tooltip")}
           collapsed={collapsed.symbols}
-          collapsedSummary="Arrows, bullets, marks, math, Greek"
+          collapsedSummary={t("editor.symbols.summary")}
           onHeaderClick={handleSectionHeaderClick("symbols")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1237,7 +1239,7 @@ export function TextEditorPanel<StyleKey extends string>({
           <div className="space-y-4">
             {recentSymbols.length > 0 ? (
               <div className="space-y-2">
-                <Label className={sectionLabelClassName}>Recent</Label>
+                <Label className={sectionLabelClassName}>{t("editor.symbols.recent")}</Label>
                 <div className="grid grid-cols-6 gap-1.5">
                   {recentSymbols.map((symbol) => (
                     <button
@@ -1245,8 +1247,8 @@ export function TextEditorPanel<StyleKey extends string>({
                       type="button"
                       className={symbolButtonClassName}
                       style={{ fontFamily: SYMBOL_FONT_FAMILY }}
-                      aria-label={`Insert ${symbol}`}
-                      title={`Insert ${symbol}`}
+                      aria-label={t("editor.symbols.insert", { symbol })}
+                      title={t("editor.symbols.insert", { symbol })}
                       onMouseDown={(event) => {
                         event.preventDefault()
                       }}
@@ -1269,8 +1271,8 @@ export function TextEditorPanel<StyleKey extends string>({
                       type="button"
                       className={symbolButtonClassName}
                       style={{ fontFamily: SYMBOL_FONT_FAMILY }}
-                      aria-label={`Insert ${symbol}`}
-                      title={`Insert ${symbol}`}
+                      aria-label={t("editor.symbols.insert", { symbol })}
+                      title={t("editor.symbols.insert", { symbol })}
                       onMouseDown={(event) => {
                         event.preventDefault()
                       }}
@@ -1288,10 +1290,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("placeholders")}>
         <EditorSidebarSection
-          title="IV. Placeholders"
-          tooltip="Insert fitted lorem, project title, folios, and proof timestamps"
+          title={`IV. ${t("editor.placeholders.title")}`}
+          tooltip={t("editor.placeholders.tooltip")}
           collapsed={collapsed.placeholders}
-          collapsedSummary="Lorem, project title, page, pages, date, time"
+          collapsedSummary={t("editor.placeholders.summary")}
           onHeaderClick={handleSectionHeaderClick("placeholders")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1326,10 +1328,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("info")}>
           <EditorSidebarSection
-          title="V. Info"
-          tooltip="Paragraph summary and live metrics"
+          title={`V. ${t("editor.info.title")}`}
+          tooltip={t("editor.info.paragraphTooltip")}
           collapsed={collapsed.info}
-          collapsedSummary={`${characterCount} chars, ${wordCount} words`}
+          collapsedSummary={t("editor.info.charsWords", { chars: characterCount, words: wordCount })}
           onHeaderClick={handleSectionHeaderClick("info")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}

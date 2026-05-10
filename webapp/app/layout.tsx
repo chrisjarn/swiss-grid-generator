@@ -3,6 +3,7 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { FONT_CSS_VARS, FONT_FACE_CSS } from "@/lib/config/fonts"
 import { LIGHT_UI_THEME_COLOR } from "@/lib/theme-color"
+import { translateMessage } from "@/lib/i18n/messages"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -14,9 +15,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   // Basic Meta
-  title: "Swiss Grid Generator – Modular Typographic Grids Based on Müller-Brockmann",
-  description: "Free online tool and CLI for generating Swiss-style typographic grid systems inspired by Josef Müller-Brockmann's 'Grid Systems in Graphic Design'. Customize modular grids (1×1 to 13×13), A-series formats (A0–A6), three margin methods (Progressive 1:2:3, Van de Graaf 2:3:4:6, grid-based), baseline-aligned 10-style typography, and export JSON, TXT, PDF. Perfect for print, editorial, and digital design.",
-  keywords: "swiss grid generator, muller-brockmann grid, typographic grid calculator, modular grid tool, baseline grid generator, swiss design tool, international typographic style, grid systems in graphic design, a4 grid calculator, print design grid",
+  title: translateMessage("app.metadataTitle"),
+  description: translateMessage("app.metadataDescription"),
+  keywords: translateMessage("app.metadataKeywords"),
   robots: "index, follow",
   alternates: {
     canonical: "https://preview.swiss-grid-generator.com/",
@@ -28,15 +29,15 @@ export const metadata: Metadata = {
 
   // Open Graph (for Facebook, LinkedIn, etc.)
   openGraph: {
-    title: "Swiss Grid Generator – Based on Müller-Brockmann's Classic",
-    description: "Generate authentic Swiss-style grids with baseline harmony, custom margins, and typography. Free web app + CLI. Inspired by 'Grid Systems in Graphic Design'.",
+    title: translateMessage("app.metadataTitle"),
+    description: translateMessage("app.metadataShortDescription"),
     type: "website",
     url: "https://preview.swiss-grid-generator.com/",
-    siteName: "Swiss Grid Generator",
+    siteName: translateMessage("app.name"),
     images: [
       {
         url: "https://preview.swiss-grid-generator.com/og-image.jpg",
-        alt: "Swiss Grid Generator preview with 9x9 modular grid on A4",
+        alt: translateMessage("app.metadataImageAlt"),
         width: 1200,
         height: 630,
       },
@@ -46,8 +47,8 @@ export const metadata: Metadata = {
   // Twitter Cards (now X)
   twitter: {
     card: "summary_large_image",
-    title: "Swiss Grid Generator – Müller-Brockmann Inspired Tool",
-    description: "Free modular grid generator for Swiss design: A-series, baseline typography, margin methods, exports. Web + CLI.",
+    title: translateMessage("app.metadataTitle"),
+    description: translateMessage("app.metadataExportDescription"),
     images: ["https://preview.swiss-grid-generator.com/twitter-image.jpg"],
   },
 }

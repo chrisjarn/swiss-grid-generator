@@ -315,7 +315,7 @@ export function ExportDialog({
                   "col-span-3",
                   isRangeInvalid ? "border-[#fd8b7b] ring-1 ring-[#fd8b7b]" : "",
                 )}
-                placeholder="1-5;7;25;550-650"
+                placeholder={t("dialogs.export.pageRangePlaceholder")}
                 aria-invalid={isRangeInvalid}
               />
             </div>

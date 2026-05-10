@@ -1,59 +1,78 @@
-# legal notice
+# Legal Notice
 
-## legal notice
+## Legal Notice
 
-information according to section 5 ddg.
+Information according to Section 5 DDG.
 
-## provider
+## Provider
 
-**ingo wörner**  
-naststr. 1  
-70376 stuttgart  
-germany
+**Ingo Wörner**  
+Naststr. 1  
+70376 Stuttgart  
+Germany
 
-## contact
+## Contact
 
 [hello@swiss-grid-generator.com](mailto:hello@swiss-grid-generator.com)
 
-## responsible for own content
+## Responsible For Own Content
 
-ingo wörner  
-naststr. 1  
-70376 stuttgart  
-germany
+Ingo Wörner  
+Naststr. 1  
+70376 Stuttgart  
+Germany
 
-## privacy
+## Privacy
 
-the controller for personal data processed by swiss grid generator is ingo wörner, contactable at the email address above.
+Controller: Ingo Wörner. Contact: email above.
 
-the app processes account email addresses, authentication data, cloud project data, feedback messages, attached screenshots, optional support logs, and technical data required to operate the service.
+Processed data:
+- Account email
+- Authentication data
+- Cloud projects
+- Feedback
+- Screenshots
+- Optional support logs
+- Service operation data
 
-processing is used to provide the editor, sign-in, cloud storage, feedback, support, security, and synchronization features. legal bases are contract performance, legitimate interests, and consent where required.
+Purpose: editor operation, sign-in, cloud storage, feedback, support, security, synchronization.
 
-## cloud storage
+Legal bases: contract performance, legitimate interest, consent where required.
 
-signed-in users can store projects in supabase. user projects and uploaded project content remain the responsibility of the respective user.
+## Cloud Storage
 
-## local storage
+Signed-in users can store projects in Supabase. Users remain responsible for project content.
 
-the app uses local storage and indexeddb for editor preferences, offline cache, recent local activity logs, and project synchronization. these are required for the requested editor and cloud-sync features. the app does not use advertising or analytics cookies.
+## Local Storage
 
-## feedback
+The app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync.
 
-feedback submissions are stored in supabase and may include email, comment, screenshots, app version, and optional local support logs. they are used only to handle support, bug reports, and product feedback.
+No advertising or analytics cookies are used.
 
-## user rights
+## Feedback
 
-users may request access, correction, deletion, restriction, portability, or objection by email. users may also lodge a complaint with a competent data protection supervisory authority.
+Feedback is stored in Supabase.
 
-## terms of use
+It may include email, comment, screenshots, app version, and optional support logs.
 
-swiss grid generator is provided as a professional design tool without a guarantee of uninterrupted availability. users are responsible for their own documents, exports, backups, and lawful use of uploaded or stored content.
+Use is limited to support and defect review.
 
-## consumer dispute resolution
+## User Rights
 
-we are not willing or obliged to participate in dispute resolution proceedings before a consumer arbitration board.
+Users may request access, correction, deletion, restriction, portability, or objection by email.
 
-## note
+Complaints may be lodged with a competent supervisory authority.
 
-this compact legal notice is provided in english because the app interface is english only.
+## Terms Of Use
+
+Swiss Grid Generator is provided without guaranteed uninterrupted availability.
+
+Users are responsible for documents, exports, backups, and lawful content use.
+
+## Consumer Dispute Resolution
+
+We do not participate in consumer arbitration proceedings.
+
+## Note
+
+This notice is English because the app interface is English.

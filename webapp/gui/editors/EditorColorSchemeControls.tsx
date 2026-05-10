@@ -6,6 +6,7 @@ import {
   getSettingsOpenListOptionClassName,
   SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
 } from "@/gui/panels/settings/settings-panel-styles"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewItemHandlers = {
   onFocus?: () => void
@@ -46,12 +47,13 @@ export function EditorColorSchemeControls({
   isDarkMode,
   ringOffsetClassName = "",
 }: Props) {
+  const { t } = useTranslation()
   const colorSchemeListClassName = getSettingsOpenListClassName(isDarkMode)
 
   return (
     <>
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>COLOR</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("editor.color.color")}</Label>
         <div className="grid grid-cols-4 gap-2">
           {displayedColors.map((color, index) => {
             const selected = selectedColor.toLowerCase() === color.toLowerCase()
@@ -67,7 +69,7 @@ export function EditorColorSchemeControls({
                     isDarkMode ? "border-gray-700" : "border-gray-200"
                   } ${selected ? `ring-2 ring-gray-500 ring-offset-1 ${ringOffsetClassName}` : ""}`}
                   style={{ backgroundColor: color }}
-                  aria-label={`Select ${color}`}
+                  aria-label={t("editor.color.selectColor", { color })}
                   title={color}
                 />
                 <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -80,10 +82,10 @@ export function EditorColorSchemeControls({
       </div>
 
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>BASE SCHEME</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("editor.color.baseScheme")}</Label>
         <div
           role="listbox"
-          aria-label="Base scheme"
+          aria-label={t("editor.color.baseSchemeAria")}
           className={colorSchemeListClassName}
           onMouseLeave={onSchemeContentPointerLeave}
           onPointerLeave={onSchemeContentPointerLeave}

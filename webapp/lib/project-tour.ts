@@ -2,6 +2,7 @@ import {
   ALL_HELP_SECTION_ITEMS,
   type HelpSectionId,
 } from "@/lib/help-registry"
+import { translateMessage } from "@/lib/i18n/messages"
 
 export type ProjectTourSidebarPanel = "layers" | "help"
 
@@ -113,7 +114,7 @@ export function parseProjectTour(value: unknown): ProjectTour | null {
   }
 
   const id = toOptionalText(payload.id) ?? "project-tour"
-  const title = toOptionalText(payload.title) ?? "Project Tour"
+  const title = toOptionalText(payload.title) ?? translateMessage("projectPanel.tourTitle")
 
   return {
     id,

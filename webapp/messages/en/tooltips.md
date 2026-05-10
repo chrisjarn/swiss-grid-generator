@@ -1,138 +1,138 @@
 # Tooltips
 
-Tooltip copy for the most important Swiss Grid Generator workflows.
+Tooltip copy for primary workflows.
 
-These topics feed the in-app layout tooltip popup shown at the bottom of the preview when a layout is loaded. The popup presents one topic at a time and can be stepped forward with `Next >`.
+These topics feed the in-app layout tooltip popup.
 
 Format:
 - `## Group Title` starts a tooltip group.
-- `### Tooltip Topic {#tooltip-id}` starts a top-level tooltip topic.
+- `### Tooltip Topic {#tooltip-id}` starts a tooltip topic.
 - Use short paragraphs and focused bullets.
-- Keep tips practical, compositional, and action-oriented.
-- Prefer explaining the next useful move over describing every control.
 
 ## Working Order
 
 ### Start With The Page System {#tooltip-start-with-system}
-Set format, baseline, margins, grid, rhythm, type scale, and base font before placing many layers. If the page feels wrong, adjust the system first. Local paragraph fixes are most useful after the grid field is already stable.
+Set ratio, baseline, margins, grid, rhythm, and type.
+
+Correct the system before correcting paragraphs.
 
 ### Structure Before Styling {#tooltip-structure-before-styling}
-Use `Rows`, `Baselines`, and `Cols` to define the text frame before refining wording, tracking, or color. The frame is the editorial decision. Styling should clarify that decision, not compensate for a weak one.
+Define the frame with `Rows`, `Baselines`, and `Cols`. The frame is the editorial decision.
 
 ### Use Repetitive As A Control {#tooltip-repetitive-reference}
-Start with `Repetitive` rhythm when judging a layout. It gives the clearest read on whether margins, baseline, and hierarchy are working. Move to Fibonacci, Golden Ratio, Perfect Fourth, or Perfect Fifth only when the structure benefits from asymmetry.
+Start with `Repetitive` rhythm. Judge margins, baseline, and hierarchy before adding asymmetry.
 
 ## Creating Content
 
-### Create Text Directly On The Grid {#tooltip-create-text}
-Double-click inside a module to create a paragraph exactly where the page structure suggests it belongs. The created block uses the clicked module, turns hyphenation off by default, and clamps its starting width to the available columns. Place first, refine second.
+### Create Text On The Grid {#tooltip-create-text}
+Double-click a module. The block starts at that structural point and clamps to the column field.
 
 ### Choose Hierarchy While Creating {#tooltip-create-hierarchy}
-Hold `1..5` while double-clicking to create a paragraph with the intended hierarchy immediately. Use `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, and `5 Display`. Caption starts at 1 column, Body and Subhead at 2 columns, and Headline and Display at 3 columns unless fewer columns remain from the clicked module.
+Hold `1..5` while double-clicking: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`.
 
-### Add Image Placeholders In Place {#tooltip-create-image}
-Use `Shift` + double-click on an empty module to create an image placeholder. Image placeholders share the same snap, span, baseline-height, and rotation discipline as text blocks, so they should be placed with the same structural care.
+### Place Image Placeholders Deliberately {#tooltip-create-image}
+`Shift` + double-click creates an image placeholder on the same grid discipline as text.
 
 ### Use Lorem As A Frame Test {#tooltip-lorem-frame-test}
-Insert `<%lorem%>` when you need to test whether a paragraph frame can carry the intended text density. `<%lorem%>` fills the active frame using its current rows, baselines, columns, reflow, and hyphenation settings.
+`<%lorem%>` tests measure, density, line count, reflow, and hyphenation.
 
 ## Moving And Duplicating
 
 ### Drag For Placement, Nudge For Decision {#tooltip-drag-and-nudge}
-Drag to establish the rough position. Use cursor keys to make controlled placement decisions. Arrow-key nudging uses the same logical placement model as drag, so movement stays tied to the grid instead of becoming arbitrary screen motion.
+Drag for position. Use cursor keys for measured correction.
 
 ### Nudge With The Grid {#tooltip-cursor-nudge}
-With snapped axes enabled, arrow keys move the selected unlocked layer by columns and module rows. Hold `Shift` while nudging to switch snapped Y movement to baseline rows. On unsnapped axes, `Shift` increases the fine movement step.
+Snap moves by columns and module rows. `Shift` moves snapped Y by baseline rows.
 
 ### Duplicate Without Losing Rhythm {#tooltip-duplicate-layer}
-Use the visible `+` affordance instead of modifier-key duplication. On text paragraphs, `+` duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts. On image placeholders, `+` duplicates the placeholder, including after switching pages.
+Use `+`. `Shift` copies paragraph geometry. `Alt/Option` copies type. Both copy both.
 
 ### Free Placement Is An Exception {#tooltip-free-placement}
-Turn off `Snap to Columns (X)` or `Snap to Baseline (Y)` only when the composition needs a controlled exception. Free X placement allows a disciplined one-column side-margin overhang. It is useful for optical tension, not casual alignment drift.
+Turn snap off only for controlled optical tension.
 
 ## Editing Flow
 
-### Smart Text Zoom Keeps The Work Local {#tooltip-smart-text-zoom}
-Keep Smart Text Zoom on when editing text-heavy layouts. Entering text edit focuses the active paragraph. Ordinary text and style edits keep the current view stable, while frame-geometry changes refit the paragraph.
+### Paragraph Zoom Keeps The Work Local {#tooltip-smart-text-zoom}
+Keep paragraph zoom on for text work. Geometry changes refit the view.
 
-### Turbo Edit Paragraph To Paragraph {#tooltip-turbo-edit}
-When an editor is open, click another unlocked preview paragraph to retarget the editor immediately. Use this to move through a page paragraph by paragraph without repeatedly closing and reopening edit mode.
+### Retarget Paragraph To Paragraph {#tooltip-turbo-edit}
+With an editor open, select another unlocked paragraph to retarget.
 
-### Turbo Edit From Layer Cards {#tooltip-layer-card-retarget}
-Double-click an unlocked layer card in the Project panel to open or retarget the corresponding text or image editor. Single-click still only selects the layer, which keeps keyboard nudging available without accidentally entering edit mode.
+### Retarget From Layer Cards {#tooltip-layer-card-retarget}
+Double-click an unlocked layer card to open or retarget. Single-click selects for nudging.
 
-### Edit The Rendered Text, Not A Generic Textarea {#tooltip-rendered-text-editing}
-Inside inline text edit, cursor movement follows the rendered line layout. Double-click selects a word, triple-click selects a sentence, and `Alt+A` or `Cmd/Ctrl+A` selects the whole paragraph.
+### Edit The Rendered Text {#tooltip-rendered-text-editing}
+Inline editing follows rendered lines. Double-click word. Triple-click sentence.
 
-### Keep Placeholders Visible While Editing {#tooltip-placeholder-editing}
-Document variables stay visible as raw tokens while editing, then render as live values outside edit mode. Use this to place folios, project titles, dates, times, and proof text with predictable editorial control.
+### Keep Tokens Visible While Editing {#tooltip-placeholder-editing}
+Variables remain raw while editing and render live outside edit mode.
 
 ## Paragraph Geometry
 
-### Frame Height Is Rows Plus Baselines {#tooltip-rows-plus-baselines}
-Paragraph and image heights are built from `rows + baselines`. Use full rows for modular blocks and baseline-only height for shallow editorial frames, captions, folios, and proof lines.
+### Height Is Rows Plus Baselines {#tooltip-rows-plus-baselines}
+Height is `Rows + Baselines`. Use baseline-only frames for captions, folios, proof lines.
 
 ### Set Columns Before Reflow {#tooltip-columns-before-reflow}
-Choose `Cols` before judging paragraph flow. A weak line length is usually a frame problem. Reflow and hyphenation work best after the column span is structurally correct.
+Set `Cols` before judging flow. Weak measure is usually a frame problem.
 
 ### Align Inside The Frame {#tooltip-frame-alignment}
-Horizontal and vertical alignment position text inside the configured paragraph frame. Use alignment to make a compositional decision within a clear frame, not to repair a poorly placed frame.
+Alignment positions text inside the frame. It is composition, not repair.
 
-### Use Custom Type Deliberately {#tooltip-custom-type}
-When first selected, `Custom` copies the paragraph's resolved size and leading. Treat Custom as a local editorial exception after the hierarchy is clear.
+### Use Custom Type Sparingly {#tooltip-custom-type}
+`Custom` is a local exception after hierarchy is resolved.
 
 ## Layers And Pages
 
 ### Select Before Nudging {#tooltip-select-before-nudge}
-Single-click a layer card to select it, then use arrow keys to nudge it. This keeps placement changes precise and avoids entering edit mode when you only need a positional adjustment.
+Select a layer card, then nudge.
 
-### Lock Finished Layers {#tooltip-lock-finished-layers}
-Lock layers once their position and role are resolved. Locked layers still show rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked.
+### Lock Resolved Layers {#tooltip-lock-finished-layers}
+Lock resolved layers. Locked layers show guides but cannot change.
 
 ### Use Page Rows For Document Rhythm {#tooltip-page-cards}
-Use the `Page` header or list icon to return from a page's layer stack to the page list. Single-click a page row to activate and display it while staying in the list; double-click the row, or click its open toggle, to inspect its layers. Page order is part of the design. Treat it with the same discipline as grid and type hierarchy.
+Page order is part of the design.
 
-### Use Facing Pages Only For Real Spreads {#tooltip-facing-pages}
-Use `Facing pages` when two physical pages need one continuous editorial field. A facing spread remains one project page, doubles the effective column field, mirrors inner and outer margins, and affects physical page variables.
+### Use Facing Pages Only For Spreads {#tooltip-facing-pages}
+Use `Facing pages` for one continuous field across two physical pages.
 
 ## Preview Discipline
 
 ### Toggle Guides While Judging {#tooltip-preview-guides}
-Use the header toggles to inspect baselines, margins, modules, typography, and image placeholders. Judge the same layout both with and without guides. A strong layout should keep its rhythm after the construction lines disappear.
+Inspect baseline, margins, modules, type, and placeholders. Then hide what is not needed.
 
 ### Rollover Guides Show The Frame {#tooltip-rollover-guides}
-Hover a layer to see its edit access and placement guides. Paragraph guides follow the configured `rows + baselines` frame, not only the visible text bounds.
+Hover reveals the configured frame, not only visible text.
 
 ### Help Hover Is Contextual {#tooltip-help-hover}
-Open Help, then hover blue-marked UI areas to jump the Help panel to the matching reference. This works for header actions, settings sections, the preview surface, editor sections, and the preset browser.
+Open Help and hover marked areas for the matching reference.
 
 ## Export Readiness
 
-### Export Only After The System Is Stable {#tooltip-export-readiness}
-Export should confirm a resolved layout, not repair it. Before exporting, check page order, page range, visible guide toggles, rotation, page numbering, and document variables.
+### Export After The System Is Stable {#tooltip-export-readiness}
+Confirm order, range, guides, rotation, folios, and variables.
 
-### Pick Export By Downstream Use {#tooltip-export-format}
-Use `JSON` for editable project exchange and backup, `PDF` for faithful vector output, `SVG` for frozen per-page vector geometry, and `IDML` for InDesign continuation. PDF, SVG, and IDML freeze typography as geometry in the normal vector path, so choose export formats for downstream workflow rather than live text editing.
+### Choose Export By Downstream Use {#tooltip-export-format}
+JSON edits. PDF outputs. SVG freezes pages. IDML continues in InDesign.
 
 ### Shared Vector Bleed {#tooltip-export-bleed}
-Bleed applies to PDF, SVG, and IDML from one shared control. It opens off and restores 3mm when activated. Export extends visible production geometry through the bleed box, adds a white crop-mark canvas plus black trim crop marks outside it, and leaves page layout math unchanged.
+One bleed control serves PDF, SVG, and IDML.
 
-### WYSIWYG Includes The Visible Overlays {#tooltip-export-visibility}
-Export follows the current preview visibility state for baselines, margins, modules, typography, and image placeholders. Turn off construction guides before final output unless they are intentionally part of the deliverable.
+### Visible Overlays Are Exported {#tooltip-export-visibility}
+Export follows current guide visibility.
 
 ### Export Progress {#tooltip-export-progress}
-Long exports report preparation, page rendering, finalization, and percentage. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled.
+Progress is informational. Export continues from the committed page plan.
 
 ## Common Corrections
 
 ### If The Page Feels Loose {#tooltip-fix-loose-page}
-Return to baseline, margins, and grid rhythm before editing individual paragraphs. Most loose layouts need a clearer field, not more local styling.
+Return to baseline, margins, and grid rhythm.
 
 ### If Text Feels Weak {#tooltip-fix-weak-type}
-Check hierarchy, frame width, leading, and baseline alignment before changing tracking. Tracking changes the color of the paragraph. It should refine type texture, not replace hierarchy.
+Check hierarchy, measure, leading, and baseline before tracking.
 
 ### If Content Falls Out Of Bounds {#tooltip-grid-reduction}
-Grid reductions are blocked when existing layers would fall outside the new field. Resolve the layer placement first, then reduce rows or columns. The tool protects composition by refusing silent repositioning.
+Resolve placement before reducing rows or columns.
 
 ### If Editing Feels Slow {#tooltip-faster-editing}
-Use Smart Text Zoom, open one editor, then retarget from paragraph to paragraph or layer card to layer card. The fastest workflow is not many commands. It is staying in context while moving through the page deliberately.
+Keep one editor open and retarget in context.

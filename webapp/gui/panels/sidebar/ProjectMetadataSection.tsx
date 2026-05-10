@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react"
 
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
+import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type Props = {
   projectTitle: string
@@ -26,6 +27,7 @@ export function ProjectMetadataSection({
   autoFocusTitle = false,
   isDarkMode = false,
 }: Props) {
+  const { t } = useTranslation()
   const [isEditingTitle, setIsEditingTitle] = useState(false)
   const [isEditingDescription, setIsEditingDescription] = useState(false)
   const [isEditingAuthor, setIsEditingAuthor] = useState(false)
@@ -107,7 +109,7 @@ export function ProjectMetadataSection({
   return (
     <div className="mt-3 space-y-3">
       <div className="space-y-1.5">
-        <SectionHeaderRow label="Title" />
+        <SectionHeaderRow label={t("projectPanel.metadata.title")} />
         <input
           ref={titleInputRef}
           type="text"
@@ -126,11 +128,11 @@ export function ProjectMetadataSection({
             }
           }}
           className={inputClassName}
-          placeholder="Project title"
+          placeholder={t("projectPanel.metadata.projectTitle")}
         />
       </div>
       <div className="space-y-1.5">
-        <SectionHeaderRow label="Subject" />
+        <SectionHeaderRow label={t("projectPanel.metadata.subject")} />
         <textarea
           rows={5}
           value={descriptionDraft}
@@ -144,11 +146,11 @@ export function ProjectMetadataSection({
             }
           }}
           className={textareaClassName}
-          placeholder="Short subject"
+          placeholder={t("projectPanel.metadata.shortSubject")}
         />
       </div>
       <div className="space-y-1.5">
-        <SectionHeaderRow label="Author" />
+        <SectionHeaderRow label={t("projectPanel.metadata.author")} />
         <input
           type="text"
           value={authorDraft}
@@ -166,7 +168,7 @@ export function ProjectMetadataSection({
             }
           }}
           className={inputClassName}
-          placeholder="Author name"
+          placeholder={t("projectPanel.metadata.authorName")}
         />
       </div>
     </div>

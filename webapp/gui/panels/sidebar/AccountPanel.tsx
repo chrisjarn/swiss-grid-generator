@@ -209,7 +209,7 @@ export function AccountPanel({
               if (authError || authMessage) onClearFeedback()
             }}
             className={`w-full ${fieldClassName}`}
-            placeholder="name@example.com"
+            placeholder={t("rightPanel.account.emailPlaceholder")}
           />
           <div className="pt-1">
             <Button
@@ -251,7 +251,7 @@ export function AccountPanel({
                   if (authError || authMessage) onClearFeedback()
                 }}
                 className={`w-full text-center font-mono tabular-nums ${fieldClassName}`}
-                placeholder="000000"
+                placeholder={t("rightPanel.account.codePlaceholder")}
               />
               <div className="pt-1">
                 <Button
