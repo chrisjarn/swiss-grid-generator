@@ -21,6 +21,8 @@
     "predev:prod": "npm run assets:generate",
     "dev:prod": "NEXT_PUBLIC_RELEASE_CHANNEL=prod next dev",
     "build": "next build",
+    "storybook": "npm run assets:generate && storybook dev -p 6006",
+    "build:storybook": "npm run assets:generate && storybook build",
     "prebuild:beta": "npm run assets:generate",
     "build:beta": "NEXT_PUBLIC_RELEASE_CHANNEL=beta next build",
     "prebuild:prod": "npm run assets:generate",
@@ -86,6 +88,9 @@
     "zustand": "^5.0.13"
   },
   "devDependencies": {
+    "@storybook/addon-a11y": "^10.3.6",
+    "@storybook/addon-docs": "^10.3.6",
+    "@storybook/nextjs-vite": "^10.3.6",
     "@types/node": "^22.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
@@ -93,6 +98,7 @@
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.18",
     "postcss": "^8.4.49",
+    "storybook": "^10.3.6",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2"
   }
