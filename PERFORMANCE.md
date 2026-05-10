@@ -472,3 +472,32 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 - `npx tsc --noEmit`
 - `node --test tests/sidebar-page-panel-contract.test.mjs`
 - `node --test tests/svg-export-contract.test.mjs`
+
+### Summery
+
+```text
+[+ 106.8s] performance summary:
+[+ 106.8s]   resolve export sources    0.02s pages=1000
+[+ 106.8s]   font metrics preload      0.25s
+[+ 106.8s]   planning                 13.80s pages=1000
+[+ 106.8s]   pdf init                  0.00s
+[+ 106.8s]   pdf font register         0.32s faces=54
+[+ 106.8s]   pdf output intent         0.00s srgb
+[+ 106.8s]   pdf setup                 0.33s faces=54
+[+ 106.8s]   pdf render pages         15.53s pages=1000
+[+ 106.8s]   pdf finalize              6.95s
+[+ 106.8s]   svg render pages         14.06s pages=1000
+[+ 106.8s]   svg zip                   0.00s not used
+[+ 106.8s]   idml render page sets    33.02s sets=40
+[+ 106.8s]   idml page xml            28.13s spreads=1000 raw=2436.77MB
+[+ 106.8s]   idml page encode          1.16s bytes=2436.77MB
+[+ 106.8s]   idml package             19.03s pages=1000
+[+ 106.8s]   idml package resources    0.13s raw=1.07MB
+[+ 106.8s]   idml package zip         18.90s engine=node-zlib raw=2437.84MB
+[+ 106.8s]   idml component sizes      0.00s spreads=2436.77MB resources=1.07MB top=Spreads/Spread_394.xml=17.88MB Spreads/Spread_264.xml=17.86MB Spreads/Spread_134.xml=17.85MB
+[+ 106.8s]   idml finalize             0.00s
+[+ 106.8s]   pdf write                 0.35s size=25.68MB
+[+ 106.8s]   svg write files           1.73s files=1000
+[+ 106.8s]   idml write                1.70s size=427.73MB
+[+ 106.8s]   total                   106.79s
+```
