@@ -3,12 +3,13 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
-const SOURCE_PATH = path.join(ROOT, "lib", "presets", "data", "030 Performance.json")
 const OUTPUT_DIR = path.join(ROOT, "tests", "fixtures")
-const PLACEHOLDER_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages-placeholder.json")
+const SOURCE_PATH = path.join(OUTPUT_DIR, "performance-100-pages.json")
+const PERFORMANCE_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages.json")
 const STATIC_TEXT_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages-static-text.json")
 
 const TARGET_PAGE_COUNT = 1000
+const PERFORMANCE_LOREM_PLACEHOLDER_TEXT = "\u00fclacegolder <%lorem%>"
 const STATIC_LOREM_TEXT = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
@@ -94,7 +95,7 @@ function clone(value) {
 }
 
 function getSourcePageSerial(page) {
-  const match = page.id.match(/page-performance-(\d{3})$/)
+  const match = page.id.match(/page-performance-(\d{3,4})$/)
   if (!match) {
     throw new Error(`Unexpected performance page id: ${page.id}`)
   }
@@ -114,6 +115,15 @@ function replaceLayoutPageSerial(previewLayout, sourceSerial, targetSerial) {
   )
 }
 
+function applyPerformanceLoremPlaceholder(previewLayout, pageSerial) {
+  const textContent = previewLayout?.textContent
+  const placeholderKey = `paragraph-p${pageSerial}-m19`
+  if (!textContent || typeof textContent !== "object" || typeof textContent[placeholderKey] !== "string") {
+    throw new Error(`Missing performance lorem placeholder block: ${placeholderKey}`)
+  }
+  textContent[placeholderKey] = PERFORMANCE_LOREM_PLACEHOLDER_TEXT
+}
+
 function buildPage(templatePage, pageIndex) {
   const pageSerial = String(pageIndex + 1).padStart(4, "0")
   const sourceSerial = getSourcePageSerial(templatePage)
@@ -128,12 +138,15 @@ function buildPage(templatePage, pageIndex) {
   uiSettings.rhythmColsEnabled = rhythmProfile.rhythmColsEnabled
   uiSettings.rhythmColsDirection = rhythmProfile.rhythmColsDirection
 
+  const previewLayout = replaceLayoutPageSerial(templatePage.previewLayout, sourceSerial, pageSerial)
+  applyPerformanceLoremPlaceholder(previewLayout, pageSerial)
+
   return {
     ...clone(templatePage),
     id: `page-performance-${pageSerial}`,
     name: `Performance ${pageSerial}`,
     uiSettings,
-    previewLayout: replaceLayoutPageSerial(templatePage.previewLayout, sourceSerial, pageSerial),
+    previewLayout,
   }
 }
 
@@ -155,6 +168,16 @@ async function writeFixture(outputPath, payload) {
   console.log(`Generated ${outputPath}`)
 }
 
+async function readFixtureExportedAt(outputPath, fallback) {
+  try {
+    const existing = JSON.parse(await fs.readFile(outputPath, "utf8"))
+    if (typeof existing.exportedAt === "string" && existing.exportedAt.length > 0) return existing.exportedAt
+  } catch {
+    // Deterministic fixture generation should not fail when the output does not exist yet.
+  }
+  return fallback
+}
+
 async function main() {
   const source = JSON.parse(await fs.readFile(SOURCE_PATH, "utf8"))
   if (!Array.isArray(source.pages) || source.pages.length === 0) {
@@ -168,10 +191,14 @@ async function main() {
     }
     return buildPage(templatePage, pageIndex)
   })
+  const exportedAt = await readFixtureExportedAt(
+    PERFORMANCE_OUTPUT_PATH,
+    typeof source.exportedAt === "string" ? source.exportedAt : "1970-01-01T00:00:00.000Z",
+  )
 
   const placeholderPayload = {
     ...source,
-    exportedAt: new Date().toISOString(),
+    exportedAt,
     title: "Performance 1000 Pages Placeholder",
     description: "Performance test fixture with 1000 pages, 20 alternating body text/image layers per page, lorem document-variable placeholders, and systematic baseline + grid-rhythm variation across the document.",
     pages,
@@ -184,7 +211,7 @@ async function main() {
   }
 
   await fs.mkdir(OUTPUT_DIR, { recursive: true })
-  await writeFixture(PLACEHOLDER_OUTPUT_PATH, placeholderPayload)
+  await writeFixture(PERFORMANCE_OUTPUT_PATH, placeholderPayload)
   await writeFixture(STATIC_TEXT_OUTPUT_PATH, staticTextPayload)
 }
 

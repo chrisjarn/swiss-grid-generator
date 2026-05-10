@@ -229,10 +229,10 @@ Performance measurement for the canonical 2.0 layout planner is documented in [P
 Vector export performance can be measured from `webapp/` with:
 
 ```bash
-npm run export -- --layout tests/fixtures/performance-1000-pages-placeholder.json --range 1-1000 --format pdf --out ../tmp/export-debug
+npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-1000 --format pdf --out ../tmp/export-debug
 ```
 
-Use the tracked `performance-1000-pages-placeholder.json` when measuring document-variable and lorem fitting cost. To isolate static text wrapping, glyph planning, and renderer/export cost without placeholder expansion, run `npm run fixtures:performance`; it also writes the ignored generated file `performance-1000-pages-static-text.json`.
+Use the tracked `performance-1000-pages.json` when measuring document-variable and lorem fitting cost. To isolate static text wrapping, glyph planning, and renderer/export cost without placeholder expansion, run `npm run fixtures:performance`; it also writes the ignored generated file `performance-1000-pages-static-text.json`.
 
 The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes. Browser vector export opens with bleed disabled and keeps `3mm` as the standard activation width; pass `--bleed-mm <n>` in the CLI to enable/override bleed for scripted exports.
 
@@ -244,11 +244,12 @@ npm run fonts:verify
 npm run lint
 npx tsc --noEmit
 npm run test:text-metrics
-SGG_PARITY_SUMMARY_ONLY=1 SGG_PARITY_EXPORT_PAGE_LIMIT=20 npm run test:text-metrics:browser
+npm run test:contracts
+npm run test:gui
 npm run test:preview-interactions
 ```
 
-`test:text-metrics:browser` gates deterministic text/export/preview parity in a real browser. `test:preview-interactions` loads a preset, drags a text layer, opens inline edit mode, and verifies text selection.
+`test:text-metrics` gates the deterministic, browser-free text metrics contract. `test:preview-interactions` loads a preset, drags a text layer, opens inline edit mode, and verifies text selection in a real browser.
 
 ---
 

@@ -182,7 +182,7 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 - Added CLI export:
   ```bash
   cd webapp
-  npm run export -- --layout tests/fixtures/performance-1000-pages-placeholder.json --range 1,5-10 --format pdf,svg,idml --bleed-mm 3 --out ../tmp/export-debug
+  npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1,5-10 --format pdf,svg,idml --bleed-mm 3 --out ../tmp/export-debug
   ```
 - Added phase timing for:
   - `resolve export sources`
@@ -403,7 +403,7 @@ This pass kept `PageExportPlan` as the canonical planning artifact and did not m
 - Reused one deterministic `TextMetricsService` across export planning for all pages in a run.
 - Hardened removed-font handling. Legacy `Libre Franklin` references imported from old saved layouts resolve to `Inter` during project parsing and in planner/export font resolution, avoiding deterministic font-file metric failures without reintroducing the removed font.
 - Split the 1000-page performance fixture:
-  - `performance-1000-pages-placeholder.json` keeps `<%lorem%>` blocks and measures document-variable fitting.
+  - `performance-1000-pages.json` keeps `<%lorem%>` blocks and measures document-variable fitting.
   - `performance-1000-pages-static-text.json` replaces lorem tokens with static text and isolates ordinary wrapping/glyph planning/export cost. It is generated on demand by `npm run fixtures:performance` and intentionally ignored by git.
 - Updated `npm run benchmark:layout` to preload deterministic metric faces, use a shared text metrics service, and report silent phase totals for planner substeps.
 
@@ -427,8 +427,8 @@ The placeholder export fixture still spends about `14.4s` planning 1000 pages wh
 ### Current Boundaries
 
 - PDF export runs in a cancellable browser worker so `Esc`/Cancel can terminate the active export even when final PDF byte serialization is busy. SVG page-set rendering, SVG ZIP packaging, IDML page-set XML generation, and IDML package assembly can also run worker-backed in the browser; final artifact order remains deterministic.
-- Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI default is off and restores `3mm` as the standard activation width; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
-- Cross-format outline precision is locked by `webapp/tests/export-geometry-parity.test.mjs`, which parses PDF content streams, SVG path data, and IDML `PathPointType` geometry from the same exported specimen and compares them against the planned glyph outline coordinates.
+- Shared bleed is centralized as `ExportBox` for PDF, SVG, and IDML. The GUI default is off and restores `3mm` as the standard activation width; enabled bleed extends visible production geometry through the bleed area and creates the same white crop-mark canvas and black trim crop marks around every vector format without exporting a dashed bleed guide. `webapp/tests/contracts/export-box-contract.test.mjs` locks the shared numeric box, crop-mark, and guide-clipping contract.
+- Cross-format outline precision is locked by `webapp/tests/contracts/export-geometry-parity.test.mjs`, which parses PDF content streams, SVG path data, and IDML `PathPointType` geometry from the same exported specimen and compares them against the planned glyph outline coordinates.
 - Live preview consumes `PageExportPlan` through the canvas adapter, draws from ordered layer render plans, and avoids export-only outline resolution on the interaction path.
 - Export hot paths avoid high-volume temporary collection chains where a direct ordered loop preserves the same serialization and geometry.
 
@@ -470,8 +470,7 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 
 - `npm run lint`
 - `npx tsc --noEmit`
-- `node --test tests/sidebar-page-panel-contract.test.mjs`
-- `node --test tests/svg-export-contract.test.mjs`
+- `node --import ./scripts/register-ts-alias-loader.mjs --test tests/contracts/svg-export-contract.test.mjs`
 
 ### Summery
 

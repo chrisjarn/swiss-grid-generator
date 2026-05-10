@@ -26,9 +26,6 @@ import {
   normalizeTrackingScale,
   splitTextForTracking,
 } from "@/lib/text-rendering"
-import {
-  createDiagnosticBrowserCanvasTextMetricsEngine,
-} from "@/lib/diagnostic-browser-canvas-text-metrics-engine"
 import { isLayoutProfilingEnabled, recordLayoutPerformanceMetric } from "@/lib/layout-performance"
 import type {
   TextMeasureContext,
@@ -40,7 +37,6 @@ import type {
 type FontFileWrapProfilingAccumulator = {
   calls: number
   boundaryCorrections: number
-  fallbackCalls: number
   formattedRangeWidthMs: number
   formattedRangeWidthCalls: number
   trackedRangeWidthMs: number
@@ -115,10 +111,9 @@ export type FontFileMetricFace = {
 }
 
 export type FontFileKerningMode = "none" | "font" | "optical"
-type FontFileRangeCalibrationOptions = {
+type FontFileWidthOptions = {
   classCorrection?: boolean
   boundaryClassCorrection?: boolean
-  allowDiagnosticBrowserFallback?: boolean
 }
 
 export type FontFileMetricFaceBlock<StyleKey extends string> = {
@@ -821,7 +816,7 @@ function classifyFontFilePairChar(char: string): FontFilePairClass {
   return "other"
 }
 
-function getRangeCalibrationClassCorrection({
+function getFontFileWidthClassCorrection({
   previous,
   current,
   descriptor,
@@ -891,7 +886,7 @@ function measureFontFileGraphemeRunWidth(
     styleKey?: string
   }[],
   kerningMode: FontFileKerningMode,
-  options: FontFileRangeCalibrationOptions = {},
+  options: FontFileWidthOptions = {},
 ): number | null {
   if (!graphemes.length) return 0
   const last = graphemes[graphemes.length - 1]
@@ -921,7 +916,7 @@ function measureFontFileGraphemeRunWidth(
       : measureFontFileGlyphWidth(previous.text, previous.descriptor)
     if (pairAdvance === null) return null
     const classCorrection = options.classCorrection && sameFontMetrics
-      ? getRangeCalibrationClassCorrection({
+      ? getFontFileWidthClassCorrection({
           previous: previous.text,
           current: current.text,
           descriptor: previous.descriptor,
@@ -940,7 +935,7 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
     TextWidthRequest<StyleKey, Family>,
     "sourceText" | "trackingScale" | "trackingRuns" | "opticalKerning" | "baseFormat" | "formatRuns" | "resolveFontSize"
   >,
-  options: FontFileRangeCalibrationOptions = {},
+  options: FontFileWidthOptions = {},
 ): ((renderedText: string, range: { start: number; end: number }) => number | null) | null {
   const { baseFormat, resolveFontSize } = request
   if (!baseFormat || !resolveFontSize) return null
@@ -1009,7 +1004,7 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
       : glyphWidths[index - 1]!
     if (pairAdvance === null) return null
     const classCorrection = options.classCorrection && sameFontMetrics
-      ? getRangeCalibrationClassCorrection({
+      ? getFontFileWidthClassCorrection({
           previous: previous.text,
           current: grapheme.text,
           descriptor: previous.descriptor,
@@ -1040,7 +1035,7 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
     })
     if (pairAdvance === null) return null
     const classCorrection = options.classCorrection
-      ? getRangeCalibrationClassCorrection({
+      ? getFontFileWidthClassCorrection({
           previous: lastGrapheme.text,
           current: "-",
           descriptor: lastGrapheme.descriptor,
@@ -1100,7 +1095,7 @@ function createExactFormattedRangeWidthMeasurer<StyleKey extends string, Family 
 export function measureFontFileTrackedRangeWidth<StyleKey extends string, Family extends string>(
   request: TextWidthRequest<StyleKey, Family>,
   descriptor: FontFileCanvasFontDescriptor,
-  options: FontFileRangeCalibrationOptions = {},
+  options: FontFileWidthOptions = {},
 ): number | null {
   const range = request.range
   if (!range) return null
@@ -1139,7 +1134,7 @@ function resolveFontFileDescriptorFromGrapheme<StyleKey extends string, Family e
 
 export function measureFontFileFormattedRangeWidth<StyleKey extends string, Family extends string>(
   request: TextWidthRequest<StyleKey, Family>,
-  options: FontFileRangeCalibrationOptions = {},
+  options: FontFileWidthOptions = {},
 ): number | null {
   const range = request.range
   const baseFormat = request.baseFormat
@@ -1367,85 +1362,15 @@ function createFontFileOpticalOffset<StyleKey extends string, Family extends str
   }
 }
 
-export function createFontFileTextMetricsEngine<StyleKey extends string, Family extends string>(
+function createDeterministicFontFileTextMetricsEngineWithOptions<StyleKey extends string, Family extends string>(
   context: TextMeasureContext,
+  options: FontFileWidthOptions = {},
 ): TextMetricsEngine<StyleKey, Family> {
-  const fallbackEngine = createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey, Family>(context)
-  const measureWidth = (request: TextWidthRequest<StyleKey, Family>): number => {
-    if (shouldDelegateWidth(request)) return fallbackEngine.measureWidth(request)
-    const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
-    const font = descriptor ? getLoadedFontFileMetric(descriptor) : null
-    if (!descriptor || !font) return fallbackEngine.measureWidth(request)
-
-    return measureFontFilePlainTextWidth(
-      font,
-      request.text,
-      descriptor,
-      request.trackingScale,
-      request.opticalKerning ? "optical" : "font",
-      request.baseFormat?.styleKey,
-    ) ?? fallbackEngine.measureWidth(request)
-  }
-  const wrapText = ({
-      text,
-      canvasFont,
-      maxWidth,
-      hyphenate,
-      trackingScale,
-      opticalKerning,
-      trackingRuns,
-      baseFormat,
-      formatRuns,
-      resolveFontSize,
-      trace,
-      hyphenationCacheKeyPrefix,
-    }: TextWrapRequest<StyleKey, Family>): WrappedTextLine[] => wrapTextDetailed(
-      text,
-      maxWidth,
-      hyphenate,
-      (sample, range) => measureWidth({
-        text: sample,
-        canvasFont,
-        trackingScale,
-        opticalKerning,
-        sourceText: text,
-        trackingRuns,
-        range,
-        baseFormat,
-        formatRuns,
-        resolveFontSize,
-      }),
-      trace,
-      hyphenationCacheKeyPrefix,
-    )
-  const engine: TextMetricsEngine<StyleKey, Family> = {
-    id: "font-file-v2",
-    measureWidth,
-    wrapText,
-    textAscent: (canvasFont, fallbackFontSize) => measureDeterministicTextTopAscent(canvasFont, fallbackFontSize),
-    textDescent: (_canvasFont, fallbackFontSize) => measureDeterministicLayoutDescent(fallbackFontSize),
-    opticalOffset: createFontFileOpticalOffset(measureWidth),
-  }
-
-  return engine
-}
-
-export function createFontFileRangeCalibrationTextMetricsEngine<StyleKey extends string, Family extends string>(
-  context: TextMeasureContext,
-): TextMetricsEngine<StyleKey, Family> {
-  return createFontFileRangeCalibrationTextMetricsEngineWithOptions(context)
-}
-
-function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey extends string, Family extends string>(
-  context: TextMeasureContext,
-  options: FontFileRangeCalibrationOptions = {},
-): TextMetricsEngine<StyleKey, Family> {
-  const allowDiagnosticBrowserFallback = options.allowDiagnosticBrowserFallback !== false
-  const fallbackEngine = createDiagnosticBrowserCanvasTextMetricsEngine<StyleKey, Family>(context)
+  void context
   const profilingEnabled = isLayoutProfilingEnabled()
   const measureFontFileWidth = (
     request: TextWidthRequest<StyleKey, Family>,
-    widthOptions: FontFileRangeCalibrationOptions = options,
+    widthOptions: FontFileWidthOptions = options,
     accumulator?: FontFileWrapProfilingAccumulator | null,
   ): number | null => {
     const descriptor = parseFontFileCanvasFontDescriptor(request.canvasFont)
@@ -1491,9 +1416,7 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
   }
   const measureWidth = (request: TextWidthRequest<StyleKey, Family>): number => {
     const width = measureFontFileWidth(request)
-    return allowDiagnosticBrowserFallback
-      ? width ?? fallbackEngine.measureWidth(request)
-      : requireFontFileWidth(width, request)
+    return requireFontFileWidth(width, request)
   }
   const wrapText = ({
       text,
@@ -1513,7 +1436,6 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
         ? {
             calls: 0,
             boundaryCorrections: 0,
-            fallbackCalls: 0,
             formattedRangeWidthMs: 0,
             formattedRangeWidthCalls: 0,
             trackedRangeWidthMs: 0,
@@ -1580,12 +1502,7 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
             if (measuredWidth === null) {
               measuredWidth = measureFontFileWidth(request, options, accumulator)
             }
-            if (accumulator && measuredWidth === null && allowDiagnosticBrowserFallback) {
-              accumulator.fallbackCalls += 1
-            }
-            const width = allowDiagnosticBrowserFallback
-              ? measuredWidth ?? fallbackEngine.measureWidth(request)
-              : requireFontFileWidth(measuredWidth, request)
+            const width = requireFontFileWidth(measuredWidth, request)
             if (!options.boundaryClassCorrection) return width
             if (!isTerminalPunctuationBoundaryCandidate(sample)) return width
 
@@ -1613,7 +1530,6 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
           recordLayoutPerformanceMetric("fontFile.wrapText", getNowMs() - startedAt, {
             calls: accumulator.calls,
             boundaryCorrections: accumulator.boundaryCorrections,
-            fallbackCalls: accumulator.fallbackCalls,
             hyphenate,
           })
           recordLayoutPerformanceMetric(
@@ -1656,19 +1572,12 @@ function createFontFileRangeCalibrationTextMetricsEngineWithOptions<StyleKey ext
   return engine
 }
 
-export function createFontFileRangeCalibrationClassCorrectionTextMetricsEngine<StyleKey extends string, Family extends string>(
-  context: TextMeasureContext,
-): TextMetricsEngine<StyleKey, Family> {
-  return createFontFileRangeCalibrationTextMetricsEngineWithOptions(context, { boundaryClassCorrection: true })
-}
-
 export function createDeterministicFontFileTextMetricsEngine<StyleKey extends string, Family extends string>(
   context: TextMeasureContext,
 ): TextMetricsEngine<StyleKey, Family> {
   return {
-    ...createFontFileRangeCalibrationTextMetricsEngineWithOptions(context, {
+    ...createDeterministicFontFileTextMetricsEngineWithOptions(context, {
       boundaryClassCorrection: true,
-      allowDiagnosticBrowserFallback: false,
     }),
     id: "font-file-deterministic-v1",
   }

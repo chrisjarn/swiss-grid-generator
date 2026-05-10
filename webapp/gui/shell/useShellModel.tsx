@@ -96,17 +96,6 @@ type NoticeState = {
   onCancel?: () => void
 } | null
 
-type TextMetricsParityRunner = (options?: {
-  sampleLimit?: number
-  maxTextLength?: number
-}) => Promise<unknown>
-
-declare global {
-  interface Window {
-    __sggTextMetricsParity?: TextMetricsParityRunner
-  }
-}
-
 type GridReductionWarningToastState = {
   id: number
   message: string
@@ -308,19 +297,6 @@ export function ShellModelView() {
   const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
   const layoutOpenTooltipDismissedForSessionRef = useRef(false)
-
-  useEffect(() => {
-    if (process.env.NODE_ENV !== "development") return undefined
-    let mounted = true
-    void import("@/lib/text-metrics-dev-report").then(({ runPresetTextMetricsParityReport }) => {
-      if (!mounted) return
-      window.__sggTextMetricsParity = runPresetTextMetricsParityReport
-    })
-    return () => {
-      mounted = false
-      delete window.__sggTextMetricsParity
-    }
-  }, [])
 
   const ui = useMemo(() => resolveUiSettingsSnapshot(activeDocumentPage?.uiSettings ?? {}, {
     showBaselinesFallback: documentVisibilitySettings.showBaselines,
