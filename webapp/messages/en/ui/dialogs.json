@@ -8,12 +8,12 @@
     },
     "saveLibrary": {
       "title": "save",
-      "description": "store the project in the local library.",
+      "description": "store the current project in the local library.",
       "confirm": "save"
     },
     "export": {
       "title": "export",
-      "description": "PDF, SVG and IDML consume the canonical page plan. JSON remains editable.",
+      "description": "pdf, svg and idml consume the canonical page plan. json remains editable.",
       "input": "input",
       "preview": "preview",
       "output": "output",
@@ -35,10 +35,10 @@
       "toggleTypography": "include typography",
       "toggleImagePlaceholders": "include placeholders",
       "previewCanvas": "selected page",
-      "previewBuildError": "preview failed.",
-      "previewDrawError": "preview draw failed.",
+      "previewBuildError": "preview unavailable.",
+      "previewDrawError": "preview render failed.",
       "previewPrepareError": "preview preparation failed.",
-      "previewNoPage": "no page available."
+      "previewNoPage": "no page selected."
     }
   }
 }

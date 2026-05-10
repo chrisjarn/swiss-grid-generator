@@ -1,15 +1,15 @@
 {
   "editor": {
     "mixed": "mixed",
-    "inlineEditor": "inline editor for {target}",
+    "inlineEditor": "inline edit: {target}",
     "paragraph": {
       "title": "paragraph",
-      "tooltip": "measure, baseline, alignment, flow.",
+      "tooltip": "measure, baseline frame, alignment, flow.",
       "rows": "rows",
       "cols": "cols",
       "baselines": "baselines",
-      "horizontalAlignment": "horizontal alignment",
-      "verticalAlignment": "vertical alignment",
+      "horizontalAlignment": "horizontal align",
+      "verticalAlignment": "vertical align",
       "left": "left",
       "center": "center",
       "right": "right",
@@ -17,14 +17,14 @@
       "bottom": "bottom",
       "rotation": "rotation",
       "newspaperReflow": "column reflow",
-      "reflowAvailable": "flow across columns.",
+      "reflowAvailable": "flow through columns.",
       "reflowUnavailable": "requires two columns.",
       "hyphenation": "hyphenation",
-      "hyphenationHelp": "allow syllable division.",
+      "hyphenationHelp": "permit syllable breaks.",
       "snapColumns": "column snap (x)",
       "snapColumnsHelp": "lock to column anchors.",
       "snapBaseline": "baseline snap (y)",
-      "snapBaselineHelp": "lock to baseline steps."
+      "snapBaselineHelp": "lock to baseline rhythm."
     },
     "typography": {
       "title": "typography",
@@ -43,7 +43,7 @@
     "symbols": {
       "title": "symbols",
       "tooltip": "insert typographic symbols.",
-      "summary": "arrows, bullets, marks, math, Greek",
+      "summary": "arrows, bullets, marks, math, greek",
       "recent": "recent",
       "insert": "insert {symbol}",
       "groups": {
@@ -51,7 +51,7 @@
         "bullets": "bullets",
         "marks": "marks",
         "math": "math",
-        "greek": "Greek",
+        "greek": "greek",
         "geometry": "geometry",
         "editorial": "editorial"
       }
@@ -65,7 +65,7 @@
       "title": "info",
       "paragraphTooltip": "paragraph metrics.",
       "imageTooltip": "placeholder metrics.",
-      "charsWords": "{chars} chars, {words} words",
+      "charsWords": "{chars} characters, {words} words",
       "align": "align",
       "verticalAlign": "vertical align",
       "reflow": "reflow",
@@ -75,7 +75,7 @@
       "scheme": "scheme",
       "chars": "characters",
       "words": "words",
-      "maxLine": "max line",
+      "maxLine": "max measure",
       "renderTime": "render time"
     },
     "color": {
@@ -85,14 +85,14 @@
       "baseSchemeAria": "base scheme"
     },
     "image": {
-      "title": "image",
+      "title": "image placeholder",
       "geometryTooltip": "measure, baseline, snap, rotation.",
       "colorTitle": "color",
       "colorTooltip": "scheme, swatch, transparency.",
       "transparency": "transparency"
     },
     "format": {
-      "zeroBaselines": "0 baselines",
+      "zeroBaselines": "0 baseline",
       "row": "{count} row",
       "rows": "{count} rows",
       "column": "{count} col",
@@ -128,39 +128,39 @@
   "overlayActions": {
     "unlock": "unlock {kind}",
     "edit": "edit {kind}",
-    "duplicateText": "duplicate or copy",
+    "duplicateText": "duplicate or transfer",
     "duplicateImage": "duplicate image placeholder",
     "duplicateImageTooltip": "duplicate placeholder.",
     "duplicateParagraph": "duplicate paragraph",
-    "copyParagraphSettings": "shift-click: paragraph settings",
-    "copyTypographySettings": "alt-click: typography settings",
-    "copyParagraphTypographySettings": "alt+shift-click: all settings",
+    "copyParagraphSettings": "shift-click: paragraph geometry",
+    "copyTypographySettings": "alt-click: typography",
+    "copyParagraphTypographySettings": "alt+shift-click: geometry and typography",
     "delete": "delete {kind}",
     "paragraph": "paragraph",
     "imagePlaceholder": "image placeholder",
     "paragraphCopiedTitle": "paragraph copied",
-    "paragraphCopiedMessage": "select a target paragraph.",
-    "paragraphSettingsCopiedTitle": "paragraph settings copied",
-    "paragraphSettingsCopiedMessage": "select a target paragraph.",
-    "typographyCopiedTitle": "typography settings copied",
-    "typographyCopiedMessage": "select a target paragraph.",
-    "paragraphTypographyCopiedTitle": "paragraph and typography copied",
-    "paragraphTypographyCopiedMessage": "select a target paragraph."
+    "paragraphCopiedMessage": "select target paragraph.",
+    "paragraphSettingsCopiedTitle": "paragraph geometry copied",
+    "paragraphSettingsCopiedMessage": "select target paragraph.",
+    "typographyCopiedTitle": "typography copied",
+    "typographyCopiedMessage": "select target paragraph.",
+    "paragraphTypographyCopiedTitle": "geometry and typography copied",
+    "paragraphTypographyCopiedMessage": "select target paragraph."
   },
   "documentVariables": {
     "lorem": "fitted lorem ipsum.",
     "projectTitle": "project title.",
     "pageTitle": "page title.",
-    "page": "page number.",
+    "page": "folio.",
     "pages": "page count.",
-    "date": "render date.",
-    "time": "render time."
+    "date": "export date.",
+    "time": "export time."
   },
   "defaultContent": {
     "display": "swiss design",
     "headline": "modular grid systems",
     "subhead": "grid, baseline, measure.",
     "body": "field. baseline. measure.",
-    "caption": "copyright {year} Swiss Grid Generator"
+    "caption": "copyright {year} swiss grid generator"
   }
 }

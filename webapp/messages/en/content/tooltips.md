@@ -10,7 +10,7 @@ Format:
 ## working order
 
 ### start with the page system {#tooltip-start-with-system}
-Set format, baseline, margins, grid, rhythm, type scale, and base family before placing many layers.
+Set canvas, baseline, margins, grid, rhythm, type scale, and base family before placing many layers.
 
 if the page feels unresolved, adjust the system first. local paragraph changes are useful only after the field is stable.
 

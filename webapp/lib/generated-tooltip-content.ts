@@ -19,7 +19,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Set format, baseline, margins, grid, rhythm, type scale, and base family before placing many layers."
+        "text": "Set canvas, baseline, margins, grid, rhythm, type scale, and base family before placing many layers."
       },
       {
         "type": "paragraph",

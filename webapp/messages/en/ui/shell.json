@@ -42,8 +42,8 @@
         "tooltip": "paragraph zoom"
       },
       "baselines": {
-        "aria": "toggle baselines",
-        "tooltip": "baselines\nshift-click applies to all pages"
+        "aria": "toggle baseline rhythm",
+        "tooltip": "baseline rhythm\nshift-click applies to all pages"
       },
       "margins": {
         "aria": "toggle margins",
@@ -55,7 +55,7 @@
       },
       "typography": {
         "aria": "toggle typography",
-        "tooltip": "typography\nshift-click applies to all pages"
+        "tooltip": "type hierarchy\nshift-click applies to all pages"
       },
       "imagePlaceholders": {
         "aria": "toggle image placeholders",
@@ -81,10 +81,10 @@
     "undo": "undo",
     "redo": "redo",
     "toggleDarkMode": "toggle dark mode",
-    "toggleBaselines": "toggle baselines",
+    "toggleBaselines": "toggle baseline rhythm",
     "toggleMargins": "toggle margins",
     "toggleModules": "toggle modular field",
-    "toggleTypography": "toggle typography",
+    "toggleTypography": "toggle type hierarchy",
     "toggleImagePlaceholders": "toggle image placeholders",
     "toggleProjectPanel": "toggle project panel",
     "toggleHelp": "toggle help",

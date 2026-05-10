@@ -1,15 +1,15 @@
 {
   "settings": {
     "canvas": {
-      "title": "format",
+      "title": "canvas",
       "tooltip": "page proportion, axis, rotation.",
       "ratio": "ratio",
       "ratioAria": "page ratio",
       "ratioUnits": "ratio units",
       "width": "width",
       "height": "height",
-      "customRatioWidth": "custom ratio width unit",
-      "customRatioHeight": "custom ratio height unit",
+      "customRatioWidth": "custom width unit",
+      "customRatioHeight": "custom height unit",
       "orientation": "orientation",
       "portrait": "portrait",
       "portraitAria": "portrait orientation",
@@ -35,7 +35,7 @@
     },
     "margins": {
       "title": "margins",
-      "tooltip": "margin canon and baseline-unit frame.",
+      "tooltip": "margin canon, baseline-unit frame.",
       "method": "method",
       "methodAria": "margin method",
       "progressive": "progressive margins",
@@ -50,9 +50,9 @@
     },
     "grid": {
       "title": "modular field",
-      "tooltip": "modular field, gutter, rhythm.",
+      "tooltip": "modular field, gutter, proportion.",
       "rhythms": "rhythm",
-      "rhythmAria": "grid rhythm",
+      "rhythmAria": "field rhythm",
       "fibonacci": "fibonacci",
       "goldenRatio": "golden ratio",
       "perfectFifth": "perfect fifth",

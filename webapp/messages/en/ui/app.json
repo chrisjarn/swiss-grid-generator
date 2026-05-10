@@ -2,12 +2,12 @@
   "app": {
     "name": "Swiss Grid Generator",
     "screenTooSmall": "viewport too narrow",
-    "screenTooSmallMessage": "minimum width: 768 px.",
-    "metadataTitle": "Swiss Grid Generator - modular typographic grid system",
-    "metadataDescription": "Modular grids, baseline rhythm, margin systems, hierarchy, export.",
+    "screenTooSmallMessage": "minimum viewport: 768 px.",
+    "metadataTitle": "Swiss Grid Generator - canonical typographic grid system",
+    "metadataDescription": "modular field, baseline rhythm, margin canon, hierarchy, export.",
     "metadataKeywords": "swiss grid generator, muller-brockmann grid, typographic grid calculator, modular grid tool, baseline grid generator, swiss design tool, international typographic style, grid systems in graphic design, a4 grid calculator, print design grid",
-    "metadataShortDescription": "Modular fields, baseline rhythm, margin systems, hierarchy.",
-    "metadataExportDescription": "Grids, baseline rhythm, margin systems, vector export.",
-    "metadataImageAlt": "a4 modular grid preview"
+    "metadataShortDescription": "modular field, baseline rhythm, margin canon, hierarchy.",
+    "metadataExportDescription": "modular field, baseline rhythm, margin canon, vector export.",
+    "metadataImageAlt": "a4 modular field preview"
   }
 }

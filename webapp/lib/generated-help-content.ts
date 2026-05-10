@@ -41,7 +41,7 @@ export const HELP_CONTENT_GROUPS = [
           {
             "type": "list",
             "items": [
-              "set ratio, orientation, and rotation in `format`.",
+              "set ratio, orientation, and rotation in `canvas`.",
               "set the baseline first. it governs the vertical rhythm.",
               "choose a margin canon or custom baseline-unit frame.",
               "define columns, rows, gutter, and grid rhythm.",
@@ -70,7 +70,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "format",
+        "title": "canvas",
         "id": "help-canvas-ratio",
         "indexed": true,
         "blocks": [
@@ -789,7 +789,7 @@ export const HELP_INDEX_GROUPS = [
     "items": [
       {
         "id": "help-canvas-ratio",
-        "label": "format"
+        "label": "canvas"
       },
       {
         "id": "help-baseline-grid",
@@ -957,7 +957,7 @@ export const ALL_HELP_INDEX_ITEMS = [
   },
   {
     "id": "help-canvas-ratio",
-    "label": "format"
+    "label": "canvas"
   },
   {
     "id": "help-baseline-grid",

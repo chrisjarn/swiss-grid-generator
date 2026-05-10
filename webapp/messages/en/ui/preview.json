@@ -1,10 +1,10 @@
 {
   "preview": {
     "interactionHints": {
-      "edit": "hover a layer and select edit.",
+      "edit": "hover a layer, then edit.",
       "createParagraph": "double-click an empty module for text.",
       "createImage": "shift-double-click for an image placeholder.",
-      "duplicate": "+ duplicates. shift-drag follows the baseline."
+      "duplicate": "+ duplicates. shift-drag follows baseline rhythm."
     },
     "feedback": {
       "gridUnchanged": "field unchanged"
@@ -13,7 +13,7 @@
       "open": "open tour",
       "close": "close",
       "step": "step",
-      "waitingForLayer": "select the highlighted layer to continue",
+      "waitingForLayer": "select the marked layer to continue",
       "back": "back",
       "next": "next",
       "done": "done"

@@ -2,13 +2,13 @@
   "app": {
     "name": "Swiss Grid Generator",
     "screenTooSmall": "viewport too narrow",
-    "screenTooSmallMessage": "minimum width: 768 px.",
-    "metadataTitle": "Swiss Grid Generator - modular typographic grid system",
-    "metadataDescription": "Modular grids, baseline rhythm, margin systems, hierarchy, export.",
+    "screenTooSmallMessage": "minimum viewport: 768 px.",
+    "metadataTitle": "Swiss Grid Generator - canonical typographic grid system",
+    "metadataDescription": "modular field, baseline rhythm, margin canon, hierarchy, export.",
     "metadataKeywords": "swiss grid generator, muller-brockmann grid, typographic grid calculator, modular grid tool, baseline grid generator, swiss design tool, international typographic style, grid systems in graphic design, a4 grid calculator, print design grid",
-    "metadataShortDescription": "Modular fields, baseline rhythm, margin systems, hierarchy.",
-    "metadataExportDescription": "Grids, baseline rhythm, margin systems, vector export.",
-    "metadataImageAlt": "a4 modular grid preview"
+    "metadataShortDescription": "modular field, baseline rhythm, margin canon, hierarchy.",
+    "metadataExportDescription": "modular field, baseline rhythm, margin canon, vector export.",
+    "metadataImageAlt": "a4 modular field preview"
   },
   "common": {
     "actions": "actions",
@@ -25,7 +25,7 @@
     "message": "message",
     "metadata": "metadata",
     "none": "none",
-    "noEvents": "no events",
+    "noEvents": "no activity",
     "ok": "ok",
     "on": "on",
     "off": "off",
@@ -81,8 +81,8 @@
         "tooltip": "paragraph zoom"
       },
       "baselines": {
-        "aria": "toggle baselines",
-        "tooltip": "baselines\nshift-click applies to all pages"
+        "aria": "toggle baseline rhythm",
+        "tooltip": "baseline rhythm\nshift-click applies to all pages"
       },
       "margins": {
         "aria": "toggle margins",
@@ -94,7 +94,7 @@
       },
       "typography": {
         "aria": "toggle typography",
-        "tooltip": "typography\nshift-click applies to all pages"
+        "tooltip": "type hierarchy\nshift-click applies to all pages"
       },
       "imagePlaceholders": {
         "aria": "toggle image placeholders",
@@ -120,10 +120,10 @@
     "undo": "undo",
     "redo": "redo",
     "toggleDarkMode": "toggle dark mode",
-    "toggleBaselines": "toggle baselines",
+    "toggleBaselines": "toggle baseline rhythm",
     "toggleMargins": "toggle margins",
     "toggleModules": "toggle modular field",
-    "toggleTypography": "toggle typography",
+    "toggleTypography": "toggle type hierarchy",
     "toggleImagePlaceholders": "toggle image placeholders",
     "toggleProjectPanel": "toggle project panel",
     "toggleHelp": "toggle help",
@@ -132,15 +132,15 @@
   },
   "settings": {
     "canvas": {
-      "title": "format",
+      "title": "canvas",
       "tooltip": "page proportion, axis, rotation.",
       "ratio": "ratio",
       "ratioAria": "page ratio",
       "ratioUnits": "ratio units",
       "width": "width",
       "height": "height",
-      "customRatioWidth": "custom ratio width unit",
-      "customRatioHeight": "custom ratio height unit",
+      "customRatioWidth": "custom width unit",
+      "customRatioHeight": "custom height unit",
       "orientation": "orientation",
       "portrait": "portrait",
       "portraitAria": "portrait orientation",
@@ -166,7 +166,7 @@
     },
     "margins": {
       "title": "margins",
-      "tooltip": "margin canon and baseline-unit frame.",
+      "tooltip": "margin canon, baseline-unit frame.",
       "method": "method",
       "methodAria": "margin method",
       "progressive": "progressive margins",
@@ -181,9 +181,9 @@
     },
     "grid": {
       "title": "modular field",
-      "tooltip": "modular field, gutter, rhythm.",
+      "tooltip": "modular field, gutter, proportion.",
       "rhythms": "rhythm",
-      "rhythmAria": "grid rhythm",
+      "rhythmAria": "field rhythm",
       "fibonacci": "fibonacci",
       "goldenRatio": "golden ratio",
       "perfectFifth": "perfect fifth",
@@ -231,12 +231,12 @@
     },
     "saveLibrary": {
       "title": "save",
-      "description": "store the project in the local library.",
+      "description": "store the current project in the local library.",
       "confirm": "save"
     },
     "export": {
       "title": "export",
-      "description": "PDF, SVG and IDML consume the canonical page plan. JSON remains editable.",
+      "description": "pdf, svg and idml consume the canonical page plan. json remains editable.",
       "input": "input",
       "preview": "preview",
       "output": "output",
@@ -258,10 +258,10 @@
       "toggleTypography": "include typography",
       "toggleImagePlaceholders": "include placeholders",
       "previewCanvas": "selected page",
-      "previewBuildError": "preview failed.",
-      "previewDrawError": "preview draw failed.",
+      "previewBuildError": "preview unavailable.",
+      "previewDrawError": "preview render failed.",
       "previewPrepareError": "preview preparation failed.",
-      "previewNoPage": "no page available."
+      "previewNoPage": "no page selected."
     }
   },
   "rightPanel": {
@@ -282,7 +282,7 @@
       "close": "close feedback panel",
       "email": "email",
       "comment": "comment",
-      "commentPlaceholder": "issue, constraint, or workflow.",
+      "commentPlaceholder": "issue, constraint, workflow.",
       "screenshots": "screenshots",
       "attachScreenshots": "screenshots",
       "attachmentHelp": "{count} images. {size} each.",
@@ -294,11 +294,11 @@
       "emailRequired": "email required.",
       "emailInvalid": "enter a valid email address.",
       "commentRequired": "comment required.",
-      "commentTooLong": "maximum 4000 characters.",
+      "commentTooLong": "maximum: 4000 characters.",
       "tooManyScreenshots": "maximum {count} screenshots.",
       "screenshotsTooLarge": "maximum total: {size}.",
       "invalidScreenshotType": "{name}: PNG, JPEG, or WebP only.",
-      "screenshotTooLarge": "{name} is larger than {size}.",
+      "screenshotTooLarge": "{name} exceeds {size}.",
       "encodeError": "screenshot encoding failed.",
       "readError": "screenshot read failed.",
       "removeScreenshot": "remove {name}",
@@ -332,7 +332,7 @@
       "queued": "queued",
       "conflicts": "conflicts",
       "noLocalActivity": "no cloud activity.",
-      "conflictMessage": "local and cloud copies changed. choose the source.",
+      "conflictMessage": "local and cloud copies changed. choose source.",
       "untitledProject": "untitled project",
       "localEdit": "local edit",
       "lastSync": "last sync",
@@ -345,7 +345,7 @@
   },
   "projectPanel": {
     "title": "project",
-    "tourTitle": "project sequence",
+    "tourTitle": "page sequence",
     "pages": "pages",
     "page": "page",
     "layers": "layers",
@@ -355,7 +355,7 @@
     "deletePageMessage": "delete {name}?",
     "facingPages": "facing pages",
     "toggleFacingPages": "toggle facing pages for {name}",
-    "pageListTooltip": "page list\nselect pages to return.",
+    "pageListTooltip": "page list\nselect a page to return.",
     "pageNumber": "page number",
     "pagePosition": "page position {page} of {total}",
     "pageOfTotal": "page {page} of {total}",
@@ -367,7 +367,7 @@
     "lastPage": "last page",
     "addPageTooltip": "add page\nshift-click duplicates content",
     "pageLimitTooltip": "maximum {count} pages reached.",
-    "addCleanPage": "add blank page",
+    "addCleanPage": "add empty page",
     "duplicatePage": "duplicate page content",
     "close": "close project panel",
     "showInfo": "show document data",
@@ -391,7 +391,7 @@
       "untitled": "untitled project"
     },
     "layersList": {
-      "empty": "no layers on this page.",
+      "empty": "no layers.",
       "emptyInstruction": "double-click for text. shift-double-click for image.",
       "imageColor": "image placeholder color",
       "lock": "lock {kind}",
@@ -407,7 +407,7 @@
   },
   "presets": {
     "title": "presets",
-    "description": "double-click to load. Esc closes.",
+    "description": "double-click to load. esc closes.",
     "storageInfo": "user storage",
     "storageLocal": "stored in the local browser library.",
     "storageRisk": "clearing browser data removes local layouts.",
@@ -416,9 +416,9 @@
     "subjectLabel": "subject",
     "authorLabel": "author",
     "createdLabel": "created",
-    "formatLabel": "format",
-    "gridLabel": "grid",
-    "baselineLabel": "baseline",
+    "formatLabel": "canvas",
+    "gridLabel": "modular field",
+    "baselineLabel": "baseline rhythm",
     "marginsLabel": "margins",
     "rhythmLabel": "rhythm",
     "cloudLabel": "cloud",
@@ -433,10 +433,10 @@
     "copiedMessage": "duplicate stored locally.",
     "copySuffix": "copy",
     "copyFailedTitle": "copy failed",
-    "copyFailedMessage": "selected user layout could not be duplicated.",
+    "copyFailedMessage": "selected layout could not be duplicated.",
     "deleteTitle": "delete from library",
     "deleteMessage": "delete \"{title}\"?\n\n{cloudText}",
-    "deleteSyncedCloudText": "the synced cloud copy will be deleted.",
+    "deleteSyncedCloudText": "synced cloud copy will be deleted.",
     "deleteQueuedCloudText": "cloud deletion will be queued.",
     "deletedTitle": "deleted from library",
     "deleteFailedTitle": "delete failed",
@@ -454,15 +454,15 @@
   },
   "editor": {
     "mixed": "mixed",
-    "inlineEditor": "inline editor for {target}",
+    "inlineEditor": "inline edit: {target}",
     "paragraph": {
       "title": "paragraph",
-      "tooltip": "measure, baseline, alignment, flow.",
+      "tooltip": "measure, baseline frame, alignment, flow.",
       "rows": "rows",
       "cols": "cols",
       "baselines": "baselines",
-      "horizontalAlignment": "horizontal alignment",
-      "verticalAlignment": "vertical alignment",
+      "horizontalAlignment": "horizontal align",
+      "verticalAlignment": "vertical align",
       "left": "left",
       "center": "center",
       "right": "right",
@@ -470,14 +470,14 @@
       "bottom": "bottom",
       "rotation": "rotation",
       "newspaperReflow": "column reflow",
-      "reflowAvailable": "flow across columns.",
+      "reflowAvailable": "flow through columns.",
       "reflowUnavailable": "requires two columns.",
       "hyphenation": "hyphenation",
-      "hyphenationHelp": "allow syllable division.",
+      "hyphenationHelp": "permit syllable breaks.",
       "snapColumns": "column snap (x)",
       "snapColumnsHelp": "lock to column anchors.",
       "snapBaseline": "baseline snap (y)",
-      "snapBaselineHelp": "lock to baseline steps."
+      "snapBaselineHelp": "lock to baseline rhythm."
     },
     "typography": {
       "title": "typography",
@@ -496,7 +496,7 @@
     "symbols": {
       "title": "symbols",
       "tooltip": "insert typographic symbols.",
-      "summary": "arrows, bullets, marks, math, Greek",
+      "summary": "arrows, bullets, marks, math, greek",
       "recent": "recent",
       "insert": "insert {symbol}",
       "groups": {
@@ -504,7 +504,7 @@
         "bullets": "bullets",
         "marks": "marks",
         "math": "math",
-        "greek": "Greek",
+        "greek": "greek",
         "geometry": "geometry",
         "editorial": "editorial"
       }
@@ -518,7 +518,7 @@
       "title": "info",
       "paragraphTooltip": "paragraph metrics.",
       "imageTooltip": "placeholder metrics.",
-      "charsWords": "{chars} chars, {words} words",
+      "charsWords": "{chars} characters, {words} words",
       "align": "align",
       "verticalAlign": "vertical align",
       "reflow": "reflow",
@@ -528,7 +528,7 @@
       "scheme": "scheme",
       "chars": "characters",
       "words": "words",
-      "maxLine": "max line",
+      "maxLine": "max measure",
       "renderTime": "render time"
     },
     "color": {
@@ -538,14 +538,14 @@
       "baseSchemeAria": "base scheme"
     },
     "image": {
-      "title": "image",
+      "title": "image placeholder",
       "geometryTooltip": "measure, baseline, snap, rotation.",
       "colorTitle": "color",
       "colorTooltip": "scheme, swatch, transparency.",
       "transparency": "transparency"
     },
     "format": {
-      "zeroBaselines": "0 baselines",
+      "zeroBaselines": "0 baseline",
       "row": "{count} row",
       "rows": "{count} rows",
       "column": "{count} col",
@@ -581,47 +581,47 @@
   "overlayActions": {
     "unlock": "unlock {kind}",
     "edit": "edit {kind}",
-    "duplicateText": "duplicate or copy",
+    "duplicateText": "duplicate or transfer",
     "duplicateImage": "duplicate image placeholder",
     "duplicateImageTooltip": "duplicate placeholder.",
     "duplicateParagraph": "duplicate paragraph",
-    "copyParagraphSettings": "shift-click: paragraph settings",
-    "copyTypographySettings": "alt-click: typography settings",
-    "copyParagraphTypographySettings": "alt+shift-click: all settings",
+    "copyParagraphSettings": "shift-click: paragraph geometry",
+    "copyTypographySettings": "alt-click: typography",
+    "copyParagraphTypographySettings": "alt+shift-click: geometry and typography",
     "delete": "delete {kind}",
     "paragraph": "paragraph",
     "imagePlaceholder": "image placeholder",
     "paragraphCopiedTitle": "paragraph copied",
-    "paragraphCopiedMessage": "select a target paragraph.",
-    "paragraphSettingsCopiedTitle": "paragraph settings copied",
-    "paragraphSettingsCopiedMessage": "select a target paragraph.",
-    "typographyCopiedTitle": "typography settings copied",
-    "typographyCopiedMessage": "select a target paragraph.",
-    "paragraphTypographyCopiedTitle": "paragraph and typography copied",
-    "paragraphTypographyCopiedMessage": "select a target paragraph."
+    "paragraphCopiedMessage": "select target paragraph.",
+    "paragraphSettingsCopiedTitle": "paragraph geometry copied",
+    "paragraphSettingsCopiedMessage": "select target paragraph.",
+    "typographyCopiedTitle": "typography copied",
+    "typographyCopiedMessage": "select target paragraph.",
+    "paragraphTypographyCopiedTitle": "geometry and typography copied",
+    "paragraphTypographyCopiedMessage": "select target paragraph."
   },
   "documentVariables": {
     "lorem": "fitted lorem ipsum.",
     "projectTitle": "project title.",
     "pageTitle": "page title.",
-    "page": "page number.",
+    "page": "folio.",
     "pages": "page count.",
-    "date": "render date.",
-    "time": "render time."
+    "date": "export date.",
+    "time": "export time."
   },
   "defaultContent": {
     "display": "swiss design",
     "headline": "modular grid systems",
     "subhead": "grid, baseline, measure.",
     "body": "field. baseline. measure.",
-    "caption": "copyright {year} Swiss Grid Generator"
+    "caption": "copyright {year} swiss grid generator"
   },
   "preview": {
     "interactionHints": {
-      "edit": "hover a layer and select edit.",
+      "edit": "hover a layer, then edit.",
       "createParagraph": "double-click an empty module for text.",
       "createImage": "shift-double-click for an image placeholder.",
-      "duplicate": "+ duplicates. shift-drag follows the baseline."
+      "duplicate": "+ duplicates. shift-drag follows baseline rhythm."
     },
     "feedback": {
       "gridUnchanged": "field unchanged"
@@ -630,7 +630,7 @@
       "open": "open tour",
       "close": "close",
       "step": "step",
-      "waitingForLayer": "select the highlighted layer to continue",
+      "waitingForLayer": "select the marked layer to continue",
       "back": "back",
       "next": "next",
       "done": "done"
@@ -642,11 +642,11 @@
     "close": "close tip"
   },
   "exportMetadata": {
-    "generatedAuthor": "generated by Swiss Grid Generator",
-    "vectorTitle": "Swiss Grid vector export",
-    "svgDescription": "Swiss Grid Generator SVG export",
-    "vectorPageDescription": "Swiss Grid vector export, page {page}",
-    "documentTitle": "Swiss Grid document",
+    "generatedAuthor": "generated by swiss grid generator",
+    "vectorTitle": "swiss grid vector export",
+    "svgDescription": "swiss grid generator svg export",
+    "vectorPageDescription": "swiss grid vector export, page {page}",
+    "documentTitle": "swiss grid document",
     "creatorTool": "Swiss Grid Generator",
     "pdfKeywords": "swiss grid, typography, modular grid, vector pdf"
   },
@@ -657,7 +657,7 @@
       "paragraphLimitTitle": "paragraph limit reached",
       "paragraphLimitMessage": "maximum: {count} paragraphs.",
       "loadFailedTitle": "load failed",
-      "loadFailedMessage": "project load failed.",
+      "loadFailedMessage": "project could not be loaded.",
       "deletedFromCloudTitle": "deleted from cloud",
       "deletedFromCloudMessage": "removed locally and from Supabase.",
       "deletedLocallyTitle": "deleted locally",
@@ -665,7 +665,7 @@
       "deletedFromUsersTitle": "deleted from library",
       "deletedFromUsersMessage": "removed locally. no cloud copy.",
       "exportFailedTitle": "export failed",
-      "exportFailedPresetMessage": "preset export failed.",
+      "exportFailedPresetMessage": "preset could not be exported.",
       "savedToLibraryTitle": "saved",
       "savedToLibrarySignedInMessage": "saved locally. cloud sync follows.",
       "savedToLibrarySignedOutMessage": "saved locally. cloud not connected.",
@@ -674,8 +674,8 @@
       "conflictResolvedTitle": "conflict resolved",
       "conflictResolutionFailedTitle": "conflict resolution failed",
       "conflictResolvedMessage": "local copy will replace cloud.",
-      "conflictResolutionFailedMessage": "conflict resolution failed.",
-      "conflictCloudLoadFailedMessage": "cloud load failed.",
+      "conflictResolutionFailedMessage": "conflict could not be resolved.",
+      "conflictCloudLoadFailedMessage": "cloud copy could not be loaded.",
       "cloudCopyRestoredTitle": "cloud copy restored",
       "cloudCopyRestoredMessage": "cloud copy restored.",
       "conflictDeletedTitle": "conflict deleted",
@@ -707,7 +707,7 @@
       "sendCodeFailed": "code send failed.",
       "authUnavailable": "cloud auth unavailable.",
       "emailRequired": "email required.",
-      "codeRequired": "enter the six-digit sign-in code.",
+      "codeRequired": "enter six-digit sign-in code.",
       "codeInvalid": "code invalid or expired.",
       "rateLimit": "code limit reached.",
       "signOutUnavailable": "Supabase unavailable. sign-out failed.",
@@ -800,7 +800,7 @@
       "planning": "planning {completed}/{total}",
       "renderingPdfPages": "rendering {count} PDF pages",
       "renderingPdf": "rendering PDF {completed}/{total}",
-      "finalizingPdf": "finalizing PDF bytes",
+      "finalizingPdf": "finalizing PDF",
       "svgPageSet": "SVG page set {current}/{total}",
       "packagingSvg": "packaging SVG archive",
       "idmlPageSet": "IDML page set {current}/{total}",

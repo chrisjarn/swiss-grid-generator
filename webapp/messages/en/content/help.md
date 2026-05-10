@@ -13,7 +13,7 @@ Format:
 ## first sequence
 
 ### first sequence {#help-quick-start}
-- set ratio, orientation, and rotation in `format`.
+- set ratio, orientation, and rotation in `canvas`.
 - set the baseline first. it governs the vertical rhythm.
 - choose a margin canon or custom baseline-unit frame.
 - define columns, rows, gutter, and grid rhythm.
@@ -25,7 +25,7 @@ Format:
 ### settings reference {#help-settings-overview} [noindex]
 Core system controls.
 
-### format {#help-canvas-ratio}
+### canvas {#help-canvas-ratio}
 - `ratio` sets page proportion.
 - custom ratio preserves A4-equivalent area before orientation is applied.
 - `orientation` changes the axis.

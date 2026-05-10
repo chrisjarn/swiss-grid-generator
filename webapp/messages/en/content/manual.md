@@ -14,7 +14,7 @@ For implementation-accurate reference, see [SETTINGS.md](./SETTINGS.md), [CALCUL
 
 ### start with structure, not decoration.
 
-A strong page usually follows a clear order: set the format, set the baseline, set the margins, build the grid, define the type system, place text and image areas, then export when the composition is stable.
+A strong page usually follows a clear order: set the canvas, set the baseline, set the margins, build the grid, define the type system, place text and image areas, then export when the composition is stable.
 
 Global decisions should come first. Local overrides should remain rare. If the structure is clear, later adjustments stay precise. If the structure is weak, every local correction becomes expensive.
 
@@ -30,7 +30,7 @@ Only after the page structure is established should you create content. Double-c
 
 ### move from the largest decision to the smallest.
 
-The sequence is simple: format and orientation first, baseline second, margins third, grid and rhythm fourth, type scale and base family fifth, paragraph and image placement sixth, local refinements seventh, export last.
+The sequence is simple: canvas and orientation first, baseline second, margins third, grid and rhythm fourth, type scale and base family fifth, paragraph and image placement sixth, local refinements seventh, export last.
 
 The order matters because the tool is system-driven. If a document needs many local exceptions, the underlying grid, margin field, or hierarchy is usually unresolved. The correct repair is normally structural.
 
