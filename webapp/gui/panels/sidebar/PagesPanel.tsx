@@ -121,7 +121,7 @@ export function PagesPanel({
 
   useEffect(() => {
     const root = rootRef.current
-    if (!root || !virtualizationEnabled) {
+    if (!root || !virtualizationEnabled || listMaxHeight === null) {
       setScrollViewport({ top: 0, height: 0 })
       return
     }
@@ -262,8 +262,9 @@ export function PagesPanel({
     }
 
     const overscanPx = PAGE_LIST_OVERSCAN_ROWS * PAGE_LIST_ROW_HEIGHT_PX
+    const viewportHeight = scrollViewport.height || listMaxHeight || 0
     const windowTop = Math.max(0, scrollViewport.top - overscanPx)
-    const windowBottom = scrollViewport.top + scrollViewport.height + overscanPx
+    const windowBottom = scrollViewport.top + viewportHeight + overscanPx
 
     const boundedStartIndex = pageMetrics.findFirstVisibleIndex(windowTop)
     const boundedEndIndex = pageMetrics.findEndIndex(windowBottom, boundedStartIndex)
@@ -277,7 +278,7 @@ export function PagesPanel({
       startIndex: boundedStartIndex,
       topSpacerHeight: pageMetrics.getOffsetForIndex(boundedStartIndex),
     }
-  }, [pageMetrics, pages.length, scrollViewport.height, scrollViewport.top, virtualizationEnabled])
+  }, [listMaxHeight, pageMetrics, pages.length, scrollViewport.height, scrollViewport.top, virtualizationEnabled])
 
   const visiblePages = virtualizationEnabled
     ? pages.slice(virtualizedWindow.startIndex, virtualizedWindow.endIndex)
