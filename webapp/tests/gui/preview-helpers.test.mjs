@@ -6,7 +6,11 @@ import { PREVIEW_STYLE_OPTIONS, resolveCustomStyleSeedMetrics } from "../../gui/
 import { resolveNearestPreviewColumn } from "../../core/layout/preview-column-snap.ts"
 import { resolveTextCopyAffordanceAction } from "../../gui/preview/lib/preview-copy-affordance.ts"
 import { resolvePreviewHoverTarget } from "../../gui/preview/lib/preview-hover-target.ts"
-import { getPreviewTextGuideGeometry } from "../../gui/preview/lib/preview-guide-rect.ts"
+import {
+  getPreviewTextGuideBounds,
+  getPreviewTextGuideGeometry,
+  getPreviewTextGuideRects,
+} from "../../gui/preview/lib/preview-guide-rect.ts"
 import { resolveAdjacentProjectPageId } from "../../gui/shell/lib/project-page-navigation.ts"
 import { buildSmartTextZoomGeometrySignature } from "../../gui/preview/lib/preview-smart-text-zoom.ts"
 
@@ -189,6 +193,28 @@ test("left-aligned text guides keep horizontal and vertical anchors matched", ()
   assert.equal(guide.verticalX, 100)
   assert.equal(guide.horizontalX, 100)
   assert.equal(guide.width, 240)
+})
+
+test("reflow text guides preserve every occupied module", () => {
+  const plan = {
+    guideRects: [
+      { x: 10, y: 20, width: 30, height: 40 },
+      { x: 50, y: 20, width: 30, height: 40 },
+      { x: 90, y: 20, width: 30, height: 40 },
+      { x: 130, y: 20, width: 30, height: 40 },
+    ],
+    rect: { x: 10, y: 8, width: 150, height: 52 },
+    rotationOriginX: 10,
+    rotationOriginY: 20,
+  }
+
+  assert.deepEqual(getPreviewTextGuideRects(plan), plan.guideRects)
+  assert.deepEqual(getPreviewTextGuideBounds(plan), {
+    x: 10,
+    y: 20,
+    width: 150,
+    height: 40,
+  })
 })
 
 test("right-aligned text guides keep horizontal and vertical anchors matched", () => {

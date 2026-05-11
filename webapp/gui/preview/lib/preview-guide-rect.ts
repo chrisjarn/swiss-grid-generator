@@ -1,4 +1,4 @@
-import type { BlockRect, BlockRenderPlan, PagePoint } from "@/gui/preview/lib/preview-types"
+import type { BlockRect, BlockRenderPlan } from "@/gui/preview/lib/preview-types"
 
 export type PreviewTextGuideGeometry = {
   horizontalX: number
@@ -8,10 +8,9 @@ export type PreviewTextGuideGeometry = {
   height: number
 }
 
-export function getPreviewTextGuideRect<Key extends string>(
-  plan: Pick<BlockRenderPlan<Key>, "guideRects" | "rect" | "rotationOriginX" | "rotationOriginY">,
+function getFallbackPreviewTextGuideRect<Key extends string>(
+  plan: Pick<BlockRenderPlan<Key>, "rect" | "rotationOriginX" | "rotationOriginY">,
 ): BlockRect {
-  if (plan.guideRects.length > 0) return plan.guideRects[0]
   return {
     x: plan.rotationOriginX,
     y: plan.rotationOriginY,
@@ -20,26 +19,34 @@ export function getPreviewTextGuideRect<Key extends string>(
   }
 }
 
-export function getHoveredPreviewTextGuideRect<Key extends string>(
+export function getPreviewTextGuideRects<Key extends string>(
   plan: Pick<BlockRenderPlan<Key>, "guideRects" | "rect" | "rotationOriginX" | "rotationOriginY">,
-  hoverPoint: PagePoint | null,
-): BlockRect {
-  const guideRects = plan.guideRects.length > 0
-    ? plan.guideRects
-    : [getPreviewTextGuideRect(plan)]
-  if (!hoverPoint) return guideRects[0]
+): BlockRect[] {
+  if (plan.guideRects.length > 0) return plan.guideRects
+  return [getFallbackPreviewTextGuideRect(plan)]
+}
 
-  let bestRect = guideRects[0]
-  let bestDistance = Number.POSITIVE_INFINITY
-  for (const guideRect of guideRects) {
-    const centerX = guideRect.x + guideRect.width / 2
-    const distance = Math.abs(hoverPoint.x - centerX)
-    if (distance < bestDistance) {
-      bestDistance = distance
-      bestRect = guideRect
-    }
+export function getPreviewTextGuideBounds<Key extends string>(
+  plan: Pick<BlockRenderPlan<Key>, "guideRects" | "rect" | "rotationOriginX" | "rotationOriginY">,
+): BlockRect {
+  const guideRects = getPreviewTextGuideRects(plan)
+  const left = Math.min(...guideRects.map((rect) => rect.x))
+  const top = Math.min(...guideRects.map((rect) => rect.y))
+  const right = Math.max(...guideRects.map((rect) => rect.x + rect.width))
+  const bottom = Math.max(...guideRects.map((rect) => rect.y + rect.height))
+
+  return {
+    x: left,
+    y: top,
+    width: Math.max(1, right - left),
+    height: Math.max(1, bottom - top),
   }
-  return bestRect
+}
+
+export function getPreviewTextGuideRect<Key extends string>(
+  plan: Pick<BlockRenderPlan<Key>, "guideRects" | "rect" | "rotationOriginX" | "rotationOriginY">,
+): BlockRect {
+  return getPreviewTextGuideRects(plan)[0]
 }
 
 export function getPreviewTextGuideGeometry<Key extends string>(

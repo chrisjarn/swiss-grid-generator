@@ -4,7 +4,12 @@ import type { MutableRefObject, RefObject } from "react"
 import { resolveBlockHeight } from "@/core/layout/block-height"
 import type { GridResult } from "@/core/layout/grid-calculator"
 import { resolveLayerColumnBounds } from "@/core/layout/layer-placement"
-import { getPreviewTextGuideGeometry, getPreviewTextGuideRect } from "@/gui/preview/lib/preview-guide-rect"
+import {
+  getPreviewTextGuideBounds,
+  getPreviewTextGuideGeometry,
+  getPreviewTextGuideRects,
+  type PreviewTextGuideGeometry,
+} from "@/gui/preview/lib/preview-guide-rect"
 import { findNearestAxisIndex } from "@/core/layout/grid-rhythm"
 import { resolveGridFirstColumnStep, sumGridColumnSpan } from "@/core/layout/grid-column-layout"
 import { resolvePreviewColumnX } from "@/core/layout/preview-column-snap"
@@ -56,6 +61,7 @@ type Args<Key extends string, Plan extends OverlayPlan<Key>> = {
   blockOrder: Key[]
   imageOrder: Key[]
   hoveredTextGuideRect: BlockRect | null
+  hoveredTextGuideRects: BlockRect[]
   hoveredTextGuidePlan: Plan | null
   hoveredImageRect: BlockRect | null
   selectedLayerKey: Key | null
@@ -82,6 +88,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
   blockOrder,
   imageOrder,
   hoveredTextGuideRect,
+  hoveredTextGuideRects,
   hoveredTextGuidePlan,
   hoveredImageRect,
   selectedLayerKey,
@@ -189,6 +196,53 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         ctx.stroke()
       }
 
+      const drawTextGuideRects = (
+        plan: Plan,
+        guideRects: readonly BlockRect[],
+        drawGuide: (guide: PreviewTextGuideGeometry) => void,
+      ) => {
+        for (const guideRect of guideRects) {
+          drawGuide(getPreviewTextGuideGeometry(plan, guideRect))
+        }
+      }
+
+      const drawTextGuideFill = (plan: Plan, guideRects: readonly BlockRect[]) => {
+        drawTextGuideRects(plan, guideRects, (guide) => {
+          drawPreviewGuideFill(
+            guide.horizontalX,
+            guide.y,
+            guide.width,
+            guide.height,
+          )
+        })
+      }
+
+      const drawTextGuideEdges = (plan: Plan, guideRect: BlockRect) => {
+        const guide = getPreviewTextGuideGeometry(plan, guideRect)
+        drawPreviewGuideEdges(
+          guide.horizontalX,
+          guide.y,
+          guide.width,
+          guide.height,
+        )
+      }
+
+      const drawTextPlacementGuide = (
+        plan: Plan,
+        guideRect: BlockRect,
+        lineWidth: number = GUIDE_STROKE_WIDTH,
+      ) => {
+        const guide = getPreviewTextGuideGeometry(plan, guideRect)
+        drawPlacementGuide(
+          guide.horizontalX,
+          guide.verticalX,
+          guide.y,
+          guide.width,
+          guide.height,
+          lineWidth,
+        )
+      }
+
       if (dragState) {
         const dragSpan = getPlacementSpan(dragState.key)
         const dragRows = getPlacementRows(dragState.key)
@@ -223,19 +277,8 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         }) * scale
         drawPlacementGuide(snapX, snapX, snapY + baselineStep, snapWidth, snapHeight)
       } else if (hoveredTextGuideRect && hoveredTextGuidePlan) {
-        const hoveredGuide = getPreviewTextGuideGeometry(hoveredTextGuidePlan, hoveredTextGuideRect)
-        drawPreviewGuideFill(
-          hoveredGuide.horizontalX,
-          hoveredGuide.y,
-          hoveredGuide.width,
-          hoveredGuide.height,
-        )
-        drawPreviewGuideEdges(
-          hoveredGuide.horizontalX,
-          hoveredGuide.y,
-          hoveredGuide.width,
-          hoveredGuide.height,
-        )
+        drawTextGuideFill(hoveredTextGuidePlan, hoveredTextGuideRects)
+        drawTextGuideEdges(hoveredTextGuidePlan, hoveredTextGuideRect)
       } else if (hoveredImageRect) {
         drawPreviewGuideFill(
           hoveredImageRect.x,
@@ -263,31 +306,14 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           selectedImageRect.height,
         )
       } else if (selectedTextPlan) {
-        const guideRect = getPreviewTextGuideRect(selectedTextPlan)
-        const guide = getPreviewTextGuideGeometry(selectedTextPlan, guideRect)
-        drawPreviewGuideFill(
-          guide.horizontalX,
-          guide.y,
-          guide.width,
-          guide.height,
-        )
-        drawPreviewGuideEdges(
-          guide.horizontalX,
-          guide.y,
-          guide.width,
-          guide.height,
-        )
+        drawTextGuideFill(selectedTextPlan, getPreviewTextGuideRects(selectedTextPlan))
+        drawTextGuideEdges(selectedTextPlan, getPreviewTextGuideBounds(selectedTextPlan))
       }
 
       if (activeEditorPlan) {
-        const guideRect = getPreviewTextGuideRect(activeEditorPlan)
-        const activeGuide = getPreviewTextGuideGeometry(activeEditorPlan, guideRect)
-        drawPlacementGuide(
-          activeGuide.horizontalX,
-          activeGuide.verticalX,
-          activeGuide.y,
-          activeGuide.width,
-          activeGuide.height,
+        drawTextPlacementGuide(
+          activeEditorPlan,
+          getPreviewTextGuideBounds(activeEditorPlan),
           ACTIVE_GUIDE_STROKE_WIDTH,
         )
       } else if (activeEditorImageRect) {
@@ -337,6 +363,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
     getPlacementSpan,
     hoveredTextGuidePlan,
     hoveredTextGuideRect,
+    hoveredTextGuideRects,
     hoveredImageRect,
     imageOrder,
     imageRectsRef,

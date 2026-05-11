@@ -32,7 +32,7 @@ import {
   PREVIEW_TOUCH_LONG_PRESS_MS,
 } from "@/gui/preview/lib/preview-interaction-constants"
 import { buildSmartTextZoomGeometrySignature } from "@/gui/preview/lib/preview-smart-text-zoom"
-import { getHoveredPreviewTextGuideRect, getPreviewTextGuideRect } from "@/gui/preview/lib/preview-guide-rect"
+import { getPreviewTextGuideBounds, getPreviewTextGuideRects } from "@/gui/preview/lib/preview-guide-rect"
 import { isPointWithinRect } from "@/gui/preview/lib/preview-hover-affordance"
 import { removeTextLayerFromCollections } from "@/gui/preview/lib/preview-layer-state"
 import {
@@ -1794,10 +1794,15 @@ export const GridPreview = memo(function GridPreview({
   const linkedHoveredImageRect = !hoverState?.key && !hoverImageKey && hoveredLayerKey
     ? imageRectsRef.current[hoveredLayerKey] ?? null
     : null
+  const hoveredTextGuideRects = useMemo(() => {
+    if (hoveredTextPlan) return getPreviewTextGuideRects(hoveredTextPlan)
+    if (linkedHoveredTextPlan) return getPreviewTextGuideRects(linkedHoveredTextPlan)
+    return hoveredTextRect ? [hoveredTextRect] : []
+  }, [hoveredTextPlan, hoveredTextRect, linkedHoveredTextPlan])
   const hoveredTextGuideRect = hoveredTextPlan
-    ? getHoveredPreviewTextGuideRect(hoveredTextPlan, hoverState?.point ?? null)
+    ? getPreviewTextGuideBounds(hoveredTextPlan)
     : linkedHoveredTextPlan
-      ? getPreviewTextGuideRect(linkedHoveredTextPlan)
+      ? getPreviewTextGuideBounds(linkedHoveredTextPlan)
       : hoveredTextRect
   const hoveredTextGuidePlan = hoveredTextPlan ?? linkedHoveredTextPlan
   const hoveredImageRect = hoverImageKey
@@ -1816,6 +1821,7 @@ export const GridPreview = memo(function GridPreview({
     blockOrder,
     imageOrder,
     hoveredTextGuideRect,
+    hoveredTextGuideRects,
     hoveredTextGuidePlan,
     hoveredImageRect,
     selectedLayerKey,
