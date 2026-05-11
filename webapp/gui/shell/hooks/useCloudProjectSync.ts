@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import type { SupabaseClient, User } from "@supabase/supabase-js"
 
-import { parseLoadedProject, type LoadedProject } from "@/lib/document-session"
+import { parseLoadedProject, type LoadedProject } from "@/core/document/session"
 import { getCloudSyncRetryAt, isRetryableCloudSyncError } from "@/lib/cloud-sync/retry"
 import { reportCloudSyncError } from "@/lib/cloud-sync/logger"
 import {
@@ -20,7 +20,7 @@ import {
   mapCloudSyncError,
   type UserFacingNotice,
 } from "@/lib/supabase/error-messages"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 import {
   addCloudActivityLogEntry,
   addProjectAuditEntry,

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { flushSync } from "react-dom"
 import type { ExportEngineProgress, ExportEngineResult } from "@/lib/export-engine"
-import { type LoadedProject, type ProjectVisibilitySettings } from "@/lib/document-session"
+import { type LoadedProject, type ProjectVisibilitySettings } from "@/core/document/session"
 import {
   DEFAULT_EXPORT_BLEED_OPTIONS,
   type ExportBleedOptions,
@@ -13,12 +13,18 @@ import {
   resolveExportDownloadExtension,
   supportsExportBleed,
 } from "@/lib/export-format-options"
-import { toProjectFilename } from "@/lib/project-file-naming"
+import {
+  createExportElapsedLogFormatter,
+  formatExportDuration,
+  formatExportPerformanceSummaryLines,
+} from "@/lib/export-performance-log"
+import { toProjectFilename } from "@/gui/shell/lib/project-file-naming"
 import {
   buildProjectTransferPayload,
   encodeProjectTransferPayload,
   toArrayBuffer,
 } from "@/lib/project-transfer"
+import { runPdfExportInBrowserWorker } from "@/lib/pdf-export-worker-client"
 import {
   getProjectExportFontWarmupSignature,
   warmDefaultExportFonts,
@@ -31,9 +37,9 @@ import {
   parseProjectExportPageSelectionDraft,
   resolveProjectExportPageSelection,
   type ProjectPageVisibilitySettings,
-} from "@/lib/project-page-export-source"
+} from "@/core/export/project-page-export-source"
 import { runProjectExport } from "@/lib/project-export-runner"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 
 export type ExportProgressState = {
   format: ExportFormat
@@ -55,6 +61,7 @@ const EXPORT_PROGRESS_BATCH_SIZE = 8
 const EXPORT_PROGRESS_MIN_INTERVAL_MS = 100
 const LARGE_EXPORT_PROGRESS_THRESHOLD = 250
 const LARGE_EXPORT_PROGRESS_PAGE_INTERVAL = 250
+const EXPORT_PROGRESS_LOG_PAGE_INTERVAL = 25
 
 class ExportCancelledError extends Error {
   constructor() {
@@ -66,10 +73,6 @@ class ExportCancelledError extends Error {
 function isExportCancelledError(error: unknown): error is ExportCancelledError {
   return error instanceof ExportCancelledError
     || (error instanceof Error && error.name === "ExportCancelledError")
-}
-
-function formatExportDuration(durationMs: number): string {
-  return `${(durationMs / 1000).toFixed(2)}s`
 }
 
 function logExportEnginePerformance(label: string, result: ExportEngineResult): void {
@@ -86,6 +89,7 @@ function logExportEnginePerformance(label: string, result: ExportEngineResult): 
   } else {
     console.info(rows)
   }
+  console.info(formatExportPerformanceSummaryLines(result.timings, result.totalDurationMs).join("\n"))
 }
 
 function logExportDownloadPerformance(label: string, durationMs: number, byteLength: number): void {
@@ -189,6 +193,7 @@ export function useExportActions(ctx: ExportActionsContext) {
   const [exportPageNumbersDraft, setExportPageNumbersDraft] = useState<number[]>([1])
   const [exportRangeDraft, setExportRangeDraft] = useState("1-1")
   const [exportProgress, setExportProgress] = useState<ExportProgressState | null>(null)
+  const [exportProgressLog, setExportProgressLog] = useState<string[]>([])
   const exportCancelRequestedRef = useRef(false)
   const exportInFlightRef = useRef(false)
   const currentExportWorkerRef = useRef<Worker | null>(null)
@@ -336,6 +341,7 @@ export function useExportActions(ctx: ExportActionsContext) {
 
   const openExportDialog = useCallback(() => {
     setExportProjectOverride(null)
+    setExportProgressLog([])
     const defaultRange = { fromPage: 1, toPage: projectPageCount }
     const basePdfStem = resolveExportBaseName(defaultPdfFilename)
 
@@ -366,6 +372,7 @@ export function useExportActions(ctx: ExportActionsContext) {
 
   const openExportDialogForProject = useCallback((project: LoadedProject<Record<string, unknown>>) => {
     setExportProjectOverride(project)
+    setExportProgressLog([])
     const defaultRange = { fromPage: 1, toPage: project.pages.length }
 
     setExportFormatDraft("pdf")
@@ -485,7 +492,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     })
   }, [])
 
-  const runPdfExportInBrowserWorker = useCallback(({
+  const runPdfExportInWorker = useCallback(({
     project,
     pageNumbers,
     visibilitySettings,
@@ -493,6 +500,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     bleed,
     exportMetadata,
     onProgress,
+    onLog,
   }: {
     project: LoadedProject<Record<string, unknown>>
     pageNumbers: readonly number[]
@@ -501,74 +509,29 @@ export function useExportActions(ctx: ExportActionsContext) {
     bleed: ExportBleedOptions
     exportMetadata: ExportMetadataDraft
     onProgress: (progress: ExportEngineProgress) => void
+    onLog: (message: string) => void
   }): Promise<ExportEngineResult> => {
-    if (typeof Worker === "undefined") {
-      return runProjectExport({
-        formats: ["pdf"],
-        project,
-        pageNumbers,
-        visibilitySettings,
-        metadata: exportMetadata,
-        baseName: resolveExportBaseName(filename),
-        filenames: { pdf: filename },
-        bleed,
-        onProgress,
-        assertNotCancelled: throwIfExportCancelled,
-      })
-    }
-
-    return new Promise<ExportEngineResult>((resolve, reject) => {
-      const worker = new Worker(new URL("../../../workers/pdf-export.worker.ts", import.meta.url), { type: "module" })
-      const requestId = 1
-      let settled = false
-      const cleanup = () => {
+    return runPdfExportInBrowserWorker({
+      project,
+      pageNumbers,
+      visibilitySettings,
+      filename,
+      bleed,
+      metadata: exportMetadata,
+      onProgress,
+      onLog,
+      logEveryPages: EXPORT_PROGRESS_LOG_PAGE_INTERVAL,
+      assertNotCancelled: throwIfExportCancelled,
+      onWorkerReady: (worker, fail) => {
+        currentExportWorkerRef.current = worker
+        currentExportRejectRef.current = fail
+      },
+      onWorkerSettled: (worker) => {
         if (currentExportWorkerRef.current === worker) {
           currentExportWorkerRef.current = null
           currentExportRejectRef.current = null
         }
-        worker.terminate()
-      }
-      const fail = (error: Error) => {
-        if (settled) return
-        settled = true
-        cleanup()
-        reject(error)
-      }
-      currentExportWorkerRef.current = worker
-      currentExportRejectRef.current = fail
-      worker.onmessage = (event: MessageEvent<
-        | { id: number; type: "progress"; progress: ExportEngineProgress }
-        | { id: number; type: "done"; result: ExportEngineResult }
-        | { id: number; type: "error"; error: string }
-      >) => {
-        const response = event.data
-        if (response.id !== requestId || settled) return
-        if (response.type === "progress") {
-          onProgress(response.progress)
-          return
-        }
-        if (response.type === "error") {
-          fail(new Error(response.error))
-          return
-        }
-        settled = true
-        cleanup()
-        resolve(response.result)
-      }
-      worker.onerror = (event) => {
-        fail(new Error(event.message || "PDF export worker failed."))
-      }
-      worker.postMessage({
-        id: requestId,
-        project,
-        pageNumbers: [...pageNumbers],
-        visibilitySettings,
-        metadata: exportMetadata,
-        baseName: resolveExportBaseName(filename),
-        filename,
-        bleed,
-        layoutEngine: project.layoutEngine,
-      })
+      },
     })
   }, [throwIfExportCancelled])
 
@@ -584,6 +547,10 @@ export function useExportActions(ctx: ExportActionsContext) {
     if (project.pages.length === 0) return
     const label = getVectorExportLogLabel(format)
     const publishProgress = createProgressPublisher()
+    const formatLogLine = createExportElapsedLogFormatter()
+    const appendLog = (message: string) => {
+      setExportProgressLog((current) => [...current, formatLogLine(message)])
+    }
     const onProgress = (progress: ExportEngineProgress) => {
       const force = shouldForceVectorProgress(format, progress)
       if (!shouldForwardExportProgress(progress, force)) return undefined
@@ -591,7 +558,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       return undefined
     }
     const result = format === "pdf"
-      ? await runPdfExportInBrowserWorker({
+      ? await runPdfExportInWorker({
           project,
           pageNumbers,
           visibilitySettings,
@@ -599,6 +566,7 @@ export function useExportActions(ctx: ExportActionsContext) {
           bleed,
           exportMetadata,
           onProgress,
+          onLog: appendLog,
         })
       : await runProjectExport({
           formats: [format],
@@ -611,8 +579,17 @@ export function useExportActions(ctx: ExportActionsContext) {
           bleed,
           svgPackaging: format === "svg" ? "zip" : undefined,
           onProgress,
+          onLog: appendLog,
+          shouldLogPage: (completed, total) => (
+            completed === 1
+            || completed === total
+            || completed % EXPORT_PROGRESS_LOG_PAGE_INTERVAL === 0
+          ),
           assertNotCancelled: throwIfExportCancelled,
         })
+    for (const line of formatExportPerformanceSummaryLines(result.timings, result.totalDurationMs)) {
+      appendLog(line)
+    }
     logExportEnginePerformance(label, result)
     const output = result.outputs[0]
     if (
@@ -623,7 +600,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       downloadBytes(output.bytes, output.mimeType, output.filename)
       logExportDownloadPerformance(label, performance.now() - downloadStartedAt, output.bytes.byteLength)
     }
-  }, [createProgressPublisher, downloadBytes, runPdfExportInBrowserWorker, throwIfExportCancelled])
+  }, [createProgressPublisher, downloadBytes, runPdfExportInWorker, throwIfExportCancelled])
 
   const handleExportFormatChange = useCallback((format: ExportFormat) => {
     setExportFormatDraft(format)
@@ -729,6 +706,7 @@ export function useExportActions(ctx: ExportActionsContext) {
 
     exportCancelRequestedRef.current = false
     exportInFlightRef.current = true
+    setExportProgressLog([])
 
     const progressStartedAt = performance.now()
     flushSync(() => {
@@ -895,6 +873,7 @@ export function useExportActions(ctx: ExportActionsContext) {
     bleedWidthMmDraft,
     setBleedWidthMmDraft,
     exportProgress,
+    exportProgressLog,
     openExportDialog,
     openExportDialogForProject,
     confirmExport,

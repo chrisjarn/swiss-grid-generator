@@ -1,29 +1,13 @@
-import type { LoadedProject } from "@/lib/document-session"
 import type {
-  ExportEngineBleedConfig,
+  ExportEngineTimingEntry,
   ExportEngineProgress,
   ExportEngineResult,
 } from "@/lib/export-engine"
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
-import type { ProjectPageVisibilitySettings } from "@/lib/project-page-export-source"
+import {
+  decodePdfExportWorkerRequest,
+  type PdfExportWorkerRequestEnvelope,
+} from "@/lib/pdf-export-worker-protocol"
 import { runProjectExport } from "@/lib/project-export-runner"
-
-type PdfExportWorkerRequest = {
-  id: number
-  project: LoadedProject<Record<string, unknown>>
-  pageNumbers: number[]
-  visibilitySettings: ProjectPageVisibilitySettings
-  metadata: {
-    title: string
-    description: string
-    author: string
-    createdAt: string
-  }
-  baseName: string
-  filename: string
-  bleed: ExportEngineBleedConfig
-  layoutEngine?: LayoutEngineContract
-}
 
 type PdfExportWorkerResponse =
   | {
@@ -38,19 +22,32 @@ type PdfExportWorkerResponse =
     }
   | {
       id: number
+      type: "log"
+      message: string
+    }
+  | {
+      id: number
       type: "error"
       error: string
     }
 
 type PdfExportWorkerScope = {
-  onmessage: ((event: MessageEvent<PdfExportWorkerRequest>) => void) | null
+  onmessage: ((event: MessageEvent<PdfExportWorkerRequestEnvelope>) => void) | null
   postMessage: (message: PdfExportWorkerResponse, transfer?: Transferable[]) => void
 }
 
 const workerScope = self as unknown as PdfExportWorkerScope
 
-workerScope.onmessage = (event: MessageEvent<PdfExportWorkerRequest>) => {
-  const request = event.data
+workerScope.onmessage = (event: MessageEvent<PdfExportWorkerRequestEnvelope>) => {
+  const envelope = event.data
+  const decodeStartedAt = performance.now()
+  const request = decodePdfExportWorkerRequest(envelope.payload)
+  const logEveryPages = request.logEveryPages
+  const protocolTimings: ExportEngineTimingEntry[] = [{
+    label: "pdf worker request decode",
+    durationMs: performance.now() - decodeStartedAt,
+    extra: `bytes=${envelope.payload.byteLength}`,
+  }]
   void runProjectExport({
     formats: ["pdf"],
     project: request.project,
@@ -61,9 +58,19 @@ workerScope.onmessage = (event: MessageEvent<PdfExportWorkerRequest>) => {
     filenames: { pdf: request.filename },
     bleed: request.bleed,
     layoutEngine: request.layoutEngine,
+    onLog: (message) => {
+      workerScope.postMessage({
+        id: envelope.id,
+        type: "log",
+        message,
+      })
+    },
+    shouldLogPage: logEveryPages
+      ? (completed, total) => completed === 1 || completed === total || completed % logEveryPages === 0
+      : undefined,
     onProgress: (progress) => {
       workerScope.postMessage({
-        id: request.id,
+        id: envelope.id,
         type: "progress",
         progress,
       })
@@ -72,21 +79,24 @@ workerScope.onmessage = (event: MessageEvent<PdfExportWorkerRequest>) => {
     .then((result) => {
       const engineResult: ExportEngineResult = {
         outputs: result.outputs,
-        timings: result.timings,
+        timings: [
+          ...protocolTimings,
+          ...result.timings,
+        ],
         totalDurationMs: result.totalDurationMs,
       }
       const transfer = engineResult.outputs
         .filter((output) => "bytes" in output)
         .map((output) => output.bytes.buffer) as Transferable[]
       workerScope.postMessage({
-        id: request.id,
+        id: envelope.id,
         type: "done",
         result: engineResult,
       }, transfer)
     })
     .catch((error: unknown) => {
       workerScope.postMessage({
-        id: request.id,
+        id: envelope.id,
         type: "error",
         error: error instanceof Error ? error.stack || error.message : String(error),
       })

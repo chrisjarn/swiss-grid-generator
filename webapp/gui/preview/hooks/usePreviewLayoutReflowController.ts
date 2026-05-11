@@ -5,26 +5,26 @@ import {
   computeAutoFitBatch,
   type AutoFitPlannerInput,
   type AutoFitStyle,
-} from "@/lib/autofit-planner"
-import type { GridResult } from "@/lib/grid-calculator"
-import { buildAxisStarts, resolveAxisSizes } from "@/lib/grid-rhythm"
-import { resolveGridColumnStarts } from "@/lib/grid-column-layout"
+} from "@/core/layout/autofit-planner"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import { buildAxisStarts, resolveAxisSizes } from "@/core/layout/grid-rhythm"
+import { resolveGridColumnStarts } from "@/core/layout/grid-column-layout"
 import {
   createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
   createLoadedFontFilePairAdvanceMeasureForCanvasFont,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import {
   applyCanvasTextConfig,
   buildCanvasFont,
   measureCanvasTextWidth,
-} from "@/lib/text-rendering"
+} from "@/core/layout/text-rendering"
 import {
   measureTrackedTextRangeWidth,
   normalizeTextTrackingRuns,
   type TextRange,
   type TextTrackingRun,
-} from "@/lib/text-tracking-runs"
-import type { ModulePosition, TextBlockPosition } from "@/lib/types/preview-layout"
+} from "@/core/layout/text-tracking-runs"
+import type { ModulePosition, TextBlockPosition } from "@/core/types/preview-layout"
 import { useLayoutReflow } from "@/gui/preview/hooks/useLayoutReflow"
 import { useWorkerBridge } from "@/gui/preview/hooks/useWorkerBridge"
 

@@ -5,7 +5,7 @@ import path from "node:path"
 import zlib from "node:zlib"
 import { unzipSync, strFromU8 } from "fflate"
 
-import { buildPlannedProjectPageExportSource } from "../../lib/planned-page-export-source.ts"
+import { buildPlannedProjectPageExportSource } from "../../core/export/planned-page-export-source.ts"
 import { runProjectExport } from "../../lib/project-export-runner.ts"
 import {
   convertOpenTypeCommandsToGeometryPaths,

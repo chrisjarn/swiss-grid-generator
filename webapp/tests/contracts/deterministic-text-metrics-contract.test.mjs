@@ -6,10 +6,10 @@ import path from "node:path"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   resolveLayoutTextMetricsEngineFactory,
-} from "../../lib/layout-engine-contract.ts"
+} from "../../core/layout/layout-engine-contract.ts"
 import {
   createDeterministicFontFileOpticalMarginTextMetricsEngine,
-} from "../../lib/font-file-text-metrics-engine.ts"
+} from "../../core/layout/font-file-text-metrics-engine.ts"
 
 const ROOT = process.cwd()
 
@@ -56,7 +56,7 @@ test("current layout contract resolves to deterministic font-file metrics", () =
 })
 
 test("canonical planning and preview paths do not use browser text metrics", () => {
-  const sourceRoots = ["lib", "workers", "gui", "shared"]
+  const sourceRoots = ["core", "lib", "workers", "gui", "shared"]
     .map((dir) => path.join(ROOT, dir))
   const metricFiles = sourceRoots
     .flatMap((dir) => collectSourceFiles(dir))
@@ -65,14 +65,14 @@ test("canonical planning and preview paths do not use browser text metrics", () 
     .sort()
 
   assert.deepEqual(metricFiles, [
-    "lib/optical-margin.ts",
-    "lib/text-format-runs.ts",
-    "lib/text-rendering.ts",
-    "lib/text-tracking-runs.ts",
+    "core/layout/optical-margin.ts",
+    "core/layout/text-format-runs.ts",
+    "core/layout/text-rendering.ts",
+    "core/layout/text-tracking-runs.ts",
   ])
 
-  const pageExportSource = readText("lib/page-export-plan.ts")
-  const canvasRendererSource = readText("lib/canvas-page-renderer.ts")
+  const pageExportSource = readText("core/layout/page-export-plan.ts")
+  const canvasRendererSource = readText("gui/preview/lib/canvas-page-renderer.ts")
   const typographyRendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
 
   assert.match(
@@ -108,7 +108,7 @@ test("obsolete browser parity diagnostics are not part of the app or test script
   const shellSource = readText("gui/shell/useShellModel.tsx")
   assert.doesNotMatch(shellSource, /__sggTextMetricsParity|text-metrics-dev-report/)
 
-  const fontFileSource = readText("lib/font-file-text-metrics-engine.ts")
+  const fontFileSource = readText("core/layout/font-file-text-metrics-engine.ts")
   assert.doesNotMatch(
     fontFileSource,
     /createDiagnosticBrowserCanvasTextMetricsEngine|allowDiagnosticBrowserFallback|createFontFileRangeCalibrationTextMetricsEngine/,

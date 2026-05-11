@@ -1,8 +1,8 @@
-import type { GridRhythm, GridRhythmColsDirection, GridRhythmRowsDirection, TypographyScale } from "@/lib/config/defaults"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { FontFamily } from "@/lib/config/fonts"
-import type { CanvasRatioKey, GridResult, GridSettings } from "@/lib/grid-calculator"
-import type { CustomMarginMultipliers } from "@/lib/workspace-ui-schema"
+import type { GridRhythm, GridRhythmColsDirection, GridRhythmRowsDirection, TypographyScale } from "@/core/config/defaults"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { FontFamily } from "@/core/config/fonts"
+import type { CanvasRatioKey, GridResult, GridSettings } from "@/core/layout/grid-calculator"
+import type { CustomMarginMultipliers } from "@/core/types/workspace-ui-schema"
 
 export type PageOrientation = "portrait" | "landscape"
 export type MarginMethod = 1 | 2 | 3

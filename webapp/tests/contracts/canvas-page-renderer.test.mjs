@@ -3,7 +3,7 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
 
-import { resolveScaledCanvasFontSize } from "../../lib/canvas-render-math.ts"
+import { resolveScaledCanvasFontSize } from "../../gui/preview/lib/canvas-render-math.ts"
 
 const ROOT = process.cwd()
 
@@ -37,9 +37,9 @@ test("resolveScaledCanvasFontSize falls back to the default size for invalid ove
 })
 
 test("canvas preview and export share image placeholder geometry planning", () => {
-  const canvasSource = readText("lib/canvas-page-renderer.ts")
-  const exportSource = readText("lib/page-export-plan.ts")
-  const plannerSource = readText("lib/image-placeholder-plan.ts")
+  const canvasSource = readText("gui/preview/lib/canvas-page-renderer.ts")
+  const exportSource = readText("core/layout/page-export-plan.ts")
+  const plannerSource = readText("core/layout/image-placeholder-plan.ts")
 
   assert.match(canvasSource, /buildImagePlaceholderGeometryPlan/)
   assert.match(exportSource, /buildImagePlaceholderGeometryPlan/)
@@ -50,7 +50,7 @@ test("canvas preview and export share image placeholder geometry planning", () =
 })
 
 test("canvas rendered-line metadata derives from positioned glyph plans", () => {
-  const canvasSource = readText("lib/canvas-page-renderer.ts")
+  const canvasSource = readText("gui/preview/lib/canvas-page-renderer.ts")
   const renderedLineBuilder = extractFunctionBody(canvasSource, "buildRenderedTextLines")
 
   assert.match(renderedLineBuilder, /segment\.width/)
@@ -64,7 +64,7 @@ test("canvas rendered-line metadata derives from positioned glyph plans", () => 
 })
 
 test("canvas text drawing consumes positioned glyph plans without measuring", () => {
-  const canvasSource = readText("lib/canvas-page-renderer.ts")
+  const canvasSource = readText("gui/preview/lib/canvas-page-renderer.ts")
   const drawPlan = extractFunctionBody(canvasSource, "drawCanvasTextPlan")
 
   assert.match(drawPlan, /ctx\.fillText/)
@@ -78,7 +78,7 @@ test("canvas text drawing consumes positioned glyph plans without measuring", ()
 })
 
 test("live preview canvas adapter uses ordered layer plans and skips full signatures", () => {
-  const canvasSource = readText("lib/canvas-page-renderer.ts")
+  const canvasSource = readText("gui/preview/lib/canvas-page-renderer.ts")
   const rendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
 
   assert.match(canvasSource, /export type CanvasLayerRenderPlan/)

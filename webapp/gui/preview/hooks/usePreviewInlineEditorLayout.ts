@@ -2,9 +2,9 @@ import { useMemo } from "react"
 import type { MutableRefObject } from "react"
 
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
-import type { RenderedTextLine } from "@/lib/preview-types"
-import type { BlockRect, TextDrawCommand } from "@/lib/typography-layout-plan"
-import type { PositionedTextFormatTrackingSegment } from "@/lib/text-format-runs"
+import type { RenderedTextLine } from "@/gui/preview/lib/preview-types"
+import type { BlockRect, TextDrawCommand } from "@/core/layout/typography-layout-plan"
+import type { PositionedTextFormatTrackingSegment } from "@/core/layout/text-format-runs"
 
 type InlineEditorPlan<Key extends string> = {
   key: Key

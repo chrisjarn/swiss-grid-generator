@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react"
 import type { ReactNode } from "react"
-import type { SectionKey } from "@/lib/workspace-ui-schema"
+import type { SectionKey } from "@/core/types/workspace-ui-schema"
 
 type SettingsHelpNavigationValue = {
   showHelpIcons: boolean

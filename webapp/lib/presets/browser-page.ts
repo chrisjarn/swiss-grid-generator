@@ -1,13 +1,13 @@
-import type { ProjectPage } from "@/lib/document-session"
+import type { ProjectPage } from "@/core/document/session"
 import {
   buildResolvedProjectPageExportSource,
   resolveProjectPageUiSettings,
-} from "@/lib/project-page-export-source"
+} from "@/core/export/project-page-export-source"
 import type { LayoutPresetBrowserPage, LayoutPresetUiSettings } from "@/lib/presets/types"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 
 export function toPresetUiSettings(source: Record<string, unknown>, sourcePath: string): LayoutPresetUiSettings {
   return resolveProjectPageUiSettings(source, sourcePath) as LayoutPresetUiSettings

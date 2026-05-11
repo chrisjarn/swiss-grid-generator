@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, "../..")
 const legalSourcePath = path.join(repoRoot, "webapp/messages/en/content/legal.md")
-const outputPath = path.join(repoRoot, "webapp/lib/generated-legal-content.ts")
+const outputPath = path.join(repoRoot, "webapp/gui/panels/sidebar/lib/generated-legal-content.ts")
 
 function flushParagraph(buffer, blocks) {
   if (buffer.length === 0) return

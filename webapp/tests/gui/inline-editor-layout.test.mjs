@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import * as InlineEditor from "../../lib/inline-editor.ts"
+import * as InlineEditor from "../../gui/editors/lib/inline-editor.ts"
 
 test("buildInlineEditorTransform composes page and block rotations with explicit origins", () => {
   const output = InlineEditor.buildInlineEditorTransform({

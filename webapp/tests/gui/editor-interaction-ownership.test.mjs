@@ -5,7 +5,7 @@ import {
   EDITOR_OWNED_TARGET_SELECTOR,
   eventPathHasEditorOwnedTarget,
   isEditorOwnedEventTarget,
-} from "../../lib/editor-interaction-ownership.ts"
+} from "../../gui/editors/lib/editor-interaction-ownership.ts"
 
 class FakeNode {
   constructor(parent = null) {

@@ -2,15 +2,15 @@ import { useCallback, useEffect, useRef } from "react"
 import type { Dispatch, MouseEvent as ReactMouseEvent, RefObject, SetStateAction } from "react"
 
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
-import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
-import type { FontFamily } from "@/lib/config/fonts"
-import { PREVIEW_DRAG_CLICK_GUARD_MS } from "@/lib/preview-interaction-constants"
-import { insertTextLayerIntoCollections, type PreviewTextLayerCollectionsState } from "@/lib/preview-text-layer-state"
-import type { NoticeRequest, PagePoint } from "@/lib/preview-types"
+import { buildExistingBlockEditorState } from "@/gui/preview/lib/preview-block-editor-state"
+import type { FontFamily } from "@/core/config/fonts"
+import { PREVIEW_DRAG_CLICK_GUARD_MS } from "@/gui/preview/lib/preview-interaction-constants"
+import { insertTextLayerIntoCollections, type PreviewTextLayerCollectionsState } from "@/gui/preview/lib/preview-text-layer-state"
+import type { NoticeRequest, PagePoint } from "@/gui/preview/lib/preview-types"
 import { translateMessage } from "@/lib/i18n"
-import type { TextFormatRun } from "@/lib/text-format-runs"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { ModulePosition, TextAlignMode, TextVerticalAlignMode } from "@/lib/types/layout-primitives"
+import type { TextFormatRun } from "@/core/layout/text-format-runs"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { ModulePosition, TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-primitives"
 
 const HIERARCHY_SHORTCUT_STYLE_BY_KEY: Readonly<Record<string, string>> = {
   "1": "caption",

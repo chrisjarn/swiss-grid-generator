@@ -1,8 +1,8 @@
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { FontFamily } from "@/lib/config/fonts"
-import type { ProjectPageLayoutMode } from "@/lib/document-session"
-import type { GridResult, CanvasRatioKey } from "@/lib/grid-calculator"
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { FontFamily } from "@/core/config/fonts"
+import type { ProjectPageLayoutMode } from "@/core/document/session"
+import type { GridResult, CanvasRatioKey } from "@/core/layout/grid-calculator"
+import type { LayoutEngineContract } from "@/core/layout/layout-engine-contract"
 
 export type LayoutPresetUiSettings = Record<string, unknown> & {
   canvasRatio: CanvasRatioKey

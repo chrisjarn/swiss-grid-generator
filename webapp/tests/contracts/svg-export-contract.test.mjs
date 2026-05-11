@@ -11,8 +11,8 @@ function readText(relPath) {
 
 test("svg export is rendered through the shared page export plan", () => {
   const source = readText("lib/svg-vector-export.ts")
-  const plannedSource = readText("lib/planned-page-export-source.ts")
-  assert.match(source, /import\s+\{\s*buildPageExportPlan,\s*type\s+PageExportPlan\s*\}\s+from\s+"@\/lib\/page-export-plan"/)
+  const plannedSource = readText("core/export/planned-page-export-source.ts")
+  assert.match(source, /import\s+\{\s*buildPageExportPlan,\s*type\s+PageExportPlan\s*\}\s+from\s+"@\/core\/layout\/page-export-plan"/)
   assert.match(source, /exportPlan\?:\s*PageExportPlan/)
   assert.match(source, /exportPlan:\s*providedExportPlan/)
   assert.match(source, /const\s+exportPlan\s*=\s*providedExportPlan\s*\?\?\s*buildPageExportPlan\(\{/)
@@ -67,7 +67,7 @@ test("svg export converts positioned graphemes through the shared vector outline
   const outlineSource = readText("lib/vector-text-outline.ts")
   assert.match(svgSource, /\(outlineResolver \?\? resolveTextPlanVectorShapes\)\(textPlan\)/)
   assert.match(svgSource, /buildSvgPathDataFromCommands\(shape\.commands\)/)
-  assert.match(outlineSource, /import\s+\{\s*loadOutlineFont,[\s\S]*?\}\s+from\s+"@\/lib\/font-outline"/)
+  assert.match(outlineSource, /import\s+\{\s*loadOutlineFont,[\s\S]*?\}\s+from\s+"@\/core\/layout\/font-outline"/)
   assert.match(outlineSource, /loadOutlineFont\(fontFamily,\s*fontWeight,\s*italic\)/)
   assert.match(outlineSource, /textPlan\.graphemeLines\.length\s*>\s*0/)
   assert.match(outlineSource, /grapheme\.x/)

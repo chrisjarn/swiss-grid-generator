@@ -9,17 +9,17 @@ import {
   getDefaultTextSchemeColor,
   getImageColorScheme,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
-import { type FontFamily } from "@/lib/config/fonts"
-import type { GridResult } from "@/lib/grid-calculator"
-import { reconcileLayerOrder } from "@/lib/preview-layer-order"
+} from "@/core/config/color-schemes"
+import { type FontFamily } from "@/core/config/fonts"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import { reconcileLayerOrder } from "@/gui/preview/lib/preview-layer-order"
 import { getReferenceIdentityToken } from "@/lib/reference-identity"
 import {
   mapAbsolutePositionsToTextBlockPositions,
   mapTextBlockPositionsToAbsolute,
-} from "@/lib/text-block-position"
-import type { ModulePosition, PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import { BASE_BLOCK_IDS } from "@/lib/document-defaults"
+} from "@/core/layout/text-block-position"
+import type { ModulePosition, PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
+import { BASE_BLOCK_IDS } from "@/core/document/defaults"
 
 type BlockId = string
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]

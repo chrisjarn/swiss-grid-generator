@@ -1,15 +1,15 @@
 import { useCallback } from "react"
 import type { RefObject } from "react"
 
-import type { FontFamily } from "@/lib/config/fonts"
-import type { GridResult } from "@/lib/grid-calculator"
-import { resolveBlockHeight } from "@/lib/block-height"
-import { findNearestAxisIndex, sumAxisSpan } from "@/lib/grid-rhythm"
-import type { BaseTextFormat } from "@/lib/text-format-runs"
-import { applyCanvasTextConfig, buildCanvasFont } from "@/lib/text-rendering"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { ModulePosition } from "@/lib/types/preview-layout"
-import type { WrappedTextLine } from "@/lib/text-layout"
+import type { FontFamily } from "@/core/config/fonts"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import { resolveBlockHeight } from "@/core/layout/block-height"
+import { findNearestAxisIndex, sumAxisSpan } from "@/core/layout/grid-rhythm"
+import type { BaseTextFormat } from "@/core/layout/text-format-runs"
+import { applyCanvasTextConfig, buildCanvasFont } from "@/core/layout/text-rendering"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { ModulePosition } from "@/core/types/preview-layout"
+import type { WrappedTextLine } from "@/core/layout/text-layout"
 
 type Args<Key extends string, StyleKey extends string> = {
   canvasRef: RefObject<HTMLCanvasElement | null>

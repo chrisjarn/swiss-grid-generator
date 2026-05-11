@@ -2,19 +2,19 @@ import { useEffect } from "react"
 import { ChevronUp, X } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { USER_FONT_DEFINITIONS } from "@/lib/config/fonts"
-import { DOCUMENT_VARIABLE_DEFINITIONS } from "@/lib/document-variable-definitions"
+import { USER_FONT_DEFINITIONS } from "@/core/config/fonts"
+import { DOCUMENT_VARIABLE_DEFINITIONS } from "@/core/document/variable-definitions"
 import {
   HELP_CONTENT_GROUPS,
   type HelpBlock,
   type HelpDirectiveName,
   type HelpSection,
   type HelpSubsection,
-} from "@/lib/generated-help-content"
-import { HELP_INDEX_GROUPS } from "@/lib/help-registry"
-import type { HelpSectionId } from "@/lib/help-registry"
+} from "@/core/document/generated-help-content"
+import { HELP_INDEX_GROUPS } from "@/core/document/help-registry"
+import type { HelpSectionId } from "@/core/document/help-registry"
 import { translateMessage, useTranslation } from "@/lib/i18n"
-import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
+import { PREVIEW_HEADER_SHORTCUTS } from "@/gui/shell/lib/preview-header-shortcuts"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 
 type Props = {

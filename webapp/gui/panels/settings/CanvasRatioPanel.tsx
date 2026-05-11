@@ -18,7 +18,7 @@ import {
   formatCustomCanvasRatio,
   getCanvasRatioDisplayLabel,
   type CanvasRatioKey,
-} from "@/lib/grid-calculator"
+} from "@/core/layout/grid-calculator"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
 import { useTranslation } from "@/lib/i18n"
 

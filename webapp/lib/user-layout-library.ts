@@ -1,6 +1,6 @@
 import Dexie, { liveQuery } from "dexie"
 
-import { parseLoadedProject } from "@/lib/document-session"
+import { parseLoadedProject } from "@/core/document/session"
 import { buildPresetBrowserPage } from "@/lib/presets/browser-page"
 import type { LayoutPreset, LayoutPresetProjectSource } from "@/lib/presets/types"
 import {
@@ -10,7 +10,7 @@ import {
   toArrayBuffer,
 } from "@/lib/project-transfer"
 import { sha256Hex } from "@/lib/cloud-sync/hash"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 
 export type UserProjectSyncState = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type CloudActivityLevel = "info" | "success" | "warning" | "error"

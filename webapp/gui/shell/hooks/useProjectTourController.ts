@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import type { ProjectTour, ProjectTourStep } from "@/lib/project-tour"
-import { resolveProjectTourStartIndex } from "@/lib/project-tour"
-import type { HelpSectionId } from "@/lib/help-registry"
+import type { ProjectTour, ProjectTourStep } from "@/core/document/project-tour"
+import { resolveProjectTourStartIndex } from "@/core/document/project-tour"
+import type { HelpSectionId } from "@/core/document/help-registry"
 
 type Args = {
   tour: ProjectTour | null | undefined

@@ -32,7 +32,7 @@
     "prestart": "npm run assets:generate",
     "start": "next start",
     "prelint": "npm run assets:generate",
-    "lint": "eslint app gui shared lib --max-warnings=0",
+    "lint": "eslint app core gui shared lib --max-warnings=0",
     "pretest:presets": "npm run assets:generate",
     "pretest:integration": "npm run assets:generate",
     "test": "npm run test:integration && npm run test:core && npm run test:contracts && npm run test:gui",

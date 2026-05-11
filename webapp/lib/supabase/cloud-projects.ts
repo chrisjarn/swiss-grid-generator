@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 
-import { parseLoadedProject, type LoadedProject } from "@/lib/document-session"
+import { parseLoadedProject, type LoadedProject } from "@/core/document/session"
 import {
   buildProjectTransferPayload,
   encodeProjectTransferPayload,

@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import * as InlineEditor from "../../lib/inline-editor.ts"
+import * as InlineEditor from "../../gui/editors/lib/inline-editor.ts"
 
 test("computeInlineEditorSpecialCharMarkers emits one marker per source whitespace and paragraph break", () => {
   const markers = InlineEditor.computeInlineEditorSpecialCharMarkers({

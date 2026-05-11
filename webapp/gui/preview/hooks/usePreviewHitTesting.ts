@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react"
 import type { RefObject } from "react"
 
-import type { BlockRect, BlockRenderPlan, PagePoint } from "@/lib/preview-types"
-import type { ModulePosition } from "@/lib/types/preview-layout"
+import type { BlockRect, BlockRenderPlan, PagePoint } from "@/gui/preview/lib/preview-types"
+import type { ModulePosition } from "@/core/types/preview-layout"
 
 import type { PreviewGridMetrics } from "@/gui/preview/hooks/usePreviewGeometry"
 import type { LayerDragYMode, LayerPlacementOptions } from "@/gui/preview/hooks/preview-canvas-interaction-types"
-import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
-import { isPointWithinRect, resolvePreviewHoverBandRect } from "@/lib/preview-hover-affordance"
+import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
+import { isPointWithinRect, resolvePreviewHoverBandRect } from "@/gui/preview/lib/preview-hover-affordance"
 
 type Args<Key extends string> = {
   blockRectsRef: RefObject<Record<Key, BlockRect> | null>

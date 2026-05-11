@@ -1,8 +1,8 @@
 import { useCallback, useState } from "react"
 
-import { clampFxLeading, clampFxSize } from "@/lib/block-constraints"
-import { isImagePlaceholderColor } from "@/lib/config/color-schemes"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
+import { clampFxLeading, clampFxSize } from "@/core/layout/block-constraints"
+import { isImagePlaceholderColor } from "@/core/config/color-schemes"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
 
 type TypographyStyleDefinition = {
   baselineMultiplier?: number

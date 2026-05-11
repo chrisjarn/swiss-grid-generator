@@ -1,14 +1,14 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { resolveCurrentPreviewLayout } from "../../lib/current-preview-layout.ts"
-import { PREVIEW_STYLE_OPTIONS, resolveCustomStyleSeedMetrics } from "../../lib/preview-text-config.ts"
-import { resolveNearestPreviewColumn } from "../../lib/preview-column-snap.ts"
-import { resolveTextCopyAffordanceAction } from "../../lib/preview-copy-affordance.ts"
-import { resolvePreviewHoverTarget } from "../../lib/preview-hover-target.ts"
-import { getPreviewTextGuideGeometry } from "../../lib/preview-guide-rect.ts"
-import { resolveAdjacentProjectPageId } from "../../lib/project-page-navigation.ts"
-import { buildSmartTextZoomGeometrySignature } from "../../lib/preview-smart-text-zoom.ts"
+import { resolveCurrentPreviewLayout } from "../../gui/preview/lib/current-preview-layout.ts"
+import { PREVIEW_STYLE_OPTIONS, resolveCustomStyleSeedMetrics } from "../../gui/preview/lib/preview-text-config.ts"
+import { resolveNearestPreviewColumn } from "../../core/layout/preview-column-snap.ts"
+import { resolveTextCopyAffordanceAction } from "../../gui/preview/lib/preview-copy-affordance.ts"
+import { resolvePreviewHoverTarget } from "../../gui/preview/lib/preview-hover-target.ts"
+import { getPreviewTextGuideGeometry } from "../../gui/preview/lib/preview-guide-rect.ts"
+import { resolveAdjacentProjectPageId } from "../../gui/shell/lib/project-page-navigation.ts"
+import { buildSmartTextZoomGeometrySignature } from "../../gui/preview/lib/preview-smart-text-zoom.ts"
 
 test("resolveCurrentPreviewLayout prefers the committed layout while sidebar changes are ahead of the live preview", () => {
   const committedLayout = { layerOrder: ["caption", "body", "image-1"] }

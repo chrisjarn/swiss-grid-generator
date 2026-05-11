@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 
-import { isEditorOwnedEventTarget } from "@/lib/editor-interaction-ownership"
+import { isEditorOwnedEventTarget } from "@/gui/editors/lib/editor-interaction-ownership"
 
 export type PreviewNudgeDirection = "left" | "right" | "up" | "down"
 

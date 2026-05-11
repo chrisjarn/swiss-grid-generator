@@ -1,4 +1,4 @@
-import { parseLoadedProject } from "@/lib/document-session"
+import { parseLoadedProject } from "@/core/document/session"
 import type {
   LayoutPresetCategory,
   LayoutPreset,

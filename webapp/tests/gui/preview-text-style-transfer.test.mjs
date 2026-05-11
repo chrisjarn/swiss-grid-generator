@@ -4,7 +4,7 @@ import assert from "node:assert/strict"
 import {
   applyOptionalTransferredValue,
   applyTextStyleTransferToCollections,
-} from "../../lib/preview-text-style-transfer.ts"
+} from "../../gui/preview/lib/preview-text-style-transfer.ts"
 
 test("paragraph transfer replaces layout settings without changing text content", () => {
   const state = {

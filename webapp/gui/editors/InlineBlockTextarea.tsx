@@ -1,13 +1,13 @@
 "use client"
 
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
-import { applyBlockEditorTextEdit } from "@/lib/block-editor-text-edit"
-import { getFontFamilyCss } from "@/lib/config/fonts"
+import { applyBlockEditorTextEdit } from "@/gui/editors/lib/block-editor-text-edit"
+import { getFontFamilyCss } from "@/core/config/fonts"
 import {
   resolveTextSchemeColor,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
-import type { RenderedTextLine } from "@/lib/preview-types"
+} from "@/core/config/color-schemes"
+import type { RenderedTextLine } from "@/gui/preview/lib/preview-types"
 import { translateMessage } from "@/lib/i18n"
 import {
   buildInlineEditorSelectionStateFromAnchorFocus,
@@ -24,25 +24,25 @@ import {
   type InlineEditorSelectionState,
   resolveInlineEditorSentenceSelection,
   resolveInlineEditorWordSelection,
-} from "@/lib/inline-editor"
-import { normalizeInlineEditorText } from "@/lib/inline-text-normalization"
+} from "@/gui/editors/lib/inline-editor"
+import { normalizeInlineEditorText } from "@/gui/editors/lib/inline-text-normalization"
 import {
   applyCanvasTextConfig,
   buildCanvasFont,
   measureCanvasTextWidth,
   normalizeTrackingScale,
-} from "@/lib/text-rendering"
+} from "@/core/layout/text-rendering"
 import {
   createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
   createLoadedFontFilePairAdvanceMeasureForCanvasFont,
   createResolvedFontFileGlyphBoundsMeasure,
   createResolvedFontFilePairAdvanceMeasure,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import {
   measureFormattedTextRangeWidth,
   resolveTextFormatAtIndex,
   type PositionedTextFormatTrackingSegment,
-} from "@/lib/text-format-runs"
+} from "@/core/layout/text-format-runs"
 import {
   useCallback,
   useEffect,

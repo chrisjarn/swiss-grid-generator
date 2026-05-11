@@ -3,24 +3,24 @@ import {
   clampCustomCanvasRatioUnit,
   clampFibonacciSequenceStartIndex,
   type CanvasRatioKey,
-} from "@/lib/grid-calculator"
-import { clampRotation } from "@/lib/block-constraints"
+} from "@/core/layout/grid-calculator"
+import { clampRotation } from "@/core/layout/block-constraints"
 import {
   GUTTER_MULTIPLE_RANGE,
   type GridRhythm,
   type GridRhythmColsDirection,
   type GridRhythmRowsDirection,
   type TypographyScale,
-} from "@/lib/config/defaults"
-import { type ImageColorSchemeId } from "@/lib/config/color-schemes"
+} from "@/core/config/defaults"
+import { type ImageColorSchemeId } from "@/core/config/color-schemes"
 import {
   type FontFamily,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 import {
   resolveUiSettingsSnapshot,
-} from "@/lib/ui-settings-resolver"
-import { SECTION_KEYS } from "@/lib/workspace-ui-schema"
-import type { SectionKey, UiSettingsSnapshot } from "@/lib/workspace-ui-schema"
+} from "@/core/document/ui-settings-resolver"
+import { SECTION_KEYS } from "@/core/types/workspace-ui-schema"
+import type { SectionKey, UiSettingsSnapshot } from "@/core/types/workspace-ui-schema"
 
 export type GridUiState = Pick<
   UiSettingsSnapshot,

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import type { MutableRefObject, PointerEvent as ReactPointerEvent, RefObject } from "react"
 
-import { PREVIEW_DRAG_MOVE_THRESHOLD_PX } from "@/lib/preview-interaction-constants"
-import type { BlockRect, PagePoint } from "@/lib/preview-types"
-import type { ModulePosition } from "@/lib/types/layout-primitives"
+import { PREVIEW_DRAG_MOVE_THRESHOLD_PX } from "@/gui/preview/lib/preview-interaction-constants"
+import type { BlockRect, PagePoint } from "@/gui/preview/lib/preview-types"
+import type { ModulePosition } from "@/core/types/layout-primitives"
 
 export type DragModulePosition = ModulePosition
 

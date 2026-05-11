@@ -16,7 +16,7 @@ import {
   ZoomIn,
 } from "lucide-react"
 import { translateMessage } from "@/lib/i18n"
-import type { PreviewHeaderShortcutId } from "@/lib/preview-header-shortcuts"
+import type { PreviewHeaderShortcutId } from "@/gui/shell/lib/preview-header-shortcuts"
 
 export type SidebarPanel = "help" | "legal" | "layers" | "feedback" | "account" | null
 

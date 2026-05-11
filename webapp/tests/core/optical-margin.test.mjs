@@ -7,7 +7,7 @@ import {
   resolveOpticalKerningPairAdjustment,
   resolveConservativeContourBoundaryPx,
   resolveDominantStemBoundaryPx,
-} from "../../lib/optical-margin.ts"
+} from "../../core/layout/optical-margin.ts"
 
 const monoMeasure = (text) => text.length
 

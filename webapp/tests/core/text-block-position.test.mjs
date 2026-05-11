@@ -4,7 +4,7 @@ import assert from "node:assert/strict"
 import {
   toAbsoluteTextBlockPosition,
   toTextBlockPosition,
-} from "../../lib/text-block-position.ts"
+} from "../../core/layout/text-block-position.ts"
 
 test("legacy absolute text positions normalize into logical grid anchors", () => {
   const rowStartsInBaselines = [0, 6, 15]

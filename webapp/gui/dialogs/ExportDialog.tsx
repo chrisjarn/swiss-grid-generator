@@ -1,4 +1,4 @@
-import { Image as ImageIcon, LayoutGrid, Loader2, Rows3, SquareDashed, Type, Upload } from "lucide-react"
+import { ChevronDown, ChevronUp, Image as ImageIcon, LayoutGrid, Loader2, Rows3, SquareDashed, Type, Upload } from "lucide-react"
 import { useRef, useState } from "react"
 
 import { Button } from "@/shared/ui/button"
@@ -13,13 +13,13 @@ import {
   getPopupSurfaceClassName,
 } from "@/shared/ui/popup-styles"
 import type { ExportProgressState } from "@/gui/shell/hooks/useExportActions"
-import type { LoadedProject } from "@/lib/document-session"
+import type { LoadedProject } from "@/core/document/session"
 import {
   EXPORT_FORMATS,
   EXPORT_FORMAT_OPTIONS,
   type ExportFormat,
 } from "@/lib/export-format-options"
-import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
+import { SECTION_HEADLINE_CLASSNAME } from "@/shared/ui/section-headline"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -57,6 +57,7 @@ type Props = {
   onBleedWidthMmChange: (value: string) => void
   onConfirm: () => void
   exportProgress: ExportProgressState | null
+  exportProgressLog: readonly string[]
   previewProject: LoadedProject<Record<string, unknown>>
 }
 
@@ -95,10 +96,12 @@ export function ExportDialog({
   onBleedWidthMmChange,
   onConfirm,
   exportProgress,
+  exportProgressLog,
   previewProject,
 }: Props) {
   const { t } = useTranslation()
   const [isRangeInvalid, setIsRangeInvalid] = useState(false)
+  const [isProgressLogOpen, setIsProgressLogOpen] = useState(false)
   const rangeInputRef = useRef<HTMLInputElement | null>(null)
   if (!isOpen) return null
 
@@ -142,6 +145,7 @@ export function ExportDialog({
   const activeActionLabel = exportProgress
     ? exportProgress.currentLabel || idleActionLabel
     : idleActionLabel
+  const progressLogText = exportProgressLog.join("\n")
 
   return (
     <div
@@ -361,6 +365,39 @@ export function ExportDialog({
               placeholder={t("common.authorName")}
             />
           </div>
+
+          {exportProgressLog.length > 0 ? (
+            <div className="space-y-2">
+              <div className={sectionGridClassName}>
+                <Label className={centeredRowLabelClassName}>{t("dialogs.export.progressLog")}</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className={`${actionButtonClassName} col-span-3 w-full justify-center gap-1.5`}
+                  onClick={() => setIsProgressLogOpen((current) => !current)}
+                  aria-expanded={isProgressLogOpen}
+                >
+                  {isProgressLogOpen ? (
+                    <ChevronUp className="h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {isProgressLogOpen ? t("dialogs.export.hideProgressLog") : t("dialogs.export.showProgressLog")}
+                  </span>
+                </Button>
+              </div>
+              {isProgressLogOpen ? (
+                <textarea
+                  readOnly
+                  value={progressLogText}
+                  className={`${compactInputClassName} min-h-40 w-full resize-y font-mono text-[11px] leading-[1.45]`}
+                  aria-label={t("dialogs.export.progressLog")}
+                />
+              ) : null}
+            </div>
+          ) : null}
 
           <div className="grid grid-cols-4 items-start gap-3">
             <Label className={centeredRowLabelClassName}>{t("common.actions")}</Label>

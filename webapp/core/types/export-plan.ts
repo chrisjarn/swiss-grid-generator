@@ -7,4 +7,4 @@ export type {
   PageExportPlan,
   PageExportRect,
   PageExportTextPlan,
-} from "@/lib/page-export-plan"
+} from "@/core/layout/page-export-plan"

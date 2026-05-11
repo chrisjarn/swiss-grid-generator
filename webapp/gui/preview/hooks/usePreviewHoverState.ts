@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef } from "react"
 import type { MouseEvent as ReactMouseEvent } from "react"
 import type { CSSProperties, Dispatch, SetStateAction } from "react"
-import type { PagePoint } from "@/lib/preview-types"
-import { resolvePreviewHoverTarget } from "@/lib/preview-hover-target"
+import type { PagePoint } from "@/gui/preview/lib/preview-types"
+import { resolvePreviewHoverTarget } from "@/gui/preview/lib/preview-hover-target"
 export type PreviewHoverState<Key extends string> = {
   key: Key
   point: PagePoint

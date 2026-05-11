@@ -2,7 +2,7 @@ import {
   getFontAssetPath,
   resolveFontVariant,
   type FontFamily,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 import type { IdmlFontMetadata } from "@/lib/idml/types"
 
 type ParsedFontMetadata = Partial<IdmlFontMetadata>

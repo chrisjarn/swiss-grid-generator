@@ -8,7 +8,7 @@ import {
   clearWindowSelection,
   isCardDragIgnoreTarget,
   lockDocumentUserSelect,
-} from "@/lib/sidebar-card-drag"
+} from "@/gui/panels/sidebar/lib/sidebar-card-drag"
 import {
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,

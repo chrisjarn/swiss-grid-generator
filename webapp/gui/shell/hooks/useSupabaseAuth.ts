@@ -6,7 +6,7 @@ import type { Session, SupabaseClient, User } from "@supabase/supabase-js"
 import { getSupabaseBrowserClient } from "@/lib/supabase/client"
 import { mapSupabaseAuthError } from "@/lib/supabase/error-messages"
 import { addCloudActivityLogEntry } from "@/lib/user-layout-library"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 
 export type SupabaseAuthStatus = "loading" | "signed_out" | "signed_in"
 

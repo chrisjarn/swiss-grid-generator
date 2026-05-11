@@ -4,6 +4,7 @@ import { pathToFileURL } from "node:url"
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), "..")
 const EXTENSIONS = ["", ".ts", ".tsx", ".js", ".mjs", ".json"]
+const INDEX_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".json"]
 
 function resolveAliasPath(specifier) {
   if (!specifier.startsWith("@/")) return null
@@ -12,7 +13,14 @@ function resolveAliasPath(specifier) {
     const candidate = path.join(ROOT, `${withoutAlias}${extension}`)
     if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate
   }
-  return path.join(ROOT, withoutAlias)
+  const directoryCandidate = path.join(ROOT, withoutAlias)
+  if (fs.existsSync(directoryCandidate) && fs.statSync(directoryCandidate).isDirectory()) {
+    for (const extension of INDEX_EXTENSIONS) {
+      const indexCandidate = path.join(directoryCandidate, `index${extension}`)
+      if (fs.existsSync(indexCandidate) && fs.statSync(indexCandidate).isFile()) return indexCandidate
+    }
+  }
+  return null
 }
 
 export async function resolve(specifier, context, nextResolve) {

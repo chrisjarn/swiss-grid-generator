@@ -1,11 +1,11 @@
 import { useCallback } from "react"
-import type { TextFormatRun } from "@/lib/text-format-runs"
+import type { TextFormatRun } from "@/core/layout/text-format-runs"
 import {
   buildResolvedSnapshotState,
   normalizeSnapshotStateForApply,
-} from "@/lib/preview-layout-snapshot"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { TextVerticalAlignMode } from "@/lib/types/layout-primitives"
+} from "@/gui/preview/lib/preview-layout-snapshot"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { TextVerticalAlignMode } from "@/core/types/layout-primitives"
 
 export type SnapshotState<
   Key extends string,

@@ -3,13 +3,13 @@ import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 
 import { type BlockEditorState } from "@/gui/editors/block-editor-types"
 import { type ImageEditorState } from "@/gui/dialogs/ImageEditorDialog"
-import { getBlockEditorLiveSignature } from "@/lib/block-editor-signature"
+import { getBlockEditorLiveSignature } from "@/gui/editors/lib/block-editor-signature"
 import {
   areFontFileMetricFacesLoaded,
   collectFontFileMetricFacesFromBlocks,
   preloadFontFileMetricFaces,
-} from "@/lib/font-file-text-metrics-engine"
-import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
+} from "@/core/layout/font-file-text-metrics-engine"
+import { buildExistingBlockEditorState } from "@/gui/preview/lib/preview-block-editor-state"
 import { useBlockEditorActions } from "@/gui/editors/hooks/useBlockEditorActions"
 import { useCloseEditorsOnOutsidePointer } from "@/gui/editors/hooks/useCloseEditorsOnOutsidePointer"
 import { usePreviewKeyboard, type PreviewNudgeRequest } from "@/gui/preview/hooks/usePreviewKeyboard"

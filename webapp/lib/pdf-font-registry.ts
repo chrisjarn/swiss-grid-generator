@@ -4,7 +4,7 @@ import {
   getFontAssetPath,
   resolveFontVariant,
   type FontFamily,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 
 export type PdfFontRegistrationFace = {
   fontFamily: FontFamily

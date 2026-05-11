@@ -1,5 +1,5 @@
-import { DEFAULT_BASE_FONT } from "@/lib/config/fonts"
-import type { LoadedProject } from "@/lib/document-session"
+import { DEFAULT_BASE_FONT } from "@/core/config/fonts"
+import type { LoadedProject } from "@/core/document/session"
 import {
   collectExportTextMetricFaces,
   collectPdfFontFaces,
@@ -7,7 +7,7 @@ import {
 import {
   preloadFontFileMetricFaces,
   type FontFileMetricFace,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import { preloadPdfFontFaces } from "@/lib/pdf-font-registry"
 import {
   buildProjectExportSources,
@@ -16,7 +16,7 @@ import {
 import type {
   ProjectExportPageRange,
   ProjectPageVisibilitySettings,
-} from "@/lib/project-page-export-source"
+} from "@/core/export/project-page-export-source"
 
 let defaultExportFontWarmup: Promise<void> | null = null
 const projectExportFontWarmupCache = new Map<string, Promise<void>>()

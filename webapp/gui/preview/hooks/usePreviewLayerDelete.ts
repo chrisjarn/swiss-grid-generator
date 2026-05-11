@@ -1,7 +1,7 @@
 import { useCallback, useEffect } from "react"
 import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 
-import { removeTextLayerFromCollections, type TextLayerCollections } from "@/lib/preview-layer-state"
+import { removeTextLayerFromCollections, type TextLayerCollections } from "@/gui/preview/lib/preview-layer-state"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
 
 type Args<

@@ -5,12 +5,12 @@ import path from "node:path"
 
 const ROOT = process.cwd()
 const SHELL_MODEL_PATH = path.join(ROOT, "gui", "shell", "useShellModel.tsx")
-const PREVIEW_WORKSPACE_PATH = path.join(ROOT, "components", "preview", "PreviewWorkspace.tsx")
-const FONT_CONFIG_PATH = path.join(ROOT, "lib", "config", "fonts.ts")
-const UI_DEFAULTS_PATH = path.join(ROOT, "lib", "config", "ui-defaults.ts")
-const UI_RESOLVER_PATH = path.join(ROOT, "lib", "ui-settings-resolver.ts")
+const PREVIEW_WORKSPACE_PATH = path.join(ROOT, "gui", "preview", "PreviewWorkspace.tsx")
+const FONT_CONFIG_PATH = path.join(ROOT, "core", "config", "fonts.ts")
+const UI_DEFAULTS_PATH = path.join(ROOT, "core", "config", "ui-defaults.ts")
+const UI_RESOLVER_PATH = path.join(ROOT, "core", "document", "ui-settings-resolver.ts")
 const WORKSPACE_UI_STATE_PATH = path.join(ROOT, "lib", "workspace-ui-state.ts")
-const EXPORT_ACTIONS_PATH = path.join(ROOT, "hooks", "useExportActions.ts")
+const EXPORT_ACTIONS_PATH = path.join(ROOT, "gui", "shell", "hooks", "useExportActions.ts")
 
 function readText(filePath) {
   return fs.readFileSync(filePath, "utf8")

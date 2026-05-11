@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { buildTypographyLayoutPlan } from "../../lib/typography-layout-plan.ts"
+import { buildTypographyLayoutPlan } from "../../core/layout/typography-layout-plan.ts"
 
 test("newspaper reflow advances to the next column before using the bottom gutter as line space", () => {
   const lines = ["L1", "L2", "L3", "L4", "L5"].map((text, index) => ({

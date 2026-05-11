@@ -1,10 +1,10 @@
 import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from "react"
 import type { MouseEvent as ReactMouseEvent } from "react"
 
-import type { FontFamily } from "@/lib/config/fonts"
-import type { BlockRect, NoticeRequest, PagePoint } from "@/lib/preview-types"
-import type { PreviewTextLayerCollectionsState } from "@/lib/preview-text-layer-state"
-import type { ModulePosition } from "@/lib/types/layout-primitives"
+import type { FontFamily } from "@/core/config/fonts"
+import type { BlockRect, NoticeRequest, PagePoint } from "@/gui/preview/lib/preview-types"
+import type { PreviewTextLayerCollectionsState } from "@/gui/preview/lib/preview-text-layer-state"
+import type { ModulePosition } from "@/core/types/layout-primitives"
 
 export type LayerDragYMode = "moduleTop" | "baseline" | "free"
 

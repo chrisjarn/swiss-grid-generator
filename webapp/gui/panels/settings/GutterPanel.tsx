@@ -15,7 +15,7 @@ import {
   type GridRhythm,
   type GridRhythmColsDirection,
   type GridRhythmRowsDirection,
-} from "@/lib/config/defaults"
+} from "@/core/config/defaults"
 import { useSelectRolloverPreview } from "@/gui/editors/hooks/useSelectRolloverPreview"
 import { translateMessage, useTranslation } from "@/lib/i18n"
 import {

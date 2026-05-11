@@ -7,7 +7,7 @@ import {
   getImageColorScheme,
   IMAGE_COLOR_SCHEMES,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
+} from "@/core/config/color-schemes"
 import {
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,

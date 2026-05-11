@@ -7,8 +7,8 @@ import {
   collectPresetThumbnailFontLoadSpecs,
   collectPresetThumbnailFontMetricFaces,
   drawPresetThumbnailToCanvas,
-} from "@/lib/preset-thumbnail-render"
-import { preloadFontFileMetricFaces } from "@/lib/font-file-text-metrics-engine"
+} from "@/gui/preview/lib/preset-thumbnail-render"
+import { preloadFontFileMetricFaces } from "@/core/layout/font-file-text-metrics-engine"
 
 type Props = {
   page: LayoutPresetBrowserPage

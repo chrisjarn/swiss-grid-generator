@@ -1,23 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import { type FontFamily } from "@/lib/config/fonts"
+import { type FontFamily } from "@/core/config/fonts"
 import {
   collectBrowserFontLoadSpecs,
   preloadBrowserFontSpecs,
-} from "@/lib/browser-font-loading"
+} from "@/gui/preview/lib/browser-font-loading"
 import {
   areFontFileMetricFacesLoaded,
   collectFontFileMetricFacesFromBlocks,
   type FontFileMetricFace,
   preloadFontFileMetricFaces,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
-import type { TextFormatRun } from "@/lib/text-format-runs"
-import { createTextMetricsService } from "@/lib/text-metrics-service"
+} from "@/core/layout/layout-engine-contract"
+import type { TextFormatRun } from "@/core/layout/text-format-runs"
+import { createTextMetricsService } from "@/core/layout/text-metrics-service"
 
 type Args<Key extends string, StyleKey extends string> = {
   showTypography: boolean

@@ -2,7 +2,7 @@
 
 import { useCallback } from "react"
 
-import { translateMessage, type MessageKey } from "@/lib/i18n/messages"
+import { translateMessage, type MessageKey } from "@/core/i18n/messages"
 
 type TranslationValues = Parameters<typeof translateMessage>[1]
 

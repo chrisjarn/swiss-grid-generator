@@ -1,8 +1,8 @@
-import type { FontFamily } from "@/lib/config/fonts"
-import { parseHexColor, type RgbColor } from "@/lib/export-colors"
-import { loadOutlineFont, type OpenTypePathCommand } from "@/lib/font-outline"
-import type { PageExportTextPlan } from "@/lib/page-export-plan"
-import { getRenderedTextDrawCommandText } from "@/lib/text-draw-command"
+import type { FontFamily } from "@/core/config/fonts"
+import { parseHexColor, type RgbColor } from "@/core/export/colors"
+import { loadOutlineFont, type OpenTypePathCommand } from "@/core/layout/font-outline"
+import type { PageExportTextPlan } from "@/core/layout/page-export-plan"
+import { getRenderedTextDrawCommandText } from "@/core/layout/text-draw-command"
 
 export type GeometryPathPoint = {
   anchor: { x: number; y: number }

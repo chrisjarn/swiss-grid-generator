@@ -1,25 +1,25 @@
 import { useCallback } from "react"
 import type { RefObject } from "react"
 
-import type { GridResult } from "@/lib/grid-calculator"
+import type { GridResult } from "@/core/layout/grid-calculator"
 import {
   buildAxisStarts,
   findAxisIndexAtOffset,
   findNearestAxisIndex,
-} from "@/lib/grid-rhythm"
+} from "@/core/layout/grid-rhythm"
 import {
   resolveGridColumnStarts,
   resolveGridFirstColumnStep,
   resolveGridModuleWidths,
-} from "@/lib/grid-column-layout"
+} from "@/core/layout/grid-column-layout"
 import {
   resolveInterpolatedPreviewColumn,
   resolveNearestPreviewColumn,
   resolvePreviewColumnX,
-} from "@/lib/preview-column-snap"
-import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
-import type { PagePoint } from "@/lib/preview-types"
-import type { ModulePosition } from "@/lib/types/preview-layout"
+} from "@/core/layout/preview-column-snap"
+import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
+import type { PagePoint } from "@/gui/preview/lib/preview-types"
+import type { ModulePosition } from "@/core/types/preview-layout"
 
 export type PreviewGridMetrics = {
   contentLeft: number

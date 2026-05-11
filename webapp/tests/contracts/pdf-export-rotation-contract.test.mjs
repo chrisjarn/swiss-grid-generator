@@ -3,6 +3,11 @@ import assert from "node:assert/strict"
 import fs from "node:fs"
 import path from "node:path"
 
+import {
+  decodePdfExportWorkerRequest,
+  encodePdfExportWorkerRequest,
+} from "../../lib/pdf-export-worker-protocol.ts"
+
 const ROOT = process.cwd()
 
 function readText(relPath) {
@@ -10,7 +15,7 @@ function readText(relPath) {
 }
 
 test("page export plan extends baselines beyond the page before downstream clipping", () => {
-  const source = readText("lib/page-export-plan.ts")
+  const source = readText("core/layout/page-export-plan.ts")
   assert.match(source, /const\s+halfDiag\s*=\s*Math\.sqrt\(sourceWidth\s*\*\s*sourceWidth\s*\+\s*sourceHeight\s*\*\s*sourceHeight\)\s*\/\s*2/)
   assert.match(source, /x1:\s*-halfDiag/)
   assert.match(source, /x2:\s*sourceWidth\s*\+\s*halfDiag/)
@@ -18,7 +23,7 @@ test("page export plan extends baselines beyond the page before downstream clipp
 })
 
 test("typography layout plan reflows across the full stacked row height before advancing to the next column", () => {
-  const source = readText("lib/typography-layout-plan.ts")
+  const source = readText("core/layout/typography-layout-plan.ts")
   assert.match(source, /export\s+function\s+getTypographyLineCapacityForHeight\([\s\S]*?firstLineHeight\s*=\s*lineStep/)
   assert.match(source, /const\s+safeFirstLineHeight\s*=\s*Math\.max\(0\.0001,\s*firstLineHeight\)/)
   assert.match(source, /return\s+Math\.max\(1,\s*1\s*\+\s*Math\.floor\(\(availableHeight\s*-\s*safeFirstLineHeight\)\s*\/\s*safeLineStep\)\)/)
@@ -37,7 +42,7 @@ test("typography layout plan reflows across the full stacked row height before a
 })
 
 test("typography layout only reports overflow for newspaper reflow", () => {
-  const source = readText("lib/typography-layout-plan.ts")
+  const source = readText("core/layout/typography-layout-plan.ts")
   assert.match(source, /const\s+visibleLineCount\s*=\s*columnReflow\s*\?\s*Math\.min\(lines\.length,\s*maxLinesPerColumn\)\s*:\s*lines\.length/)
   assert.match(source, /const\s+overflowLines\s*=\s*columnReflow\s*\?\s*Math\.max\(0,\s*lines\.length\s*-\s*commands\.length\)\s*:\s*0/)
   assert.match(source, /const\s+visibleCaptionLineCount\s*=\s*captionReflowEnabled\s*\?\s*Math\.min\(captionLines\.length,\s*captionMaxLinesPerColumn\)\s*:\s*captionLines\.length/)
@@ -45,13 +50,13 @@ test("typography layout only reports overflow for newspaper reflow", () => {
 })
 
 test("page export plan only emits a page outline when guide layers are visible", () => {
-  const source = readText("lib/page-export-plan.ts")
+  const source = readText("core/layout/page-export-plan.ts")
   assert.match(source, /const\s+showPageOutline\s*=\s*showMargins\s*\|\|\s*showModules\s*\|\|\s*showBaselines/)
   assert.match(source, /const\s+pageOutline\s*=\s*showPageOutline/)
 })
 
 test("page export plan resolves paragraph and inline text colors through the text-scheme fallback, not the image placeholder fallback", () => {
-  const source = readText("lib/page-export-plan.ts")
+  const source = readText("core/layout/page-export-plan.ts")
   assert.match(source, /getDefaultTextSchemeColor/)
   assert.match(source, /resolveTextSchemeColor/)
   assert.match(source, /const\s+defaultTextColor\s*=\s*getDefaultTextSchemeColor\(imageColorScheme\)/)
@@ -62,8 +67,8 @@ test("page export plan resolves paragraph and inline text colors through the tex
 
 test("pdf export consumes the shared page export plan instead of rebuilding layout inline", () => {
   const source = readText("lib/pdf-vector-export.ts")
-  const plannedSource = readText("lib/planned-page-export-source.ts")
-  assert.match(source, /import\s+\{\s*buildPageExportPlan,[\s\S]*?\}\s+from\s+"@\/lib\/page-export-plan"/)
+  const plannedSource = readText("core/export/planned-page-export-source.ts")
+  assert.match(source, /import\s+\{\s*buildPageExportPlan,[\s\S]*?\}\s+from\s+"@\/core\/layout\/page-export-plan"/)
   assert.match(source, /exportPlan\?:\s*PageExportPlan/)
   assert.match(source, /exportPlan:\s*providedExportPlan/)
   assert.match(source, /const\s+exportPlan\s*=\s*providedExportPlan\s*\?\?\s*buildPageExportPlan\(\{[\s\S]*?showBaselines,[\s\S]*?showModules,[\s\S]*?showMargins,[\s\S]*?showImagePlaceholders,[\s\S]*?showTypography,/)
@@ -174,14 +179,101 @@ test("pdf export action forwards placeholder visibility and active image color s
 
 test("browser pdf export runs in a cancellable worker", () => {
   const source = readText("gui/shell/hooks/useExportActions.ts")
+  const clientSource = readText("lib/pdf-export-worker-client.ts")
   const workerSource = readText("workers/pdf-export.worker.ts")
-  assert.match(source, /new Worker\(new URL\("\.\.\/\.\.\/\.\.\/workers\/pdf-export\.worker\.ts",\s*import\.meta\.url\),\s*\{\s*type:\s*"module"\s*\}\)/)
+  assert.match(clientSource, /new Worker\(new URL\("\.\.\/workers\/pdf-export\.worker\.ts",\s*import\.meta\.url\),\s*\{\s*type:\s*"module"\s*\}\)/)
   assert.match(source, /currentExportWorkerRef\.current\?\.terminate\(\)/)
   assert.match(source, /currentExportRejectRef\.current\?\.\(new ExportCancelledError\(\)\)/)
+  assert.match(source, /runPdfExportInBrowserWorker\(\{[\s\S]*?onWorkerReady:[\s\S]*?currentExportWorkerRef\.current\s*=\s*worker/)
+  assert.match(clientSource, /encodePdfExportWorkerRequest\(\{[\s\S]*?project,[\s\S]*?pageNumbers:\s*\[\.\.\.pageNumbers\],[\s\S]*?\}\)/)
+  assert.match(clientSource, /worker\.postMessage\(\{\s*id:\s*requestId,\s*payload:\s*encodedRequest\.bytes,\s*\},\s*encodedRequest\.transfer\)/)
+  assert.doesNotMatch(clientSource, /worker\.postMessage\(\{[\s\S]*?project,/)
+  assert.match(workerSource, /decodePdfExportWorkerRequest\(envelope\.payload\)/)
+  assert.match(workerSource, /MessageEvent<PdfExportWorkerRequestEnvelope>/)
   assert.match(workerSource, /formats:\s*\["pdf"\]/)
   assert.match(workerSource, /onProgress:\s*\(progress\)\s*=>/)
   assert.match(workerSource, /type:\s*"progress"/)
+  assert.match(workerSource, /type:\s*"log"/)
+  assert.match(clientSource, /type:\s*"log";\s*message:\s*string/)
+  assert.match(clientSource, /onLog\?\.\(response\.message\)/)
   assert.match(workerSource, /type:\s*"done"/)
+})
+
+test("pdf worker protocol transfers request bytes instead of cloning the project object", () => {
+  const request = {
+    project: {
+      metadata: {
+        title: "transfer test",
+        description: "",
+        author: "",
+        createdAt: "2026-05-11T00:00:00.000Z",
+      },
+      visibilitySettings: {
+        showBaselines: true,
+        showModules: true,
+        showMargins: true,
+        showImagePlaceholders: true,
+        showTypography: true,
+      },
+      pages: [],
+    },
+    pageNumbers: [1],
+    visibilitySettings: {
+      showBaselines: true,
+      showModules: true,
+      showMargins: true,
+      showImagePlaceholders: true,
+      showTypography: true,
+    },
+    metadata: {
+      title: "transfer test",
+      description: "",
+      author: "",
+      createdAt: "2026-05-11T00:00:00.000Z",
+    },
+    baseName: "transfer-test",
+    filename: "transfer-test.pdf",
+    bleed: {
+      enabled: false,
+      widthMm: 3,
+    },
+  }
+
+  const encoded = encodePdfExportWorkerRequest(request)
+  assert.equal(encoded.transfer.length, 1)
+  assert.ok(encoded.bytes.byteLength > 0)
+  assert.deepEqual(decodePdfExportWorkerRequest(encoded.bytes), request)
+
+  const cloned = structuredClone({ payload: encoded.bytes }, { transfer: encoded.transfer })
+  assert.equal(encoded.bytes.byteLength, 0)
+  assert.deepEqual(decodePdfExportWorkerRequest(cloned.payload), request)
+})
+
+test("browser pdf benchmark uses the same transferable worker client as the export dialog", () => {
+  const benchmarkSource = readText("app/benchmark/pdf-export/page.tsx")
+  const clientSource = readText("lib/pdf-export-worker-client.ts")
+
+  assert.match(benchmarkSource, /runPdfExportInBrowserWorker\(\{[\s\S]*?project,[\s\S]*?pageNumbers:\s*selection\.pageNumbers/)
+  assert.match(benchmarkSource, /window\.__SGG_PDF_EXPORT_BENCHMARK__/)
+  assert.match(benchmarkSource, /formatExportPerformanceSummaryLines\(exportResult\.timings,\s*exportResult\.totalDurationMs\)/)
+  assert.match(benchmarkSource, /navigator\.clipboard\.writeText\(output\)/)
+  assert.match(clientSource, /encodePdfExportWorkerRequest\(\{[\s\S]*?project,[\s\S]*?pageNumbers:\s*\[\.\.\.pageNumbers\]/)
+  assert.match(clientSource, /worker\.postMessage\(\{\s*id:\s*requestId,\s*payload:\s*encodedRequest\.bytes,\s*\},\s*encodedRequest\.transfer\)/)
+  assert.doesNotMatch(benchmarkSource, /runProjectExport\(/)
+})
+
+test("export dialog exposes the shared export progress log without owning export planning", () => {
+  const dialogSource = readText("gui/dialogs/ExportDialog.tsx")
+  const workspaceDialogsSource = readText("gui/dialogs/WorkspaceDialogs.tsx")
+  const hookSource = readText("gui/shell/hooks/useExportActions.ts")
+
+  assert.match(hookSource, /formatExportPerformanceSummaryLines\(result\.timings,\s*result\.totalDurationMs\)/)
+  assert.match(hookSource, /onLog:\s*appendLog/)
+  assert.match(workspaceDialogsSource, /progressLog:\s*readonly\s+string\[\]/)
+  assert.match(workspaceDialogsSource, /exportProgressLog=\{exportDialog\.progressLog\}/)
+  assert.match(dialogSource, /t\("dialogs\.export\.progressLog"\)/)
+  assert.match(dialogSource, /exportProgressLog\.join\("\\n"\)/)
+  assert.doesNotMatch(dialogSource, /buildPageExportPlan|runProjectExport|runPdfExportInBrowserWorker/)
 })
 
 test("pdf export registers inline format-run fonts before rendering text", () => {
@@ -296,7 +388,7 @@ test("export dialog stays dark-mode-safe after removing size override controls",
 })
 
 test("default vector bleed starts disabled but keeps 3mm as the activation width", () => {
-  const source = readText("lib/config/ui-defaults.ts")
+  const source = readText("core/config/ui-defaults.ts")
   const optionsSource = readText("lib/export-format-options.ts")
   assert.doesNotMatch(source, /default_v001\.json/)
   assert.match(optionsSource, /DEFAULT_EXPORT_BLEED_OPTIONS:\s*ExportBleedOptions\s*=\s*\{[\s\S]*enabled:\s*false,[\s\S]*widthMm:\s*3/)

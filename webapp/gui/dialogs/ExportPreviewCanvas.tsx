@@ -2,19 +2,19 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 
-import type { LoadedProject } from "@/lib/document-session"
+import type { LoadedProject } from "@/core/document/session"
 import { translateMessage, useTranslation } from "@/lib/i18n"
 import {
   collectPresetThumbnailFontLoadSpecs,
   collectPresetThumbnailFontMetricFaces,
   drawPresetThumbnailToCanvas,
-} from "@/lib/preset-thumbnail-render"
+} from "@/gui/preview/lib/preset-thumbnail-render"
 import type { LayoutPresetBrowserPage } from "@/lib/presets/types"
 import {
   buildResolvedProjectPageExportSources,
   type ProjectPageVisibilitySettings,
-} from "@/lib/project-page-export-source"
-import { preloadFontFileMetricFaces } from "@/lib/font-file-text-metrics-engine"
+} from "@/core/export/project-page-export-source"
+import { preloadFontFileMetricFaces } from "@/core/layout/font-file-text-metrics-engine"
 import { cn } from "@/lib/utils"
 
 type Props = {

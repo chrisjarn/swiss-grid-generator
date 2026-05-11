@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { computeAutoFitBatch } from "../../lib/autofit-planner.ts"
+import { computeAutoFitBatch } from "../../core/layout/autofit-planner.ts"
 
 function makeInput() {
   return {

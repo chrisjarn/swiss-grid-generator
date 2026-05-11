@@ -3,7 +3,7 @@
 import { create } from "zustand"
 
 import type { DocumentPage, DocumentState, DocumentVisibilitySettings } from "@/core/types/document"
-import { DEFAULT_UI } from "@/lib/config/ui-defaults"
+import { DEFAULT_UI } from "@/core/config/ui-defaults"
 import {
   createDefaultProject,
   createProjectPage,
@@ -11,9 +11,9 @@ import {
   type LoadedProject,
   type ProjectPage,
   type ProjectVisibilitySettings,
-} from "@/lib/document-session"
-import { CURRENT_LAYOUT_ENGINE_CONTRACT } from "@/lib/layout-engine-contract"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
+} from "@/core/document/session"
+import { CURRENT_LAYOUT_ENGINE_CONTRACT } from "@/core/layout/layout-engine-contract"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
 
 type SwissDocumentState = DocumentState<PreviewLayoutState>
 type SwissDocumentPage = DocumentPage<PreviewLayoutState>

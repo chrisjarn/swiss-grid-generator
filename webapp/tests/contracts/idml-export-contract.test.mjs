@@ -11,7 +11,7 @@ function readText(relPath) {
 
 test("idml export rebuilds each project page through the shared resolver and page export plan", () => {
   const source = readText("lib/idml-export.ts")
-  const plannedSource = readText("lib/planned-page-export-source.ts")
+  const plannedSource = readText("core/export/planned-page-export-source.ts")
   assert.match(source, /for\s*\(const\s+\[index,\s*page\]\s+of\s+project\.pages\.entries\(\)\)/)
   assert.match(source, /buildResolvedProjectPageExportSource\(page,\s*sourcePath,\s*\{/)
   assert.match(source, /buildPlannedProjectPageExportSource\(resolved,\s*layoutEngine\)/)

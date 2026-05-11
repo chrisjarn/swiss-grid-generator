@@ -3,9 +3,9 @@ import type { MouseEvent as ReactMouseEvent } from "react"
 
 import type { PreviewCanvasInteractionArgs } from "@/gui/preview/hooks/preview-canvas-interaction-types"
 import type { DragState as PreviewDragState } from "@/gui/preview/hooks/usePreviewDrag"
-import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
-import type { PagePoint } from "@/lib/preview-types"
-import type { ModulePosition } from "@/lib/types/preview-layout"
+import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
+import type { PagePoint } from "@/gui/preview/lib/preview-types"
+import type { ModulePosition } from "@/core/types/preview-layout"
 
 type Args<Key extends string, StyleKey extends string> = Pick<
   PreviewCanvasInteractionArgs<Key, StyleKey>,

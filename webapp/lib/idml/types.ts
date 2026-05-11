@@ -1,6 +1,6 @@
-import type { ProjectMetadata } from "@/lib/document-session"
-import type { PageExportPlan } from "@/lib/page-export-plan"
-import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
+import type { ProjectMetadata } from "@/core/document/session"
+import type { PageExportPlan } from "@/core/layout/page-export-plan"
+import type { ResolvedProjectPageExportSource } from "@/core/export/project-page-export-source"
 
 export type IdmlFontMetadata = {
   family: string

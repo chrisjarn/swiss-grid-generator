@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { drawCanvasText, measureCanvasTextWidth, splitTextForTracking } from "../../lib/text-rendering.ts"
+import { drawCanvasText, measureCanvasTextWidth, splitTextForTracking } from "../../core/layout/text-rendering.ts"
 
 function createKerningContext() {
   const calls = []

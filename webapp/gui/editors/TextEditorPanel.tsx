@@ -24,42 +24,42 @@ import {
   getFontVariants,
   resolveFontVariant,
   type FontFamily,
-} from "@/lib/config/fonts"
-import { clampFxLeading, clampFxSize, clampRotation } from "@/lib/block-constraints"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { TextEditorControls as SharedTextEditorControls } from "@/lib/preview-overlay-controls"
+} from "@/core/config/fonts"
+import { clampFxLeading, clampFxSize, clampRotation } from "@/core/layout/block-constraints"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { TextEditorControls as SharedTextEditorControls } from "@/gui/preview/lib/preview-overlay-controls"
 import {
   applyTextFormatToRange,
   getUniformTextFormatValueForRange,
   rebaseTextFormatRuns,
   type BaseTextFormat,
-} from "@/lib/text-format-runs"
+} from "@/core/layout/text-format-runs"
 import {
   formatTrackingScale,
   MAX_TRACKING_SCALE,
   MIN_TRACKING_SCALE,
-} from "@/lib/text-rendering"
+} from "@/core/layout/text-rendering"
 import {
   applyTrackingScaleToRange,
   getUniformTrackingScaleForRange,
   rebaseTextTrackingRuns,
-} from "@/lib/text-tracking-runs"
-import { DOCUMENT_VARIABLE_DEFINITIONS } from "@/lib/document-variable-definitions"
+} from "@/core/layout/text-tracking-runs"
+import { DOCUMENT_VARIABLE_DEFINITIONS } from "@/core/document/variable-definitions"
 import {
   EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
   TEXT_EDITOR_SCROLL_STORAGE_KEY,
   TEXT_EDITOR_SECTIONS_STORAGE_KEY,
-} from "@/lib/editor-panel-persistence"
-import { resolveCustomStyleSeedMetrics } from "@/lib/preview-text-config"
-import { TEXT_SYMBOL_PALETTE_GROUPS } from "@/lib/text-symbol-palette"
+} from "@/gui/editors/lib/editor-panel-persistence"
+import { resolveCustomStyleSeedMetrics } from "@/gui/preview/lib/preview-text-config"
+import { TEXT_SYMBOL_PALETTE_GROUPS } from "@/gui/editors/lib/text-symbol-palette"
 import { useAutoScrollOpenedSection } from "@/gui/editors/hooks/useAutoScrollOpenedSection"
 import { usePersistedSectionState } from "@/gui/editors/hooks/usePersistedSectionState"
 import { PREVIEW_PERF_UPDATED_EVENT, type PerfPayload } from "@/gui/preview/hooks/usePreviewPerf"
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
-import type { HelpSectionId } from "@/lib/help-registry"
+import type { HelpSectionId } from "@/core/document/help-registry"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import type { MessageKey } from "@/lib/i18n/messages"
+import type { MessageKey } from "@/core/i18n/messages"
 import type { BlockEditorTextAlign, BlockEditorVerticalAlign } from "@/gui/editors/block-editor-types"
 
 type TextEditorPanelProps<StyleKey extends string> = {

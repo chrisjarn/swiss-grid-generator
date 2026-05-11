@@ -4,7 +4,7 @@ import { create } from "zustand"
 
 import type { LayerId, PageId } from "@/core/types/document"
 import type { WorkspacePanel, WorkspaceState, WorkspaceTool } from "@/core/types/workspace"
-import { DEFAULT_UI } from "@/lib/config/ui-defaults"
+import { DEFAULT_UI } from "@/core/config/ui-defaults"
 
 type WorkspaceStoreState = WorkspaceState & {
   setActiveTool: (activeTool: WorkspaceTool) => void

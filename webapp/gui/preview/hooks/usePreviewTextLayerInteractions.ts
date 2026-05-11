@@ -1,16 +1,16 @@
 import { useCallback } from "react"
 import type { MouseEvent as ReactMouseEvent } from "react"
 
-import { clampFxLeading, clampFxSize } from "@/lib/block-constraints"
-import { isImagePlaceholderColor } from "@/lib/config/color-schemes"
+import { clampFxLeading, clampFxSize } from "@/core/layout/block-constraints"
+import { isImagePlaceholderColor } from "@/core/config/color-schemes"
 import type { PreviewCanvasInteractionArgs } from "@/gui/preview/hooks/preview-canvas-interaction-types"
 import type { DragState as PreviewDragState } from "@/gui/preview/hooks/usePreviewDrag"
 import {
   clampTextBlockPosition,
   duplicateTextLayerInCollections,
-} from "@/lib/preview-text-layer-state"
-import type { ModulePosition } from "@/lib/types/preview-layout"
-import { translateMessage } from "@/lib/i18n/messages"
+} from "@/gui/preview/lib/preview-text-layer-state"
+import type { ModulePosition } from "@/core/types/preview-layout"
+import { translateMessage } from "@/core/i18n/messages"
 
 type Args<Key extends string, StyleKey extends string> = Pick<
   PreviewCanvasInteractionArgs<Key, StyleKey>,

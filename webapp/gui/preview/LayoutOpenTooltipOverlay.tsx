@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { useTranslation } from "@/lib/i18n"
-import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
+import type { LayoutOpenTooltipItem } from "@/gui/preview/lib/generated-tooltip-content"
 
 const FADE_DURATION_MS = 220
 

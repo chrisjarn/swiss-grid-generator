@@ -2,7 +2,7 @@ import {
   computeReflowPlan,
   type ReflowPlan,
   type ReflowPlannerInput,
-} from "@/lib/reflow-planner"
+} from "@/core/layout/reflow-planner"
 
 type ReflowPlanRequest = {
   id: number

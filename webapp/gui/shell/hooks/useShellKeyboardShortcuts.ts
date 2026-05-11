@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 
-import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
+import { PREVIEW_HEADER_SHORTCUTS } from "@/gui/shell/lib/preview-header-shortcuts"
 
 type Args = {
   canUndo: boolean

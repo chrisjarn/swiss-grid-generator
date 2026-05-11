@@ -1,35 +1,35 @@
 import { useCallback, useRef } from "react"
 
 import type { BlockEditorTextAlign, BlockEditorVerticalAlign } from "@/gui/editors/block-editor-types"
-import { normalizeHeightMetrics } from "@/lib/block-height"
+import { normalizeHeightMetrics } from "@/core/layout/block-height"
 import { useLayoutSnapshot } from "@/gui/preview/hooks/useLayoutSnapshot"
 import { useStateCommands, type Updater } from "@/gui/editors/hooks/useStateCommands"
-import { clampRotation } from "@/lib/block-constraints"
+import { clampRotation } from "@/core/layout/block-constraints"
 import {
   getStyleDefaultFontWeight,
   isFontFamily,
   resolveFontVariant,
   type FontFamily,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 import {
   BASE_BLOCK_IDS,
   DEFAULT_STYLE_ASSIGNMENTS,
   createDefaultTextContent,
   isBaseBlockId,
-} from "@/lib/document-defaults"
-import type { GridResult } from "@/lib/grid-calculator"
-import type { PreviewTextLayerCollectionsState } from "@/lib/preview-text-layer-state"
+} from "@/core/document/defaults"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import type { PreviewTextLayerCollectionsState } from "@/gui/preview/lib/preview-text-layer-state"
 import {
   DEFAULT_OPTICAL_KERNING,
   DEFAULT_TRACKING_SCALE,
   normalizeOpticalKerning,
   normalizeTrackingScale,
-} from "@/lib/text-rendering"
-import { normalizeTextFormatRuns, type TextFormatRun } from "@/lib/text-format-runs"
-import { normalizeTextTrackingRuns, type TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { PreviewLayoutState as SharedPreviewLayoutState, TextBlockPosition } from "@/lib/types/preview-layout"
-import { getDefaultColumnSpan } from "@/lib/text-layout"
-import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/lib/typography-behavior"
+} from "@/core/layout/text-rendering"
+import { normalizeTextFormatRuns, type TextFormatRun } from "@/core/layout/text-format-runs"
+import { normalizeTextTrackingRuns, type TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { PreviewLayoutState as SharedPreviewLayoutState, TextBlockPosition } from "@/core/types/preview-layout"
+import { getDefaultColumnSpan } from "@/core/layout/text-layout"
+import { resolveSyllableDivisionEnabled, resolveTextReflowEnabled } from "@/core/layout/typography-behavior"
 
 type BlockId = string
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]

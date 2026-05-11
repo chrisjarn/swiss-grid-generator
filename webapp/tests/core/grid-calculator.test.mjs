@@ -8,7 +8,7 @@ import {
   getCustomCanvasFormatDimensions,
   generateSwissGrid,
   getMaxBaseline,
-} from "../../lib/grid-calculator.ts"
+} from "../../core/layout/grid-calculator.ts"
 
 const EPS = 0.02
 

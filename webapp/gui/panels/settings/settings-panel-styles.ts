@@ -1,5 +1,5 @@
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
-import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
+import { SECTION_HEADLINE_CLASSNAME } from "@/shared/ui/section-headline"
 import { SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
 
 export const SETTINGS_ROW_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} ${SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME} flex h-8 items-center text-left leading-none`

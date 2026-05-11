@@ -9,20 +9,20 @@ import {
   isImagePlaceholderColor,
   resolveImageSchemeColor,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
-import { getFontFamilyCss } from "@/lib/config/fonts"
-import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacity"
+} from "@/core/config/color-schemes"
+import { getFontFamilyCss } from "@/core/config/fonts"
+import { normalizeImagePlaceholderOpacity } from "@/core/layout/image-placeholder-opacity"
 import {
   clearWindowSelection,
   isCardDragIgnoreTarget,
   lockDocumentUserSelect,
-} from "@/lib/sidebar-card-drag"
+} from "@/gui/panels/sidebar/lib/sidebar-card-drag"
 import {
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,
 } from "@/gui/panels/settings/settings-panel-styles"
-import { getTextLayerDisplayName } from "@/lib/layer-display-name"
-import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
+import { getTextLayerDisplayName } from "@/gui/panels/sidebar/lib/layer-display-name"
+import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>

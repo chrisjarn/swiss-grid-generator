@@ -1,23 +1,23 @@
-import type { LoadedProject } from "@/lib/document-session"
-import { getFontVariants, isFontFamily, type FontFamily } from "@/lib/config/fonts"
+import type { LoadedProject } from "@/core/document/session"
+import { getFontVariants, isFontFamily, type FontFamily } from "@/core/config/fonts"
 import {
   preloadFontFileMetricFaces,
   type FontFileMetricFace,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import { buildSwissGridIdmlPackage } from "@/lib/idml/builder"
-import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
+import { measureLayoutPerformanceAsync } from "@/core/layout/layout-performance"
 import type { SwissGridIdmlDocument } from "@/lib/idml/types"
-import { buildResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
-import type { ProjectPageVisibilitySettings } from "@/lib/project-page-export-source"
-import { buildPlannedProjectPageExportSource } from "@/lib/planned-page-export-source"
+import { buildResolvedProjectPageExportSource } from "@/core/export/project-page-export-source"
+import type { ProjectPageVisibilitySettings } from "@/core/export/project-page-export-source"
+import { buildPlannedProjectPageExportSource } from "@/core/export/planned-page-export-source"
 import {
   getProjectPagePhysicalPageNumberAtIndex,
   getProjectPhysicalPageCount,
-} from "@/lib/document-page-numbering"
+} from "@/core/document/page-numbering"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 
 type IdmlExportProgress = {
   completedSteps: number

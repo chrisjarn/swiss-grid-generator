@@ -1,7 +1,7 @@
 import { memo, useState } from "react"
 import { Info } from "lucide-react"
 import { Label } from "@/shared/ui/label"
-import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
+import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/gui/preview/lib/preview-text-config"
 import {
   MAX_FIBONACCI_SEQUENCE_START_INDEX,
   MIN_FIBONACCI_SEQUENCE_START_INDEX,
@@ -9,10 +9,10 @@ import {
   formatFibonacciTypographySequence,
   generateTypographyStyles,
   TYPOGRAPHY_SCALE_LABELS,
-} from "@/lib/grid-calculator"
-import type { GridResult } from "@/lib/grid-calculator"
-import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/lib/config/fonts"
-import type { TypographyScale } from "@/lib/config/defaults"
+} from "@/core/layout/grid-calculator"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/core/config/fonts"
+import type { TypographyScale } from "@/core/config/defaults"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
 import { useSelectRolloverPreview } from "@/gui/editors/hooks/useSelectRolloverPreview"
 import {

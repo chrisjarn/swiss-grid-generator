@@ -6,8 +6,8 @@ import {
   getUniformTrackingScaleForRange,
   normalizeTextTrackingRuns,
   remapTrackingRunsForTextEdit,
-} from "../../lib/text-tracking-runs.ts"
-import { buildPositionedTextFormatTrackingSegmentsFromGraphemes } from "../../lib/text-format-runs.ts"
+} from "../../core/layout/text-tracking-runs.ts"
+import { buildPositionedTextFormatTrackingSegmentsFromGraphemes } from "../../core/layout/text-format-runs.ts"
 
 test("normalizeTextTrackingRuns merges adjacent runs and drops base-tracking ranges", () => {
   const runs = normalizeTextTrackingRuns("Swiss Grid", [

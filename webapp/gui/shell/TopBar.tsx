@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from "re
 import { HeaderIconButton } from "@/shared/ui/header-icon-button"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { useTranslation } from "@/lib/i18n"
-import { PREVIEW_HEADER_SHORTCUTS } from "@/lib/preview-header-shortcuts"
+import { PREVIEW_HEADER_SHORTCUTS } from "@/gui/shell/lib/preview-header-shortcuts"
 import type { HeaderAction, HeaderItem } from "@/gui/shell/hooks/useHeaderActions"
 
 export type TopBarProps = {

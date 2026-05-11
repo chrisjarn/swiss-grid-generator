@@ -1,5 +1,5 @@
-import type { LayoutEngineContract } from "@/lib/layout-engine-contract"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
+import type { LayoutEngineContract } from "@/core/layout/layout-engine-contract"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
 
 export type DocumentId = string
 export type PageId = string

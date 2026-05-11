@@ -2,21 +2,21 @@ import {
   computeAutoFitBatch,
   type AutoFitPlannerInput,
   type AutoFitPlannerOutput,
-} from "@/lib/autofit-planner"
+} from "@/core/layout/autofit-planner"
 import {
   createLoadedFontFileGlyphBoundsMeasureForCanvasFont,
   createLoadedFontFilePairAdvanceMeasureForCanvasFont,
   preloadFontFileMetricFaces,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import {
   applyCanvasTextConfig,
   buildCanvasFont,
   measureCanvasTextWidth,
-} from "@/lib/text-rendering"
+} from "@/core/layout/text-rendering"
 import {
   measureTrackedTextRangeWidth,
   normalizeTextTrackingRuns,
-} from "@/lib/text-tracking-runs"
+} from "@/core/layout/text-tracking-runs"
 
 type AutoFitRequest = {
   id: number

@@ -3,18 +3,18 @@
 import { useState, useMemo, useRef, useEffect, useCallback, type ChangeEvent, type MouseEvent as ReactMouseEvent } from "react"
 import {
   getMaxBaseline,
-} from "@/lib/grid-calculator"
-import type { GridResult } from "@/lib/grid-calculator"
+} from "@/core/layout/grid-calculator"
+import type { GridResult } from "@/core/layout/grid-calculator"
 import { SettingsSidebarPanels } from "@/gui/panels/settings/SettingsSidebarPanels"
-import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import { SECTION_KEYS, type SectionKey, type UiSettingsSnapshot } from "@/lib/workspace-ui-schema"
+import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
+import { SECTION_KEYS, type SectionKey, type UiSettingsSnapshot } from "@/core/types/workspace-ui-schema"
 import { useExportActions } from "@/gui/shell/hooks/useExportActions"
 import { useHeaderActions } from "@/gui/shell/hooks/useHeaderActions"
 import {
   HELP_SECTION_BY_HEADER_ACTION,
   HELP_SECTION_BY_SETTINGS_SECTION,
   type HelpSectionId,
-} from "@/lib/help-registry"
+} from "@/core/document/help-registry"
 import { WorkspaceDialogs } from "@/gui/dialogs/WorkspaceDialogs"
 import { useShellKeyboardShortcuts } from "@/gui/shell/hooks/useShellKeyboardShortcuts"
 import { useWorkspaceUiActions } from "@/gui/shell/hooks/useWorkspaceUiActions"
@@ -22,6 +22,7 @@ import { useUiSettingsPreview } from "@/gui/shell/hooks/useUiSettingsPreview"
 import { useProjectTourController } from "@/gui/shell/hooks/useProjectTourController"
 import { useSupabaseAuth } from "@/gui/shell/hooks/useSupabaseAuth"
 import { useCloudProjectSync } from "@/gui/shell/hooks/useCloudProjectSync"
+import { useLayoutOpenTooltipController } from "@/gui/shell/hooks/useLayoutOpenTooltipController"
 import { useSettledPageNavigation } from "@/gui/shell/hooks/useSettledPageNavigation"
 import {
   documentToLoadedProject,
@@ -31,13 +32,13 @@ import {
 } from "@/gui/state/documentStore"
 import { useWorkspaceStore } from "@/gui/state/workspaceStore"
 import { DARK_WORKSPACE_THEME, LIGHT_WORKSPACE_THEME } from "@/gui/shell/workspaceTheme"
-import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage, type ProjectVisibilitySettings } from "@/lib/document-session"
-import { type FontFamily } from "@/lib/config/fonts"
-import { BASELINE_OPTIONS } from "@/lib/config/defaults"
-import { DEFAULT_UI } from "@/lib/config/ui-defaults"
+import { parseLoadedProject, type LoadedProject, type ProjectMetadata, type ProjectPage, type ProjectVisibilitySettings } from "@/core/document/session"
+import { type FontFamily } from "@/core/config/fonts"
+import { BASELINE_OPTIONS } from "@/core/config/defaults"
+import { DEFAULT_UI } from "@/core/config/ui-defaults"
 import {
   resolveImageSchemeColor,
-} from "@/lib/config/color-schemes"
+} from "@/core/config/color-schemes"
 import {
   DEFAULT_A4_BASELINE,
   buildUiSnapshotFromLoadedSettings,
@@ -48,23 +49,20 @@ import {
   buildGridResultFromUiSettings,
   buildSerializableUiSettingsSnapshot,
   resolveUiSettingsSnapshot,
-} from "@/lib/ui-settings-resolver"
-import { resolveCurrentPreviewLayout } from "@/lib/current-preview-layout"
-import {
-  findTextLayerGridReductionConflicts,
-  getGridReductionWarningMessage,
-} from "@/lib/grid-reduction-validation"
-import { toProjectFilenameStem, toProjectJsonFilename } from "@/lib/project-file-naming"
-import { getDefaultColumnSpan } from "@/lib/text-layout"
+} from "@/core/document/ui-settings-resolver"
+import { resolveCurrentPreviewLayout } from "@/gui/preview/lib/current-preview-layout"
+import { findTextLayerGridReductionConflicts } from "@/core/layout/grid-reduction-validation"
+import { getGridReductionWarningMessage } from "@/gui/lib/grid-reduction-warning"
+import { toProjectFilenameStem, toProjectJsonFilename } from "@/gui/shell/lib/project-file-naming"
+import { getDefaultColumnSpan } from "@/core/layout/text-layout"
 import {
   resolveAdjacentProjectPageId,
   resolveProjectPageBoundaryId,
-} from "@/lib/project-page-navigation"
-import { LAYOUT_OPEN_TOOLTIP_ITEMS, type LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
+} from "@/gui/shell/lib/project-page-navigation"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
-import { resetEditorPanelPersistence } from "@/lib/editor-panel-persistence"
+import { resetEditorPanelPersistence } from "@/gui/editors/lib/editor-panel-persistence"
 import { parseProjectTransferPayloadBytes } from "@/lib/project-transfer"
-import { PREVIEW_LAYER_SELECTION_GRACE_MS } from "@/lib/preview-interaction-constants"
+import { PREVIEW_LAYER_SELECTION_GRACE_MS } from "@/gui/preview/lib/preview-interaction-constants"
 import { CanvasContainer } from "@/gui/shell/CanvasContainer"
 import { LeftToolbar } from "@/gui/shell/LeftToolbar"
 import type {
@@ -84,11 +82,10 @@ import {
   getSaveStatusIndicatorClassName,
   getSaveStatusIndicatorLabel,
   type SaveStatusIndicatorStatus,
-} from "@/lib/cloud-status-indicator"
+} from "@/gui/shell/lib/cloud-status-indicator"
 import { translateMessage } from "@/lib/i18n"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
-const LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY = "swiss-grid-generator.layout-open-tooltip-cursor"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 const DEFAULT_PAGE_PREVIEW_LAYOUT: PreviewLayoutState | null = null
@@ -113,18 +110,6 @@ const MAX_PROJECT_PAGE_COUNT = 1000
 
 type ProjectLoadTimingState = {
   elapsedMs: number | null
-}
-
-function readStoredNonNegativeInteger(key: string): number {
-  if (typeof window === "undefined") return 0
-  try {
-    const raw = window.localStorage.getItem(key)
-    if (!raw) return 0
-    const parsed = Number.parseInt(raw, 10)
-    return Number.isFinite(parsed) && parsed >= 0 ? parsed : 0
-  } catch {
-    return 0
-  }
 }
 
 function applyLayerLockStateToKeys(
@@ -410,11 +395,13 @@ export function ShellModelView() {
   const requestLayerEditor = useDocumentStore((state) => state.requestLayerEditor)
   const requestLayerLock = useDocumentStore((state) => state.requestLayerLock)
   const clearLayerRequests = useDocumentStore((state) => state.clearLayerRequests)
-  const [activeLayoutOpenTooltip, setActiveLayoutOpenTooltip] = useState<{
-    displayToken: number
-    index: number
-    item: LayoutOpenTooltipItem
-  } | null>(null)
+  const {
+    activeLayoutOpenTooltip,
+    dismissLayoutOpenTooltip,
+    handleNextLayoutOpenTooltip,
+    layoutOpenTooltipTotalCount,
+    showNextLayoutOpenTooltip,
+  } = useLayoutOpenTooltipController()
   const [noticeState, setNoticeState] = useState<NoticeState>(null)
   const [gridReductionWarningToast, setGridReductionWarningToast] = useState<GridReductionWarningToastState>(null)
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
@@ -422,8 +409,6 @@ export function ShellModelView() {
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
   const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
   const [projectPanelResetToken, setProjectPanelResetToken] = useState(0)
-  const layoutOpenTooltipDisplayTokenRef = useRef(0)
-  const layoutOpenTooltipDismissedForSessionRef = useRef(false)
 
   const ui = useMemo(() => resolveUiSettingsSnapshot(activeDocumentPage?.uiSettings ?? {}, {
     showBaselinesFallback: documentVisibilitySettings.showBaselines,
@@ -512,52 +497,6 @@ export function ShellModelView() {
     user,
     onRequestNotice: handleRequestNotice,
   })
-  const dismissLayoutOpenTooltip = useCallback((mode: "dismiss" | "session" = "dismiss") => {
-    if (mode === "session") {
-      layoutOpenTooltipDismissedForSessionRef.current = true
-    }
-    setActiveLayoutOpenTooltip(null)
-  }, [])
-  const setLayoutOpenTooltipByIndex = useCallback((index: number) => {
-    const fallbackItem = LAYOUT_OPEN_TOOLTIP_ITEMS[0]
-    if (!fallbackItem) return
-
-    const totalCount = LAYOUT_OPEN_TOOLTIP_ITEMS.length
-    const safeIndex = ((index % totalCount) + totalCount) % totalCount
-    const item = LAYOUT_OPEN_TOOLTIP_ITEMS[safeIndex] ?? fallbackItem
-
-    layoutOpenTooltipDisplayTokenRef.current += 1
-    setActiveLayoutOpenTooltip({
-      displayToken: layoutOpenTooltipDisplayTokenRef.current,
-      index: safeIndex,
-      item,
-    })
-
-    try {
-      window.localStorage.setItem(
-        LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY,
-        String((safeIndex + 1) % totalCount),
-      )
-    } catch {
-      // Ignore persistence failures and continue rotating in-memory for this session.
-    }
-  }, [])
-  const showNextLayoutOpenTooltip = useCallback(() => {
-    if (typeof window === "undefined") {
-      return
-    }
-    if (layoutOpenTooltipDismissedForSessionRef.current) return
-
-    const cursor = readStoredNonNegativeInteger(LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY)
-    setLayoutOpenTooltipByIndex(cursor)
-  }, [setLayoutOpenTooltipByIndex])
-  const handleNextLayoutOpenTooltip = useCallback(() => {
-    if (typeof window === "undefined" || !LAYOUT_OPEN_TOOLTIP_ITEMS[0]) return
-    const nextIndex = activeLayoutOpenTooltip
-      ? (activeLayoutOpenTooltip.index + 1) % LAYOUT_OPEN_TOOLTIP_ITEMS.length
-      : readStoredNonNegativeInteger(LAYOUT_OPEN_TOOLTIP_CURSOR_STORAGE_KEY)
-    setLayoutOpenTooltipByIndex(nextIndex)
-  }, [activeLayoutOpenTooltip, setLayoutOpenTooltipByIndex])
   const handleProjectPageLimitReached = useCallback((limit: number) => {
     handleRequestNotice({
       title: translateMessage("status.notices.pageLimitTitle"),
@@ -2218,7 +2157,7 @@ export function ShellModelView() {
       onEditorModeChange={setEditorSidebarMode}
       closeSidebarPanel={closeSidebarPanel}
       layoutOpenTooltip={activeLayoutOpenTooltip}
-      layoutOpenTooltipTotalCount={LAYOUT_OPEN_TOOLTIP_ITEMS.length}
+      layoutOpenTooltipTotalCount={layoutOpenTooltipTotalCount}
       onDismissLayoutOpenTooltip={dismissLayoutOpenTooltip}
       onNextLayoutOpenTooltip={handleNextLayoutOpenTooltip}
       tourState={projectTour ? {
@@ -2424,6 +2363,7 @@ export function ShellModelView() {
             onBleedMmChange: exportActions.setBleedWidthMmDraft,
             onConfirm: exportActions.confirmExport,
             progress: exportActions.exportProgress,
+            progressLog: exportActions.exportProgressLog,
             previewProject: exportActions.previewProject,
           }}
           saveLibraryDialog={{

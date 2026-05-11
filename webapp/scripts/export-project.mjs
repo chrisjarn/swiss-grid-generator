@@ -4,6 +4,10 @@ import { fileURLToPath } from "node:url"
 
 import { runProjectExport } from "@/lib/project-export-runner"
 import {
+  createExportElapsedLogFormatter,
+  formatExportPerformanceSummaryLines,
+} from "@/lib/export-performance-log"
+import {
   DEFAULT_EXPORT_BLEED_OPTIONS,
   EXPORT_VECTOR_FORMATS,
   normalizeExportBleedOptions,
@@ -143,10 +147,9 @@ function parseOptionalCompressionLevel(value) {
 }
 
 function createLogger() {
-  const start = performance.now()
+  const formatLogLine = createExportElapsedLogFormatter()
   return (message) => {
-    const seconds = ((performance.now() - start) / 1000).toFixed(1).padStart(6, " ")
-    console.log(`[+${seconds}s] ${message}`)
+    console.log(formatLogLine(message))
   }
 }
 
@@ -272,12 +275,9 @@ async function main() {
     }
   }
 
-  log("performance summary:")
-  for (const entry of result.timings) {
-    const seconds = (entry.durationMs / 1000).toFixed(2).padStart(7, " ")
-    log(`  ${entry.label.padEnd(22)} ${seconds}s${entry.extra ? ` ${entry.extra}` : ""}`)
+  for (const line of formatExportPerformanceSummaryLines(result.timings, performance.now() - totalStartedAt)) {
+    log(line)
   }
-  log(`  ${"total".padEnd(22)} ${((performance.now() - totalStartedAt) / 1000).toFixed(2).padStart(7, " ")}s`)
 }
 
 main().catch((error) => {

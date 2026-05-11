@@ -1,7 +1,7 @@
 import { useEffect } from "react"
 import type { MutableRefObject } from "react"
 
-import { eventPathHasEditorOwnedTarget } from "@/lib/editor-interaction-ownership"
+import { eventPathHasEditorOwnedTarget } from "@/gui/editors/lib/editor-interaction-ownership"
 
 type Args = {
   isEditorOpen: boolean

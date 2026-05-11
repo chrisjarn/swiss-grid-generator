@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, "../..")
 const helpSourcePath = path.join(repoRoot, "webapp/messages/en/content/help.md")
-const outputPath = path.join(repoRoot, "webapp/lib/generated-help-content.ts")
+const outputPath = path.join(repoRoot, "webapp/core/document/generated-help-content.ts")
 
 const DIRECTIVES = new Set([
   "APP_VERSION",

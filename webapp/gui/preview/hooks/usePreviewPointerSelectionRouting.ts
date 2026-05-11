@@ -6,8 +6,8 @@ import type {
   LayerPlacementOptions,
 } from "@/gui/preview/hooks/preview-canvas-interaction-types"
 import { usePreviewDrag, type DragState as PreviewDragState } from "@/gui/preview/hooks/usePreviewDrag"
-import { PREVIEW_DRAG_CLICK_GUARD_MS } from "@/lib/preview-interaction-constants"
-import type { ModulePosition } from "@/lib/types/layout-primitives"
+import { PREVIEW_DRAG_CLICK_GUARD_MS } from "@/gui/preview/lib/preview-interaction-constants"
+import type { ModulePosition } from "@/core/types/layout-primitives"
 
 type Args<Key extends string, StyleKey extends string> = Pick<
   PreviewCanvasInteractionArgs<Key, StyleKey>,

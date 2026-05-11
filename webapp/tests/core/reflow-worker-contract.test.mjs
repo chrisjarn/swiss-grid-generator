@@ -6,7 +6,7 @@ import path from "node:path"
 import {
   computeReflowPlan,
   createReflowPlanSignature,
-} from "../../lib/reflow-planner.ts"
+} from "../../core/layout/reflow-planner.ts"
 
 const ROOT = process.cwd()
 

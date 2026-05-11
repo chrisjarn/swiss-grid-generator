@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
-import { FONT_CSS_VARS, FONT_FACE_CSS } from "@/lib/config/fonts"
+import { FONT_CSS_VARS, FONT_FACE_CSS } from "@/core/config/fonts"
 import { LIGHT_UI_THEME_COLOR } from "@/lib/theme-color"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 
 const inter = Inter({ subsets: ["latin"] })
 

@@ -1,5 +1,5 @@
 import type { LayerId, PageId } from "@/core/types/document"
-import type { SectionKey } from "@/lib/workspace-ui-schema"
+import type { SectionKey } from "@/core/types/workspace-ui-schema"
 
 export type WorkspaceTool = "select" | "text" | "image" | "pan"
 export type WorkspacePanel = "layers" | "account" | "feedback" | "help" | "legal" | null

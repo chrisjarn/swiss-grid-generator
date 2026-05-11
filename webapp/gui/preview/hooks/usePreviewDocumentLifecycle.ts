@@ -1,9 +1,9 @@
 import { useEffect } from "react"
 import type { Dispatch, MutableRefObject, SetStateAction } from "react"
 
-import { areLayerOrdersEqual, reconcileLayerOrder } from "@/lib/preview-layer-order"
-import type { FontFamily } from "@/lib/config/fonts"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
+import { areLayerOrdersEqual, reconcileLayerOrder } from "@/gui/preview/lib/preview-layer-order"
+import type { FontFamily } from "@/core/config/fonts"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
 
 type Args<StyleKey extends string, Key extends string, DragState, TextEditorState, ImageEditorState> = {
   historyResetToken: number

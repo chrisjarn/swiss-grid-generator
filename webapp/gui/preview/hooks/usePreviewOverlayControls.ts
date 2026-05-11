@@ -2,11 +2,11 @@ import { useMemo } from "react"
 import type { Dispatch, SetStateAction } from "react"
 
 import type { BlockEditorState, BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
-import { applyBlockEditorTextEdit } from "@/lib/block-editor-text-edit"
-import { normalizeInlineEditorText } from "@/lib/inline-text-normalization"
-import { applyTextFormatToRange } from "@/lib/text-format-runs"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { InsertEditorTextOptions, PreviewColorSchemeOption, TextEditorControls } from "@/lib/preview-overlay-controls"
+import { applyBlockEditorTextEdit } from "@/gui/editors/lib/block-editor-text-edit"
+import { normalizeInlineEditorText } from "@/gui/editors/lib/inline-text-normalization"
+import { applyTextFormatToRange } from "@/core/layout/text-format-runs"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { InsertEditorTextOptions, PreviewColorSchemeOption, TextEditorControls } from "@/gui/preview/lib/preview-overlay-controls"
 
 type Args<StyleKey extends string> = {
   editorState: BlockEditorState<StyleKey> | null

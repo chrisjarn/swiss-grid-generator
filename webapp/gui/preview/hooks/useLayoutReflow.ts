@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useRef } from "react"
 
-import type { AutoFitPlannerInput, AutoFitStyle } from "@/lib/autofit-planner"
-import {
-  findTextLayerGridReductionConflicts,
-  getGridReductionWarningMessage,
-} from "@/lib/grid-reduction-validation"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { ModulePosition, TextBlockPosition } from "@/lib/types/layout-primitives"
+import type { AutoFitPlannerInput, AutoFitStyle } from "@/core/layout/autofit-planner"
+import { findTextLayerGridReductionConflicts } from "@/core/layout/grid-reduction-validation"
+import { getGridReductionWarningMessage } from "@/gui/lib/grid-reduction-warning"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { ModulePosition, TextBlockPosition } from "@/core/types/layout-primitives"
 
 type Args<BlockId extends string> = {
   suppressReflowCheckRef: { current: boolean }

@@ -15,11 +15,11 @@ import type {
   GridRhythmColsDirection,
   GridRhythmRowsDirection,
   TypographyScale,
-} from "@/lib/config/defaults"
-import type { FontFamily } from "@/lib/config/fonts"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { CanvasRatioKey, GridResult } from "@/lib/grid-calculator"
-import type { SectionKey } from "@/lib/workspace-ui-schema"
+} from "@/core/config/defaults"
+import type { FontFamily } from "@/core/config/fonts"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { CanvasRatioKey, GridResult } from "@/core/layout/grid-calculator"
+import type { SectionKey } from "@/core/types/workspace-ui-schema"
 
 type CustomMarginMultipliers = {
   top: number

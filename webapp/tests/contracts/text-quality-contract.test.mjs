@@ -10,8 +10,8 @@ const PRODUCT_TEXT_FILES = [
   "messages/en/content/help.md",
   "messages/en/content/tooltips.md",
   "messages/en/content/manual.md",
-  "lib/generated-help-content.ts",
-  "lib/generated-tooltip-content.ts",
+  "core/document/generated-help-content.ts",
+  "gui/preview/lib/generated-tooltip-content.ts",
 ]
 
 const PRESET_METADATA_FILES = [
@@ -226,7 +226,7 @@ test("application code keeps message access behind the typed i18n boundary", () 
   const hardcodedCapitalizationViolations = []
 
   for (const relPath of sourceFiles) {
-    if (relPath === "lib/i18n/messages.ts" || relPath.startsWith("tests/")) continue
+    if (relPath === "lib/i18n/messages.ts" || relPath === "core/i18n/messages.ts" || relPath.startsWith("tests/")) continue
     const source = readText(relPath)
     if (source.includes("@/messages/en.json") || source.includes("messages/en.json")) {
       directImportViolations.push(relPath)

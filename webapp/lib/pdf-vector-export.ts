@@ -1,19 +1,19 @@
 import type jsPDF from "jspdf"
-import type { GridResult } from "@/lib/grid-calculator"
-import type { TextAlignMode } from "@/lib/types/layout-primitives"
-import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import type { TextAlignMode } from "@/core/types/layout-primitives"
+import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
 import {
   DEFAULT_BASE_FONT,
   isPdfSerifStyleFont,
   type FontFamily,
-} from "@/lib/config/fonts"
-import { buildPageExportPlan, type PageExportGuideGroup, type PageExportPlan } from "@/lib/page-export-plan"
-import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
+} from "@/core/config/fonts"
+import { buildPageExportPlan, type PageExportGuideGroup, type PageExportPlan } from "@/core/layout/page-export-plan"
+import { measureLayoutPerformanceAsync } from "@/core/layout/layout-performance"
 import { resolvePdfFontFamily } from "@/lib/pdf-font-registry"
 import {
   DEFAULT_TRACKING_SCALE,
   getTrackingLetterSpacing,
-} from "@/lib/text-rendering"
+} from "@/core/layout/text-rendering"
 import {
   isRenderableTextFragment,
   preloadTextPlanOutlineFonts,
@@ -23,14 +23,14 @@ import {
   type OutlineTextShape,
   type VectorTextOutlineResolver,
 } from "@/lib/vector-text-outline"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
 import { getExportGuideClipRect, type ExportBox } from "@/lib/export-box"
-import type { RgbColor } from "@/lib/export-colors"
-import type { DocumentVariableContext } from "@/lib/document-variable-text"
+import type { RgbColor } from "@/core/export/colors"
+import type { DocumentVariableContext } from "@/core/document/variable-text"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type BlockId = string

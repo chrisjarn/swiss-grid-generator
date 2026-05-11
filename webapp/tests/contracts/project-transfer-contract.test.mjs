@@ -11,8 +11,8 @@ function readText(relPath) {
 
 test("project transfers carry an explicit deterministic layout engine contract", () => {
   const transferSource = readText("lib/project-transfer.ts")
-  const sessionSource = readText("lib/document-session.ts")
-  const contractSource = readText("lib/layout-engine-contract.ts")
+  const sessionSource = readText("core/document/session.ts")
+  const contractSource = readText("core/layout/layout-engine-contract.ts")
   const manifestSource = readText("lib/presets/generated-manifest.ts")
 
   assert.match(contractSource, /CURRENT_LAYOUT_ENGINE_CONTRACT/)

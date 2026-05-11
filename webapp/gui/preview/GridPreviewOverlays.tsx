@@ -8,16 +8,16 @@ import type { Dispatch, SetStateAction } from "react"
 import { ImageEditorDialog, type ImageEditorState } from "@/gui/dialogs/ImageEditorDialog"
 import { TextEditorPanel } from "@/gui/editors/TextEditorPanel"
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
-import type { PreviewColorSchemeOption, TextEditorControls } from "@/lib/preview-overlay-controls"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import type { BlockRect } from "@/lib/preview-types"
-import type { HelpSectionId } from "@/lib/help-registry"
+import type { PreviewColorSchemeOption, TextEditorControls } from "@/gui/preview/lib/preview-overlay-controls"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { BlockRect } from "@/gui/preview/lib/preview-types"
+import type { HelpSectionId } from "@/core/document/help-registry"
 import {
   resolvePreviewHoverActionTop,
   resolvePreviewHoverBandRect,
   resolvePreviewHoverDeleteActionLeft,
   resolvePreviewHoverPrimaryActionLeft,
-} from "@/lib/preview-hover-affordance"
+} from "@/gui/preview/lib/preview-hover-affordance"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type Props<StyleKey extends string> = {

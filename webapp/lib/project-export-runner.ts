@@ -1,8 +1,8 @@
-import type { LoadedProject } from "@/lib/document-session"
+import type { LoadedProject } from "@/core/document/session"
 import {
   getProjectPagePhysicalPageNumberAtIndex,
   getProjectPhysicalPageCount,
-} from "@/lib/document-page-numbering"
+} from "@/core/document/page-numbering"
 import {
   runExportEngine,
   type ExportEngineFormat,
@@ -15,7 +15,7 @@ import {
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 import {
   buildResolvedProjectPageExportSource,
   buildProjectExportPageNumbersFromRange,
@@ -23,7 +23,7 @@ import {
   type ProjectExportPageRange,
   type ProjectPageVisibilitySettings,
   type ResolvedProjectPageExportSource,
-} from "@/lib/project-page-export-source"
+} from "@/core/export/project-page-export-source"
 
 export type ProjectExportRunnerOptions = {
   project: LoadedProject<Record<string, unknown>>

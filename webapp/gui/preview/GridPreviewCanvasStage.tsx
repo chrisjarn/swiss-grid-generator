@@ -6,7 +6,7 @@ import type { Dispatch, SetStateAction } from "react"
 import { InlineBlockTextarea, type InlineEditorLayout } from "@/gui/editors/InlineBlockTextarea"
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
 
 type Props<StyleKey extends string> = {
   staticCanvasRef: RefObject<HTMLCanvasElement | null>

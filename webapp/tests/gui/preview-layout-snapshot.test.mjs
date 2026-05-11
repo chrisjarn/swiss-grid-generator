@@ -4,7 +4,7 @@ import assert from "node:assert/strict"
 import {
   buildResolvedSnapshotState,
   normalizeSnapshotStateForApply,
-} from "../../lib/preview-layout-snapshot.ts"
+} from "../../gui/preview/lib/preview-layout-snapshot.ts"
 
 test("buildResolvedSnapshotState resolves spans, alignments, and row-derived fields", () => {
   const state = {

@@ -6,7 +6,7 @@ import {
   FONT_DEFINITIONS,
   getFontAssetPath,
   getFontVariants,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 
 const WEBAPP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
 const PUBLIC_ROOT = path.join(WEBAPP_ROOT, "public")

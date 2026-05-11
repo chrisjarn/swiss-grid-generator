@@ -1,0 +1,909 @@
+// Swiss Grid Calculator - Ported from Python to TypeScript
+// Based on Müller-Brockmann's "Grid Systems in Graphic Design" (1981)
+import {
+  calculateModuleSizes
+} from "./grid-rhythm.ts"
+import {
+  defaultGridRhythmAxisSettings,
+  type GridRhythm,
+  type GridRhythmColsDirection,
+  type GridRhythmRowsDirection,
+} from "@/core/config/defaults"
+import { translateMessage } from "@/core/i18n/messages"
+
+export interface FormatDimensions {
+  width: number;
+  height: number;
+}
+
+export interface GridSettings {
+  format: string;
+  orientation: "portrait" | "landscape";
+  customFormatDimensions?: FormatDimensions;
+  marginMethod: 1 | 2 | 3;
+  gridCols: number;
+  gridRows: number;
+  baseline?: number;
+  gutterMultiple?: number;
+  rhythm?: GridRhythm;
+  rhythmRowsEnabled?: boolean;
+  rhythmRowsDirection?: GridRhythmRowsDirection;
+  rhythmColsEnabled?: boolean;
+  rhythmColsDirection?: GridRhythmColsDirection;
+  customMargins?: { top: number; bottom: number; left: number; right: number };
+  typographyScale?: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci";
+  fibonacciSequenceStartIndex?: number;
+}
+
+export interface GridResult {
+  format: string;
+  settings: {
+    orientation: string;
+    marginMethod: string;
+    marginMethodId: number;
+    gridCols: number;
+    gridRows: number;
+    customBaseline: number | undefined;
+    rhythm: GridRhythm;
+    rhythmRowsEnabled: boolean;
+    rhythmRowsDirection: GridRhythmRowsDirection;
+    rhythmColsEnabled: boolean;
+    rhythmColsDirection: GridRhythmColsDirection;
+  };
+  pageSizePt: {
+    width: number;
+    height: number;
+  };
+  grid: {
+    gridUnit: number;
+    gridMarginHorizontal: number;
+    gridMarginVertical: number;
+    margins: {
+      top: number;
+      bottom: number;
+      left: number;
+      right: number;
+    };
+    columnStarts?: number[];
+    contentRects?: Array<{
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    }>;
+    gutter: number;
+    scaleFactor: number;
+    baselineUnitsPerCell: number;
+  };
+  contentArea: {
+    width: number;
+    height: number;
+  };
+  module: {
+    width: number;
+    height: number;
+    aspectRatio: number;
+    widths: number[];
+    heights: number[];
+  };
+  typography: {
+    metadata: {
+      format: string;
+      unit: string;
+      baselineGrid: number;
+      a4Baseline: number;
+      scaleFactor: number;
+    };
+    styles: Record<string, {
+      size: number;
+      leading: number;
+      weight: string;
+      blockItalic: boolean;
+      alignment: string;
+      baselineMultiplier: number;
+      bodyLines: number;
+    }>;
+  };
+}
+
+export type CanvasRatioKey =
+  | "din_ab"
+  | "letter_ansi_ab"
+  | "balanced_3_4"
+  | "photo_2_3"
+  | "screen_16_9"
+  | "square_1_1"
+  | "editorial_4_5"
+  | "wide_2_1"
+  | "custom";
+
+export interface CanvasRatioOption {
+  key: CanvasRatioKey;
+  category: "Universal";
+  label: string;
+  ratioLabel: string;
+  ratioDecimal: number;
+  paperSizes: string[];
+}
+
+export const CUSTOM_CANVAS_FORMAT = "CUSTOM";
+export const CUSTOM_CANVAS_RATIO_RANGE = {
+  min: 0.1,
+  max: 100,
+} as const;
+export const DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH = 4;
+export const DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT = 5;
+
+// Paper formats in points (1in = 72pt)
+export const FORMATS_PT: Record<string, FormatDimensions> = {
+  A6: { width: 297.638, height: 419.528 },
+  A5: { width: 419.528, height: 595.276 },
+  A4: { width: 595.276, height: 841.890 },
+  A3: { width: 841.890, height: 1190.551 },
+  A2: { width: 1190.551, height: 1683.780 },
+  A1: { width: 1683.780, height: 2383.937 },
+  A0: { width: 2383.937, height: 3370.394 },
+  B6: { width: 354.331, height: 498.898 },
+  B5: { width: 498.898, height: 708.661 },
+  B4: { width: 708.661, height: 1000.630 },
+  B3: { width: 1000.630, height: 1417.323 },
+  B2: { width: 1417.323, height: 2004.094 },
+  B1: { width: 2004.094, height: 2834.646 },
+  B0: { width: 2834.646, height: 4008.189 },
+  LETTER: { width: 612.0, height: 792.0 },      // 8.5" × 11"
+  LEGAL: { width: 612.0, height: 1008.0 },      // 8.5" × 14"
+  ANSI_B: { width: 792.0, height: 1224.0 },     // 11" × 17"
+  ANSI_C: { width: 1224.0, height: 1584.0 },    // 17" × 22"
+  ANSI_D: { width: 1584.0, height: 2448.0 },    // 22" × 34"
+  ANSI_E: { width: 2448.0, height: 3168.0 },    // 34" × 44"
+  BALANCED_3_4: { width: 600.0, height: 800.0 },   // 3:4
+  PHOTO_2_3: { width: 600.0, height: 900.0 },      // 2:3
+  SCREEN_16_9: { width: 540.0, height: 960.0 },    // 9:16 portrait base
+  SQUARE_1_1: { width: 700.0, height: 700.0 },     // 1:1
+  EDITORIAL_4_5: { width: 640.0, height: 800.0 },  // 4:5
+  WIDE_2_1: { width: 500.0, height: 1000.0 },      // 1:2 portrait base
+};
+
+export const CANVAS_RATIOS: CanvasRatioOption[] = [
+  {
+    key: "din_ab",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.din"),
+    ratioLabel: "1:√2",
+    ratioDecimal: Math.SQRT2,
+    paperSizes: ["A6", "A5", "A4", "A3", "A2", "A1", "A0", "B6", "B5", "B4", "B3", "B2", "B1", "B0"],
+  },
+  {
+    key: "letter_ansi_ab",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.ansi"),
+    ratioLabel: "1:1.294",
+    ratioDecimal: 1.294,
+    paperSizes: ["LETTER", "LEGAL", "ANSI_B", "ANSI_C", "ANSI_D", "ANSI_E"],
+  },
+  {
+    key: "balanced_3_4",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.balanced"),
+    ratioLabel: "3:4",
+    ratioDecimal: 1.333,
+    paperSizes: ["BALANCED_3_4"],
+  },
+  {
+    key: "photo_2_3",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.photo"),
+    ratioLabel: "2:3",
+    ratioDecimal: 1.5,
+    paperSizes: ["PHOTO_2_3"],
+  },
+  {
+    key: "screen_16_9",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.screen"),
+    ratioLabel: "16:9",
+    ratioDecimal: 1.778,
+    paperSizes: ["SCREEN_16_9"],
+  },
+  {
+    key: "square_1_1",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.square"),
+    ratioLabel: "1:1",
+    ratioDecimal: 1.0,
+    paperSizes: ["SQUARE_1_1"],
+  },
+  {
+    key: "editorial_4_5",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.editorial"),
+    ratioLabel: "4:5",
+    ratioDecimal: 1.25,
+    paperSizes: ["EDITORIAL_4_5"],
+  },
+  {
+    key: "wide_2_1",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.wideImpact"),
+    ratioLabel: "2:1",
+    ratioDecimal: 2.0,
+    paperSizes: ["WIDE_2_1"],
+  },
+  {
+    key: "custom",
+    category: "Universal",
+    label: translateMessage("settings.canvas.ratioOptions.custom"),
+    ratioLabel: `${DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH}:${DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT}`,
+    ratioDecimal: DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT / DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH,
+    paperSizes: [CUSTOM_CANVAS_FORMAT],
+  },
+];
+
+function roundRatioUnit(value: number): number {
+  return Math.round(value * 1000) / 1000;
+}
+
+export function clampCustomCanvasRatioUnit(value: unknown, fallback: number): number {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return roundRatioUnit(fallback);
+  }
+
+  return roundRatioUnit(
+    Math.min(CUSTOM_CANVAS_RATIO_RANGE.max, Math.max(CUSTOM_CANVAS_RATIO_RANGE.min, value)),
+  );
+}
+
+export function normalizeCustomCanvasRatio(
+  width: unknown,
+  height: unknown,
+): { width: number; height: number } {
+  return {
+    width: clampCustomCanvasRatioUnit(width, DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH),
+    height: clampCustomCanvasRatioUnit(height, DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT),
+  };
+}
+
+function formatRatioNumber(value: number): string {
+  return roundRatioUnit(value).toString();
+}
+
+export function formatCustomCanvasRatio(width: unknown, height: unknown): string {
+  const normalized = normalizeCustomCanvasRatio(width, height);
+  return `${formatRatioNumber(normalized.width)}:${formatRatioNumber(normalized.height)}`;
+}
+
+export function getCanvasRatioDisplayLabel(
+  canvasRatio: CanvasRatioKey,
+  customRatioWidth?: number,
+  customRatioHeight?: number,
+): string {
+  if (canvasRatio === "custom") {
+    return `Custom ${formatCustomCanvasRatio(customRatioWidth, customRatioHeight)}`;
+  }
+
+  return CANVAS_RATIOS.find((option) => option.key === canvasRatio)?.label ?? canvasRatio;
+}
+
+export function getCanvasRatioDecimal(width: unknown, height: unknown): number {
+  const normalized = normalizeCustomCanvasRatio(width, height);
+  const shortSide = Math.min(normalized.width, normalized.height);
+  const longSide = Math.max(normalized.width, normalized.height);
+  return shortSide > 0 ? longSide / shortSide : 1;
+}
+
+export function getCustomCanvasFormatDimensions(width: unknown, height: unknown): FormatDimensions {
+  const normalized = normalizeCustomCanvasRatio(width, height);
+  const shortUnit = Math.min(normalized.width, normalized.height);
+  const longUnit = Math.max(normalized.width, normalized.height);
+  const a4 = FORMATS_PT.A4;
+  const targetArea = a4.width * a4.height;
+  const portraitRatio = shortUnit / longUnit;
+  const resolvedHeight = Math.sqrt(targetArea / portraitRatio);
+  const resolvedWidth = targetArea / resolvedHeight;
+
+  return {
+    width: resolvedWidth,
+    height: resolvedHeight,
+  };
+}
+
+export function resolveFormatDimensions(
+  formatName: string,
+  customFormatDimensions?: FormatDimensions,
+): FormatDimensions {
+  if (formatName === CUSTOM_CANVAS_FORMAT) {
+    if (!customFormatDimensions) {
+      return getCustomCanvasFormatDimensions(
+        DEFAULT_CUSTOM_CANVAS_RATIO_WIDTH,
+        DEFAULT_CUSTOM_CANVAS_RATIO_HEIGHT,
+      );
+    }
+
+    if (
+      !Number.isFinite(customFormatDimensions.width)
+      || customFormatDimensions.width <= 0
+      || !Number.isFinite(customFormatDimensions.height)
+      || customFormatDimensions.height <= 0
+    ) {
+      throw new Error(`Unsupported custom format dimensions for ${formatName}`);
+    }
+
+    return customFormatDimensions;
+  }
+
+  const format = FORMATS_PT[formatName];
+  if (!format) {
+    throw new Error(`Unsupported format: ${formatName}`);
+  }
+
+  return format;
+}
+
+// Base typographic values for A4
+const BASE_GRID_UNIT = 12.0;
+
+// Typography defined as baseline ratios (A4 reference: size/12pt)
+// Font sizes scale proportionally with baseline across all formats
+// Leading is expressed as a baseline multiplier and may be fractional for hand-tuned styles
+type TypographyRatios = Record<string, {
+  sizeRatio: number;
+  leadingMult: number;
+  bodyLines: number;
+  weight: string;
+  blockItalic?: boolean;
+}>;
+
+// Swiss (hand-tuned) — original ratios from Müller-Brockmann reference
+const TYPOGRAPHY_RATIOS_SWISS: TypographyRatios = {
+  fx:       { sizeRatio: 96 / 12, leadingMult: 8, bodyLines: 8, weight: "Bold" },      // 8.000× baseline
+  caption:  { sizeRatio:  7 / 12, leadingMult: 8 / 12, bodyLines: 1, weight: "Regular", blockItalic: true },  // 7pt / 8pt on A4 baseline
+  body:     { sizeRatio: 10 / 12, leadingMult: 1, bodyLines: 1, weight: "Regular" },  // 0.833× baseline
+  subhead:  { sizeRatio: 20 / 12, leadingMult: 2, bodyLines: 2, weight: "Regular" },  // 1.667× baseline
+  headline: { sizeRatio: 30 / 12, leadingMult: 3, bodyLines: 3, weight: "Bold" },     // 2.500× baseline
+  display:  { sizeRatio: 64 / 12, leadingMult: 6, bodyLines: 6, weight: "Bold" },     // 5.333× baseline
+};
+
+// Golden Ratio (φ=1.618) — steps from body: -1, 0, +1, +2, +4
+const PHI = 1.618;
+const TYPOGRAPHY_RATIOS_GOLDEN: TypographyRatios = {
+  fx:       { sizeRatio: (10 * PHI ** 5) / 12,      leadingMult: 8, bodyLines: 8, weight: "Bold" },
+  caption:  { sizeRatio: (10 / PHI) / 12,           leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
+  body:     { sizeRatio: 10 / 12,                   leadingMult: 1, bodyLines: 1, weight: "Regular" },
+  subhead:  { sizeRatio: (10 * PHI) / 12,           leadingMult: 2, bodyLines: 2, weight: "Regular" },
+  headline: { sizeRatio: (10 * PHI ** 2) / 12,      leadingMult: 3, bodyLines: 3, weight: "Bold" },
+  display:  { sizeRatio: (10 * PHI ** 4) / 12,      leadingMult: 6, bodyLines: 6, weight: "Bold" },
+};
+
+// Perfect Fourth (4:3) — steps from body: -1, 0, +2, +3, +6
+const P4 = 4 / 3;
+const TYPOGRAPHY_RATIOS_FOURTH: TypographyRatios = {
+  fx:       { sizeRatio: (10 * P4 ** 7) / 12,   leadingMult: 8, bodyLines: 8, weight: "Bold" },
+  caption:  { sizeRatio: (10 / P4) / 12,        leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
+  body:     { sizeRatio: 10 / 12,                leadingMult: 1, bodyLines: 1, weight: "Regular" },
+  subhead:  { sizeRatio: (10 * P4 ** 2) / 12,   leadingMult: 2, bodyLines: 2, weight: "Regular" },
+  headline: { sizeRatio: (10 * P4 ** 3) / 12,   leadingMult: 3, bodyLines: 3, weight: "Bold" },
+  display:  { sizeRatio: (10 * P4 ** 6) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
+};
+
+// Perfect Fifth (3:2) — steps from body: -1, 0, +1, +2, +4
+const P5 = 3 / 2;
+const TYPOGRAPHY_RATIOS_FIFTH: TypographyRatios = {
+  fx:       { sizeRatio: (10 * P5 ** 5) / 12,   leadingMult: 8, bodyLines: 8, weight: "Bold" },
+  caption:  { sizeRatio: (10 / P5) / 12,        leadingMult: 1, bodyLines: 1, weight: "Regular", blockItalic: true },
+  body:     { sizeRatio: 10 / 12,               leadingMult: 1, bodyLines: 1, weight: "Regular" },
+  subhead:  { sizeRatio: (10 * P5) / 12,        leadingMult: 2, bodyLines: 2, weight: "Regular" },
+  headline: { sizeRatio: (10 * P5 ** 2) / 12,   leadingMult: 3, bodyLines: 3, weight: "Bold" },
+  display:  { sizeRatio: (10 * P5 ** 4) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
+};
+
+export const FIBONACCI_TYPOGRAPHY_SEQUENCE = [1, 2, 3, 5, 8, 13, 21, 34, 55, 89, 144, 233, 377] as const;
+export const DEFAULT_FIBONACCI_SEQUENCE_START_INDEX = 5;
+export const MIN_FIBONACCI_SEQUENCE_START_INDEX = 4;
+export const MAX_FIBONACCI_SEQUENCE_START_INDEX = 6;
+const FIBONACCI_DEFAULT_BODY_REFERENCE = 21;
+
+export function clampFibonacciSequenceStartIndex(value: unknown): number {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return DEFAULT_FIBONACCI_SEQUENCE_START_INDEX;
+  }
+  return Math.min(
+    MAX_FIBONACCI_SEQUENCE_START_INDEX,
+    Math.max(MIN_FIBONACCI_SEQUENCE_START_INDEX, Math.round(value)),
+  );
+}
+
+export function getFibonacciTypographySequence(startIndex: unknown = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX): number[] {
+  const normalizedStart = clampFibonacciSequenceStartIndex(startIndex);
+  return FIBONACCI_TYPOGRAPHY_SEQUENCE.slice(normalizedStart, normalizedStart + 5);
+}
+
+export function formatFibonacciTypographySequence(startIndex: unknown = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX): string {
+  return getFibonacciTypographySequence(startIndex).join(", ");
+}
+
+function buildFibonacciTypographyRatios(startIndex: unknown): TypographyRatios {
+  const normalizedStart = clampFibonacciSequenceStartIndex(startIndex);
+  const sequence = FIBONACCI_TYPOGRAPHY_SEQUENCE.slice(normalizedStart, normalizedStart + 6);
+  const caption = sequence[0] ?? 13;
+  const body = sequence[1] ?? 21;
+  const subhead = sequence[2] ?? 34;
+  const headline = sequence[3] ?? 55;
+  const display = sequence[4] ?? 89;
+  const fx = sequence[5] ?? 144;
+  const bodyReference = FIBONACCI_DEFAULT_BODY_REFERENCE;
+  const captionLeadingMult = normalizedStart === DEFAULT_FIBONACCI_SEQUENCE_START_INDEX ? 2 / 3 : 1;
+
+  return {
+    fx:       { sizeRatio: (10 * fx / bodyReference) / 12,        leadingMult: 8, bodyLines: 8, weight: "Bold" },
+    caption:  { sizeRatio: (10 * caption / bodyReference) / 12,   leadingMult: captionLeadingMult, bodyLines: 1, weight: "Regular", blockItalic: true },
+    body:     { sizeRatio: (10 * body / bodyReference) / 12,      leadingMult: 1, bodyLines: 1, weight: "Regular" },
+    subhead:  { sizeRatio: (10 * subhead / bodyReference) / 12,   leadingMult: 2, bodyLines: 2, weight: "Regular" },
+    headline: { sizeRatio: (10 * headline / bodyReference) / 12,  leadingMult: 3, bodyLines: 3, weight: "Bold" },
+    display:  { sizeRatio: (10 * display / bodyReference) / 12,   leadingMult: 6, bodyLines: 6, weight: "Bold" },
+  };
+}
+
+const TYPOGRAPHY_SCALE_MAP: Record<string, TypographyRatios> = {
+  swiss: TYPOGRAPHY_RATIOS_SWISS,
+  golden: TYPOGRAPHY_RATIOS_GOLDEN,
+  fourth: TYPOGRAPHY_RATIOS_FOURTH,
+  fifth: TYPOGRAPHY_RATIOS_FIFTH,
+};
+
+export const TYPOGRAPHY_SCALE_LABELS: Record<string, string> = {
+  swiss: "Swiss (Hand-tuned)",
+  golden: "Golden Ratio (φ)",
+  fibonacci: "Fibonacci (13, 21, 34, 55, 89)",
+  fourth: "Perfect Fourth (4:3 ♪)",
+  fifth: "Perfect Fifth (3:2 ♪)",
+};
+
+function resolveTypographyLeadingMultiplier(
+  style: TypographyRatios[string],
+  gridUnit: number,
+  flooredSize: number,
+  typographyScale: string,
+): number {
+  if (typographyScale !== "fibonacci") return style.leadingMult;
+  if (!Number.isFinite(gridUnit) || gridUnit <= 0) return style.leadingMult;
+  if (gridUnit * style.leadingMult >= flooredSize) return style.leadingMult;
+
+  const minimumBaselineMultiple = Math.ceil(flooredSize / gridUnit);
+  return Math.max(style.leadingMult, minimumBaselineMultiple);
+}
+
+const MARGIN_METHOD_LABELS: Record<number, string> = {
+  1: "Progressive (1:2:2:3)",
+  2: "Van de Graaf (2:3:4:6)",
+  3: "Baseline (1:1:1:1)",
+};
+
+// Margin calculation methods
+interface MarginResult {
+  top: number;
+  bottom: number;
+  left: number;
+  right: number;
+  gutterH: number;
+  gutterV: number;
+}
+
+function quantizeHeightsToBaselineUnits(
+  heights: number[],
+  gridUnit: number,
+  targetUnits: number,
+): number[] {
+  if (!heights.length || !Number.isFinite(gridUnit) || gridUnit <= 0) return heights
+  if (!Number.isInteger(targetUnits) || targetUnits <= 0) return heights
+
+  const rawUnits = heights.map((value) => Math.max(0, value / gridUnit))
+  const quantizedUnits = rawUnits.map((value) => Math.max(1, Math.floor(value)))
+  let usedUnits = quantizedUnits.reduce((sum, value) => sum + value, 0)
+  let remaining = targetUnits - usedUnits
+
+  if (remaining > 0) {
+    const byFractionDesc = rawUnits
+      .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+      .sort((a, b) => b.fraction - a.fraction || a.index - b.index)
+
+    let cursor = 0
+    while (remaining > 0 && byFractionDesc.length > 0) {
+      const entry = byFractionDesc[cursor % byFractionDesc.length]
+      quantizedUnits[entry.index] += 1
+      remaining -= 1
+      cursor += 1
+    }
+  } else if (remaining < 0) {
+    const byLargestUnitsDesc = quantizedUnits
+      .map((value, index) => ({ index, value }))
+      .sort((a, b) => b.value - a.value || a.index - b.index)
+
+    let cursor = 0
+    while (remaining < 0 && byLargestUnitsDesc.length > 0) {
+      const entry = byLargestUnitsDesc[cursor % byLargestUnitsDesc.length]
+      if (quantizedUnits[entry.index] > 1) {
+        quantizedUnits[entry.index] -= 1
+        remaining += 1
+      }
+      cursor += 1
+      if (cursor > byLargestUnitsDesc.length * 4 && remaining < 0) break
+    }
+  }
+
+  usedUnits = quantizedUnits.reduce((sum, value) => sum + value, 0)
+  if (usedUnits !== targetUnits) {
+    return heights
+  }
+
+  return quantizedUnits.map((value) => value * gridUnit)
+}
+
+function calculateProgressiveMargins(
+  gridUnit: number,
+): MarginResult {
+  // Progressive 1:2:2:3 ratio (Swiss modern approach for single pages)
+  // Top is smallest, left/right are equal (symmetric), bottom is largest
+  // Creates gentle visual weight shift downward for better flow
+  // All margins are multiples of the baseline grid unit
+
+  return {
+    top: gridUnit * 1.0,
+    bottom: gridUnit * 3.0,
+    left: gridUnit * 2.0,
+    right: gridUnit * 2.0,
+    gutterH: gridUnit,
+    gutterV: gridUnit,
+  };
+}
+
+function calculateVandegraafMargins(
+  gridUnit: number,
+): MarginResult {
+  // Van de Graaf-inspired 2:3:4:6 ratio (top:left:right:bottom)
+  // All margins are multiples of the baseline grid unit
+  // Example with 12pt baseline and 1x:
+  //   Top: 2×12 = 24pt, Left: 3×12 = 36pt, Right: 4×12 = 48pt, Bottom: 6×12 = 72pt
+  return {
+    top: gridUnit * 2.0,
+    bottom: gridUnit * 6.0,
+    left: gridUnit * 3.0,
+    right: gridUnit * 4.0,
+    gutterH: gridUnit,
+    gutterV: gridUnit,
+  };
+}
+
+function calculateGridBasedMargins(
+  gridUnit: number,
+): MarginResult {
+  // Pure Müller-Brockmann approach: margins in one baseline unit
+  // All margins are multiples of the baseline unit for grid harmony
+  // Symmetric margins (common for single sheets/posters in Swiss style)
+
+  return {
+    top: gridUnit,
+    bottom: gridUnit,
+    left: gridUnit,
+    right: gridUnit,
+    gutterH: gridUnit,
+    gutterV: gridUnit,
+  };
+}
+
+const MARGIN_CALCULATORS: Record<number, (gridUnit: number) => MarginResult> = {
+  1: calculateProgressiveMargins,
+  2: calculateVandegraafMargins,
+  3: calculateGridBasedMargins,
+};
+
+// Baseline defaults scale by √2 steps (matching A-series paper scaling)
+// A4 = 12pt reference; each format step multiplies/divides by √2
+const SQRT2 = Math.SQRT2;
+const FOURTH_ROOT_2 = Math.sqrt(SQRT2);
+export const FORMAT_BASELINES: Record<string, number> = {
+  A0: Math.round(BASE_GRID_UNIT * 4 * 1000) / 1000,               // 48.000
+  A1: Math.round(BASE_GRID_UNIT * 2 * SQRT2 * 1000) / 1000,       // 33.941
+  A2: Math.round(BASE_GRID_UNIT * 2 * 1000) / 1000,               // 24.000
+  A3: Math.round(BASE_GRID_UNIT * SQRT2 * 1000) / 1000,           // 16.971
+  A4: BASE_GRID_UNIT,                                               // 12.000
+  A5: Math.round(BASE_GRID_UNIT / SQRT2 * 1000) / 1000,           //  8.485
+  A6: Math.round(BASE_GRID_UNIT / 2 * 1000) / 1000,               //  6.000
+  // B-series sits between adjacent A-series sizes; use 2^(1/4) offset from A4.
+  B0: Math.round(BASE_GRID_UNIT * 4 * FOURTH_ROOT_2 * 1000) / 1000, // 57.064
+  B1: Math.round(BASE_GRID_UNIT * 2 * SQRT2 * FOURTH_ROOT_2 * 1000) / 1000, // 40.365
+  B2: Math.round(BASE_GRID_UNIT * 2 * FOURTH_ROOT_2 * 1000) / 1000, // 28.541
+  B3: Math.round(BASE_GRID_UNIT * SQRT2 * FOURTH_ROOT_2 * 1000) / 1000, // 20.182
+  B4: Math.round(BASE_GRID_UNIT * FOURTH_ROOT_2 * 1000) / 1000,     // 14.270
+  B5: Math.round(BASE_GRID_UNIT / SQRT2 * FOURTH_ROOT_2 * 1000) / 1000, // 10.091
+  B6: Math.round(BASE_GRID_UNIT / 2 * FOURTH_ROOT_2 * 1000) / 1000, //  7.135
+  LETTER: BASE_GRID_UNIT,                                           // 12.000
+};
+
+// Minimum baselines in usable height for typographic flexibility
+const MIN_BASELINES = 24;
+const BASELINE_HARD_CAP = 72;
+
+// Top+bottom margin ratios per method (at 1× multiple)
+const MARGIN_VERTICAL_UNITS: Record<number, number> = {
+  1: 4,  // Progressive: 1+3
+  2: 8,  // Van de Graaf: 2+6
+  3: 2,  // Baseline: 1+1
+};
+
+/**
+ * Dynamic maximum baseline: ensures at least MIN_BASELINES (24) fit in
+ * the usable height after subtracting top+bottom margins.
+ *
+ * Solves: (pageHeight - marginUnits × B) / B >= 24
+ *       → B <= pageHeight / (24 + marginUnits)
+ */
+export function getMaxBaseline(
+  pageHeight: number,
+  marginMethod: number,
+  customMarginUnits?: number,
+): number {
+  const marginUnits = customMarginUnits
+    ?? (MARGIN_VERTICAL_UNITS[marginMethod] ?? 4);
+  const maxDynamic = Math.floor(pageHeight / (MIN_BASELINES + marginUnits));
+  return Math.min(BASELINE_HARD_CAP, maxDynamic);
+}
+
+function calculateScaleFactor(
+  formatName: string,
+  orientation: "portrait" | "landscape",
+  customFormatDimensions?: FormatDimensions,
+): number {
+  const a4 = FORMATS_PT.A4;
+  const format = resolveFormatDimensions(formatName, customFormatDimensions);
+  const w = orientation === "landscape" ? format.height : format.width;
+  const h = orientation === "landscape" ? format.width : format.height;
+
+  return Math.min(w / a4.width, h / a4.height);
+}
+
+export function generateTypographyStyles(
+  scaleFactor: number,
+  gridUnit: number,
+  formatName: string,
+  typographyScale: "swiss" | "golden" | "fourth" | "fifth" | "fibonacci" = "swiss",
+  fibonacciSequenceStartIndex: number = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
+): GridResult["typography"] {
+  const scaledStyles: GridResult["typography"]["styles"] = {};
+  const ratios = typographyScale === "fibonacci"
+    ? buildFibonacciTypographyRatios(fibonacciSequenceStartIndex)
+    : TYPOGRAPHY_SCALE_MAP[typographyScale] ?? TYPOGRAPHY_RATIOS_SWISS;
+
+  for (const [styleName, style] of Object.entries(ratios)) {
+    // Font size = baseline × ratio (proportional across all formats)
+    const scaledSize = gridUnit * style.sizeRatio;
+    const flooredSize = Math.max(1, Math.floor(scaledSize));
+    const leadingMult = resolveTypographyLeadingMultiplier(style, gridUnit, flooredSize, typographyScale);
+    // Leading = baseline × multiplier (always baseline-aligned)
+    const scaledLeading = gridUnit * leadingMult;
+
+    scaledStyles[styleName] = {
+      size: flooredSize,
+      leading: Math.round(scaledLeading * 1000) / 1000,
+      weight: style.weight,
+      blockItalic: style.blockItalic === true,
+      alignment: "Left",
+      baselineMultiplier: leadingMult,
+      bodyLines: Math.max(style.bodyLines, leadingMult),
+    };
+  }
+
+  return {
+    metadata: {
+      format: formatName,
+      unit: "pt",
+      baselineGrid: Math.round(gridUnit * 1000) / 1000,
+      a4Baseline: BASE_GRID_UNIT,
+      scaleFactor: Math.round(scaleFactor * 1000) / 1000,
+    },
+    styles: scaledStyles,
+  };
+}
+
+export function generateSwissGrid(settings: GridSettings): GridResult {
+  const {
+    format,
+    orientation,
+    customFormatDimensions,
+    marginMethod,
+    gridCols,
+    gridRows,
+    baseline: customBaseline,
+    gutterMultiple = 1.0,
+    rhythm = "repetitive",
+    rhythmRowsEnabled,
+    rhythmRowsDirection,
+    rhythmColsEnabled,
+    rhythmColsDirection,
+    typographyScale = "swiss",
+    fibonacciSequenceStartIndex = DEFAULT_FIBONACCI_SEQUENCE_START_INDEX,
+  } = settings;
+
+  const defaultRhythmAxis = defaultGridRhythmAxisSettings();
+  const resolvedRhythmRowsEnabled = typeof rhythmRowsEnabled === "boolean"
+    ? rhythmRowsEnabled
+    : defaultRhythmAxis.rhythmRowsEnabled;
+  const resolvedRhythmRowsDirection = rhythmRowsDirection ?? defaultRhythmAxis.rhythmRowsDirection;
+  const resolvedRhythmColsEnabled = typeof rhythmColsEnabled === "boolean"
+    ? rhythmColsEnabled
+    : defaultRhythmAxis.rhythmColsEnabled;
+  const resolvedRhythmColsDirection = rhythmColsDirection ?? defaultRhythmAxis.rhythmColsDirection;
+
+  if (orientation !== "portrait" && orientation !== "landscape") {
+    throw new Error(`Unsupported orientation: ${String(orientation)}`);
+  }
+  if (![1, 2, 3].includes(marginMethod)) {
+    throw new Error(`Unsupported margin method: ${String(marginMethod)}`);
+  }
+  if (!Number.isInteger(gridCols) || gridCols < 1) {
+    throw new Error(`gridCols must be an integer >= 1 (received ${String(gridCols)})`);
+  }
+  if (!Number.isInteger(gridRows) || gridRows < 1) {
+    throw new Error(`gridRows must be an integer >= 1 (received ${String(gridRows)})`);
+  }
+  if (customBaseline !== undefined && (!Number.isFinite(customBaseline) || customBaseline <= 0)) {
+    throw new Error(`baseline must be a finite number > 0 (received ${String(customBaseline)})`);
+  }
+  if (!Number.isFinite(gutterMultiple) || gutterMultiple <= 0) {
+    throw new Error(`gutterMultiple must be a finite number > 0 (received ${String(gutterMultiple)})`);
+  }
+  if (settings.customMargins) {
+    const { top, bottom, left, right } = settings.customMargins;
+    if (![top, bottom, left, right].every((value) => Number.isFinite(value) && value >= 0)) {
+      throw new Error("customMargins values must be finite numbers >= 0");
+    }
+  }
+
+  const formatDim = resolveFormatDimensions(format, customFormatDimensions);
+  let w = formatDim.width;
+  let h = formatDim.height;
+
+  if (orientation === "landscape") {
+    [w, h] = [h, w];
+  }
+
+  const formatScaleFactor = calculateScaleFactor(format, orientation, customFormatDimensions);
+  // When customBaseline is set (manual mode), use that value
+  // When undefined (auto mode), use format-specific baseline from table
+  const gridUnit = customBaseline ?? FORMAT_BASELINES[format] ?? BASE_GRID_UNIT;
+  const scale_factor = formatScaleFactor;
+
+  let marginTop: number, marginBottom: number, marginLeft: number, marginRight: number;
+  let gridMarginHorizontal: number, gridMarginVertical: number;
+
+  if (settings.customMargins) {
+    marginTop = settings.customMargins.top;
+    marginBottom = settings.customMargins.bottom;
+    marginLeft = settings.customMargins.left;
+    marginRight = settings.customMargins.right;
+    gridMarginHorizontal = gridUnit * gutterMultiple;
+    gridMarginVertical = gridUnit * gutterMultiple;
+  } else {
+    const marginCalculator = MARGIN_CALCULATORS[marginMethod];
+    const margins = marginCalculator(gridUnit);
+    ({ top: marginTop, bottom: marginBottom, left: marginLeft, right: marginRight } = margins);
+    gridMarginHorizontal = gridUnit * gutterMultiple;
+    gridMarginVertical = gridUnit * gutterMultiple;
+  }
+
+  // Snap margins to baseline grid
+  marginTop = Math.round(marginTop / gridUnit) * gridUnit;
+  marginBottom = Math.round(marginBottom / gridUnit) * gridUnit;
+
+  const gutter = gridMarginHorizontal;
+
+  const netW = w - (marginLeft + marginRight);
+  if (netW <= 0) {
+    throw new Error("Invalid horizontal margins: content width must be > 0");
+  }
+  const moduleWidthBudget = netW - (gridCols - 1) * gridMarginHorizontal
+  if (moduleWidthBudget <= 0) {
+    throw new Error("Invalid grid settings: module width must be > 0");
+  }
+
+  const netH = h - (marginTop + marginBottom);
+  if (netH <= 0) {
+    throw new Error("Invalid vertical margins: content height must be > 0");
+  }
+
+  // Height: fit rows without reserving a trailing gutter below the last module.
+  // Available module height is net height minus inter-row gutters only.
+  const totalGutterHeight = Math.max(gridRows - 1, 0) * gridMarginVertical;
+  const moduleHeightBudget = netH - totalGutterHeight;
+  let moduleBaselineUnits = Math.floor(moduleHeightBudget / (gridRows * gridUnit));
+
+  if (moduleBaselineUnits < 2) {
+    moduleBaselineUnits = 2;
+  }
+
+  const modH = moduleBaselineUnits * gridUnit;
+  if (modH <= 0) {
+    throw new Error("Invalid grid settings: module height must be > 0");
+  }
+
+  const moduleHeightDistributionBudget = gridRows * modH
+  const moduleSizes = calculateModuleSizes(
+    moduleWidthBudget,
+    moduleHeightDistributionBudget,
+    gridCols,
+    gridRows,
+    rhythm,
+    resolvedRhythmRowsEnabled,
+    resolvedRhythmRowsDirection,
+    resolvedRhythmColsEnabled,
+    resolvedRhythmColsDirection,
+  )
+  const moduleWidths = moduleSizes.widths
+  const moduleHeights = quantizeHeightsToBaselineUnits(
+    moduleSizes.heights,
+    gridUnit,
+    gridRows * moduleBaselineUnits,
+  )
+  const modW = moduleWidths.reduce((acc, value) => acc + value, 0) / Math.max(1, moduleWidths.length)
+  const modHAverage = moduleHeights.reduce((acc, value) => acc + value, 0) / Math.max(1, moduleHeights.length)
+
+  const baselineUnitsPerCell = Math.round((modHAverage + gridMarginVertical) / gridUnit * 1000) / 1000;
+
+  // Recalculate actual net_h to match aligned modules
+  const netHAligned = moduleHeights.reduce((acc, value) => acc + value, 0) + (gridRows - 1) * gridMarginVertical;
+
+
+  const typoSettings = generateTypographyStyles(
+    scale_factor,
+    gridUnit,
+    format,
+    typographyScale,
+    fibonacciSequenceStartIndex,
+  );
+
+  return {
+    format,
+    settings: {
+      orientation,
+      marginMethod: MARGIN_METHOD_LABELS[marginMethod],
+      marginMethodId: marginMethod,
+      gridCols,
+      gridRows,
+      customBaseline,
+      rhythm,
+      rhythmRowsEnabled: resolvedRhythmRowsEnabled,
+      rhythmRowsDirection: resolvedRhythmRowsDirection,
+      rhythmColsEnabled: resolvedRhythmColsEnabled,
+      rhythmColsDirection: resolvedRhythmColsDirection,
+    },
+    pageSizePt: {
+      width: Math.round(w * 1000) / 1000,
+      height: Math.round(h * 1000) / 1000,
+    },
+    grid: {
+      gridUnit: Math.round(gridUnit * 1000) / 1000,
+      gridMarginHorizontal: Math.round(gridMarginHorizontal * 1000) / 1000,
+      gridMarginVertical: Math.round(gridMarginVertical * 1000) / 1000,
+      margins: {
+        top: Math.round(marginTop * 1000) / 1000,
+        bottom: Math.round(marginBottom * 1000) / 1000,
+        left: Math.round(marginLeft * 1000) / 1000,
+        right: Math.round(marginRight * 1000) / 1000,
+      },
+      gutter: Math.round(gutter * 1000) / 1000,
+      scaleFactor: Math.round(scale_factor * 1000) / 1000,
+      baselineUnitsPerCell,
+    },
+    contentArea: {
+      width: Math.round(netW * 1000) / 1000,
+      height: Math.round(netHAligned * 1000) / 1000,
+    },
+    module: {
+      width: Math.round(modW * 1000) / 1000,
+      height: Math.round(modHAverage * 1000) / 1000,
+      aspectRatio: Math.round((modW / modHAverage) * 1000) / 1000,
+      widths: moduleWidths.map((value) => Math.round(value * 1000) / 1000),
+      heights: moduleHeights.map((value) => Math.round(value * 1000) / 1000),
+    },
+    typography: typoSettings,
+  };
+}

@@ -1,4 +1,4 @@
-import { generateSwissGrid } from "../../lib/grid-calculator.ts"
+import { generateSwissGrid } from "../../core/layout/grid-calculator.ts"
 
 const BASE_BLOCKS = ["display", "headline", "subhead", "body", "caption"]
 const STYLE_SEQUENCE = ["display", "headline", "body", "body", "caption"]

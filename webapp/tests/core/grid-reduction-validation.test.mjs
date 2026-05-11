@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { findTextLayerGridReductionConflicts } from "../../lib/grid-reduction-validation.ts"
+import { findTextLayerGridReductionConflicts } from "../../core/layout/grid-reduction-validation.ts"
 
 test("column reduction is blocked when a paragraph span exceeds the proposed grid", () => {
   const conflicts = findTextLayerGridReductionConflicts({

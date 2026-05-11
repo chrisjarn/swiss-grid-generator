@@ -6,8 +6,8 @@ import {
   type ExportLine,
 } from "@/lib/export-box"
 import { normalizeExportBleedOptions } from "@/lib/export-format-options"
-import { parseHexColor, type RgbColor } from "@/lib/export-colors"
-import { translateMessage } from "@/lib/i18n/messages"
+import { parseHexColor, type RgbColor } from "@/core/export/colors"
+import { translateMessage } from "@/core/i18n/messages"
 import { resolveIdmlFontMetadata } from "@/lib/idml/font-metadata"
 import type {
   IdmlFontMetadata,

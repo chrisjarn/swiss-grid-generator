@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react"
 import type { MutableRefObject, RefObject } from "react"
 
-import type { GridResult } from "@/lib/grid-calculator"
-import type { FontFamily } from "@/lib/config/fonts"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import { buildAxisStarts, resolveAxisSizes } from "@/lib/grid-rhythm"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import type { FontFamily } from "@/core/config/fonts"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import { buildAxisStarts, resolveAxisSizes } from "@/core/layout/grid-rhythm"
 import {
   buildCanvasRenderPlansFromPageExportPlan,
   drawCanvasImagePlan,
@@ -12,19 +12,19 @@ import {
   drawCanvasLayerPlanStack,
   type CanvasLayerRenderPlan,
   type CanvasImageRenderPlan,
-} from "@/lib/canvas-page-renderer"
-import type { DocumentVariableContext } from "@/lib/document-variable-text"
+} from "@/gui/preview/lib/canvas-page-renderer"
+import type { DocumentVariableContext } from "@/core/document/variable-text"
 import {
   resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
-import { measureLayoutPerformance } from "@/lib/layout-performance"
-import { buildPageExportPlan, type PageExportPlan } from "@/lib/page-export-plan"
-import type { BlockRect, BlockRenderPlan } from "@/lib/preview-types"
-import type { ModulePosition } from "@/lib/types/layout-primitives"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
-import { toTextBlockPosition } from "@/lib/text-block-position"
-import { createTextMetricsService, type TextMetricsService } from "@/lib/text-metrics-service"
+} from "@/core/layout/layout-engine-contract"
+import { measureLayoutPerformance } from "@/core/layout/layout-performance"
+import { buildPageExportPlan, type PageExportPlan } from "@/core/layout/page-export-plan"
+import type { BlockRect, BlockRenderPlan } from "@/gui/preview/lib/preview-types"
+import type { ModulePosition } from "@/core/types/layout-primitives"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
+import { toTextBlockPosition } from "@/core/layout/text-block-position"
+import { createTextMetricsService, type TextMetricsService } from "@/core/layout/text-metrics-service"
 
 type DragState<BlockId extends string> = {
   key: BlockId

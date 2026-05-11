@@ -54,9 +54,9 @@ Today's work stayed within the planner-first contract and focused on the preview
 
 ### Kept Changes
 
-- Reused resolved text format/tracking intervals during glyph planning in `webapp/lib/text-format-runs.ts` and `webapp/lib/page-export-plan.ts`.
-- Added an exact boundary-correction width fast path in `webapp/lib/font-file-text-metrics-engine.ts` so punctuation-boundary probes do not always fall back to the heavier width path.
-- Added wrap-phase profiling in `webapp/lib/text-layout.ts` for:
+- Reused resolved text format/tracking intervals during glyph planning in `webapp/core/layout/text-format-runs.ts` and `webapp/core/layout/page-export-plan.ts`.
+- Added an exact boundary-correction width fast path in `webapp/core/layout/font-file-text-metrics-engine.ts` so punctuation-boundary probes do not always fall back to the heavier width path.
+- Added wrap-phase profiling in `webapp/core/layout/text-layout.ts` for:
   - `wrapTextDetailed`
   - `wrapTextDetailed.tokenize`
   - `wrapTextDetailed.measureTokens`
@@ -64,8 +64,8 @@ Today's work stayed within the planner-first contract and focused on the preview
   - `wrapTextDetailed.punctuationRebalance`
   - `wrapTextDetailed.oversizeWhitespace`
 - Kept lightweight hyphenation caching:
-  - syllable cache in `webapp/lib/english-hyphenation.ts`
-  - shared plain-wrap hyphenation result caches in `webapp/lib/text-layout.ts` keyed through `webapp/lib/text-metrics-service.ts`
+  - syllable cache in `webapp/core/layout/english-hyphenation.ts`
+  - shared plain-wrap hyphenation result caches in `webapp/core/layout/text-layout.ts` keyed through `webapp/core/layout/text-metrics-service.ts`
 
 ### Measured Improvements
 
@@ -131,7 +131,7 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 ### Kept Changes
 
 - Replaced full-snapshot `JSON.stringify(...)` change detection with a cheap revision key in the preview emission path.
-- Collapsed snapshot resolution and normalization builders into single-pass loops in `webapp/lib/preview-layout-snapshot.ts`.
+- Collapsed snapshot resolution and normalization builders into single-pass loops in `webapp/gui/preview/lib/preview-layout-snapshot.ts`.
 - Gated full-document `projectInfoStats` and `totalLayerCount` work behind the actual `showProjectInfo` state.
 - Cached `activeParagraphCount` instead of rescanning `blockOrder` on paragraph-limit checks.
 - Reused planner maps more directly and reduced render-plan allocation churn in `webapp/gui/preview/hooks/useTypographyRenderer.ts`.
@@ -142,8 +142,8 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 - Removed readonly-array `Array.from(...)` copies from interactive geometry helpers and keyboard nudge paths.
 - Added input-sensitive normalized tracking/format-run caches in `webapp/gui/preview/hooks/usePreviewTextBlockState.ts`.
 - Removed duplicate text-run normalization on editor-open and duplicate-layer snapshot paths in:
-  - `webapp/lib/preview-block-editor-state.ts`
-  - `webapp/lib/preview-text-layer-state.ts`
+  - `webapp/gui/preview/lib/preview-block-editor-state.ts`
+  - `webapp/gui/preview/lib/preview-text-layer-state.ts`
 - Replaced phased page-load hydration with one atomic preview snapshot apply in `webapp/gui/preview/hooks/usePreviewDocumentLifecycle.ts`.
 - Gated preview reveal on the first committed final plan for the loaded page in `webapp/gui/preview/GridPreview.tsx`, so fast paging never shows provisional geometry during hydration.
 
@@ -173,7 +173,7 @@ Today's work kept the `PageExportPlan` contract and moved PDF/SVG/IDML export on
 
 - Added `webapp/lib/export-engine.ts` as the shared PDF/SVG/IDML engine. It consumes already resolved project page sources, builds one `PageExportPlan` per page, and then dispatches format-specific vector renderers.
 - Added `webapp/lib/project-export-runner.ts` so both browser export and `npm run export` enter export with the same project snapshot, page range, metadata, visibility state, shared vector bleed config, and layout engine.
-- Added `webapp/lib/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
+- Added `webapp/core/export/planned-page-export-source.ts` to make planned pages explicit and prevent PDF/SVG/IDML from rebuilding page layout independently.
 - Added `webapp/lib/export-box.ts` as the shared trim/bleed/media/crop geometry model. PDF, SVG, and IDML now consume the same `ExportBox` instead of duplicating bleed conversion, crop-mark offsets, media-canvas math, and guide clipping per format.
 - Added `webapp/lib/vector-text-outline.ts` so PDF, SVG, and IDML share glyph-outline conversion.
 - IDML now serializes crop marks and guide lines as stroked `GraphicLine` items instead of thin filled rectangle approximations; rectangle guide outlines remain rectangle page items.
@@ -455,7 +455,7 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 - Removed stale root package entry points and obsolete public/layout artifacts; `webapp/` is the active frontend boundary.
 - Kept screenshots and documentation assets.
 - Moved shared UI primitives to `webapp/shared/ui/` as the reusable primitive boundary.
-- Added pure type staging under `webapp/core/types/` for `PageExportPlan`, document state, grid config, and workspace state.
+- Moved pure domain ownership into `webapp/core/` for document state, grid config, layout planning, export planning, and shared types.
 - Added minimal GUI foundations under `webapp/gui/`: shell layout, plan-only Swiss canvas, and separate document/workspace Zustand stores.
 - Moved the production workspace shell to `webapp/gui/shell/Shell.tsx`; `webapp/app/page.tsx` is now a thin Next.js boundary.
 

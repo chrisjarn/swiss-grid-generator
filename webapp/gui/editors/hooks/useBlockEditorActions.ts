@@ -2,28 +2,28 @@ import { useCallback } from "react"
 import type { Dispatch, RefObject, SetStateAction } from "react"
 
 import type { BlockEditorState } from "@/gui/editors/block-editor-types"
-import { normalizeHeightMetrics } from "@/lib/block-height"
-import { getBlockEditorLiveSignature } from "@/lib/block-editor-signature"
-import type { FontFamily } from "@/lib/config/fonts"
-import { clampFxLeading } from "@/lib/block-constraints"
-import { removeTextLayerFromCollections } from "@/lib/preview-layer-state"
-import { buildExistingBlockEditorState } from "@/lib/preview-block-editor-state"
+import { normalizeHeightMetrics } from "@/core/layout/block-height"
+import { getBlockEditorLiveSignature } from "@/gui/editors/lib/block-editor-signature"
+import type { FontFamily } from "@/core/config/fonts"
+import { clampFxLeading } from "@/core/layout/block-constraints"
+import { removeTextLayerFromCollections } from "@/gui/preview/lib/preview-layer-state"
+import { buildExistingBlockEditorState } from "@/gui/preview/lib/preview-block-editor-state"
 import {
   applyEditorDraftLeadingOverride,
   applyEditorDraftSizeOverride,
   applyEditorDraftTextColorOverride,
   removeEditorOverrideKey,
-} from "@/lib/preview-block-editor-overrides"
+} from "@/gui/preview/lib/preview-block-editor-overrides"
 import {
   applyBlockEditorDraftToCollections,
   type PreviewTextLayerCollectionsState,
-} from "@/lib/preview-text-layer-state"
-import type { NoticeRequest, PagePoint } from "@/lib/preview-types"
-import type { TextFormatRun } from "@/lib/text-format-runs"
-import type { ModulePosition, TextAlignMode, TextVerticalAlignMode } from "@/lib/types/layout-primitives"
+} from "@/gui/preview/lib/preview-text-layer-state"
+import type { NoticeRequest, PagePoint } from "@/gui/preview/lib/preview-types"
+import type { TextFormatRun } from "@/core/layout/text-format-runs"
+import type { ModulePosition, TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-primitives"
 import { useBlockEditorCanvasDoubleClick } from "@/gui/editors/hooks/useBlockEditorCanvasDoubleClick"
 import type { Updater } from "@/gui/editors/hooks/useStateCommands"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
 
 type EditorState = BlockEditorState<string>
 

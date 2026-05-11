@@ -2,8 +2,8 @@
 
 import { startTransition, useCallback, useDeferredValue, useMemo, useState } from "react"
 
-import { buildGridResultFromUiSettings } from "@/lib/ui-settings-resolver"
-import type { UiSettingsSnapshot } from "@/lib/workspace-ui-schema"
+import { buildGridResultFromUiSettings } from "@/core/document/ui-settings-resolver"
+import type { UiSettingsSnapshot } from "@/core/types/workspace-ui-schema"
 
 type UiPreviewPatch = Partial<UiSettingsSnapshot>
 

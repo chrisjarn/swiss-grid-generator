@@ -1,8 +1,8 @@
 import jsPDFModule from "jspdf"
 import { strToU8, zipSync } from "fflate"
 
-import { getStyleDefaultFontWeight, resolveFontFamily, resolveFontVariant } from "@/lib/config/fonts"
-import { translateMessage } from "@/lib/i18n/messages"
+import { getStyleDefaultFontWeight, resolveFontFamily, resolveFontVariant } from "@/core/config/fonts"
+import { translateMessage } from "@/core/i18n/messages"
 import { buildExportBox } from "@/lib/export-box"
 import type { PdfOutputIntentProfileId } from "@/lib/pdf-output-intent"
 import { attachPdfOutputIntent } from "@/lib/pdf-output-intent"
@@ -13,7 +13,7 @@ import {
 import {
   preloadFontFileMetricFaces,
   type FontFileMetricFace,
-} from "@/lib/font-file-text-metrics-engine"
+} from "@/core/layout/font-file-text-metrics-engine"
 import {
   buildSwissGridIdmlPackageFromPageSets,
   buildSwissGridIdmlPageSetArtifacts,
@@ -24,7 +24,7 @@ import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   resolveLayoutTextMetricsEngineFactory,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 import {
   ensurePdfFontFacesRegistered,
   type PdfFontRegistrationFace,
@@ -33,14 +33,14 @@ import { renderSwissGridVectorPdf } from "@/lib/pdf-vector-export"
 import {
   buildPlannedProjectPageExportSource,
   type PlannedProjectPageExportSource,
-} from "@/lib/planned-page-export-source"
-import type { ResolvedProjectPageExportSource } from "@/lib/project-page-export-source"
+} from "@/core/export/planned-page-export-source"
+import type { ResolvedProjectPageExportSource } from "@/core/export/project-page-export-source"
 import {
   renderSvgPageSetFiles,
   type SvgExportFile,
   type SvgPageSetRenderOptions,
 } from "@/lib/svg-page-set-export"
-import { createTextMetricsService } from "@/lib/text-metrics-service"
+import { createTextMetricsService } from "@/core/layout/text-metrics-service"
 
 export type ExportEngineFormat = "pdf" | "svg" | "idml"
 export type ExportEngineSvgPackaging = "files" | "zip"

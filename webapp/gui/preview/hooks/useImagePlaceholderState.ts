@@ -2,22 +2,22 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { type ImageEditorState } from "@/gui/dialogs/ImageEditorDialog"
 import { type Updater } from "@/gui/editors/hooks/useStateCommands"
-import { normalizeHeightMetrics } from "@/lib/block-height"
+import { normalizeHeightMetrics } from "@/core/layout/block-height"
 import {
   getImageSchemeColorReference,
   resolveImageSchemeColor,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
+} from "@/core/config/color-schemes"
 import {
   mapAbsolutePositionsToTextBlockPositions,
   mapTextBlockPositionsToAbsolute,
   toAbsoluteTextBlockPosition,
   toTextBlockPosition,
-} from "@/lib/text-block-position"
-import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/lib/layer-placement"
-import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacity"
-import { clampRotation, hasSignificantRotation } from "@/lib/block-constraints"
-import type { ModulePosition, PreviewLayoutState, TextBlockPosition } from "@/lib/types/preview-layout"
+} from "@/core/layout/text-block-position"
+import { clampFreePlacementRow, clampLayerColumn, resolveLayerColumnBounds } from "@/core/layout/layer-placement"
+import { normalizeImagePlaceholderOpacity } from "@/core/layout/image-placeholder-opacity"
+import { clampRotation, hasSignificantRotation } from "@/core/layout/block-constraints"
+import type { ModulePosition, PreviewLayoutState, TextBlockPosition } from "@/core/types/preview-layout"
 
 type ImageGridMetrics = {
   gridCols: number

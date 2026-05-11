@@ -1,7 +1,7 @@
-import type { FontFamily } from "@/lib/config/fonts"
-import type { TextFormatRun } from "@/lib/text-format-runs"
-import type { TextTrackingRun } from "@/lib/text-tracking-runs"
-import type { TextAlignMode, TextVerticalAlignMode } from "@/lib/types/layout-primitives"
+import type { FontFamily } from "@/core/config/fonts"
+import type { TextFormatRun } from "@/core/layout/text-format-runs"
+import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
+import type { TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-primitives"
 
 export type BlockEditorTextAlign = TextAlignMode
 export type BlockEditorVerticalAlign = TextVerticalAlignMode

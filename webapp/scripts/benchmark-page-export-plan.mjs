@@ -7,15 +7,15 @@ import {
   DEFAULT_BASE_FONT,
   getStyleDefaultFontWeight,
   resolveFontFamily,
-} from "../lib/config/fonts.ts"
-import { preloadFontFileMetricFaces } from "../lib/font-file-text-metrics-engine.ts"
+} from "../core/config/fonts.ts"
+import { preloadFontFileMetricFaces } from "../core/layout/font-file-text-metrics-engine.ts"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   resolveLayoutTextMetricsEngineFactory,
-} from "../lib/layout-engine-contract.ts"
-import { addLayoutPerformanceMetricListener } from "../lib/layout-performance.ts"
-import { buildPageExportPlan } from "../lib/page-export-plan.ts"
-import { createTextMetricsService } from "../lib/text-metrics-service.ts"
+} from "../core/layout/layout-engine-contract.ts"
+import { addLayoutPerformanceMetricListener } from "../core/layout/layout-performance.ts"
+import { buildPageExportPlan } from "../core/layout/page-export-plan.ts"
+import { createTextMetricsService } from "../core/layout/text-metrics-service.ts"
 import { createStressPagePlanArgs } from "../tests/helpers/page-export-plan-fixtures.mjs"
 
 const PAGE_COUNTS = [10, 100, 500, 1000]

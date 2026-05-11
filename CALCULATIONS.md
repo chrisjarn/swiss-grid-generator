@@ -2,7 +2,7 @@
 
 This document describes the mathematical calculations used in the Swiss Grid Generator, based on Josef Müller-Brockmann's *Grid Systems in Graphic Design* (1981).
 
-Core grid formulas currently reference `webapp/lib/grid-calculator.ts`; preview reflow/autofit planning formulas are implemented in `webapp/lib/reflow-planner.ts` and `webapp/lib/autofit-planner.ts`. New pure domain types are staged under `webapp/core/types/` as part of the migration toward `webapp/core/layout/`, but the mathematical source of truth is still the canonical `PageExportPlan`.
+Core grid formulas now live in `webapp/core/layout/grid-calculator.ts`; preview reflow/autofit planning formulas are implemented in `webapp/core/layout/reflow-planner.ts` and `webapp/core/layout/autofit-planner.ts`. Pure domain types live under `webapp/core/types/`, and the mathematical source of truth remains the canonical `PageExportPlan` in `webapp/core/layout/page-export-plan.ts`.
 
 Recent UI updates (header dividers/tooltips, dark-mode shell styling, shortcut coverage, inline page-layer navigation) do not change these mathematical formulas.
 In the Project -> Pages -> inline Layers architecture, these calculations are evaluated independently per page.
@@ -442,7 +442,7 @@ if override === baseFont: discard override (inherit)
 ```
 
 This keeps inheritance stable across save/load and avoids persisting redundant overrides.
-Known font values are defined centrally in `webapp/lib/config/fonts.ts`.
+Known font values are defined centrally in `webapp/core/config/fonts.ts`.
 
 Note: this affects only the rendered typography on the preview/export canvas; UI chrome fonts are unchanged.
 

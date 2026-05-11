@@ -1,11 +1,11 @@
 import { gunzipSync, gzipSync, strFromU8, strToU8 } from "fflate"
 
-import type { LoadedProject } from "@/lib/document-session"
+import type { LoadedProject } from "@/core/document/session"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
-import { stripSessionUiSettings } from "@/lib/ui-settings-resolver"
+} from "@/core/layout/layout-engine-contract"
+import { stripSessionUiSettings } from "@/core/document/ui-settings-resolver"
 
 export const PROJECT_JSON_EXTENSION = ".json"
 export const PROJECT_ARCHIVE_EXTENSION = ".swissgridgenerator"

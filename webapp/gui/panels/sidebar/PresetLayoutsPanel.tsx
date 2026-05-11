@@ -11,14 +11,14 @@ import {
 import { HoverTooltip } from "@/shared/ui/hover-tooltip"
 import { PresetPageThumbnail } from "@/gui/panels/sidebar/PresetPageThumbnail"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
-import { getPresetSyncStatusIndicatorClassName } from "@/lib/cloud-status-indicator"
+import { getPresetSyncStatusIndicatorClassName } from "@/gui/shell/lib/cloud-status-indicator"
 import {
   deleteUserProjectFromLibrary,
   saveProjectToUserLibrary,
   userLayoutPresetQuery,
 } from "@/lib/user-layout-library"
 import { useTranslation } from "@/lib/i18n/useTranslation"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 
 type PresetGroupCategory = (typeof LAYOUT_PRESET_GROUPS)[number]["category"]
 const PRESET_GROUP_COLLAPSED_STORAGE_KEY = "swiss-grid-generator.preset-browser.collapsed-groups"

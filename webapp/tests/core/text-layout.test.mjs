@@ -1,7 +1,7 @@
 import test from "node:test"
 import assert from "node:assert/strict"
 
-import { wrapText, wrapTextDetailed } from "../../lib/text-layout.ts"
+import { wrapText, wrapTextDetailed } from "../../core/layout/text-layout.ts"
 
 const monoMeasure = (text) => text.length
 

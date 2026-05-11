@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, "../..")
 const tooltipSourcePath = path.join(repoRoot, "webapp/messages/en/content/tooltips.md")
-const outputPath = path.join(repoRoot, "webapp/lib/generated-tooltip-content.ts")
+const outputPath = path.join(repoRoot, "webapp/gui/preview/lib/generated-tooltip-content.ts")
 
 function parseHeading(line, level) {
   const match = line.match(new RegExp(`^${"#".repeat(level)}\\s+(.+?)\\s+\\{#([A-Za-z0-9_-]+)\\}\\s*$`))

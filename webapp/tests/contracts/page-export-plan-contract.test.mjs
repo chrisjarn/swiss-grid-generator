@@ -4,9 +4,9 @@ import crypto from "node:crypto"
 import fs from "node:fs"
 import path from "node:path"
 
-import { preloadFontFileMetricFaces } from "../../lib/font-file-text-metrics-engine.ts"
-import { buildPageExportPlan } from "../../lib/page-export-plan.ts"
-import { buildResolvedProjectPageExportSource } from "../../lib/project-page-export-source.ts"
+import { preloadFontFileMetricFaces } from "../../core/layout/font-file-text-metrics-engine.ts"
+import { buildPageExportPlan } from "../../core/layout/page-export-plan.ts"
+import { buildResolvedProjectPageExportSource } from "../../core/export/project-page-export-source.ts"
 import { createStressPagePlanArgs } from "../helpers/page-export-plan-fixtures.mjs"
 
 const ROOT = process.cwd()
@@ -149,8 +149,8 @@ test("page export plan replaces removed Libre Franklin layout references", () =>
 })
 
 test("layout profiling is dev-only instrumentation around existing planning and drawing calls", () => {
-  const profilerSource = readText("lib/layout-performance.ts")
-  const planSource = readText("lib/page-export-plan.ts")
+  const profilerSource = readText("core/layout/layout-performance.ts")
+  const planSource = readText("core/layout/page-export-plan.ts")
   const rendererSource = readText("gui/preview/hooks/useTypographyRenderer.ts")
 
   assert.match(profilerSource, /NEXT_PUBLIC_LAYOUT_PROFILING/)

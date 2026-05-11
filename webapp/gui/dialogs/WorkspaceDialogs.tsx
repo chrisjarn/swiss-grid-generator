@@ -4,7 +4,7 @@ import { ExportDialog } from "@/gui/dialogs/ExportDialog"
 import { NoticeDialog } from "@/gui/dialogs/NoticeDialog"
 import { SaveLibraryDialog } from "@/gui/dialogs/SaveLibraryDialog"
 import type { ExportProgressState } from "@/gui/shell/hooks/useExportActions"
-import type { LoadedProject } from "@/lib/document-session"
+import type { LoadedProject } from "@/core/document/session"
 import type { ExportFormat } from "@/lib/export-format-options"
 
 type NoticeState = {
@@ -52,6 +52,7 @@ type Props = {
     onBleedMmChange: (value: string) => void
     onConfirm: () => void
     progress: ExportProgressState | null
+    progressLog: readonly string[]
     previewProject: LoadedProject<Record<string, unknown>>
   }
   saveLibraryDialog: {
@@ -115,6 +116,7 @@ export function WorkspaceDialogs({
         onBleedWidthMmChange={exportDialog.onBleedMmChange}
         onConfirm={exportDialog.onConfirm}
         exportProgress={exportDialog.progress}
+        exportProgressLog={exportDialog.progressLog}
         previewProject={exportDialog.previewProject}
       />
 

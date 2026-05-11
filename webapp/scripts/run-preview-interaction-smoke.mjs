@@ -309,7 +309,7 @@ async function keyEvent(cdp, sessionId, type, key, code, windowsVirtualKeyCode, 
 
 async function selectInlineEditorTextWithKeyboard(cdp, sessionId, characterCount) {
   await evaluate(cdp, sessionId, `(() => {
-    const node = document.querySelector('textarea[aria-label^="Inline editor"]')
+    const node = document.querySelector('textarea[aria-label^="inline edit"]')
     if (!node) return false
     node.focus()
     node.setSelectionRange(0, 0)
@@ -388,6 +388,13 @@ async function main() {
         canvas.pointerEvents === "auto" && canvas.width > 300 && canvas.height > 500
       )) ?? null
     })()`)
+    await evaluate(cdp, sessionId, `(() => {
+      const closeButton = document.querySelector('button[aria-label="close"]')
+      if (!(closeButton instanceof HTMLButtonElement)) return false
+      closeButton.click()
+      return true
+    })()`)
+    await sleep(300)
 
     const dragStart = { x: pageCanvas.x + 94, y: pageCanvas.y + 73 }
     const dragEnd = { x: dragStart.x + 95, y: dragStart.y + 120 }
@@ -400,19 +407,27 @@ async function main() {
     })`)
     if (!canvasStillVisible) throw new Error("Live preview canvas disappeared after text drag.")
 
-    const editorOpen = await (async () => {
-      const attempts = [
-        { x: dragEnd.x, y: dragEnd.y },
-        { x: dragEnd.x - 30, y: dragEnd.y - 30 },
-        { x: pageCanvas.x + 94, y: pageCanvas.y + 73 },
-      ]
-      for (const point of attempts) {
-        await doubleClick(cdp, sessionId, point.x, point.y)
-        await sleep(500)
-        const isOpen = await evaluate(
-          cdp,
+	    const editorOpen = await (async () => {
+	      const attempts = [
+	        { x: dragEnd.x, y: dragEnd.y },
+	        { x: dragEnd.x - 30, y: dragEnd.y - 30 },
+	        { x: pageCanvas.x + 94, y: pageCanvas.y + 73 },
+	      ]
+	      for (let row = 0; row < 4; row += 1) {
+	        for (let column = 0; column < 4; column += 1) {
+	          attempts.push({
+	            x: pageCanvas.x + 48 + column * 72,
+	            y: pageCanvas.y + 48 + row * 86,
+	          })
+	        }
+	      }
+	      for (const point of attempts) {
+	        await doubleClick(cdp, sessionId, point.x, point.y)
+	        await sleep(300)
+	        const isOpen = await evaluate(
+	          cdp,
           sessionId,
-          `Boolean(document.querySelector('textarea[aria-label^="Inline editor"]'))`,
+          `Boolean(document.querySelector('textarea[aria-label^="inline edit"]'))`,
         )
         if (isOpen) return true
       }
@@ -421,7 +436,7 @@ async function main() {
     if (!editorOpen) throw new Error("Inline editor did not open from live preview geometry.")
 
     await waitForExpression(cdp, sessionId, `(() => {
-      const node = document.querySelector('textarea[aria-label^="Inline editor"]')
+      const node = document.querySelector('textarea[aria-label^="inline edit"]')
       if (!node) return null
       const rect = node.getBoundingClientRect()
       if (rect.width <= 0 || rect.height <= 0) return null
@@ -432,7 +447,7 @@ async function main() {
     await sleep(250)
 
     const selection = await evaluate(cdp, sessionId, `(() => {
-      const node = document.querySelector('textarea[aria-label^="Inline editor"]')
+      const node = document.querySelector('textarea[aria-label^="inline edit"]')
       return node ? { start: node.selectionStart, end: node.selectionEnd, length: node.value.length } : null
     })()`)
     if (!selection || selection.end <= selection.start) {

@@ -1,7 +1,7 @@
 import { X } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { LEGAL_CONTENT_SECTIONS } from "@/lib/generated-legal-content"
+import { LEGAL_CONTENT_SECTIONS } from "@/gui/panels/sidebar/lib/generated-legal-content"
 import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 

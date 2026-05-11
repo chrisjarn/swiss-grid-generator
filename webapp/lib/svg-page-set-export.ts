@@ -1,5 +1,5 @@
 import { buildExportBox } from "@/lib/export-box"
-import { translateMessage } from "@/lib/i18n/messages"
+import { translateMessage } from "@/core/i18n/messages"
 import {
   DEFAULT_EXPORT_BLEED_OPTIONS,
   type ExportBleedOptions,
@@ -7,8 +7,8 @@ import {
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
-import type { PlannedProjectPageExportSource } from "@/lib/planned-page-export-source"
+} from "@/core/layout/layout-engine-contract"
+import type { PlannedProjectPageExportSource } from "@/core/export/planned-page-export-source"
 import { renderSwissGridVectorSvg } from "@/lib/svg-vector-export"
 import type { VectorTextOutlineResolver } from "@/lib/vector-text-outline"
 

@@ -1,8 +1,8 @@
 import { useEffect } from "react"
 import type { RefObject } from "react"
 
-import type { GridResult } from "@/lib/grid-calculator"
-import { renderStaticGuides } from "@/lib/render-static-guides"
+import type { GridResult } from "@/core/layout/grid-calculator"
+import { renderStaticGuides } from "@/gui/preview/lib/render-static-guides"
 
 type Args = {
   staticCanvasRef: RefObject<HTMLCanvasElement | null>

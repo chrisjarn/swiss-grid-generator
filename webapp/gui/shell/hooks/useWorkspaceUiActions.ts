@@ -1,20 +1,20 @@
 import { useCallback } from "react"
 
-import { clampRotation } from "@/lib/block-constraints"
+import { clampRotation } from "@/core/layout/block-constraints"
 import {
   getImageSchemeColorToken,
   isImageColorInScheme,
   isImageSchemeColorToken,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
-import type { FontFamily } from "@/lib/config/fonts"
+} from "@/core/config/color-schemes"
+import type { FontFamily } from "@/core/config/fonts"
 import type {
   GridRhythm,
   GridRhythmColsDirection,
   GridRhythmRowsDirection,
   TypographyScale,
-} from "@/lib/config/defaults"
-import type { CanvasRatioKey } from "@/lib/grid-calculator"
+} from "@/core/config/defaults"
+import type { CanvasRatioKey } from "@/core/layout/grid-calculator"
 import type { UiAction } from "@/lib/workspace-ui-state"
 
 type Args = {

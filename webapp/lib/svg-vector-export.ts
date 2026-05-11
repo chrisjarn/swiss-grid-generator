@@ -1,19 +1,19 @@
-import type { GridResult } from "@/lib/grid-calculator"
+import type { GridResult } from "@/core/layout/grid-calculator"
 import {
   DEFAULT_BASE_FONT,
   type FontFamily,
-} from "@/lib/config/fonts"
-import { translateMessage } from "@/lib/i18n/messages"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
-import { formatSvgColor } from "@/lib/export-colors"
-import { measureLayoutPerformanceAsync } from "@/lib/layout-performance"
-import { buildPageExportPlan, type PageExportPlan } from "@/lib/page-export-plan"
-import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import type { DocumentVariableContext } from "@/lib/document-variable-text"
+} from "@/core/config/fonts"
+import { translateMessage } from "@/core/i18n/messages"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import { formatSvgColor } from "@/core/export/colors"
+import { measureLayoutPerformanceAsync } from "@/core/layout/layout-performance"
+import { buildPageExportPlan, type PageExportPlan } from "@/core/layout/page-export-plan"
+import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
+import type { DocumentVariableContext } from "@/core/document/variable-text"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
+} from "@/core/layout/layout-engine-contract"
 import {
   buildSvgPathDataFromCommands,
   preloadTextPlanOutlineFonts,

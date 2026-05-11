@@ -4,8 +4,8 @@ import { GridPreviewCanvasStage } from "@/gui/preview/GridPreviewCanvasStage"
 import { GridPreviewFeedback } from "@/gui/preview/GridPreviewFeedback"
 import { GridPreviewOverlays } from "@/gui/preview/GridPreviewOverlays"
 import type { BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
-import { GridResult } from "@/lib/grid-calculator"
-import type { HelpSectionId } from "@/lib/help-registry"
+import { GridResult } from "@/core/layout/grid-calculator"
+import type { HelpSectionId } from "@/core/document/help-registry"
 import { usePreviewAutoFitPlacement } from "@/gui/preview/hooks/usePreviewAutoFitPlacement"
 import { usePreviewCanvasInteractions } from "@/gui/preview/hooks/usePreviewCanvasInteractions"
 import { usePreviewDocumentLifecycle } from "@/gui/preview/hooks/usePreviewDocumentLifecycle"
@@ -24,59 +24,60 @@ import { usePreviewViewport } from "@/gui/preview/hooks/usePreviewViewport"
 import { usePreviewLayerDelete } from "@/gui/preview/hooks/usePreviewLayerDelete"
 import { usePreviewLayoutEmission } from "@/gui/preview/hooks/usePreviewLayoutEmission"
 import { usePreviewPerf } from "@/gui/preview/hooks/usePreviewPerf"
+import { usePreviewSmartTextZoomController } from "@/gui/preview/hooks/usePreviewSmartTextZoomController"
 import { useTypographyRenderer } from "@/gui/preview/hooks/useTypographyRenderer"
 import {
   PREVIEW_LAYOUT_CHANGE_DEBOUNCE_MS,
   PREVIEW_TOUCH_CANCEL_DISTANCE_PX,
   PREVIEW_TOUCH_LONG_PRESS_MS,
-} from "@/lib/preview-interaction-constants"
-import { buildSmartTextZoomGeometrySignature } from "@/lib/preview-smart-text-zoom"
-import { getHoveredPreviewTextGuideRect, getPreviewTextGuideRect } from "@/lib/preview-guide-rect"
-import { isPointWithinRect } from "@/lib/preview-hover-affordance"
-import { removeTextLayerFromCollections } from "@/lib/preview-layer-state"
+} from "@/gui/preview/lib/preview-interaction-constants"
+import { buildSmartTextZoomGeometrySignature } from "@/gui/preview/lib/preview-smart-text-zoom"
+import { getHoveredPreviewTextGuideRect, getPreviewTextGuideRect } from "@/gui/preview/lib/preview-guide-rect"
+import { isPointWithinRect } from "@/gui/preview/lib/preview-hover-affordance"
+import { removeTextLayerFromCollections } from "@/gui/preview/lib/preview-layer-state"
 import {
   clampTextBlockPosition,
   insertTextLayerDuplicateSnapshotInCollections,
   type TextLayerDuplicateSnapshot,
-} from "@/lib/preview-text-layer-state"
+} from "@/gui/preview/lib/preview-text-layer-state"
 import {
   applyOptionalTransferredValue,
   applyTextStyleTransferToCollections,
   type TextStyleTransferMode,
   type TextStyleTransferSnapshot,
-} from "@/lib/preview-text-style-transfer"
-import { resolveTextCopyAffordanceAction } from "@/lib/preview-copy-affordance"
+} from "@/gui/preview/lib/preview-text-style-transfer"
+import { resolveTextCopyAffordanceAction } from "@/gui/preview/lib/preview-copy-affordance"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
-import { clampFreePlacementRow, clampLayerColumn } from "@/lib/layer-placement"
-import { findNearestAxisIndex } from "@/lib/grid-rhythm"
+import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
+import { findNearestAxisIndex } from "@/core/layout/grid-rhythm"
 import {
   type BlockRect,
   type BlockRenderPlan,
   type NoticeRequest,
   type OverflowLinesByBlock,
   type PagePoint,
-} from "@/lib/preview-types"
-import { PREVIEW_STYLE_OPTIONS, formatPtSize, getDummyTextForStyle } from "@/lib/preview-text-config"
-import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import { getDefaultColumnSpan } from "@/lib/text-layout"
+} from "@/gui/preview/lib/preview-types"
+import { PREVIEW_STYLE_OPTIONS, formatPtSize, getDummyTextForStyle } from "@/gui/preview/lib/preview-text-config"
+import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
+import { getDefaultColumnSpan } from "@/core/layout/text-layout"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
-} from "@/lib/layout-engine-contract"
-import { isBaseBlockId } from "@/lib/document-defaults"
+} from "@/core/layout/layout-engine-contract"
+import { isBaseBlockId } from "@/core/document/defaults"
 import {
   DEFAULT_BASE_FONT,
   getStyleDefaultFontWeight,
   type FontFamily,
-} from "@/lib/config/fonts"
+} from "@/core/config/fonts"
 import {
   DEFAULT_IMAGE_COLOR_SCHEME_ID,
   IMAGE_COLOR_SCHEMES,
   type ImageColorSchemeId,
-} from "@/lib/config/color-schemes"
+} from "@/core/config/color-schemes"
 import { usePreviewTextEditor } from "@/gui/preview/hooks/usePreviewTextEditor"
-import type { DocumentVariableContext } from "@/lib/document-variable-text"
-import { translateMessage } from "@/lib/i18n/messages"
+import type { DocumentVariableContext } from "@/core/document/variable-text"
+import { translateMessage } from "@/core/i18n/messages"
 import {
   memo,
   useCallback,
@@ -318,8 +319,6 @@ export const GridPreview = memo(function GridPreview({
   const typographyBufferTransformRef = useRef("")
   const previewSurfaceSignatureRef = useRef<string | null>(null)
   const lastHistoryResetTokenRef = useRef(historyResetToken)
-  const smartTextZoomGeometrySignatureRef = useRef<string | null>(null)
-  const lastAppliedSmartTextZoomGeometrySignatureRef = useRef<string | null>(null)
   const PERF_ENABLED = process.env.NODE_ENV !== "production"
 
   const [overflowLinesByBlock, setOverflowLinesByBlock] = useState<OverflowLinesByBlock<BlockId>>({})
@@ -1747,33 +1746,15 @@ export const GridPreview = memo(function GridPreview({
     onPreviewPlansCommit?.()
   }, [captureCommittedPreviewFrame, dragState, onPreviewPlansCommit])
 
-  useEffect(() => {
-    if (!smartTextEditZoomEnabled || !editorState?.target) {
-      setActiveTextZoomTarget(null)
-      return
-    }
-    setActiveTextZoomTarget((current) => (current === editorState.target ? current : editorState.target))
-  }, [editorState?.target, smartTextEditZoomEnabled])
-
-  useEffect(() => {
-    smartTextZoomGeometrySignatureRef.current = smartTextZoomGeometrySignature
-  }, [smartTextZoomGeometrySignature])
-
-  useEffect(() => {
-    if (!smartTextEditZoomEnabled || !activeTextZoomTarget) {
-      lastAppliedSmartTextZoomGeometrySignatureRef.current = null
-      return
-    }
-    lastAppliedSmartTextZoomGeometrySignatureRef.current = smartTextZoomGeometrySignatureRef.current
-  }, [activeTextZoomTarget, smartTextEditZoomEnabled])
-
-  useEffect(() => {
-    if (!smartTextEditZoomEnabled || !activeTextZoomTarget) return
-    const nextSignature = smartTextZoomGeometrySignatureRef.current
-    if (!nextSignature || lastAppliedSmartTextZoomGeometrySignatureRef.current === nextSignature) return
-    lastAppliedSmartTextZoomGeometrySignatureRef.current = nextSignature
-    setSmartTextZoomTargetVersion((version) => version + 1)
-  }, [activeTextZoomTarget, smartTextEditZoomEnabled, typographyPlanVersion])
+  usePreviewSmartTextZoomController({
+    enabled: smartTextEditZoomEnabled,
+    editorTarget: editorState?.target,
+    activeTarget: activeTextZoomTarget,
+    geometrySignature: smartTextZoomGeometrySignature,
+    typographyPlanVersion,
+    setActiveTarget: setActiveTextZoomTarget,
+    setTargetVersion: setSmartTextZoomTargetVersion,
+  })
 
   useTypographyRenderer<BlockId>({
     canvasRef,

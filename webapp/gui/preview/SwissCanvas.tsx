@@ -6,8 +6,8 @@ import type { PageExportGuideGroup, PageExportPlan } from "@/core/types/export-p
 import {
   buildCanvasRenderPlansFromPageExportPlan,
   drawCanvasLayerPlanStack,
-} from "@/lib/canvas-page-renderer"
-import { formatSvgColor } from "@/lib/export-colors"
+} from "@/gui/preview/lib/canvas-page-renderer"
+import { formatSvgColor } from "@/core/export/colors"
 import { cn } from "@/lib/utils"
 
 type SwissCanvasProps = {

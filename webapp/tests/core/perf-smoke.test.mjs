@@ -2,8 +2,8 @@ import test from "node:test"
 import assert from "node:assert/strict"
 import { performance } from "node:perf_hooks"
 
-import { generateSwissGrid } from "../../lib/grid-calculator.ts"
-import { computeReflowPlan } from "../../lib/reflow-planner.ts"
+import { generateSwissGrid } from "../../core/layout/grid-calculator.ts"
+import { computeReflowPlan } from "../../core/layout/reflow-planner.ts"
 
 function runTimed(iterations, fn) {
   const warmup = Math.min(200, Math.max(20, Math.floor(iterations / 10)))

@@ -1,6 +1,6 @@
 import type { MouseEvent, ReactNode } from "react"
 
-import { SECTION_HEADLINE_CLASSNAME } from "@/lib/ui-section-headline"
+import { SECTION_HEADLINE_CLASSNAME } from "@/shared/ui/section-headline"
 
 export const SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME = "!text-muted-foreground"
 

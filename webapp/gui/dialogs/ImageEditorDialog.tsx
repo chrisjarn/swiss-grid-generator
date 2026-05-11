@@ -16,22 +16,22 @@ import {
   TopSelectContent,
 } from "@/shared/ui/select"
 import { Switch } from "@/shared/ui/switch"
-import { clampRotation } from "@/lib/block-constraints"
-import type { ImageColorSchemeId } from "@/lib/config/color-schemes"
+import { clampRotation } from "@/core/layout/block-constraints"
+import type { ImageColorSchemeId } from "@/core/config/color-schemes"
 import {
   clampTransparencyPercent,
   opacityToTransparencyPercent,
   transparencyPercentToOpacity,
-} from "@/lib/image-placeholder-opacity"
+} from "@/core/layout/image-placeholder-opacity"
 import {
   EDITOR_PANEL_PERSISTENCE_RESET_EVENT,
   IMAGE_EDITOR_SCROLL_STORAGE_KEY,
   IMAGE_EDITOR_SECTIONS_STORAGE_KEY,
-} from "@/lib/editor-panel-persistence"
+} from "@/gui/editors/lib/editor-panel-persistence"
 import { useAutoScrollOpenedSection } from "@/gui/editors/hooks/useAutoScrollOpenedSection"
 import { usePersistedSectionState } from "@/gui/editors/hooks/usePersistedSectionState"
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
-import type { HelpSectionId } from "@/lib/help-registry"
+import type { HelpSectionId } from "@/core/document/help-registry"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 

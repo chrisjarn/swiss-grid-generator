@@ -3,12 +3,12 @@ import { useEffect, useState } from "react"
 import type { ComponentProps } from "react"
 
 import { SwissCanvas } from "@/gui/preview/SwissCanvas"
-import type { FontFamily } from "@/lib/config/fonts"
-import { preloadFontFileMetricFaces } from "@/lib/font-file-text-metrics-engine"
-import { generateSwissGrid } from "@/lib/grid-calculator"
-import { buildPageExportPlan } from "@/lib/page-export-plan"
-import type { PageExportPlan } from "@/lib/page-export-plan"
-import type { PreviewLayoutState } from "@/lib/types/preview-layout"
+import type { FontFamily } from "@/core/config/fonts"
+import { preloadFontFileMetricFaces } from "@/core/layout/font-file-text-metrics-engine"
+import { generateSwissGrid } from "@/core/layout/grid-calculator"
+import { buildPageExportPlan } from "@/core/layout/page-export-plan"
+import type { PageExportPlan } from "@/core/layout/page-export-plan"
+import type { PreviewLayoutState } from "@/core/types/preview-layout"
 
 type StoryStyleKey = "display" | "headline" | "body" | "caption"
 
