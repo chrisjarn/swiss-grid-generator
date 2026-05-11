@@ -50,32 +50,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "Swiss \nGrid\nGenerator",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "User Manual",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Swiss Grid Generator is a layout tool for building disciplined editorial pages from ratio, baseline, margins, modules, and typographic hierarchy.\n\nThis manual is selective by design. It focuses on the decisions that shape the page. It does not attempt to document every control in the interface.\n\nFor implementation-accurate reference, see SETTINGS.md, CALCULATIONS.md, and FEATURES.md."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -83,24 +75,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -117,88 +103,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -217,16 +181,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -235,12 +189,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -248,8 +200,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -303,32 +253,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "1.\nIntroduction",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Start with structure, not decoration.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "A strong page usually comes from the right order of decisions: set the format, set the baseline, set the margins, build the grid, define the type system, place text and image areas, and export when the composition is stable.\n\nThe tool works best when global decisions are made first and local overrides are kept rare. If the structure is clear, later adjustments stay precise. If the structure is weak, every local correction becomes expensive."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -336,24 +278,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -370,88 +306,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -470,16 +384,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -488,12 +392,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -501,8 +403,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -556,32 +456,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "2.\nQuick Start",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Build the page in the simplest reliable order.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose Ratio, Orientation, and, if needed, Rotation. Then set the Baseline, choose the Margins method, and, if needed, switch to Custom Margins to tune the content field. After that, set Cols, Rows, Gutter, and Rhythm, then define the document type scale and base font in Typo & Rhythms.\n\nOnly after the page structure is established should you create content. Double-click a module to create a text paragraph. Use Shift + double-click to create an image placeholder. If the page feels wrong, return to baseline and margins before changing the content blocks."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -589,24 +481,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -623,88 +509,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -723,16 +587,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -741,12 +595,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -754,8 +606,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -809,32 +659,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "3.\nRecommended Workflow",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Move from the largest decision to the smallest.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "The recommended sequence is simple: format and orientation first, baseline second, margins third, grid and rhythm fourth, type scale and base font fifth, paragraph and image placement sixth, local refinements seventh, and export last.\n\nThis order matters because the tool is system-driven. If a document needs many local exceptions, the underlying grid, margin field, or type hierarchy is usually not resolved yet. In most cases, the correct fix is structural, not local."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -842,24 +684,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -876,88 +712,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -976,16 +790,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -994,12 +798,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -1007,8 +809,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -1062,32 +862,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "4.\nPages and Document Structure",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Treat page order as part of the design.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use single pages when each page should stand on its own. Use Facing Pages when a spread should behave as one editorial field. A facing spread is one project page, but it represents two physical pages. That matters for page numbering and for document variables such as %page% and %pages%.\n\nIn the Project panel, use the Page header or list icon to return from layers to the page list. Activate pages directly from the rows, open a row only when you need its layers, and use the page counter when you need to jump by physical page number. Add pages where they belong in the reading sequence. Facing pages should be intentional, not a substitute for a weak single-page composition."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -1095,24 +887,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -1129,88 +915,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -1229,16 +993,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -1247,12 +1001,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -1260,8 +1012,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -1315,32 +1065,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "5.\nGrid, Margins, and Rhythm",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Resolve the page field before refining the content.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "This is the structural core of the document. Choose a baseline that matches the intended density of the work. A smaller baseline creates finer rhythm and more control. A larger baseline creates a slower page. Then choose a margin system that defines a clear content field. If the page feels unstable, the solution is often in the margins.\n\nOnly after that should you define columns, rows, gutter, and rhythm. Use Repetitive as the neutral reference. If the page does not work there, a more expressive rhythm will rarely solve it. Use Fibonacci, Golden Ratio, Perfect Fourth, and Perfect Fifth only when they strengthen the structure."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -1348,24 +1090,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -1382,88 +1118,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -1482,16 +1196,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -1500,12 +1204,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -1513,8 +1215,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -1568,32 +1268,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "6.\nTypography",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Let type reinforce the grid.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Start by setting the document type scale and the base font. Then assign hierarchy by role: caption, body, subhead, headline, fx/custom, and display. These levels are structural roles, not mood presets.\n\nRefine tracking and leading only after the hierarchy is correct. Tracking changes the tonal color of the page and should be used carefully. Alignment and vertical alignment should be compositional decisions, not repair tools. Variables such as %page%, %pages%, %date%, and %lorem% belong to the editorial logic of the page."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -1601,24 +1293,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -1635,88 +1321,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -1735,16 +1399,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -1753,12 +1407,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -1766,8 +1418,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -1821,32 +1471,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "7.\nPlacing Text and Image Areas",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Define the frame before refining the content.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use the modular field deliberately. Double-click a module to create text with hyphenation off. Hold 1 to 5 while double-clicking to create text directly in a hierarchy; the initial frame follows that role and clamps to the remaining columns. Use Shift + double-click to create an image placeholder.\n\nBefore refining wording, define the frame with Rows, Baselines, and Cols. Then adjust alignment, snapping, and content. Snapped placement produces stronger editorial discipline. Free placement should be deliberate. If a frame feels too loose, reduce the geometry before adjusting the text inside it."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -1854,24 +1496,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -1888,88 +1524,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -1988,16 +1602,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -2006,12 +1610,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -2019,8 +1621,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -2074,32 +1674,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "8.\nExport",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Export is translation, not correction.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose the export format according to what happens next. Use PDF for faithful vector document output, SVG for frozen vector geometry per page, and IDML when the document continues in InDesign. The export choice should serve the downstream workflow, not convenience in the moment.\n\nBefore exporting, confirm the selected page range, page order, page numbering, document size, and editorial variables. On long documents or rotated pages, make a visual check after export.\n\nPDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -2107,24 +1699,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -2141,88 +1727,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -2241,16 +1805,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -2259,12 +1813,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -2272,8 +1824,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -2327,32 +1877,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "9.\nKeyboard and Fast Interaction",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Use shortcuts to protect concentration.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Only a few interactions materially improve the workflow: double-click to create text, Shift + double-click to create an image placeholder, hold 1 to 5 while double-clicking to choose hierarchy directly, drag to move, use the visible + affordance for paragraph transfer or image-placeholder duplication, use arrow keys to nudge selected layers, and press Esc to leave dialogs or cancel export at the next safe point.\n\nThe purpose of shortcuts is not speed for its own sake. The purpose is to keep attention on the page. Keep the interaction set small, predictable, and compositional."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -2360,24 +1902,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -2394,88 +1930,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -2494,16 +2008,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -2512,12 +2016,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -2525,8 +2027,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -2580,32 +2080,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "10.\nCommon Mistakes",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Most layout problems begin too locally.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "One common mistake is styling paragraphs too early. If the grid is unresolved, local text styling will only hide the problem. Another is using facing pages without a real spread logic. Facing pages are useful when the spread must work as one field. Otherwise, single pages are stronger.\n\nOther common errors follow the same pattern. Designers often overfill the grid when the stronger correction would be a better margin field or clearer type hierarchy. They try to repair weak hierarchy with tracking alone, even though tracking cannot replace a clear scale and role structure. They also export without checking numbering and page range. Return to the system first."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -2613,24 +2105,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -2647,88 +2133,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -2747,16 +2211,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -2765,12 +2219,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -2778,8 +2230,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],
@@ -2833,32 +2283,24 @@
           "cover-title",
           "cover-step-1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"
         ],
         "textContent": {
           "cover-title": "11.\nFinal Advice",
           "cover-step-1": "Swiss Grid Generator - User Manual - Page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Keep the system clear and the exceptions rare.",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Set the page before the content. Set the rhythm before the styling. Set the frame before the wording. Set the system before the exceptions. This is the central discipline of the tool.\n\nIf the layout is structurally clear, the tool becomes fast. If the structure is unclear, every later adjustment becomes slower, heavier, and less precise. The manual should always be read in that spirit."
         },
         "blockTextEdited": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "styleAssignments": {
           "cover-title": "fx",
           "cover-step-1": "body",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "subhead",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "subhead",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "fx",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "fx"
         },
         "blockFontFamilies": {},
@@ -2866,24 +2308,18 @@
           "cover-title": 400,
           "cover-step-1": 400,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 700,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 700,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 400,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 400
         },
         "blockOpticalKerning": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockTrackingScales": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTrackingRuns": {},
@@ -2900,88 +2336,66 @@
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockRotations": {
           "cover-title": 0,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockColumnSpans": {
           "cover-title": 6,
           "cover-step-1": 6,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 3,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 3,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockRowSpans": {
           "cover-title": 2,
           "cover-step-1": 0,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 1,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 1,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 3,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 3
         },
         "blockHeightBaselines": {
           "cover-title": 0,
           "cover-step-1": 1,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": 0,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": 0,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 0,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 0
         },
         "blockTextAlignments": {
           "cover-title": "left",
           "cover-step-1": "left",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "left",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "left",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "left",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "left"
         },
         "blockVerticalAlignments": {
           "cover-title": "top",
           "cover-step-1": "bottom",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "bottom",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": "bottom",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": "top",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "top"
         },
         "blockTextReflow": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSyllableDivision": {
           "cover-title": false,
           "cover-step-1": false,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": false,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": false,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": false,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": false
         },
         "blockSnapToColumns": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockSnapToBaseline": {
           "cover-title": true,
           "cover-step-1": true,
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": true,
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": true,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": true,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": true
         },
         "blockModulePositions": {
@@ -3000,16 +2414,6 @@
             "row": 1,
             "baselineOffset": 0
           },
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9": {
-            "column": 3,
-            "row": 1,
-            "baselineOffset": 0
-          },
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": {
-            "column": 3,
-            "row": 2,
-            "baselineOffset": 0
-          },
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": {
             "column": 0,
             "row": 2,
@@ -3018,12 +2422,10 @@
         },
         "blockCustomSizes": {
           "cover-title": 64,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 14,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 14
         },
         "blockCustomLeadings": {
           "cover-title": 60,
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b": 24,
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": 24
         },
         "blockTextColors": {},
@@ -3031,8 +2433,6 @@
         "layerOrder": [
           "cover-step-1",
           "cover-title",
-          "paragraph-1094c876-1831-4124-a765-f078fb4a84f9",
-          "paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b",
           "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"
         ],

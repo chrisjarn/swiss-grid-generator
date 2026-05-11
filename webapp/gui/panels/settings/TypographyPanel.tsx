@@ -1,6 +1,6 @@
 import { memo, useState } from "react"
+import { Info } from "lucide-react"
 import { Label } from "@/shared/ui/label"
-import { FontSelect } from "@/shared/ui/font-select"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize } from "@/lib/preview-text-config"
 import {
   MAX_FIBONACCI_SEQUENCE_START_INDEX,
@@ -14,14 +14,11 @@ import type { GridResult } from "@/lib/grid-calculator"
 import { FONT_OPTIONS, getFontFamilyCss, type FontFamily } from "@/lib/config/fonts"
 import type { TypographyScale } from "@/lib/config/defaults"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
-import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useSelectRolloverPreview } from "@/gui/editors/hooks/useSelectRolloverPreview"
 import {
-  getSettingsControlClassName,
   getSettingsOpenListClassName,
   getSettingsOpenListOptionClassName,
   SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
-  SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/gui/panels/settings/settings-panel-styles"
 import { useTranslation } from "@/lib/i18n"
 
@@ -29,6 +26,12 @@ const TYPOGRAPHY_SCALE_OPTIONS: Array<{ value: TypographyScale; label: string }>
   .entries(TYPOGRAPHY_SCALE_LABELS)
   .map(([value, label]) => ({ value: value as TypographyScale, label }))
   .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
+
+const FONT_GROUPS = [
+  { key: "Sans-Serif", labelKey: "editor.fontGroups.sansSerif" },
+  { key: "Serif", labelKey: "editor.fontGroups.serif" },
+  { key: "Display", labelKey: "editor.fontGroups.poster" },
+] as const
 
 function splitParentheticalLabel(label: string): { label: string; detail: string | null } {
   const match = label.match(/^(.*?)\s+\((.*)\)$/)
@@ -70,6 +73,7 @@ export const TypographyPanel = memo(function TypographyPanel({
 }: Props) {
   const { t } = useTranslation()
   const [previewTypographyScale, setPreviewTypographyScale] = useState<TypographyScale | null>(null)
+  const [showHierarchyTable, setShowHierarchyTable] = useState(false)
   const baseFontSelectPreview = useSelectRolloverPreview<FontFamily>({
     value: baseFont,
     onCommitValue: onBaseFontChange,
@@ -89,7 +93,7 @@ export const TypographyPanel = memo(function TypographyPanel({
         label: "text-gray-900",
         value: "text-gray-700",
       }
-  const controlClassName = getSettingsControlClassName(isDarkMode)
+  const fontFamilyListClassName = getSettingsOpenListClassName(isDarkMode)
   const typographyRhythmListClassName = getSettingsOpenListClassName(isDarkMode)
   const normalizedFibonacciStartIndex = clampFibonacciSequenceStartIndex(fibonacciSequenceStartIndex)
   const activeTypographyScaleLabel = typographyScale === "fibonacci"
@@ -142,22 +146,27 @@ export const TypographyPanel = memo(function TypographyPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.typography.base")}</Label>}>
-          <FontSelect
-            value={baseFont}
-            onValueChange={(value) => baseFontSelectPreview.handleValueChange(value as FontFamily)}
-            options={FONT_OPTIONS}
-            triggerClassName={controlClassName}
-            renderTriggerValue={baseFont}
-            triggerValueStyle={{ fontFamily: getFontFamilyCss(baseFont) }}
-            onOpenChange={baseFontSelectPreview.handleOpenChange}
-            onContentPointerLeave={baseFontSelectPreview.handleContentPointerLeave}
-            getItemStyle={(option) => ({ fontFamily: getFontFamilyCss(option.value as FontFamily) })}
-            getItemPreviewProps={(value) => baseFontSelectPreview.getItemPreviewProps(value as FontFamily)}
-          />
-        </LabeledControlRow>
         <div className="space-y-1.5">
-          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.rhythm")}</Label>
+          <div className="flex h-7 items-center justify-between">
+            <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.rhythm")}</Label>
+            <button
+              type="button"
+              aria-label={t("settings.typography.toggleHierarchy")}
+              aria-pressed={showHierarchyTable}
+              className={`inline-flex h-5 w-5 items-center justify-center rounded-sm transition-colors ${
+                showHierarchyTable
+                  ? isDarkMode
+                    ? "bg-swiss-orange-soft/20 text-[#F4F6F8]"
+                    : "bg-swiss-orange-soft/15 text-[#9d4039]"
+                  : isDarkMode
+                    ? "text-gray-400 hover:bg-[#1D232D] hover:text-[#F4F6F8]"
+                    : "text-gray-500 hover:bg-gray-200 hover:text-gray-900"
+              }`}
+              onClick={() => setShowHierarchyTable((current) => !current)}
+            >
+              <Info className="h-3 w-3" aria-hidden="true" />
+            </button>
+          </div>
           <div
             role="listbox"
             aria-label={t("settings.typography.rhythmAria")}
@@ -231,18 +240,65 @@ export const TypographyPanel = memo(function TypographyPanel({
             })}
           </div>
         </div>
-        <div className={`border ${tableTone.frame}`}>
-          {hierarchyRows.map((row, index) => (
-            <div
-              key={row.key}
-              className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 px-3 py-2 text-[11px] ${index > 0 ? `border-t ${tableTone.row}` : ""}`}
-            >
-              <span className={`truncate ${tableTone.label}`}>{row.label}</span>
-              <span className={`font-mono text-right tabular-nums ${tableTone.value}`}>
-                {formatPtSize(row.size)}/{formatPtSize(row.leading)}
-              </span>
-            </div>
-          ))}
+        {showHierarchyTable ? (
+          <div className={`border ${tableTone.frame}`}>
+            {hierarchyRows.map((row, index) => (
+              <div
+                key={row.key}
+                className={`grid grid-cols-[minmax(0,1fr)_auto] gap-x-3 px-3 py-2 text-[11px] ${index > 0 ? `border-t ${tableTone.row}` : ""}`}
+              >
+                <span className={`truncate ${tableTone.label}`}>{row.label}</span>
+                <span className={`font-mono text-right tabular-nums ${tableTone.value}`}>
+                  {formatPtSize(row.size)}/{formatPtSize(row.leading)}
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : null}
+        <div className="space-y-1.5">
+          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.base")}</Label>
+          <div
+            role="listbox"
+            aria-label={t("settings.typography.base")}
+            className={fontFamilyListClassName}
+            onMouseLeave={baseFontSelectPreview.handleContentPointerLeave}
+          >
+            {FONT_GROUPS.map((group) => {
+              const groupOptions = FONT_OPTIONS.filter((option) => option.category === group.key)
+              if (!groupOptions.length) return null
+              return (
+                <div
+                  key={group.key}
+                  className="grid grid-cols-[5.25rem_minmax(0,1fr)]"
+                >
+                  <div className={`px-2 py-2 text-left text-[10px] font-semibold uppercase leading-none tracking-[0.16em] ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                    {t(group.labelKey)}
+                  </div>
+                  <div>
+                    {groupOptions.map((option) => {
+                      const value = option.value as FontFamily
+                      const selected = baseFont === value
+                      return (
+                        <button
+                          key={option.value}
+                          type="button"
+                          role="option"
+                          aria-selected={selected}
+                          className={`${getSettingsOpenListOptionClassName(isDarkMode, selected)} justify-end text-right`}
+                          style={{ fontFamily: getFontFamilyCss(value) }}
+                          onBlur={baseFontSelectPreview.handleContentPointerLeave}
+                          onClick={() => baseFontSelectPreview.handleValueChange(value)}
+                          {...baseFontSelectPreview.getItemPreviewProps(value)}
+                        >
+                          <span className="min-w-0 truncate">{option.label}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       </div>
     </PanelCard>

@@ -232,40 +232,45 @@ The header renders a vertical-more menu directly after the account icon; the men
 - `Title`: editable project title; also drives the default project JSON filename stem.
 - Project panel section headlines use the same neutral gray as the shared inactive section-header style.
 - The Project panel uses the same shared width (`280px` on desktop, full width on mobile), side gutters, and top inset rhythm as the left settings panel.
-- The compact project-title row shows the real project title plus an edit/close button.
-- Double-clicking the compact project title toggles the metadata section. Opening it focuses and selects the `Title` field immediately.
-- The expanded metadata section contains editable `Title`, `Subject`, and `Author` fields together.
-- The pages controls sit under a dedicated `P A G E S` section headline above the `Page` row; the headline carries the list icon, and single-clicking the full headline row returns from a page submenu to the page list. When the project contains only one page, this headline becomes `P A G E`, the `+` page action moves into the headline, and the separate `Page` navigation row is hidden.
-- Project header includes a small `i` toggle that shows or hides the document info text; when inactive no collapsed summary is shown.
-- `Page`: the row uses regular sidebar text styling; the counter shows current physical page and total physical pages, and double-clicking the current number opens an inline jump field capped by the total page count.
-- Page navigation chevrons are grouped tightly as `<<`/`<` and `>`/`>>` pairs.
-- In page list view, single-clicking a page row selects and displays it while keeping the list open. Double-clicking a page row, or clicking its open toggle, opens that page's inline layer list. Page rows can be dragged to reorder and expose rename/delete controls when opened.
-- Opening the Project panel for a layout with more than one page starts in page list view.
+- Loading a layout resets left settings, right Project, text editor, and image editor sections to closed. Project panel rollover-open sections use a short `30ms` open/close delay and close only after the pointer leaves the full panel area.
+- The Project panel is split into `project`, `page`/`pages`, and `layers` sections inside one shared scroll frame. `Project` is a normal section, not a fixed header. Single-clicking a section headline toggles it immediately; double-clicking opens or closes all Project panel sections from the pre-click state.
+- The compact project row shows the section title and real project title. Rolling over or opening it reveals document info and editable `Title`, `Subject`, and `Author` fields together.
+- The closed `page`/`pages` section shows a small subline with the current physical page and total physical pages.
+- When `page`/`pages` is open, the first row shows the page counter and add-page action. Single-clicking the current number opens an inline jump field capped by the total physical page count.
+- Page navigation chevrons are not rendered in the Project panel.
+- Page rows use the same always-open select-list visual style as left-panel list fields. The `page`/`pages` section always remains a page select list; it never switches to a separate detail view. Single-clicking a page row selects and displays it without changing the Project panel state or moving the list scroll position. Clicking the page row toggle opens or closes that page's inline controls inside the list without selecting another page or moving the list scroll position. Open page rows keep the title row stable and show `Title` and `Facing pages` as separate setting rows below it. Page rows can still be dragged to reorder while closed.
+- When the `page`/`pages` section is open, the page select list owns its own scroll area; wheel scrolling over page rows scrolls the list, not the surrounding Project panel section. The list height follows its content for short documents and caps to the available panel height for long documents, reserving space so the closed `layers` section remains visible.
+- Large page lists render only the visible page rows plus a small overscan window; the scroll height remains deterministic so opening the section is not proportional to total project page count.
+- The Project panel uses a disposable cached view model for page rows, page indexes, physical page numbers, and layer counts. It rebuilds on layout load and patches from page rename, facing-page, order, add/delete, and layer-count changes; it is not serialized and is not a layout source of truth.
+- The selected page row is revealed once when the active page changes through keyboard/page-number navigation. Manual scrolling inside the page select list is not overridden afterward.
+- Keyboard page changes, page-number jumps, loaded pages, and page-row selection update only the selected page parameters in the current Project panel view. They do not open inline page controls, close the `page`/`pages` section, or change the right-panel section view. During the short page-settling state after a page-row click, rollover-open Project sections remain open while the pointer stays in the Project panel.
+- Opening the Project panel starts with all Project sections closed.
 - `+` inserts a clean page after the active page, preserving page settings/layout mode without copied layer content; `Shift` + `+` inserts a full duplicate with content.
 - Page creation is capped at `1000` pages per project.
 - `Facing pages`: one-way control inside an opened page row, positioned above `L A Y E R S`. It converts the current page into a true spread. The preview becomes a zero-gap `Doppelseite`, inner/outer margins mirror automatically, and the effective column count doubles across the spread.
+- Facing-page rows show a facing-pages indicator in the page title row, immediately left of delete, only while facing pages are active.
 - `Page Up` selects the previous project page, `Page Down` selects the next one, `Shift` + `Page Up` / `Shift` + `Page Down` jump by `10` pages, and `Home` / `End` jump to the first or last page when multiple pages exist.
 - Loading or switching to another page keeps the previous preview hidden until the target page snapshot and first final plan commit are complete, so partial intermediate geometry is never shown.
 - After conversion, the spread remains one project page and edits inside one continuous spread coordinate space.
 - Single-clicking a page row in list view selects that page without leaving list view.
-- Double-clicking a page row opens its inline layer list and aligns the opened page to the top of the panel. Closing it returns to the page list at the same page position.
-- Each page row also has an open toggle that opens that page's layers inline.
-- Newly added pages open automatically.
+- Each page row has an open toggle that opens that page's title and facing-pages controls inline. Closing it returns to the page list at the same page position.
+- Newly added pages are selected without opening inline page controls.
 - Every page stores its own settings payload plus preview layout state.
 - Project JSON can also carry an optional `tour` block for guided onboarding that steps through pages, layers, help, and editor targets.
-- Expanded page rows show a `L A Y E R S` headline and divider above the mixed text/image stack for that page using current `layerOrder`.
-- Text cards display a single rendered text preview row in the paragraph font and text color.
-- Image cards display a full-width color rectangle instead of the `Image Placeholder` label.
-- Hovering an active-page layer card mirrors the same active preview rollover/guides for that block.
-- Hovering an active-page layer card temporarily routes keyboard layer nudging to that hovered layer; leaving the card restores keyboard nudging to the selected layer.
+- The separate `layers` section shows the active page's mixed text/image stack using current `layerOrder`.
+- The closed `layers` section subline shows the active page's live text and image layer counts and updates immediately when preview layers are created or deleted.
+- Layer rows use the same always-open select-list visual style and local scroll behavior as left-panel list fields and the Project panel page list. When the `layers` section is open, wheel scrolling over layer rows scrolls the layer list, not the surrounding Project panel.
+- Text layer rows display a single Inter text preview row in the paragraph text color.
+- Image layer rows display a full-width color rectangle instead of the `Image Placeholder` label.
+- Hovering an active-page layer row mirrors the same active preview rollover/guides for that block.
+- Hovering an active-page layer row temporarily routes keyboard layer nudging to that hovered layer; leaving the row restores keyboard nudging to the selected layer.
 - Hovered text paragraphs in preview expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
 - Hovered image placeholders expose a `+` affordance for duplication.
-- Dragging active-page layer cards changes z-index using a visible insertion marker between cards.
-- Single-clicking an active-page layer card selects that layer; double-clicking opens or retargets its editor.
-- Layer cards include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
-- Selecting a layer card also highlights the corresponding layer in preview; selecting in preview scrolls the matching card into view in the panel. Preview rollover follows matching layer cards only outside edit mode.
+- Dragging active-page layer rows changes z-index using a visible insertion marker between rows.
+- Single-clicking an active-page layer row selects that layer; double-clicking opens or retargets its editor.
+- Layer rows include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
+- Selecting a layer row also highlights the corresponding layer in preview; selecting in preview scrolls the matching row into view in the panel. Preview rollover follows matching layer rows only outside edit mode.
 - Deleting from the panel removes the layer from the active page and saved project JSON.
-- In multi-page projects, the `P A G E S` section headline single-clicks across the full row to show the page list.
 - Text and image editor section headers follow the same rule inside edit mode: single-click toggles one section, double-click opens or closes all sections.
 - Editor panels use the section move-to rule: opening a section aligns that section shell to the top of the panel, closing a section can move back to the nearest still-open section above, and double-click closing all sections returns the panel to the default top-aligned state. The left settings panel does not auto-scroll when section headers are toggled.
 
@@ -409,7 +414,7 @@ Editor controls:
 - left sidebar editor that replaces layout settings while edit mode is active
 - text editor sections: `Paragraph`, `Typo`, `Symbols`, `Placeholders`, `Info`
 - image editor sections: `Geometry`, `Color`, `Info`
-- while edit mode is active, preview hover stays visible on other unlocked existing blocks and clicking one retargets the already open editor; preview hover does not move or highlight Project panel layer cards
+- while edit mode is active, preview hover stays visible on other unlocked existing blocks and clicking one retargets the already open editor; preview hover does not move or highlight Project panel layer rows
 - locked layers still participate in preview rollover for guides and unlocking, but drag, edit, duplicate, delete, and editor retarget/open behavior stay disabled until unlocked from the Project panel
 - the text editor header uses the same user-facing layer label shown in the Project panel instead of the internal paragraph id
 - Paragraph section:
@@ -555,7 +560,7 @@ Behavior:
 Notes:
 - Export bleed is session/export-run state, not serialized per page. The default is centralized in `DEFAULT_EXPORT_BLEED_OPTIONS`.
 - Project-level visibility state is serialized once at layout root in `visibilitySettings`: `showBaselines`, `showModules`, `showMargins`, `showImagePlaceholders`, and `showTypography`. It is not stored per page.
-- Session-only GUI state is not serialized into layout JSON. That includes `showLayers` and settings-panel `collapsed` state.
+- Session-only GUI state is not serialized into layout JSON. That includes `showLayers`, settings-panel `collapsed` state, and right Project panel section state.
 - Saved layout JSON no longer stores `activePageId`; loaded projects always open on `pages[0]`.
 
 ## JSON Preview Layout Fields (current)

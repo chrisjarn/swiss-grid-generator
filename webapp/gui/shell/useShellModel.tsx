@@ -67,6 +67,11 @@ import { parseProjectTransferPayloadBytes } from "@/lib/project-transfer"
 import { PREVIEW_LAYER_SELECTION_GRACE_MS } from "@/lib/preview-interaction-constants"
 import { CanvasContainer } from "@/gui/shell/CanvasContainer"
 import { LeftToolbar } from "@/gui/shell/LeftToolbar"
+import type {
+  ProjectPanelLayerCounts,
+  ProjectPanelPageRow,
+  ProjectPanelViewModel,
+} from "@/gui/panels/sidebar/project-panel-view-model"
 import type { LayoutPreset } from "@/lib/presets"
 import {
   createUserProjectRecordQuery,
@@ -147,6 +152,125 @@ function cloneCollapsedSectionState(source: Record<SectionKey, boolean>): Record
   )
 }
 
+type ProjectPanelSourcePage = Pick<ProjectPage<PreviewLayoutState>, "id" | "layoutMode" | "name" | "previewLayout">
+
+function getProjectPanelLayerCounts(page: ProjectPanelSourcePage): ProjectPanelLayerCounts {
+  const layout = page.previewLayout
+  return {
+    images: layout?.imageOrder?.length ?? 0,
+    text: layout?.blockOrder.length ?? 0,
+  }
+}
+
+function createProjectPanelRow(page: ProjectPanelSourcePage): ProjectPanelPageRow {
+  const counts = getProjectPanelLayerCounts(page)
+  return {
+    id: page.id,
+    imageLayerCount: counts.images,
+    layoutMode: page.layoutMode ?? "single",
+    name: page.name,
+    textLayerCount: counts.text,
+  }
+}
+
+function createProjectPanelViewModelFromRows(rows: readonly ProjectPanelPageRow[]): ProjectPanelViewModel {
+  const pageIndexById = new Map<string, number>()
+  const layerCountsByPageId = new Map<string, ProjectPanelLayerCounts>()
+  const physicalPageNumberById = new Map<string, number>()
+  let physicalPageNumber = 1
+
+  rows.forEach((row, index) => {
+    pageIndexById.set(row.id, index)
+    layerCountsByPageId.set(row.id, {
+      images: row.imageLayerCount,
+      text: row.textLayerCount,
+    })
+    physicalPageNumberById.set(row.id, physicalPageNumber)
+    physicalPageNumber += row.layoutMode === "facing" ? 2 : 1
+  })
+
+  return {
+    layerCountsByPageId,
+    pageIndexById,
+    pages: rows,
+    physicalPageCount: Math.max(1, physicalPageNumber - 1),
+    physicalPageNumberById,
+  }
+}
+
+function createProjectPanelViewModel(pages: readonly ProjectPanelSourcePage[]): ProjectPanelViewModel {
+  return createProjectPanelViewModelFromRows(pages.map(createProjectPanelRow))
+}
+
+function reconcileProjectPanelViewModel(
+  previous: ProjectPanelViewModel,
+  pages: readonly ProjectPanelSourcePage[],
+): ProjectPanelViewModel {
+  let changed = previous.pages.length !== pages.length
+  const nextRows: ProjectPanelPageRow[] = new Array(pages.length)
+
+  pages.forEach((page, index) => {
+    const previousIndex = previous.pageIndexById.get(page.id)
+    const previousRow = previousIndex === undefined ? undefined : previous.pages[previousIndex]
+    const counts = getProjectPanelLayerCounts(page)
+    const layoutMode = page.layoutMode ?? "single"
+
+    if (
+      previousRow
+      && previousRow.name === page.name
+      && previousRow.layoutMode === layoutMode
+      && previousRow.textLayerCount === counts.text
+      && previousRow.imageLayerCount === counts.images
+    ) {
+      nextRows[index] = previousRow
+      changed = changed || previousIndex !== index
+      return
+    }
+
+    nextRows[index] = {
+      id: page.id,
+      imageLayerCount: counts.images,
+      layoutMode,
+      name: page.name,
+      textLayerCount: counts.text,
+    }
+    changed = true
+  })
+
+  return changed ? createProjectPanelViewModelFromRows(nextRows) : previous
+}
+
+function useProjectPanelViewModel(
+  pages: readonly ProjectPanelSourcePage[],
+  resetToken: number,
+): ProjectPanelViewModel {
+  const cachedRef = useRef<{
+    resetToken: number
+    sourcePages: readonly ProjectPanelSourcePage[]
+    viewModel: ProjectPanelViewModel
+  } | null>(null)
+  const cached = cachedRef.current
+
+  if (cached && cached.resetToken === resetToken) {
+    if (cached.sourcePages === pages) return cached.viewModel
+    const nextViewModel = reconcileProjectPanelViewModel(cached.viewModel, pages)
+    cachedRef.current = {
+      resetToken,
+      sourcePages: pages,
+      viewModel: nextViewModel,
+    }
+    return nextViewModel
+  }
+
+  const nextViewModel = createProjectPanelViewModel(pages)
+  cachedRef.current = {
+    resetToken,
+    sourcePages: pages,
+    viewModel: nextViewModel,
+  }
+  return nextViewModel
+}
+
 function areSerializableUiSettingsEqual(
   left: Record<string, unknown> | null | undefined,
   right: Record<string, unknown>,
@@ -166,6 +290,7 @@ function applySessionUiState(
     | "showLayers"
     | "collapsed"
   >,
+  options: { resetCollapsed?: boolean } = {},
 ): UiSettingsSnapshot {
   return {
     ...snapshot,
@@ -175,7 +300,7 @@ function applySessionUiState(
     showImagePlaceholders: sessionState.showImagePlaceholders,
     showTypography: sessionState.showTypography,
     showLayers: sessionState.showLayers,
-    collapsed: cloneCollapsedSectionState(sessionState.collapsed),
+    collapsed: cloneCollapsedSectionState(options.resetCollapsed ? DEFAULT_UI.collapsed : sessionState.collapsed),
   }
 }
 
@@ -296,6 +421,7 @@ export function ShellModelView() {
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
   const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
+  const [projectPanelResetToken, setProjectPanelResetToken] = useState(0)
   const layoutOpenTooltipDisplayTokenRef = useRef(0)
   const layoutOpenTooltipDismissedForSessionRef = useRef(false)
 
@@ -808,8 +934,8 @@ export function ShellModelView() {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload)
   }, [])
 
-  const applyLoadedUiSnapshot = useCallback((snapshot: UiSettingsSnapshot) => {
-    const hydratedSnapshot = applySessionUiState(snapshot, sessionUiState)
+  const applyLoadedUiSnapshot = useCallback((snapshot: UiSettingsSnapshot, options: { resetCollapsed?: boolean } = {}) => {
+    const hydratedSnapshot = applySessionUiState(snapshot, sessionUiState, options)
     dispatch({ type: "APPLY_SNAPSHOT", snapshot: hydratedSnapshot })
   }, [dispatch, sessionUiState])
 
@@ -834,12 +960,13 @@ export function ShellModelView() {
   const handleApplyProjectPage = useCallback((
     page: ProjectPage<PreviewLayoutState>,
     visibilitySettings: ProjectVisibilitySettings = currentVisibilitySettings,
+    options: { resetCollapsed?: boolean } = {},
   ) => {
     const snapshot = buildUiSnapshotFromLoadedSettings(page.uiSettings, {
       ...sessionUiState,
       ...visibilitySettings,
     })
-    applyLoadedUiSnapshot(snapshot)
+    applyLoadedUiSnapshot(snapshot, options)
     preferCommittedPreviewLayoutRef.current = true
     applyLoadedPreviewLayout(page.previewLayout)
     setShowPresetsBrowser(false)
@@ -900,7 +1027,7 @@ export function ShellModelView() {
     loadProjectIntoStore(normalizedProject as SwissLoadedProject)
     const nextActivePage = normalizedProject.pages[0] ?? null
     if (nextActivePage) {
-      handleApplyProjectPage(nextActivePage, normalizedProject.visibilitySettings)
+      handleApplyProjectPage(nextActivePage, normalizedProject.visibilitySettings, { resetCollapsed: true })
     }
   }, [handleApplyProjectPage, loadProjectIntoStore])
 
@@ -940,13 +1067,6 @@ export function ShellModelView() {
     reorderPagesInStore(orderedIds, buildActivePageDraft())
   }, [buildActivePageDraft, reorderPagesInStore])
 
-  const liveProjectPages = useMemo(() => {
-    if (!activePage) return projectPages
-    return projectPages.map((page) => (
-      page.id === activePage.id ? activePage : page
-    ))
-  }, [activePage, projectPages])
-
   const {
     isGuiSettling: isPageGuiSettling,
     requestSettledPageFocus,
@@ -955,15 +1075,9 @@ export function ShellModelView() {
     settledPages: sidebarProjectPages,
   } = useSettledPageNavigation({
     activePageId,
-    pages: liveProjectPages,
+    pages: projectPages,
   })
-  const sidebarProjectPageItems = useMemo(() => (
-    sidebarProjectPages.map((page) => ({
-      id: page.id,
-      name: page.name,
-      layoutMode: page.layoutMode,
-    }))
-  ), [sidebarProjectPages])
+  const projectPanelViewModel = useProjectPanelViewModel(sidebarProjectPages, projectPanelResetToken)
   const projectTour = project.tour ?? null
   const activePageLayoutMode = activePage?.layoutMode ?? "single"
   const sidebarControlsUseLivePage = sidebarActivePageId === activePageId && !isPageGuiSettling
@@ -1125,6 +1239,7 @@ export function ShellModelView() {
   const handleApplyLoadedProject = useCallback((project: LoadedProject<PreviewLayoutState>) => {
     beginProjectLoadTiming()
     resetEditorPanelPersistence()
+    setProjectPanelResetToken((current) => current + 1)
     applyLoadedProject(project)
     setShowPresetsBrowser(false)
     markClean()
@@ -2014,6 +2129,7 @@ export function ShellModelView() {
       projectAuthor={effectiveProjectMetadata.author}
       projectCreatedAt={projectMetadata.createdAt}
       projectLoadTimeMs={projectLoadTiming.elapsedMs}
+      projectPanelResetToken={projectPanelResetToken}
       userId={user?.id ?? null}
       userEmail={user?.email ?? null}
       isCloudSignedIn={Boolean(user)}
@@ -2025,7 +2141,7 @@ export function ShellModelView() {
       activeCloudConflictDetails={activeCloudConflictDetails}
       authError={authError}
       authMessage={authMessage}
-      projectPages={sidebarProjectPageItems}
+      projectPanelViewModel={projectPanelViewModel}
       projectInfoPages={projectPages}
       activeProjectPage={activePage}
       activePageId={activePageId}

@@ -108,6 +108,7 @@
     "showInfo": "show document data",
     "hideInfo": "hide document data",
     "infoSentence": "pages: {pages}. layers: {layers}. fonts: {fonts}. cuts: {cuts}. words: {words}. characters: {characters}.{authorSentence}{createdSentence}{loadSentence}",
+    "layersSummary": "text: {text}. image: {images}.",
     "authorSentence": " author: {author}.",
     "noAuthorSentence": " author: none.",
     "createdSentence": " created: {date}.",

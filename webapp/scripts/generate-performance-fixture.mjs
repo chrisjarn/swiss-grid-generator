@@ -9,7 +9,7 @@ const PERFORMANCE_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages.js
 const STATIC_TEXT_OUTPUT_PATH = path.join(OUTPUT_DIR, "performance-1000-pages-static-text.json")
 
 const TARGET_PAGE_COUNT = 1000
-const PERFORMANCE_LOREM_PLACEHOLDER_TEXT = "\u00fclacegolder <%lorem%>"
+const PERFORMANCE_LOREM_PLACEHOLDER_TEXT = "<%lorem%>"
 const STATIC_LOREM_TEXT = [
   "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
   "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",

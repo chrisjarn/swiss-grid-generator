@@ -148,8 +148,6 @@ async function main() {
     page.previewLayout.textContent["cover-title"] = titleInfo.text
     page.previewLayout.textContent["cover-step-1"] = "swiss grid generator - manual - page <%page%> of <%pages%>"
     page.previewLayout.textContent["paragraph-94aa932b-41cb-4033-b800-0353c27e83fd"] = section.subheadline
-    page.previewLayout.textContent["paragraph-1094c876-1831-4124-a765-f078fb4a84f9"] = ""
-    page.previewLayout.textContent["paragraph-0c92763f-e2c5-4f48-8180-5a04744d774b"] = ""
     page.previewLayout.textContent["paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1"] = section.body
 
     page.previewLayout.blockTextFormatRuns = page.previewLayout.blockTextFormatRuns ?? {}

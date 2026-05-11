@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useCallback, useLayoutEffect, useRef, useState } from "react"
+import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { BaselineGridPanel } from "@/gui/panels/settings/BaselineGridPanel"
 import { CanvasRatioPanel } from "@/gui/panels/settings/CanvasRatioPanel"
@@ -26,6 +26,13 @@ type CustomMarginMultipliers = {
   left: number
   right: number
   bottom: number
+}
+
+const HOVER_OPEN_DELAY_MS = 100
+
+type PendingOpenScrollAnchor = {
+  previousTop: number
+  section: SectionKey
 }
 
 type Props = {
@@ -95,33 +102,6 @@ type Props = {
   onCanvasBackgroundChange: (value: string | null) => void
   onCanvasBackgroundPreviewChange?: (value: string | null) => void
   isDarkMode: boolean
-}
-
-function scrollSectionIntoVisiblePanelArea(
-  scrollRoot: HTMLDivElement,
-  sectionNode: HTMLDivElement,
-): void {
-  const rootRect = scrollRoot.getBoundingClientRect()
-  const sectionRect = sectionNode.getBoundingClientRect()
-
-  if (sectionRect.top < rootRect.top) {
-    scrollRoot.scrollTo({
-      top: Math.max(0, scrollRoot.scrollTop + sectionRect.top - rootRect.top),
-      behavior: "auto",
-    })
-    return
-  }
-
-  if (sectionRect.bottom <= rootRect.bottom) return
-
-  const offset = sectionRect.height >= rootRect.height
-    ? sectionRect.top - rootRect.top
-    : sectionRect.bottom - rootRect.bottom
-
-  scrollRoot.scrollTo({
-    top: Math.max(0, scrollRoot.scrollTop + offset),
-    behavior: "auto",
-  })
 }
 
 export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
@@ -194,26 +174,81 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
 }: Props) {
   const scrollRootRef = useRef<HTMLDivElement | null>(null)
   const sectionRefs = useRef<Partial<Record<SectionKey, HTMLDivElement | null>>>({})
+  const hoverOpenTimerRef = useRef<number | null>(null)
+  const hoverCloseTimerRef = useRef<number | null>(null)
+  const lastPointerYRef = useRef<number | null>(null)
+  const pointerMovingDownRef = useRef(false)
+  const pendingOpenScrollAnchorRef = useRef<PendingOpenScrollAnchor | null>(null)
   const [hoverOpenSection, setHoverOpenSection] = useState<SectionKey | null>(null)
+  const [isHoverClosePending, setIsHoverClosePending] = useState(false)
   const [bottomSpacerHeight, setBottomSpacerHeight] = useState(0)
   const isSectionCollapsed = useCallback((section: SectionKey) => (
     collapsed[section] && hoverOpenSection !== section
   ), [collapsed, hoverOpenSection])
+  const clearHoverOpenTimer = useCallback(() => {
+    if (hoverOpenTimerRef.current === null) return
+    window.clearTimeout(hoverOpenTimerRef.current)
+    hoverOpenTimerRef.current = null
+  }, [])
+  const clearHoverCloseTimer = useCallback(() => {
+    if (hoverCloseTimerRef.current === null) return
+    window.clearTimeout(hoverCloseTimerRef.current)
+    hoverCloseTimerRef.current = null
+    setIsHoverClosePending(false)
+  }, [])
+  const updatePointerDirection = useCallback((event: React.MouseEvent) => {
+    const previousPointerY = lastPointerYRef.current
+    pointerMovingDownRef.current = previousPointerY === null
+      ? event.nativeEvent.movementY > 0
+      : event.clientY > previousPointerY
+    lastPointerYRef.current = event.clientY
+  }, [])
   const registerSectionRef = useCallback((section: SectionKey) => (node: HTMLDivElement | null) => {
     sectionRefs.current[section] = node
   }, [])
-  const handleSectionMouseEnter = useCallback((section: SectionKey) => {
+  const handleSectionMouseEnter = useCallback((section: SectionKey, event: React.MouseEvent) => {
+    updatePointerDirection(event)
     if (interactionsDisabled || !collapsed[section]) return
-    setHoverOpenSection(section)
-  }, [collapsed, interactionsDisabled])
-  const handleSectionMouseLeave = useCallback((section: SectionKey) => {
-    setHoverOpenSection((current) => current === section ? null : current)
-  }, [])
+    clearHoverCloseTimer()
+    if (hoverOpenSection === section) return
+    clearHoverOpenTimer()
+    const shouldPreserveDownwardTitle = pointerMovingDownRef.current
+    hoverOpenTimerRef.current = window.setTimeout(() => {
+      const sectionNode = sectionRefs.current[section]
+      pendingOpenScrollAnchorRef.current = shouldPreserveDownwardTitle && sectionNode
+        ? {
+            previousTop: sectionNode.getBoundingClientRect().top,
+            section,
+          }
+        : null
+      setHoverOpenSection(section)
+      hoverOpenTimerRef.current = null
+    }, HOVER_OPEN_DELAY_MS)
+  }, [clearHoverCloseTimer, clearHoverOpenTimer, collapsed, hoverOpenSection, interactionsDisabled, updatePointerDirection])
+  const handlePanelMouseEnter = useCallback(() => {
+    clearHoverCloseTimer()
+  }, [clearHoverCloseTimer])
+  const handlePanelMouseLeave = useCallback(() => {
+    clearHoverOpenTimer()
+    clearHoverCloseTimer()
+    setIsHoverClosePending(true)
+    hoverCloseTimerRef.current = window.setTimeout(() => {
+      setHoverOpenSection(null)
+      hoverCloseTimerRef.current = null
+      setIsHoverClosePending(false)
+    }, HOVER_OPEN_DELAY_MS)
+  }, [clearHoverCloseTimer, clearHoverOpenTimer])
   const getSectionWrapperProps = useCallback((section: SectionKey) => ({
     ref: registerSectionRef(section),
-    onMouseEnter: () => handleSectionMouseEnter(section),
-    onMouseLeave: () => handleSectionMouseLeave(section),
-  }), [handleSectionMouseEnter, handleSectionMouseLeave, registerSectionRef])
+    onMouseEnter: (event: React.MouseEvent) => handleSectionMouseEnter(section, event),
+  }), [handleSectionMouseEnter, registerSectionRef])
+
+  useEffect(() => (
+    () => {
+      clearHoverOpenTimer()
+      clearHoverCloseTimer()
+    }
+  ), [clearHoverCloseTimer, clearHoverOpenTimer])
 
   useLayoutEffect(() => {
     const scrollRoot = scrollRootRef.current
@@ -230,19 +265,49 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   useLayoutEffect(() => {
     if (!hoverOpenSection) return
 
+    const anchor = pendingOpenScrollAnchorRef.current
+    pendingOpenScrollAnchorRef.current = null
+    if (!anchor || anchor.section !== hoverOpenSection) return
+
     const scrollRoot = scrollRootRef.current
     const sectionNode = sectionRefs.current[hoverOpenSection]
     if (!scrollRoot || !sectionNode) return
 
+    const topDelta = sectionNode.getBoundingClientRect().top - anchor.previousTop
+    if (Math.abs(topDelta) <= 0.5) return
+
+    scrollRoot.scrollTo({
+      top: Math.max(0, scrollRoot.scrollTop + topDelta),
+      behavior: "auto",
+    })
+  }, [hoverOpenSection])
+
+  useLayoutEffect(() => {
+    if (hoverOpenSection) return
+    if (isHoverClosePending) return
+    if (!Object.values(collapsed).every(Boolean)) return
+
+    const scrollRoot = scrollRootRef.current
+    if (!scrollRoot) return
+
     const frame = window.requestAnimationFrame(() => {
-      scrollSectionIntoVisiblePanelArea(scrollRoot, sectionNode)
+      scrollRoot.scrollTo({
+        top: 0,
+        behavior: "auto",
+      })
     })
 
     return () => window.cancelAnimationFrame(frame)
-  }, [hoverOpenSection])
+  }, [collapsed, hoverOpenSection, isHoverClosePending])
 
   return (
-    <SidebarSectionScrollFrame bottomSpacerHeight={bottomSpacerHeight} scrollRootRef={scrollRootRef}>
+    <SidebarSectionScrollFrame
+      bottomSpacerHeight={bottomSpacerHeight}
+      onMouseEnter={handlePanelMouseEnter}
+      onMouseLeave={handlePanelMouseLeave}
+      onMouseMove={updatePointerDirection}
+      scrollRootRef={scrollRootRef}
+    >
       <SettingsHelpNavigationProvider
         value={{
           showHelpIcons: showSectionHelpIcons,

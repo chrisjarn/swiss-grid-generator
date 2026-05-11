@@ -73,6 +73,7 @@
       "base": "base family",
       "rhythm": "type rhythm",
       "rhythmAria": "type rhythm",
+      "toggleHierarchy": "toggle hierarchy table",
       "shiftFibonacciLeft": "shift fibonacci sequence left",
       "shiftFibonacciRight": "shift fibonacci sequence right"
     },

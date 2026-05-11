@@ -17,6 +17,45 @@ type Props = {
   isDarkMode?: boolean
 }
 
+type MetadataCommitSnapshot = {
+  authorDraft: string
+  descriptionDraft: string
+  onProjectAuthorChange: (nextAuthor: string) => void
+  onProjectDescriptionChange: (nextDescription: string) => void
+  onProjectTitleChange: (nextTitle: string) => void
+  projectAuthor: string
+  projectDescription: string
+  projectTitle: string
+  titleDraft: string
+}
+
+function commitMetadataDrafts({
+  authorDraft,
+  descriptionDraft,
+  onProjectAuthorChange,
+  onProjectDescriptionChange,
+  onProjectTitleChange,
+  projectAuthor,
+  projectDescription,
+  projectTitle,
+  titleDraft,
+}: MetadataCommitSnapshot) {
+  const trimmedTitle = titleDraft.trim()
+  if (trimmedTitle.length > 0 && trimmedTitle !== projectTitle.trim()) {
+    onProjectTitleChange(trimmedTitle)
+  }
+
+  const trimmedDescription = descriptionDraft.trim()
+  if (trimmedDescription !== projectDescription.trim()) {
+    onProjectDescriptionChange(trimmedDescription)
+  }
+
+  const trimmedAuthor = authorDraft.trim()
+  if (trimmedAuthor !== projectAuthor.trim()) {
+    onProjectAuthorChange(trimmedAuthor)
+  }
+}
+
 export function ProjectMetadataSection({
   projectTitle,
   projectDescription,
@@ -35,6 +74,33 @@ export function ProjectMetadataSection({
   const [descriptionDraft, setDescriptionDraft] = useState(projectDescription)
   const [authorDraft, setAuthorDraft] = useState(projectAuthor)
   const titleInputRef = useRef<HTMLInputElement | null>(null)
+  const commitSnapshotRef = useRef<MetadataCommitSnapshot>({
+    authorDraft,
+    descriptionDraft,
+    onProjectAuthorChange,
+    onProjectDescriptionChange,
+    onProjectTitleChange,
+    projectAuthor,
+    projectDescription,
+    projectTitle,
+    titleDraft,
+  })
+
+  commitSnapshotRef.current = {
+    authorDraft,
+    descriptionDraft,
+    onProjectAuthorChange,
+    onProjectDescriptionChange,
+    onProjectTitleChange,
+    projectAuthor,
+    projectDescription,
+    projectTitle,
+    titleDraft,
+  }
+
+  useEffect(() => (
+    () => commitMetadataDrafts(commitSnapshotRef.current)
+  ), [])
 
   useEffect(() => {
     if (!isEditingTitle) return
@@ -68,26 +134,17 @@ export function ProjectMetadataSection({
   const textareaClassName = getNeutralFormControlClassName(isDarkMode, "w-full resize-y rounded-sm px-2 py-1.5 text-[12px] leading-[1.45]")
 
   const commitDescription = () => {
-    const trimmedDescription = descriptionDraft.trim()
-    if (trimmedDescription !== projectDescription.trim()) {
-      onProjectDescriptionChange(trimmedDescription)
-    }
+    commitMetadataDrafts(commitSnapshotRef.current)
     setIsEditingDescription(false)
   }
 
   const commitTitle = () => {
-    const trimmedTitle = titleDraft.trim()
-    if (trimmedTitle.length > 0 && trimmedTitle !== projectTitle.trim()) {
-      onProjectTitleChange(trimmedTitle)
-    }
+    commitMetadataDrafts(commitSnapshotRef.current)
     setIsEditingTitle(false)
   }
 
   const commitAuthor = () => {
-    const trimmedAuthor = authorDraft.trim()
-    if (trimmedAuthor !== projectAuthor.trim()) {
-      onProjectAuthorChange(trimmedAuthor)
-    }
+    commitMetadataDrafts(commitSnapshotRef.current)
     setIsEditingAuthor(false)
   }
 

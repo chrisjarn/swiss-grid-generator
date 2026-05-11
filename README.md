@@ -92,21 +92,24 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - Live character & word count
 
 ### Project & Layers
-- Full **Project → Pages → inline Layers** architecture
+- Full **Project → Pages + Layers** architecture
 - Multiple pages with independent settings
-- Project rail uses a compact `Page` header with list-view access, physical page navigation, and full-width page rows with inline layer stacks for faster long-document navigation
-- Opened page rows expose a one-way `Facing pages` control above `Layers`, converting the page into a facing spread with mirrored inner/outer margins and a zero-gap preview seam
+- Project panel uses shared `project`, `page`/`pages`, and `layers` sections with the same section behavior as the settings panel
+- Page rows form a persistent select list: selecting a page loads it without changing the panel view, and the row toggle opens inline title/facing controls
+- Opened page rows expose a one-way `Facing pages` control, converting the page into a facing spread with mirrored inner/outer margins and a zero-gap preview seam
 - Facing spreads stay a single project page and double the effective column space so layers and text reflow can extend across both sides
 - `+` always creates a new single page after the active page, even when the active page is a facing spread; `Shift` + `+` duplicates the active page with content
 - Project page creation is capped at `1000` pages per document
 - The `Page` counter shows the current physical page and total physical pages; double-click the current page number to jump to a page number up to the total page count
 - `Page Up` / `Page Down` step to the previous or next project page when multiple pages are present, and `Home` / `End` jump to the first or last page
+- The page and layer lists scroll locally inside their sections
+- Large page lists use a bounded visible-row window so opening the Project pages section stays responsive up to the `1000` page cap
 - Text and image layers with stable grid-based positioning
 - Drag to move
 - Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift`+click copies `Paragraph` settings, `Alt/Option`+click copies `Typo` settings, and `Alt/Option`+`Shift`+click copies both onto another paragraph, even across pages and loaded layouts
 - Hovered image placeholders expose a `+` affordance for duplication
 - Arrow keys nudge the selected unlocked layer; snapped axes move by whole modules, `Shift` switches snapped Y nudging to baselines, and unsnapped axes use tenth-step logical nudges with `Shift` as a 10x multiplier
-- Layer cards include a lock toggle in the Project panel; locked layers still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked
+- Layer rows include a lock toggle in the Project panel; locked layers still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked
 - Logical anchoring (Column × Row + Baseline Offset)
 - Increasing a paragraph's column span preserves its anchored column, even when the wider frame intentionally overhangs the page edge
 - Bundled presets now use the same project JSON schema as saved documents

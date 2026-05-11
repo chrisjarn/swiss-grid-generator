@@ -224,6 +224,7 @@ interface GridPreviewProps {
   onPreviewPlansCommit?: () => void
   onPreviewEditorOpen?: () => void
   onPreviewParagraphCreate?: (key?: BlockId, point?: PagePoint) => void
+  onPreviewLayerCountsChange?: (counts: { text: number; images: number }) => void
   isDarkMode?: boolean
 }
 
@@ -287,6 +288,7 @@ export const GridPreview = memo(function GridPreview({
   onPreviewPlansCommit,
   onPreviewEditorOpen,
   onPreviewParagraphCreate,
+  onPreviewLayerCountsChange,
   isDarkMode = false,
 }: GridPreviewProps) {
   const previewContainerRef = useRef<HTMLDivElement>(null)
@@ -1952,6 +1954,13 @@ export const GridPreview = memo(function GridPreview({
   ])
 
   const isEditorOpen = Boolean(editorState || imageEditorState)
+
+  useEffect(() => {
+    onPreviewLayerCountsChange?.({
+      text: blockOrder.length,
+      images: imageOrder.length,
+    })
+  }, [blockOrder.length, imageOrder.length, onPreviewLayerCountsChange])
 
   usePreviewLayoutEmission({
     buildSnapshot,

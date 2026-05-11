@@ -1,18 +1,21 @@
 "use client"
 
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Info, List, Plus, X } from "lucide-react"
-import { useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
+import { Plus } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from "react"
 
 import { GridPreview } from "@/gui/preview/GridPreview"
 import { FeedbackPanel } from "@/gui/panels/sidebar/FeedbackPanel"
 import { HelpPanel } from "@/gui/panels/sidebar/HelpPanel"
 import { LegalNoticePanel } from "@/gui/panels/sidebar/LegalNoticePanel"
 import { AccountPanel } from "@/gui/panels/sidebar/AccountPanel"
-import { PagesPanel, type PagePanelListItem } from "@/gui/panels/sidebar/PagesPanel"
+import { PagesPanel } from "@/gui/panels/sidebar/PagesPanel"
+import { ProjectPanelSection } from "@/gui/panels/sidebar/ProjectPanelSection"
+import { ProjectPageLayersList } from "@/gui/panels/sidebar/ProjectPageLayersList"
+import type { ProjectPanelViewModel } from "@/gui/panels/sidebar/project-panel-view-model"
 import { PresetLayoutsPanel } from "@/gui/panels/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/gui/panels/sidebar/ProjectTitleSection"
+import { SidebarSectionScrollFrame } from "@/gui/panels/SidebarSectionScrollFrame"
 import { HoverTooltip } from "@/shared/ui/hover-tooltip"
-import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
 import { getStyleDefaultFontWeight, resolveFontVariant, type FontFamily } from "@/lib/config/fonts"
 import {
   type ImageColorSchemeId,
@@ -33,9 +36,7 @@ import {
 } from "@/gui/shell/sidebar-panel-layout"
 import { buildGridResultFromUiSettings, resolveUiSettingsSnapshot } from "@/lib/ui-settings-resolver"
 import {
-  getProjectPagePhysicalPageNumber,
   getProjectPagePhysicalPageSpan,
-  getProjectPhysicalPageCount,
 } from "@/lib/document-page-numbering"
 import type { LayoutOpenTooltipItem } from "@/lib/generated-tooltip-content"
 import { RightPanel } from "@/gui/shell/RightPanel"
@@ -45,9 +46,17 @@ import { useTranslation } from "@/lib/i18n/useTranslation"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 type PreviewProjectPage = ProjectPage<PreviewLayoutState>
-type PreviewProjectPageListItem = PagePanelListItem
 
-const MAX_GUI_PROJECT_PAGES = 100
+const MAX_GUI_PROJECT_PAGES = 1000
+const PROJECT_PANEL_ROLLOVER_DELAY_MS = 30
+const PROJECT_PANEL_SECTION_KEYS = ["project", "pages", "layers"] as const
+
+type ProjectPanelSectionKey = (typeof PROJECT_PANEL_SECTION_KEYS)[number]
+type ProjectPanelCollapsedState = Record<ProjectPanelSectionKey, boolean>
+type ProjectPanelSingleClickSnapshot = {
+  collapsed: ProjectPanelCollapsedState
+  rolloverOpen: ProjectPanelSectionKey | null
+} | null
 
 type UiTheme = {
   divider: string
@@ -86,6 +95,7 @@ type Props = {
   projectAuthor: string
   projectCreatedAt?: string
   projectLoadTimeMs?: number | null
+  projectPanelResetToken: number
   userId: string | null
   userEmail: string | null
   isCloudSignedIn: boolean
@@ -103,7 +113,7 @@ type Props = {
   } | null
   authError: string | null
   authMessage: string | null
-  projectPages: readonly PreviewProjectPageListItem[]
+  projectPanelViewModel: ProjectPanelViewModel
   projectInfoPages: readonly PreviewProjectPage[]
   activeProjectPage: PreviewProjectPage | null
   activePageId: string
@@ -222,6 +232,7 @@ export function PreviewWorkspace({
   projectAuthor,
   projectCreatedAt,
   projectLoadTimeMs = null,
+  projectPanelResetToken,
   userId,
   userEmail,
   isCloudSignedIn,
@@ -233,7 +244,7 @@ export function PreviewWorkspace({
   activeCloudConflictDetails,
   authError,
   authMessage,
-  projectPages,
+  projectPanelViewModel,
   projectInfoPages,
   activeProjectPage,
   activePageId,
@@ -307,31 +318,42 @@ export function PreviewWorkspace({
   tourState = null,
 }: Props) {
   const { t } = useTranslation()
+  const projectPages = projectPanelViewModel.pages
   const [previewHoveredLayerKey, setPreviewHoveredLayerKey] = useState<string | null>(null)
   const [layerPanelHoveredLayerKey, setLayerPanelHoveredLayerKey] = useState<string | null>(null)
-  const [previewEditorOpenToken, setPreviewEditorOpenToken] = useState(0)
-  const [previewParagraphCreateToken, setPreviewParagraphCreateToken] = useState(0)
-  const [showProjectInfo, setShowProjectInfo] = useState(false)
-  const [pageListRequestToken, setPageListRequestToken] = useState(0)
+  const [projectPanelCollapsed, setProjectPanelCollapsed] = useState<ProjectPanelCollapsedState>({
+    project: true,
+    pages: true,
+    layers: true,
+  })
+  const [projectPanelRolloverOpen, setProjectPanelRolloverOpen] = useState<ProjectPanelSectionKey | null>(null)
   const [pageAddHovered, setPageAddHovered] = useState(false)
   const [pageAddShiftActive, setPageAddShiftActive] = useState(false)
   const [pageNumberEditing, setPageNumberEditing] = useState(false)
   const [pageNumberDraft, setPageNumberDraft] = useState("")
+  const [previewLayerCounts, setPreviewLayerCounts] = useState<{ pageId: string; text: number; images: number } | null>(null)
   const pageNumberInputRef = useRef<HTMLInputElement | null>(null)
-  const previousEditorModeRef = useRef<"text" | "image" | null>(editorMode)
+  const projectPanelSingleClickSnapshotRef = useRef<ProjectPanelSingleClickSnapshot>(null)
+  const projectPanelRolloverOpenTimerRef = useRef<number | null>(null)
+  const projectPanelRolloverCloseTimerRef = useRef<number | null>(null)
+  const projectPanelScrollRootRef = useRef<HTMLDivElement | null>(null)
   const previewVariableNow = useMemo(() => new Date(), [])
+  const handlePreviewLayerCountsChange = useCallback((counts: { text: number; images: number }) => {
+    setPreviewLayerCounts({
+      pageId: activePageId,
+      text: counts.text,
+      images: counts.images,
+    })
+  }, [activePageId])
   const panelPreviewHoveredLayerKey = editorMode ? null : previewHoveredLayerKey
   const hoveredLayerKey = panelPreviewHoveredLayerKey ?? layerPanelHoveredLayerKey
   const liveLayerPanelState = {
-    baseFont,
     imageColorScheme,
     selectedLayerKey,
     hoveredLayerKey,
     previewHoveredLayerKey: panelPreviewHoveredLayerKey,
     editingLayerKey: editorMode ? selectedLayerKey : null,
     editorMode,
-    previewEditorOpenToken,
-    previewParagraphCreateToken,
   }
   const settledLayerPanelStateRef = useRef(liveLayerPanelState)
   if (sidebarControlsUseLivePage) {
@@ -340,55 +362,36 @@ export function PreviewWorkspace({
   const layerPanelState = sidebarControlsUseLivePage
     ? liveLayerPanelState
     : settledLayerPanelStateRef.current
+  const isProjectPanelSectionExpanded = (section: ProjectPanelSectionKey) => (
+    !projectPanelCollapsed[section] || projectPanelRolloverOpen === section
+  )
+  const isProjectSectionExpanded = isProjectPanelSectionExpanded("project")
+  const isPagesSectionExpanded = isProjectPanelSectionExpanded("pages")
+  const isLayersSectionExpanded = isProjectPanelSectionExpanded("layers")
   const pagesPanelElement = useMemo(() => (
     <PagesPanel
+      pageIndexById={projectPanelViewModel.pageIndexById}
       pages={projectPages}
-      activePage={sidebarActiveProjectPage}
       activePageId={sidebarActivePageId}
-      pageListRequestToken={pageListRequestToken}
       onSelectPage={onPageSelect}
       onFacingPageToggle={onPageFacingToggle}
       onRenamePage={onPageRename}
       onDeletePage={onPageDelete}
       onRequestNotice={onRequestNotice}
       onPageOrderChange={onPageOrderChange}
-      baseFont={layerPanelState.baseFont}
-      imageColorScheme={layerPanelState.imageColorScheme}
-      selectedLayerKey={layerPanelState.selectedLayerKey}
-      hoveredLayerKey={layerPanelState.hoveredLayerKey}
-      previewHoveredLayerKey={layerPanelState.previewHoveredLayerKey}
-      editingLayerKey={layerPanelState.editingLayerKey}
-      editorMode={layerPanelState.editorMode}
-      previewEditorOpenToken={layerPanelState.previewEditorOpenToken}
-      previewParagraphCreateToken={layerPanelState.previewParagraphCreateToken}
-      onLayerOrderChange={onLayerOrderChange}
-      onSelectedLayerKeyChange={onSelectedLayerKeyChange}
-      onHoverLayerChange={setLayerPanelHoveredLayerKey}
-      onLayerEditorToggle={onLayerEditorToggle}
-      onLayerLockToggle={onLayerLockToggle}
-      onPageLayerLockToggle={onPageLayerLockToggle}
-      onLayerDelete={onLayerDelete}
       isDarkMode={isDarkUi}
     />
   ), [
     isDarkUi,
-    layerPanelState,
-    onLayerDelete,
-    onLayerEditorToggle,
-    onLayerLockToggle,
-    onLayerOrderChange,
     onPageDelete,
     onPageFacingToggle,
-    onPageLayerLockToggle,
     onPageOrderChange,
     onPageRename,
     onPageSelect,
     onRequestNotice,
-    onSelectedLayerKeyChange,
-    pageListRequestToken,
+    projectPanelViewModel.pageIndexById,
     projectPages,
     sidebarActivePageId,
-    sidebarActiveProjectPage,
   ])
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const isSingleProjectPage = projectPages.length <= 1
@@ -427,13 +430,8 @@ export function PreviewWorkspace({
     }
   }, [pageAddHovered])
 
-  const activePageNumber = useMemo(() => {
-    return getProjectPagePhysicalPageNumber(projectPages, activePageId)
-  }, [activePageId, projectPages])
-  const documentVariablePageCount = useMemo(
-    () => getProjectPhysicalPageCount(projectPages),
-    [projectPages],
-  )
+  const activePageNumber = projectPanelViewModel.physicalPageNumberById.get(activePageId) ?? 1
+  const documentVariablePageCount = projectPanelViewModel.physicalPageCount
   const documentPagePosition = Math.min(Math.max(activePageNumber, 1), documentVariablePageCount)
   const documentPagePositionPercent = documentVariablePageCount <= 1
     ? 100
@@ -488,94 +486,13 @@ export function PreviewWorkspace({
     onPageSelect(targetPageId)
   }
 
-  function selectPhysicalPage(pageNumber: number) {
-    const targetPageNumber = Math.min(Math.max(pageNumber, 1), documentVariablePageCount)
-    const targetPageId = resolveProjectPageIdForPhysicalPage(targetPageNumber)
-    setPageNumberEditing(false)
-    setPageNumberDraft(String(targetPageNumber))
-    if (!targetPageId || targetPageId === activePageId) return
-    onPageSelect(targetPageId)
-  }
+  const pagesSectionHeadlineLabel = isSingleProjectPage ? t("projectPanel.page") : t("projectPanel.pages")
 
-  function requestPageListView() {
-    setPageListRequestToken((current) => current + 1)
-  }
-
-  const pagesSectionHeadlineLabel = isSingleProjectPage ? t("projectPanel.page") : (
-      <HoverTooltip
-        inline
-        label={t("projectPanel.pageListTooltip")}
-        tooltipClassName="w-64 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-popover-foreground shadow-lg"
-        horizontalAlign="start"
-      >
-        <span className="inline-flex cursor-pointer select-none items-center gap-1.5 leading-none">
-          <List className="h-3 w-3" strokeWidth={1.9} />
-          <span>{t("projectPanel.pages")}</span>
-        </span>
-      </HoverTooltip>
-    )
-
-  const pageNavigationButtonClassName = (disabled: boolean) => `inline-flex h-4 w-3 shrink-0 items-center justify-center rounded-sm transition-colors ${
-    disabled
-      ? "cursor-not-allowed text-muted-foreground/45"
-      : "text-muted-foreground hover:text-foreground"
-  }`
-
-  const renderPageNavigationButton = (
-    label: string,
-    targetPageNumber: number,
-    disabled: boolean,
-    icon: ReactNode,
-  ) => (
-    <button
-      type="button"
-      aria-label={label}
-      disabled={disabled}
-      onClick={() => selectPhysicalPage(targetPageNumber)}
-      className={pageNavigationButtonClassName(disabled)}
-    >
-      {icon}
-    </button>
-  )
-
-  const pageNavigationControlsBefore = (
-    <span className="mr-1 inline-flex items-center -space-x-1">
-      {renderPageNavigationButton(
-        t("projectPanel.firstPage"),
-        1,
-        documentPagePosition <= 1,
-        <ChevronsLeft className="h-3 w-3" strokeWidth={1.9} />,
-      )}
-      {renderPageNavigationButton(
-        t("projectPanel.previousPage"),
-        documentPagePosition - 1,
-        documentPagePosition <= 1,
-        <ChevronLeft className="h-3 w-3" strokeWidth={1.9} />,
-      )}
-    </span>
-  )
-
-  const pageNavigationControlsAfter = (
-    <span className="ml-1 inline-flex items-center -space-x-1">
-      {renderPageNavigationButton(
-        t("projectPanel.nextPage"),
-        documentPagePosition + 1,
-        documentPagePosition >= documentVariablePageCount,
-        <ChevronRight className="h-3 w-3" strokeWidth={1.9} />,
-      )}
-      {renderPageNavigationButton(
-        t("projectPanel.lastPage"),
-        documentVariablePageCount,
-        documentPagePosition >= documentVariablePageCount,
-        <ChevronsRight className="h-3 w-3" strokeWidth={1.9} />,
-      )}
-    </span>
-  )
   const pageCounterTextClassName = "text-muted-foreground"
+  const pagePositionSummary = `${documentPagePosition} ${t("common.of")} ${documentVariablePageCount}`
 
   const pagePositionValue = pageNumberEditing ? (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
-      {pageNavigationControlsBefore}
       <input
         ref={pageNumberInputRef}
         type="text"
@@ -603,11 +520,9 @@ export function PreviewWorkspace({
       />
       <span className="px-1">{t("common.of")}</span>
       <span>{documentVariablePageCount}</span>
-      {pageNavigationControlsAfter}
     </span>
   ) : (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
-      {pageNavigationControlsBefore}
       <HoverTooltip
         inline
         label={t("projectPanel.pageCounterTooltip", { page: documentPagePosition, total: documentVariablePageCount })}
@@ -617,7 +532,7 @@ export function PreviewWorkspace({
         <button
           type="button"
           aria-label={t("projectPanel.editPageNumber", { page: documentPagePosition, total: documentVariablePageCount })}
-          onDoubleClick={beginPageNumberEdit}
+          onClick={beginPageNumberEdit}
           className="inline-flex min-w-0 cursor-text items-center leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           {documentPagePosition}
@@ -625,32 +540,125 @@ export function PreviewWorkspace({
       </HoverTooltip>
       <span className="px-1">{t("common.of")}</span>
       <span>{documentVariablePageCount}</span>
-      {pageNavigationControlsAfter}
     </span>
   )
-
-  useEffect(() => {
-    const previousEditorMode = previousEditorModeRef.current
-    previousEditorModeRef.current = editorMode
-    if (editorMode === null || previousEditorMode !== null) return
-    setPreviewEditorOpenToken((current) => current + 1)
-  }, [editorMode])
 
   const activePageTitle = useMemo(() => {
     return activeProjectPage?.name?.trim() || `${t("projectPanel.page")} ${activePageNumber}`
   }, [activePageNumber, activeProjectPage, t])
+  const clearProjectPanelRolloverOpenTimer = () => {
+    if (projectPanelRolloverOpenTimerRef.current === null) return
+    window.clearTimeout(projectPanelRolloverOpenTimerRef.current)
+    projectPanelRolloverOpenTimerRef.current = null
+  }
+  const clearProjectPanelRolloverCloseTimer = () => {
+    if (projectPanelRolloverCloseTimerRef.current === null) return
+    window.clearTimeout(projectPanelRolloverCloseTimerRef.current)
+    projectPanelRolloverCloseTimerRef.current = null
+  }
+  const handleProjectPanelSectionRolloverOpen = (section: ProjectPanelSectionKey) => () => {
+    if (!projectPanelCollapsed[section]) return
+    clearProjectPanelRolloverCloseTimer()
+    if (projectPanelRolloverOpen === section) return
+    clearProjectPanelRolloverOpenTimer()
+    projectPanelRolloverOpenTimerRef.current = window.setTimeout(() => {
+      setProjectPanelRolloverOpen(section)
+      projectPanelRolloverOpenTimerRef.current = null
+    }, PROJECT_PANEL_ROLLOVER_DELAY_MS)
+  }
+  const handleProjectPanelSectionRolloverClose = () => {
+    clearProjectPanelRolloverOpenTimer()
+    clearProjectPanelRolloverCloseTimer()
+    projectPanelRolloverCloseTimerRef.current = window.setTimeout(() => {
+      setProjectPanelRolloverOpen(null)
+      projectPanelRolloverCloseTimerRef.current = null
+    }, PROJECT_PANEL_ROLLOVER_DELAY_MS)
+  }
+  const handleProjectPanelMouseEnter = () => {
+    clearProjectPanelRolloverCloseTimer()
+  }
+  const handleProjectPanelMouseLeave = () => {
+    if (!sidebarControlsUseLivePage) return
+    handleProjectPanelSectionRolloverClose()
+  }
+  const toggleProjectPanelSection = (section: ProjectPanelSectionKey) => {
+    setProjectPanelCollapsed((current) => {
+      projectPanelSingleClickSnapshotRef.current = {
+        collapsed: current,
+        rolloverOpen: projectPanelRolloverOpen,
+      }
+      return {
+        ...current,
+        [section]: !current[section],
+      }
+    })
+    setProjectPanelRolloverOpen(null)
+  }
+  const toggleAllProjectPanelSections = () => {
+    clearProjectPanelRolloverOpenTimer()
+    clearProjectPanelRolloverCloseTimer()
+    const snapshot = projectPanelSingleClickSnapshotRef.current
+    projectPanelSingleClickSnapshotRef.current = null
+    setProjectPanelCollapsed((current) => {
+      const baseCollapsed = snapshot?.collapsed ?? current
+      const baseRolloverOpen = snapshot?.rolloverOpen ?? projectPanelRolloverOpen
+      const allClosed = PROJECT_PANEL_SECTION_KEYS.every((section) => (
+        baseCollapsed[section] && baseRolloverOpen !== section
+      ))
+      const nextCollapsed = !allClosed
+      return {
+        project: nextCollapsed,
+        pages: nextCollapsed,
+        layers: nextCollapsed,
+      }
+    })
+    setProjectPanelRolloverOpen(null)
+  }
+  const handleProjectPanelSectionHeaderClick = (section: ProjectPanelSectionKey) => (event: MouseEvent<HTMLElement>) => {
+    if (event.detail > 1) return
+    toggleProjectPanelSection(section)
+  }
+  const handleProjectPanelSectionHeaderDoubleClick = (event: MouseEvent<HTMLElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    toggleAllProjectPanelSections()
+  }
 
+  useEffect(() => (
+    () => {
+      if (projectPanelRolloverOpenTimerRef.current !== null) {
+        window.clearTimeout(projectPanelRolloverOpenTimerRef.current)
+      }
+      if (projectPanelRolloverCloseTimerRef.current !== null) {
+        window.clearTimeout(projectPanelRolloverCloseTimerRef.current)
+      }
+    }
+  ), [])
+  useEffect(() => {
+    if (sidebarControlsUseLivePage) return
+    clearProjectPanelRolloverCloseTimer()
+  }, [sidebarControlsUseLivePage])
+  useEffect(() => {
+    clearProjectPanelRolloverOpenTimer()
+    clearProjectPanelRolloverCloseTimer()
+    setProjectPanelCollapsed({
+      project: true,
+      pages: true,
+      layers: true,
+    })
+    setProjectPanelRolloverOpen(null)
+  }, [projectPanelResetToken])
   const totalLayerCount = useMemo(() => {
-    if (!showProjectInfo) return 0
+    if (!isProjectSectionExpanded) return 0
     return projectInfoPages.reduce((sum, page) => (
       sum
       + (page.previewLayout?.blockOrder.length ?? 0)
       + (page.previewLayout?.imageOrder?.length ?? 0)
     ), 0)
-  }, [projectInfoPages, showProjectInfo])
+  }, [isProjectSectionExpanded, projectInfoPages])
 
   const projectInfoStats = useMemo(() => {
-    if (!showProjectInfo) {
+    if (!isProjectSectionExpanded) {
       return {
         fontCount: 0,
         cutCount: 0,
@@ -702,7 +710,7 @@ export function PreviewWorkspace({
       wordCount,
       characterCount,
     }
-  }, [projectInfoPages, showProjectInfo])
+  }, [isProjectSectionExpanded, projectInfoPages])
 
   const formattedProjectCreatedAt = useMemo(() => {
     if (!projectCreatedAt) return null
@@ -722,7 +730,7 @@ export function PreviewWorkspace({
   }, [projectLoadTimeMs])
 
   const projectInfoSentence = useMemo(() => {
-    if (!showProjectInfo) return ""
+    if (!isProjectSectionExpanded) return ""
     const authorSentence = projectAuthor.trim()
       ? t("projectPanel.authorSentence", { author: projectAuthor.trim() })
       : t("projectPanel.noAuthorSentence")
@@ -749,7 +757,43 @@ export function PreviewWorkspace({
       createdSentence,
       loadSentence,
     })
-  }, [documentVariablePageCount, formattedProjectCreatedAt, formattedProjectLoadTime, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, showProjectInfo, t, totalLayerCount])
+  }, [documentVariablePageCount, formattedProjectCreatedAt, formattedProjectLoadTime, isProjectSectionExpanded, projectAuthor, projectInfoStats.characterCount, projectInfoStats.cutCount, projectInfoStats.fontCount, projectInfoStats.wordCount, t, totalLayerCount])
+
+  const layersPanelProjectPage = sidebarControlsUseLivePage
+    ? activeProjectPage
+    : sidebarActiveProjectPage
+  const layersPanelPageId = sidebarControlsUseLivePage
+    ? activePageId
+    : sidebarActivePageId
+
+  const activeLayerCounts = useMemo(() => {
+    if (
+      sidebarControlsUseLivePage
+      && previewLayerCounts
+      && previewLayerCounts.pageId === activePageId
+    ) {
+      return {
+        text: previewLayerCounts.text,
+        images: previewLayerCounts.images,
+      }
+    }
+    const cachedCounts = projectPanelViewModel.layerCountsByPageId.get(layersPanelPageId)
+    if (cachedCounts) {
+      return {
+        text: cachedCounts.text,
+        images: cachedCounts.images,
+      }
+    }
+    const layout = layersPanelProjectPage?.previewLayout
+    return {
+      text: layout?.blockOrder.length ?? 0,
+      images: layout?.imageOrder?.length ?? 0,
+    }
+  }, [activePageId, layersPanelPageId, layersPanelProjectPage, previewLayerCounts, projectPanelViewModel.layerCountsByPageId, sidebarControlsUseLivePage])
+  const layersSectionSummary = t("projectPanel.layersSummary", {
+    text: activeLayerCounts.text,
+    images: activeLayerCounts.images,
+  })
 
   const documentVariableContext = useMemo(() => ({
     projectTitle,
@@ -955,7 +999,7 @@ export function PreviewWorkspace({
               onSelectLayer={onLayerSelect}
               editorSidebarHost={editorSidebarHost}
               onEditorModeChange={onEditorModeChange}
-              onPreviewParagraphCreate={() => setPreviewParagraphCreateToken((current) => current + 1)}
+              onPreviewLayerCountsChange={handlePreviewLayerCountsChange}
               isDarkMode={isDarkUi}
               onLayoutChange={onLayoutChange}
               onSnapshotGetterChange={onSnapshotGetterChange}
@@ -975,85 +1019,83 @@ export function PreviewWorkspace({
             {activeSidebarPanel === "layers" && (
               <div
                 aria-disabled={!sidebarControlsUseLivePage}
-                className={`grid h-full min-h-0 grid-rows-[max-content_minmax(0,1fr)] transition-opacity ${
+                className={`flex h-full min-h-0 flex-col transition-opacity ${
                   sidebarControlsUseLivePage ? "" : "pointer-events-none opacity-50"
                 }`}
+                onMouseEnter={handleProjectPanelMouseEnter}
+                onMouseLeave={handleProjectPanelMouseLeave}
               >
-                <div className="shrink-0 px-4 pt-4 md:px-6">
-                  <div className="rounded-md py-2">
-                    <SectionHeaderRow
-                      label={t("projectPanel.title")}
-                      labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
-                      actions={(
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            aria-label={showProjectInfo ? t("projectPanel.hideInfo") : t("projectPanel.showInfo")}
-                            aria-pressed={showProjectInfo}
-                            onClick={() => setShowProjectInfo((current) => !current)}
-                            className={`inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border transition-colors ${
-                              showProjectInfo
-                                ? "border-swiss-orange bg-swiss-orange text-primary-foreground"
-                                : "border-border bg-secondary text-muted-foreground hover:text-foreground"
-                            }`}
-                          >
-                            <Info className="h-2 w-2" />
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={t("projectPanel.close")}
-                            onClick={closeSidebarPanel}
-                            className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
-                          >
-                            <X className="h-2 w-2" />
-                          </button>
-                        </div>
-                      )}
-                    />
-                  </div>
-                  {showProjectInfo ? (
-                    <div className="pb-4 pt-1">
-                      <p className={`text-xs leading-[1.45] ${uiTheme.sidebarBody}`}>
-                        {projectInfoSentence}
-                      </p>
-                    </div>
-                  ) : null}
+                <SidebarSectionScrollFrame
+                  bottomSpacerHeight={0}
+                  className="overscroll-contain [scrollbar-gutter:stable]"
+                  helpScrollRoot
+                  scrollRootRef={projectPanelScrollRootRef}
+                >
                   <ProjectTitleSection
+                    expanded={isProjectSectionExpanded}
+                    onHeaderClick={handleProjectPanelSectionHeaderClick("project")}
+                    onHeaderDoubleClick={handleProjectPanelSectionHeaderDoubleClick}
+                    projectInfoSentence={projectInfoSentence}
                     projectTitle={projectTitle}
                     projectDescription={projectDescription}
                     projectAuthor={projectAuthor}
+                    onRolloverOpen={handleProjectPanelSectionRolloverOpen("project")}
                     onProjectTitleChange={onProjectTitleChange}
                     onProjectDescriptionChange={onProjectDescriptionChange}
                     onProjectAuthorChange={onProjectAuthorChange}
                     isDarkMode={isDarkUi}
                   />
-                  <div className="mt-4 rounded-md py-2">
-                    <SectionHeaderRow
-                      label={pagesSectionHeadlineLabel}
-                      labelClassName={SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME}
-                      className={`${isSingleProjectPage ? "" : "cursor-pointer"} select-none`}
-                      actions={isSingleProjectPage ? renderPageAddActions() : undefined}
-                      onRowClick={isSingleProjectPage ? undefined : requestPageListView}
-                    />
-                  </div>
-                  {!isSingleProjectPage ? (
-                    <div className={`mb-2 mt-1 flex min-h-[18px] w-full items-center justify-between gap-2 rounded-md pb-1 text-[12px] font-normal leading-none normal-case tracking-normal ${uiTheme.sidebarBody}`}>
-                      <span className="min-w-0">{t("projectPanel.page")}</span>
-                      <span className="inline-flex min-w-0 items-center gap-2">
-                        <span className="min-w-0 truncate text-[11px] font-normal leading-none">
-                          {pagePositionValue}
-                        </span>
-                        {renderPageAddActions()}
-                      </span>
+                  <ProjectPanelSection
+                    title={pagesSectionHeadlineLabel}
+                    collapsedSummary={pagePositionSummary}
+                    expanded={isPagesSectionExpanded}
+                    isDarkMode={isDarkUi}
+                    onHeaderClick={handleProjectPanelSectionHeaderClick("pages")}
+                    onHeaderDoubleClick={handleProjectPanelSectionHeaderDoubleClick}
+                    onRolloverOpen={handleProjectPanelSectionRolloverOpen("pages")}
+                  >
+                    <div
+                      className="mb-2 flex h-7 items-center justify-between gap-3 text-[11px] font-normal leading-none normal-case tracking-normal text-muted-foreground"
+                      onClick={(event) => event.stopPropagation()}
+                      onDoubleClick={(event) => event.stopPropagation()}
+                    >
+                      <span className="min-w-0 truncate">{pagePositionValue}</span>
+                      {renderPageAddActions()}
                     </div>
-                  ) : null}
-                </div>
-                <div
-                  data-help-scroll-root="true"
-                  className="min-h-0 overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
-                >
-                  {pagesPanelElement}
-                </div>
+                    {pagesPanelElement}
+                  </ProjectPanelSection>
+                  <ProjectPanelSection
+                    title={t("projectPanel.layers")}
+                    collapsedSummary={layersSectionSummary}
+                    expanded={isLayersSectionExpanded}
+                    isDarkMode={isDarkUi}
+                    onHeaderClick={handleProjectPanelSectionHeaderClick("layers")}
+                    onHeaderDoubleClick={handleProjectPanelSectionHeaderDoubleClick}
+                    onRolloverOpen={handleProjectPanelSectionRolloverOpen("layers")}
+                  >
+                    {layersPanelProjectPage ? (
+                      <ProjectPageLayersList
+                        pageId={layersPanelPageId}
+                        layout={layersPanelProjectPage.previewLayout ?? null}
+                        imageColorScheme={layerPanelState.imageColorScheme}
+                        selectedLayerKey={layerPanelState.selectedLayerKey}
+                        hoveredLayerKey={layerPanelState.hoveredLayerKey}
+                        previewHoveredLayerKey={isLayersSectionExpanded ? layerPanelState.previewHoveredLayerKey : null}
+                        editingLayerKey={layerPanelState.editingLayerKey}
+                        isActivePage
+                        onSelectPage={onPageSelect}
+                        onLayerOrderChange={onLayerOrderChange}
+                        onSelectLayer={onSelectedLayerKeyChange}
+                        onHoverLayerChange={setLayerPanelHoveredLayerKey}
+                        onToggleEditor={onLayerEditorToggle}
+                        onToggleLock={onLayerLockToggle}
+                        onToggleAllLocks={onPageLayerLockToggle}
+                        onDeleteLayer={onLayerDelete}
+                        isDarkMode={isDarkUi}
+                      />
+                    ) : null}
+                  </ProjectPanelSection>
+                </SidebarSectionScrollFrame>
               </div>
             )}
             {activeSidebarPanel === "legal" && (

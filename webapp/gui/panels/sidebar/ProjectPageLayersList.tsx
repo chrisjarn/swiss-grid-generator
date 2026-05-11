@@ -1,7 +1,7 @@
 "use client"
 
-import { Image as ImageIcon, Lock, LockOpen, Type, Trash2 } from "lucide-react"
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from "react"
+import { Lock, LockOpen, Trash2 } from "lucide-react"
+import { Fragment, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 import type { DragEvent } from "react"
 
 import {
@@ -10,16 +10,19 @@ import {
   resolveImageSchemeColor,
   type ImageColorSchemeId,
 } from "@/lib/config/color-schemes"
-import { DEFAULT_BASE_FONT, getFontFamilyCss, isFontFamily } from "@/lib/config/fonts"
+import { getFontFamilyCss } from "@/lib/config/fonts"
 import { normalizeImagePlaceholderOpacity } from "@/lib/image-placeholder-opacity"
 import {
   clearWindowSelection,
   isCardDragIgnoreTarget,
   lockDocumentUserSelect,
 } from "@/lib/sidebar-card-drag"
+import {
+  getSettingsOpenListClassName,
+  getSettingsOpenListOptionClassName,
+} from "@/gui/panels/settings/settings-panel-styles"
 import { getTextLayerDisplayName } from "@/lib/layer-display-name"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/lib/types/preview-layout"
-import { translateMessage } from "@/lib/i18n/messages"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 
 type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
@@ -27,7 +30,6 @@ type PreviewLayoutState = SharedPreviewLayoutState<string, string, string>
 type Props = {
   pageId: string
   layout: PreviewLayoutState | null
-  baseFont: string
   imageColorScheme: ImageColorSchemeId
   selectedLayerKey: string | null
   hoveredLayerKey: string | null
@@ -48,27 +50,15 @@ type Props = {
 type LayerThumb = {
   key: string
   kind: "text" | "image"
-  hierarchy: string
-  font: string
   textPreview: string
   color: string
   opacity: number
 }
 
-const STYLE_LABELS: Record<string, string> = {
-  fx: translateMessage("editor.hierarchyLabels.custom"),
-  display: translateMessage("editor.hierarchyLabels.display"),
-  headline: translateMessage("editor.hierarchyLabels.headline"),
-  subhead: translateMessage("editor.hierarchyLabels.subhead"),
-  body: translateMessage("editor.hierarchyLabels.body"),
-  caption: translateMessage("editor.hierarchyLabels.caption"),
-}
-
+const LAYER_TITLE_FONT_FAMILY = getFontFamilyCss("Inter")
 const LOCK_BUTTON_DOUBLE_CLICK_WINDOW_MS = 320
-
-function toLabel(value: string): string {
-  return STYLE_LABELS[value] ?? (value ? value.toLowerCase() : translateMessage("editor.hierarchyLabels.body"))
-}
+const MIN_LAYER_LIST_MAX_HEIGHT_PX = 84
+const LAYER_LIST_BOTTOM_GAP_PX = 16
 
 function reconcileLayerOrder(
   current: readonly string[],
@@ -103,7 +93,6 @@ function reconcileLayerOrder(
 export function ProjectPageLayersList({
   pageId,
   layout,
-  baseFont,
   imageColorScheme,
   selectedLayerKey,
   hoveredLayerKey,
@@ -123,6 +112,8 @@ export function ProjectPageLayersList({
   const { t } = useTranslation()
   const [draggingKey, setDraggingKey] = useState<string | null>(null)
   const [dropIndicatorIndex, setDropIndicatorIndex] = useState<number | null>(null)
+  const [listMaxHeight, setListMaxHeight] = useState<number | null>(null)
+  const rootRef = useRef<HTMLDivElement | null>(null)
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({})
   const dropIndicatorIndexRef = useRef<number | null>(null)
   const selectionLockCleanupRef = useRef<(() => void) | null>(null)
@@ -145,8 +136,6 @@ export function ProjectPageLayersList({
       next.set(key, {
         key,
         kind: "text",
-        hierarchy: toLabel(layout?.styleAssignments?.[key] ?? "body"),
-        font: layout?.blockFontFamilies?.[key] ?? baseFont,
         textPreview: getTextLayerDisplayName(rawText, t("projectPanel.layersList.emptyParagraph")),
         color: typeof rawColor === "string" && isImagePlaceholderColor(rawColor)
           ? rawColor.toLowerCase()
@@ -159,15 +148,13 @@ export function ProjectPageLayersList({
       next.set(key, {
         key,
         kind: "image",
-        hierarchy: t("projectPanel.layersList.imagePlaceholder"),
-        font: "—",
         textPreview: "",
         color: resolveImageSchemeColor(rawColor, imageColorScheme),
         opacity: normalizeImagePlaceholderOpacity(layout?.imageOpacities?.[key]),
       })
     }
     return next
-  }, [baseFont, blockOrder, imageColorScheme, imageOrder, layout, t])
+  }, [blockOrder, imageColorScheme, imageOrder, layout, t])
 
   const visibleOrder = useMemo(() => [...layerOrder].reverse(), [layerOrder])
   const visibleThumbs = visibleOrder
@@ -227,6 +214,40 @@ export function ProjectPageLayersList({
     })
   }, [scrollLayerCardIntoView])
 
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!root) return
+
+    let frameId: number | null = null
+    const updateListMaxHeight = () => {
+      const bounds = root.getBoundingClientRect()
+      const viewportHeight = window.visualViewport?.height ?? window.innerHeight
+      const nextMaxHeight = Math.max(
+        MIN_LAYER_LIST_MAX_HEIGHT_PX,
+        Math.floor(viewportHeight - bounds.top - LAYER_LIST_BOTTOM_GAP_PX),
+      )
+      setListMaxHeight((current) => (current === nextMaxHeight ? current : nextMaxHeight))
+    }
+    const scheduleUpdate = () => {
+      if (frameId !== null) return
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null
+        updateListMaxHeight()
+      })
+    }
+
+    updateListMaxHeight()
+    window.addEventListener("resize", scheduleUpdate)
+    window.visualViewport?.addEventListener("resize", scheduleUpdate)
+    return () => {
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId)
+      }
+      window.removeEventListener("resize", scheduleUpdate)
+      window.visualViewport?.removeEventListener("resize", scheduleUpdate)
+    }
+  }, [visibleThumbs.length])
+
   useEffect(() => {
     if (!selectedLayerKey || !isActivePage) return
     scheduleLayerCardScroll(selectedLayerKey)
@@ -265,17 +286,14 @@ export function ProjectPageLayersList({
 
   const tone = isDarkMode
     ? {
-        row: "text-[#F4F6F8]",
         rowMuted: "text-[#8D98AA]",
-        rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-[#8D98AA]",
       }
     : {
-        row: "text-gray-900",
         rowMuted: "text-gray-500",
-        rowHover: "hover:bg-swiss-orange-soft/20",
         empty: "text-gray-500",
       }
+  const layerListClassName = getSettingsOpenListClassName(isDarkMode)
 
   const moveLayer = (targetIndex: number) => {
     if (!draggingKey || !isActivePage) return
@@ -355,7 +373,7 @@ export function ProjectPageLayersList({
         data-card-drag-ignore="true"
         onClick={(event) => event.stopPropagation()}
         onDoubleClick={(event) => event.stopPropagation()}
-        className={`rounded-md border border-dashed px-3 py-2 text-[11px] ${tone.empty} ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}
+        className={`${layerListClassName} px-2 py-2 text-[11px] ${tone.empty}`}
       >
         {t("projectPanel.layersList.empty")} <strong className="font-semibold">{t("projectPanel.layersList.emptyInstruction")}</strong>
       </div>
@@ -364,136 +382,119 @@ export function ProjectPageLayersList({
 
   return (
     <div
+      ref={rootRef}
+      data-page-layers-scroll-root="true"
       data-card-drag-ignore="true"
       onClick={(event) => event.stopPropagation()}
       onDoubleClick={(event) => event.stopPropagation()}
-      className="flex flex-col"
+      className="overflow-y-auto overscroll-contain [scrollbar-gutter:stable]"
+      style={listMaxHeight === null ? undefined : { maxHeight: `${listMaxHeight}px` }}
       onDragOver={handleListDragOver}
       onDrop={handleListDrop}
     >
-      <div
-        className={draggingKey && isActivePage ? "relative h-5 shrink-0" : "hidden"}
-        onDragOver={handleListDragOver}
-        onDrop={handleListDrop}
-      >
-        {renderDropMarker(0)}
-      </div>
-      {visibleThumbs.map((thumb) => {
-        const isSelected = selectedLayerKey === thumb.key
-        const isHovered = isActivePage && hoveredLayerKey === thumb.key
-        const isEditing = editingLayerKey === thumb.key
-        const isLocked = layout?.lockedLayers?.[thumb.key] === true
-        const stationaryIndex = stationaryIndexByKey.get(thumb.key) ?? null
-        const allowLayerInteractions = isActivePage && !isLocked
-        const showPreviewHighlight = isSelected || isHovered || isEditing
-        const previewHighlightClassName = showPreviewHighlight
-          ? "bg-swiss-orange-soft/20 shadow-[inset_1px_0_0_0_var(--swiss-orange-soft),inset_0_1px_0_0_var(--swiss-orange-soft)]"
-          : ""
-        const editingHighlightClassName = isEditing
-          ? "shadow-[inset_1px_0_0_0_var(--swiss-orange),inset_0_1px_0_0_var(--swiss-orange)]"
-          : ""
-        return (
-          <Fragment key={`${pageId}-${thumb.key}`}>
-            {thumb.key !== draggingKey && stationaryIndex !== null && stationaryIndex > 0
-              ? renderDropMarker(stationaryIndex)
-              : null}
-            <div
-              ref={(node) => {
-                cardRefs.current[thumb.key] = node
-              }}
-              data-project-layer-card="true"
-              data-editor-retarget-root="true"
-              data-card-drag-ignore="true"
-              draggable={allowLayerInteractions}
-              onPointerDownCapture={(event) => {
-                if (!allowLayerInteractions) return
-                if (event.button !== 0) return
-                if (isCardDragIgnoreTarget(event.target)) return
-                engageSelectionLock()
-              }}
-              onDragStart={(event) => {
-                if (!allowLayerInteractions) return
-                event.dataTransfer.effectAllowed = "move"
-                event.dataTransfer.setData("text/plain", thumb.key)
-                clearWindowSelection()
-                onSelectPage(pageId)
-                onSelectLayer(thumb.key)
-                setDraggingKey(thumb.key)
-                updateDropIndicator(stationaryVisibleOrder.indexOf(thumb.key))
-              }}
-              onDragEnd={clearDragState}
-              onDragOver={handleListDragOver}
-              onDrop={handleListDrop}
-              onMouseEnter={allowLayerInteractions ? () => onHoverLayerChange(thumb.key) : undefined}
-              onMouseLeave={allowLayerInteractions ? () => onHoverLayerChange(null) : undefined}
-              onClick={() => {
-                if (!isActivePage) return
-                onSelectPage(pageId)
-                onSelectLayer(thumb.key)
-              }}
-              onDoubleClick={() => {
-                if (!isActivePage) return
-                onSelectPage(pageId)
-                onSelectLayer(thumb.key)
-                if (!allowLayerInteractions) return
-                onToggleEditor(thumb.key)
-              }}
-              className={`relative px-0 py-2 text-xs leading-snug transition-colors ${
-                draggingKey === thumb.key
-                  ? `${tone.row} cursor-grabbing opacity-45`
-                  : `${tone.row} ${tone.rowHover}`
-              } ${
-                previewHighlightClassName
-              } ${
-                editingHighlightClassName
-              } ${
-                allowLayerInteractions ? "cursor-grab select-none" : "cursor-pointer"
-              } ${
-                isLocked ? "opacity-80" : ""
-              }`}
-            >
-              <div className="flex items-center justify-between gap-3 pl-3">
-                <div className="pointer-events-none min-w-0 flex-1 select-none">
-                  <div className="flex min-w-0 items-center gap-2">
+      <div className={`flex flex-col ${layerListClassName}`}>
+        <div
+          className={draggingKey && isActivePage ? "relative h-5 shrink-0" : "hidden"}
+          onDragOver={handleListDragOver}
+          onDrop={handleListDrop}
+        >
+          {renderDropMarker(0)}
+        </div>
+        {visibleThumbs.map((thumb) => {
+          const isSelected = selectedLayerKey === thumb.key
+          const isHovered = isActivePage && hoveredLayerKey === thumb.key
+          const isEditing = editingLayerKey === thumb.key
+          const isLocked = layout?.lockedLayers?.[thumb.key] === true
+          const stationaryIndex = stationaryIndexByKey.get(thumb.key) ?? null
+          const allowLayerInteractions = isActivePage && !isLocked
+          const showPreviewHighlight = isSelected || isHovered || isEditing
+          const editingHighlightClassName = isEditing
+            ? "shadow-[inset_1px_0_0_0_var(--swiss-orange),inset_0_1px_0_0_var(--swiss-orange)]"
+            : ""
+          return (
+            <Fragment key={`${pageId}-${thumb.key}`}>
+              {thumb.key !== draggingKey && stationaryIndex !== null && stationaryIndex > 0
+                ? renderDropMarker(stationaryIndex)
+                : null}
+              <div
+                ref={(node) => {
+                  cardRefs.current[thumb.key] = node
+                }}
+                data-project-layer-card="true"
+                data-editor-retarget-root="true"
+                data-card-drag-ignore="true"
+                draggable={allowLayerInteractions}
+                onPointerDownCapture={(event) => {
+                  if (!allowLayerInteractions) return
+                  if (event.button !== 0) return
+                  if (isCardDragIgnoreTarget(event.target)) return
+                  engageSelectionLock()
+                }}
+                onDragStart={(event) => {
+                  if (!allowLayerInteractions) return
+                  event.dataTransfer.effectAllowed = "move"
+                  event.dataTransfer.setData("text/plain", thumb.key)
+                  clearWindowSelection()
+                  onSelectPage(pageId)
+                  onSelectLayer(thumb.key)
+                  setDraggingKey(thumb.key)
+                  updateDropIndicator(stationaryVisibleOrder.indexOf(thumb.key))
+                }}
+                onDragEnd={clearDragState}
+                onDragOver={handleListDragOver}
+                onDrop={handleListDrop}
+                onMouseEnter={allowLayerInteractions ? () => onHoverLayerChange(thumb.key) : undefined}
+                onMouseLeave={allowLayerInteractions ? () => onHoverLayerChange(null) : undefined}
+                onClick={() => {
+                  if (!isActivePage) return
+                  onSelectPage(pageId)
+                  onSelectLayer(thumb.key)
+                }}
+                onDoubleClick={() => {
+                  if (!isActivePage) return
+                  onSelectPage(pageId)
+                  onSelectLayer(thumb.key)
+                  if (!allowLayerInteractions) return
+                  onToggleEditor(thumb.key)
+                }}
+                className={`${getSettingsOpenListOptionClassName(isDarkMode, showPreviewHighlight)} relative justify-between gap-3 text-xs ${
+                  draggingKey === thumb.key
+                    ? "cursor-grabbing opacity-45"
+                    : ""
+                } ${
+                  editingHighlightClassName
+                } ${
+                  allowLayerInteractions ? "cursor-grab select-none" : "cursor-pointer"
+                } ${
+                  isLocked ? "opacity-80" : ""
+                }`}
+              >
+                <div className="flex min-w-0 flex-1 items-center">
+                  <div className="pointer-events-none min-w-0 flex-1 select-none">
                     {thumb.kind === "text" ? (
-                      <Type
-                        className={`h-3.5 w-3.5 shrink-0 ${tone.rowMuted}`}
-                        strokeWidth={1.8}
-                        aria-hidden="true"
-                      />
+                      <div
+                        className={`truncate text-[12px] ${isEditing ? "italic" : ""}`}
+                        style={{
+                          color: thumb.color,
+                          fontFamily: LAYER_TITLE_FONT_FAMILY,
+                        }}
+                      >
+                        {thumb.textPreview}
+                      </div>
                     ) : (
-                      <ImageIcon
-                        className={`h-3.5 w-3.5 shrink-0 ${tone.rowMuted}`}
-                        strokeWidth={1.8}
-                        aria-hidden="true"
+                      <div
+                        className={`h-2.5 w-full rounded-[2px] ${isEditing ? "ring-1 ring-swiss-orange/70" : ""}`}
+                        style={{
+                          backgroundColor: thumb.color,
+                          opacity: thumb.opacity,
+                        }}
+                        aria-label={t("projectPanel.layersList.imageColor")}
                       />
                     )}
-                    <div className="min-w-0 flex-1">
-                      {thumb.kind === "text" ? (
-                        <div
-                          className={`truncate text-[12px] ${isEditing ? "italic" : ""}`}
-                          style={{
-                            color: thumb.color,
-                            fontFamily: getFontFamilyCss(isFontFamily(thumb.font) ? thumb.font : DEFAULT_BASE_FONT),
-                          }}
-                        >
-                          {thumb.textPreview}
-                        </div>
-                      ) : (
-                        <div
-                          className={`h-2.5 w-full rounded-[2px] border border-black/10 ${isEditing ? "ring-1 ring-swiss-orange/70" : ""}`}
-                          style={{
-                            backgroundColor: thumb.color,
-                            opacity: thumb.opacity,
-                          }}
-                          aria-label={t("projectPanel.layersList.imageColor")}
-                        />
-                      )}
-                    </div>
                   </div>
                 </div>
                 {isActivePage ? (
-                  <div className="flex items-center gap-1">
+                  <div className="flex shrink-0 items-center gap-1">
                     <button
                       type="button"
                       data-card-drag-ignore="true"
@@ -549,16 +550,16 @@ export function ProjectPageLayersList({
                   </div>
                 ) : null}
               </div>
-            </div>
-          </Fragment>
-        )
-      })}
-      <div
-        className={draggingKey && isActivePage ? "relative h-5 shrink-0" : "hidden"}
-        onDragOver={handleListDragOver}
-        onDrop={handleListDrop}
-      >
-        {renderDropMarker(stationaryVisibleOrder.length)}
+            </Fragment>
+          )
+        })}
+        <div
+          className={draggingKey && isActivePage ? "relative h-5 shrink-0" : "hidden"}
+          onDragOver={handleListDragOver}
+          onDrop={handleListDrop}
+        >
+          {renderDropMarker(stationaryVisibleOrder.length)}
+        </div>
       </div>
     </div>
   )

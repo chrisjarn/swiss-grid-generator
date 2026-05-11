@@ -35,10 +35,10 @@ export function getSettingsIconButtonClassName(isDarkMode: boolean, active: bool
 }
 
 export function getSettingsOpenListClassName(isDarkMode: boolean) {
-  return `overflow-hidden rounded-sm border text-[12px] ${
+  return `overflow-hidden rounded-sm text-[12px] ${
     isDarkMode
-      ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8]"
-      : "border-gray-300 bg-gray-100 text-gray-900"
+      ? "bg-[#232A35] text-[#F4F6F8]"
+      : "bg-gray-100 text-gray-900"
   }`
 }
 
