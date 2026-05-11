@@ -74,7 +74,7 @@ Choose the export format according to what happens next. Use `PDF` for faithful 
 
 Before exporting, confirm the selected page range, page order, page numbering, document size, and editorial variables. On long documents or rotated pages, make a visual check after export.
 
-PDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, page rendering, finalization, and elapsed time.
+PDF, SVG, and IDML share the same deterministic page-planning path. The progress display reports preparation, planning, page rendering, finalization, elapsed time, and the same progress log used by CLI export.
 
 ## 9. Keyboard and Fast Interaction
 

@@ -221,6 +221,13 @@ test("real export fixture keeps shared box geometry, page identity, and metadata
   assert.ok(spread.includes(idmlAnchorMarkup(exportBox.cropMarkLines[0].x2, exportBox.cropMarkLines[0].y2)))
 
   assert.ok(result.timings.some((entry) => entry.label === "planning" && entry.extra === "pages=1"))
+  assert.ok(result.timings.some((entry) => entry.label === "resolve export source pages" && entry.extra === "pages=1"))
+  assert.ok(result.timings.some((entry) => entry.label === "planning buildPageExportPlan" && entry.extra.includes("pages=1")))
+  assert.ok(result.timings.some((entry) => entry.label === "planning typography layout" && entry.extra.includes("pages=1")))
+  assert.ok(result.timings.some((entry) => entry.label === "planning text wrapping" && entry.extra.includes("pages=1")))
+  assert.ok(result.timings.some((entry) => entry.label === "planning font metric lookup" && entry.extra.includes("pages=1")))
+  assert.ok(result.timings.some((entry) => entry.label === "planning image plans" && entry.extra.includes("pages=1")))
+  assert.ok(result.timings.some((entry) => entry.label === "planning guide plans" && entry.extra.includes("pages=1")))
   assert.ok(result.timings.some((entry) => entry.label === "pdf render pages" && entry.extra === "pages=1"))
   assert.ok(result.timings.some((entry) => entry.label === "svg render pages" && entry.extra === "pages=1"))
   assert.ok(result.timings.some((entry) => entry.label === "idml render page sets" && entry.extra === "sets=1"))

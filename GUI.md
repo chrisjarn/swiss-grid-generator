@@ -245,7 +245,7 @@ flowchart LR
 
 - new gui code belongs in `webapp/gui/`.
 - reusable primitives belong in `webapp/shared/ui/`.
-- pure domain logic and shared types belong in `webapp/core/`; `webapp/lib/` is reserved for browser adapters, persistence, export integration, and compatibility shims.
+- pure domain logic and shared types belong in `webapp/core/`; `webapp/lib/` is reserved for browser adapters, persistence, and export integration.
 - preview components consume `PageExportPlan`; they do not calculate layout independently.
 - export UI passes project snapshots and options to the shared export path; it does not rebuild format-specific layout data.
 - `webapp/components/` and `webapp/hooks/` must stay removed. Do not recreate compatibility folders, shims, or imports.

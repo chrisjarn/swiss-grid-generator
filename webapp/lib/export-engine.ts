@@ -327,6 +327,65 @@ function createTimingRecorder() {
   }
 }
 
+type PlanningTimingAggregate = {
+  durationMs: number
+  count: number
+}
+
+const PLANNING_FONT_METRIC_LABELS = new Set([
+  "buildPageExportPlan.textMeasureWidth",
+  "buildPageExportPlan.textAscent",
+  "buildPageExportPlan.textDescent",
+  "buildPageExportPlan.opticalOffsets",
+  "buildPageExportPlan.resolveFontTrackingGraphemes",
+  "buildPageExportPlan.measureFormattedTextRangeWidth",
+  "buildPageExportPlan.graphemeAdvance",
+  "buildPageExportPlan.graphemeMetrics",
+])
+
+const PLANNING_GLYPH_LABELS = new Set([
+  "buildPageExportPlan.positionedGlyphs",
+  "buildPageExportPlan.glyphGraphemes",
+  "buildPageExportPlan.glyphSegments",
+])
+
+function resolveExportPlanningTimingLabel(label: string): string | null {
+  if (label === "buildPageExportPlan") return "planning buildPageExportPlan"
+  if (label === "buildPageExportPlan.geometry") return "planning page geometry"
+  if (label === "buildPageExportPlan.guides") return "planning guide plans"
+  if (label === "buildPageExportPlan.images") return "planning image plans"
+  if (label === "buildPageExportPlan.typographyLayout") return "planning typography layout"
+  if (label === "buildPageExportPlan.wrapText") return "planning text wrapping"
+  if (label === "buildPageExportPlan.resolveBlocks") return "planning text block resolve"
+  if (label === "buildPageExportPlan.documentVariables") return "planning document variables"
+  if (label === "buildPageExportPlan.paragraphBoxes" || label === "buildPageExportPlan.lineCommands") {
+    return "planning typography commands"
+  }
+  if (label === "buildPageExportPlan.layerOrder") return "planning layer order"
+  if (PLANNING_FONT_METRIC_LABELS.has(label)) return "planning font metric lookup"
+  if (PLANNING_GLYPH_LABELS.has(label)) return "planning glyph positioning"
+  return null
+}
+
+function createPlanningTimingAccumulator() {
+  const aggregates = new Map<string, PlanningTimingAggregate>()
+  return {
+    record(label: string, durationMs: number) {
+      const exportLabel = resolveExportPlanningTimingLabel(label)
+      if (!exportLabel) return
+      const current = aggregates.get(exportLabel) ?? { durationMs: 0, count: 0 }
+      current.durationMs += durationMs
+      current.count += 1
+      aggregates.set(exportLabel, current)
+    },
+    flush(record: ReturnType<typeof createTimingRecorder>, pageCount: number) {
+      for (const [label, aggregate] of aggregates) {
+        record.record(label, aggregate.durationMs, `pages=${pageCount} calls=${aggregate.count}`)
+      }
+    },
+  }
+}
+
 type BrowserWorkerRequestPayload<TRequest> = {
   request: TRequest
   transfer?: Transferable[]
@@ -554,6 +613,7 @@ function shouldPublishPlanningProgress(
 async function buildPlannedPagesWithProgress(
   options: ExportEngineOptions,
   layoutEngine: LayoutEngineContract,
+  planningTimingAccumulator: ReturnType<typeof createPlanningTimingAccumulator>,
 ): Promise<PlannedProjectPageExportSource[]> {
   const plannedPages: PlannedProjectPageExportSource[] = []
   const total = options.pages.length
@@ -565,7 +625,12 @@ async function buildPlannedPagesWithProgress(
 
   for (const [index, source] of options.pages.entries()) {
     options.assertNotCancelled?.()
-    const planned = buildPlannedProjectPageExportSource(source, layoutEngine, textMetricsService)
+    const planned = buildPlannedProjectPageExportSource(
+      source,
+      layoutEngine,
+      textMetricsService,
+      planningTimingAccumulator.record,
+    )
     plannedPages.push(planned)
 
     const completed = index + 1
@@ -1273,6 +1338,7 @@ export async function runExportEngine(options: ExportEngineOptions): Promise<Exp
   const totalStartedAt = performance.now()
   const record = createTimingRecorder()
   const layoutEngine = options.layoutEngine ?? CURRENT_LAYOUT_ENGINE_CONTRACT
+  const planningTimingAccumulator = createPlanningTimingAccumulator()
 
   options.onLog?.("font metrics preload: start")
   await publishPhaseProgress(options, options.formats[0] ?? "pdf", "Preloading font metrics")
@@ -1285,9 +1351,10 @@ export async function runExportEngine(options: ExportEngineOptions): Promise<Exp
   await publishPhaseProgress(options, options.formats[0] ?? "pdf", `Planning ${options.pages.length} pages`)
   const plannedPages = await record.measure(
     "planning",
-    () => buildPlannedPagesWithProgress(options, layoutEngine),
+    () => buildPlannedPagesWithProgress(options, layoutEngine, planningTimingAccumulator),
     `pages=${options.pages.length}`,
   )
+  planningTimingAccumulator.flush(record, options.pages.length)
   options.onLog?.("plan pages: done")
 
   const outputs: ExportEngineOutput[] = []

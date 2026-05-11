@@ -89,6 +89,12 @@ export type PageExportTextWrapTrace = TextWrapDecisionTrace & {
   maxWidth: number
 }
 
+export type PageExportPlanTimingCollector = (
+  label: string,
+  durationMs: number,
+  extra?: string,
+) => void
+
 export type BuildPageExportPlanArgs = {
   result: GridResult
   layout: PreviewLayoutState | null
@@ -108,4 +114,5 @@ export type BuildPageExportPlanArgs = {
   textMetricsEngineFactory?: TextMetricsEngineFactory<TypographyStyleKey, FontFamily>
   textMetricsService?: TextMetricsService<TypographyStyleKey, FontFamily>
   textWrapTraceCollector?: (trace: PageExportTextWrapTrace) => void
+  timingCollector?: PageExportPlanTimingCollector
 }

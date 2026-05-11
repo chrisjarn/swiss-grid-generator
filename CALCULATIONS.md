@@ -499,7 +499,8 @@ Export rendering note:
 - All export targets remain vector-based.
 - Shared bleed is specified in millimeters at the export options boundary. The GUI opens with bleed disabled and restores `3mm` as the standard activation width; enabled bleed is converted to a shared `ExportBox` in points before format rendering.
 - PDF, SVG, and IDML consume the same normalized `ExportBox` model for trim, bleed, media canvas, export origin, crop-mark line geometry, and guide clipping so bounds stay format-consistent.
-- `webapp/tests/export-box-contract.test.mjs` includes a real PDF/SVG/IDML export fixture that checks shared export-box coordinates, crop marks, page identity, metadata, and one-time planning timing against emitted output.
+- `webapp/tests/contracts/export-box-contract.test.mjs` includes a real PDF/SVG/IDML export fixture that checks shared export-box coordinates, crop marks, page identity, metadata, and planning timing against emitted output.
+- Planning timing is diagnostic only. The optional timing collector records source resolution, page-plan construction, typography layout, text wrapping, font metric lookup, glyph positioning, image plans, and guide plans without entering the returned `PageExportPlan` or changing output geometry.
 - `webapp/tests/export-geometry-parity.test.mjs` exports the 150 Fonts specimen through PDF, SVG, and IDML, parses representative glyph outline coordinates back from each file format, and compares them against the same planned outline source.
 - When bleed is enabled, exporters include the bleed box as production area, clip visible page/export geometry to that bleed box, add a fixed white crop-mark canvas outside it, and add black crop marks aimed at the trim corners. This shifts the export origin only; trim coordinates, grid modules, paragraph positions, and bleed width remain unchanged. No dashed bleed guide is exported.
 - In IDML, line-based export geometry stays line-based: crop marks and guide lines are emitted as stroked `GraphicLine` items, while module and margin guide boxes remain rectangle outlines.
@@ -609,7 +610,7 @@ The raw source string remains unchanged in editor state and saved project JSON. 
 
 ## Preview Placement + Reflow
 
-Interactive placement is currently orchestrated in the production interaction canvas `webapp/gui/preview/GridPreview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/lib/`. The newer `webapp/gui/preview/SwissCanvas.tsx` foundation is intentionally narrower: it is a `PageExportPlan` consumer only and does not perform placement, reflow, or export-specific calculation.
+Interactive placement is currently orchestrated in the production interaction canvas `webapp/gui/preview/GridPreview.tsx`, mirrored in PDF export (`webapp/lib/pdf-vector-export.ts`), and uses worker-backed planning (`webapp/workers/reflowPlanner.worker.ts`, `webapp/workers/autoFit.worker.ts`) with synchronous fallback to pure planner modules in `webapp/core/layout/`. The newer `webapp/gui/preview/SwissCanvas.tsx` foundation is intentionally narrower: it is a `PageExportPlan` consumer only and does not perform placement, reflow, or export-specific calculation.
 
 ### Logical Grid Anchor Model
 

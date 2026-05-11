@@ -71,12 +71,14 @@ export function buildProjectExportSources(
 ): {
   sources: ResolvedProjectPageExportSource[]
   physicalPageNumbers: number[]
+  sourcePageDurationMs: number
 } {
   const now = new Date()
   const pageCount = getProjectPhysicalPageCount(project.pages)
   const projectTitle = project.metadata?.title ?? ""
   const sources: ResolvedProjectPageExportSource[] = []
   const physicalPageNumbers: number[] = []
+  let sourcePageDurationMs = 0
 
   pageNumbers.forEach((pageNumber) => {
     const pageIndex = pageNumber - 1
@@ -85,6 +87,7 @@ export function buildProjectExportSources(
     const physicalPageNumber = getProjectPagePhysicalPageNumberAtIndex(project.pages, pageIndex)
     const sourcePath = `${page.name || `Page ${physicalPageNumber}`} (${page.id})`
     physicalPageNumbers.push(physicalPageNumber)
+    const sourcePageStartedAt = performance.now()
     sources.push(buildResolvedProjectPageExportSource(
       page,
       sourcePath,
@@ -97,15 +100,16 @@ export function buildProjectExportSources(
       },
       visibilitySettings,
     ))
+    sourcePageDurationMs += performance.now() - sourcePageStartedAt
   })
 
-  return { sources, physicalPageNumbers }
+  return { sources, physicalPageNumbers, sourcePageDurationMs }
 }
 
 export async function runProjectExport(options: ProjectExportRunnerOptions): Promise<ProjectExportRunnerResult> {
   const sourceStartedAt = performance.now()
   const selectedPageNumbers = resolveProjectExportPageNumbers(options.project, options)
-  const { sources, physicalPageNumbers } = buildProjectExportSources(
+  const { sources, physicalPageNumbers, sourcePageDurationMs } = buildProjectExportSources(
     options.project,
     selectedPageNumbers,
     options.visibilitySettings,
@@ -127,6 +131,11 @@ export async function runProjectExport(options: ProjectExportRunnerOptions): Pro
     onLog: options.onLog,
     shouldLogPage: options.shouldLogPage,
     assertNotCancelled: options.assertNotCancelled,
+  })
+  result.timings.unshift({
+    label: "resolve export source pages",
+    durationMs: sourcePageDurationMs,
+    extra: `pages=${sources.length}`,
   })
   result.timings.unshift({
     label: "resolve export sources",

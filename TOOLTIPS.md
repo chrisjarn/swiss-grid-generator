@@ -121,7 +121,7 @@ Bleed applies to PDF, SVG, and IDML from one shared control. It opens off and re
 Export follows the current preview visibility state for baselines, margins, modules, typography, and image placeholders. Turn off construction guides before final output unless they are intentionally part of the deliverable.
 
 ### Export Progress {#tooltip-export-progress}
-Long exports report preparation, page rendering, finalization, and percentage. The status is informational; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled.
+Long exports report preparation, deterministic planning, page rendering, finalization, percentage, and elapsed time. The progress log uses the same formatter as CLI export; export keeps using the committed page plan and current visibility settings until it finishes or is cancelled.
 
 ## Common Corrections
 

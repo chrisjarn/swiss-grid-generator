@@ -97,6 +97,24 @@ test("page export plan is deterministic for the stress fixture", () => {
   assert.equal(hashPlan(first), EXPECTED_STRESS_PLAN_HASH)
 })
 
+test("page export plan instrumentation does not change the canonical plan", () => {
+  const args = createStressPagePlanArgs(4)
+  const baseline = buildPageExportPlan(args)
+  const timings = []
+  const instrumented = buildPageExportPlan({
+    ...args,
+    timingCollector: (label, durationMs, extra) => {
+      timings.push({ label, durationMs, extra })
+    },
+  })
+
+  assert.deepEqual(normalizePlanForSnapshot(instrumented), normalizePlanForSnapshot(baseline))
+  assert.ok(timings.some((entry) => entry.label === "buildPageExportPlan"))
+  assert.ok(timings.some((entry) => entry.label === "buildPageExportPlan.typographyLayout"))
+  assert.ok(timings.some((entry) => entry.label === "buildPageExportPlan.wrapText"))
+  assert.ok(timings.every((entry) => Number.isFinite(entry.durationMs) && entry.durationMs >= 0))
+})
+
 test("row-based reflow uses the final module row for 150 Fonts display paragraphs", () => {
   const project = JSON.parse(readText("tests/fixtures/150 Fonts.json"))
   const page = project.pages[2]
@@ -160,13 +178,13 @@ test("layout profiling is dev-only instrumentation around existing planning and 
   assert.match(planSource, /function\s+buildPageExportImagePlans\(/)
   assert.match(planSource, /function\s+buildPageExportPlanInternal\(/)
   assert.match(planSource, /export\s+function\s+buildPageExportPlan\(args:\s*BuildPageExportPlanArgs\):\s*PageExportPlan/)
-  assert.match(planSource, /if\s*\(!isLayoutProfilingEnabled\(\)\)\s*return\s+buildPageExportPlanInternal\(args\)/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan"/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan\.geometry"/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan\.guides"/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan\.images"/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan\.typographyLayout"/)
-  assert.match(planSource, /measureLayoutPerformance\(\s*"buildPageExportPlan\.positionedGlyphs"/)
+  assert.match(planSource, /if\s*\(!profilePhases\s*&&\s*!\s*args\.timingCollector\)\s*return\s+buildPageExportPlanInternal\(args\)/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan"/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan\.geometry"/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan\.guides"/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan\.images"/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan\.typographyLayout"/)
+  assert.match(planSource, /measurePageExportPlanDiagnostic\(\s*"buildPageExportPlan\.positionedGlyphs"/)
   assert.match(rendererSource, /measureLayoutPerformance\(\s*"canvas\.buildRenderPlansFromPageExportPlan"/)
   assert.match(rendererSource, /measureLayoutPerformance\(\s*"canvas\.drawLayerStack"/)
 })

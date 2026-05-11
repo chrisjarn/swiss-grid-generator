@@ -2,7 +2,11 @@ import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
   type LayoutEngineContract,
 } from "@/core/layout/layout-engine-contract"
-import { buildPageExportPlan, type PageExportPlan } from "@/core/layout/page-export-plan"
+import {
+  buildPageExportPlan,
+  type PageExportPlan,
+  type PageExportPlanTimingCollector,
+} from "@/core/layout/page-export-plan"
 import type { ResolvedProjectPageExportSource } from "@/core/export/project-page-export-source"
 
 type PlannerTextMetricsService = NonNullable<Parameters<typeof buildPageExportPlan>[0]["textMetricsService"]>
@@ -15,6 +19,7 @@ export function buildPlannedProjectPageExportSource(
   source: ResolvedProjectPageExportSource,
   layoutEngine: LayoutEngineContract = CURRENT_LAYOUT_ENGINE_CONTRACT,
   textMetricsService?: PlannerTextMetricsService,
+  timingCollector?: PageExportPlanTimingCollector,
 ): PlannedProjectPageExportSource {
   return {
     ...source,
@@ -33,6 +38,7 @@ export function buildPlannedProjectPageExportSource(
       showTypography: source.uiSettings.showTypography,
       layoutEngine,
       textMetricsService,
+      timingCollector,
     }),
   }
 }

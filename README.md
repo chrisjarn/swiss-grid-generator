@@ -148,11 +148,11 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 - All export formats are vector-based rather than raster screenshot captures
 - `PDF`, `SVG`, and `IDML` share one deterministic export engine fed by the same project snapshot and `PageExportPlan` pipeline
 - `PDF`, `SVG`, and `IDML` render typography from the same shared glyph-outline geometry, so exported text is frozen as vector shapes in the normal export path
-- Long exports use deterministic worker-backed paths: PDF runs in a cancellable browser worker, and SVG/IDML render page-set artifacts through one shared browser-worker scheduler before ordered assembly
+- Long exports use deterministic worker-backed paths: PDF runs in a cancellable browser worker with a transferable serialized request, and SVG/IDML render page-set artifacts through one shared browser-worker scheduler before ordered assembly
 - Repeated SVG/IDML page-set artifacts can be reused from a bounded exact-request cache; IDML cache entries are cloned before worker packaging to avoid detached-buffer reuse
 - Export format labels, filename extensions, bleed capability, and browser vector-export action setup are centralized so PDF/SVG/IDML enter the shared runner consistently
 - Multi-page `SVG` export downloads a ZIP with one SVG per page
-- Export progress reports preparation, page rendering, finalization, and percentage in the popup action button and top progress rail
+- Export progress reports preparation, deterministic planning, page rendering, finalization, percentage, elapsed time, and the same detailed progress log used by CLI export and the browser benchmark
 - `Esc` closes the export dialog when idle and cancels a running export; PDF cancellation terminates its worker even during final byte serialization
 - Shared vector bleed option for `PDF`, `SVG`, and `IDML`, disabled by default with `3mm` as the standard activation width, using one export box for trim/bleed/media/crop/guide-clip geometry with visible production geometry extended through bleed plus a fixed white crop-mark canvas and black crop marks outside bleed
 - PDF export uses RGB vector geometry with an embedded sRGB output intent
@@ -236,7 +236,7 @@ npm run export -- --layout tests/fixtures/performance-1000-pages.json --range 1-
 
 Use the tracked `performance-1000-pages.json` when measuring document-variable and lorem fitting cost. To isolate static text wrapping, glyph planning, and renderer/export cost without placeholder expansion, run `npm run fixtures:performance`; it also writes the ignored generated file `performance-1000-pages-static-text.json`.
 
-The CLI uses the same project export runner as the browser and prints phase timings for source resolution, planning, PDF setup, page rendering, finalization, and writes. Browser vector export opens with bleed disabled and keeps `3mm` as the standard activation width; pass `--bleed-mm <n>` in the CLI to enable/override bleed for scripted exports.
+The CLI uses the same project export runner as the browser and prints phase timings for source resolution, per-page source resolution, canonical page-plan construction, typography layout, text wrapping, font metric lookup, glyph positioning, PDF setup, page rendering, finalization, and writes. Browser vector export opens with bleed disabled and keeps `3mm` as the standard activation width; pass `--bleed-mm <n>` in the CLI to enable/override bleed for scripted exports.
 
 Before release, run:
 
@@ -245,9 +245,17 @@ cd webapp
 npm run fonts:verify
 npm run lint
 npx tsc --noEmit
+npm test
+npm run test:core
 npm run test:text-metrics
 npm run test:contracts
 npm run test:gui
+npm run test:page-export-plan
+npm run test:export-box
+npm run test:export-geometry
+npm run test:pdf
+npm run test:svg
+npm run test:idml
 npm run test:preview-interactions
 ```
 

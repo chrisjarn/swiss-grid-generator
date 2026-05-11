@@ -195,7 +195,7 @@ Current capability inventory for Swiss Grid Generator.
 - `IDML v1` selected-range export.
 - Export defaults to the full project page range.
 - Export dialog includes display toggles for baselines, margins, modules, typography, and image placeholders, plus a live thumbnail preview, JSON/PDF/SVG/IDML format switching driven by the shared format options table, explicit page-selection input, filename and metadata fields, and compact action-button progress with a thin top progress rail.
-- Export progress displays preparation, page rendering, finalization, and percentage without a separate status report panel.
+- Export progress displays preparation, deterministic planning, page rendering, finalization, percentage, elapsed time, and a collapsible progress log using the same formatter as CLI export.
 - Export is WYSIWYG with respect to the project-level visibility state for baselines, margins, modules, typography, and image placeholders.
 - All export formats use stored page geometry directly.
 - PDF, SVG, and IDML are vector-based, not raster captures.

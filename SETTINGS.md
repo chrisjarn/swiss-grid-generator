@@ -551,7 +551,7 @@ Behavior:
 - Long exports can be partitioned into deterministic page sets by the export engine. SVG and IDML use this page-set boundary for worker-backed browser artifact generation; final assembly remains ordered by page index.
 - SVG and IDML use one shared export-engine worker scheduler for page-set dispatch, cancellation, progress, ordered result collection, and single-worker archive/package handoff. Format code remains responsible only for its request payload and serialized output.
 - SVG and IDML page-set artifacts may be reused from a bounded in-memory LRU cache only when the serialized page-set request matches exactly. Cached IDML artifacts are cloned before reuse because package-worker transfer detaches typed-array buffers.
-- Export status shows preparation, rendering, finalization, and percentage through the popup action button and top progress rail. Progress updates are non-blocking for the export engine.
+- Export status shows preparation, deterministic planning, rendering, finalization, percentage, elapsed time, and a collapsible progress log through the popup action button, status area, and top progress rail. Progress updates are non-blocking for the export engine.
 
 ## JSON UI Fields (serialized)
 

@@ -21,6 +21,12 @@ The profiler records diagnostic timings for:
 
 Profiling is disabled unless `NEXT_PUBLIC_LAYOUT_PROFILING` is set to `1` or `true`.
 
+## Export Performance Logs
+
+CLI export, browser export, and the browser PDF benchmark use the same elapsed log formatter and timing summary. Export reports include aggregate planning diagnostics for source resolution, canonical page-plan construction, page geometry, guide plans, image plans, typography layout, text wrapping, font metric lookup, glyph positioning, and layer ordering.
+
+These timings are diagnostic only. They are collected through an optional timing collector and do not enter the returned `PageExportPlan`, PDF/SVG/IDML geometry, or text layout decisions.
+
 ## Layout Benchmark
 
 Run the deterministic layout stress benchmark from `webapp/`:
@@ -472,7 +478,7 @@ This pass did not change planner math, export geometry, text metrics, or benchma
 - `npx tsc --noEmit`
 - `node --import ./scripts/register-ts-alias-loader.mjs --test tests/contracts/svg-export-contract.test.mjs`
 
-### Summery
+### Summary
 
 ```text
 [+ 106.8s] performance summary:

@@ -43,17 +43,34 @@ npm run test:preview-interactions
 Use targeted scripts when working in one area:
 
 ```bash
+npm run test:autofit
+npm run test:canvas-renderer
 npm run test:grid
+npm run test:reflow
 npm run test:text
 npm run test:text-metrics
+npm run test:typography-layout
 npm run test:page-export-plan
 npm run test:export-box
 npm run test:export-geometry
 npm run test:pdf
 npm run test:svg
 npm run test:idml
+npm run test:project-transfer
 npm run test:inline-editor
+npm run test:preview-helpers
+npm run test:roundtrip
+npm run test:text-quality
 ```
+
+## Boundary And Regression Coverage
+
+- `test:core` includes the TypeScript alias-loader regression that prevents directory-alias `EISDIR` failures.
+- `test:contracts` includes the `webapp/core/**` boundary check. Core modules must not import from `@/lib`, `@/gui`, `@/app`, or `@/shared`.
+- `test:contracts` includes the legacy frontend import check. `webapp/components/`, `webapp/hooks/`, `@/components`, and `@/hooks` must stay absent.
+- `test:project-transfer` verifies that the PDF worker protocol sends a transferable serialized payload and does not structured-clone the project object.
+- `test:page-export-plan` verifies that optional planning instrumentation does not change the canonical `PageExportPlan`.
+- `test:export-box` verifies shared PDF/SVG/IDML export-box geometry and the real export timing surface, including planning sub-timings.
 
 ## Rules
 

@@ -83,6 +83,7 @@ import {
 } from "@/core/layout/layout-engine-contract"
 import {
   isLayoutProfilingEnabled,
+  type LayoutPerformanceMetadata,
   measureLayoutPerformance,
   recordLayoutPerformanceMetric,
 } from "@/core/layout/layout-performance"
@@ -99,6 +100,7 @@ import type {
   PageExportImagePlan,
   PageExportLine,
   PageExportPlan,
+  PageExportPlanTimingCollector,
   PageExportRect,
   PageExportTextPlan,
   PreviewLayoutState,
@@ -110,6 +112,7 @@ export type {
   PageExportImagePlan,
   PageExportLine,
   PageExportPlan,
+  PageExportPlanTimingCollector,
   PageExportRect,
   PageExportTextPlan,
   PageExportTextWrapTrace,
@@ -193,6 +196,36 @@ type PageExportPlanPhaseAccumulator = {
   graphemeAdvanceMs: number
   graphemeMetricsMs: number
   layerOrderMs: number
+}
+
+function measurePageExportPlanDiagnostic<T>(
+  label: string,
+  run: () => T,
+  profilePhases: boolean,
+  timingCollector?: PageExportPlanTimingCollector,
+  metadata?: LayoutPerformanceMetadata,
+  extra = "",
+): T {
+  if (!profilePhases && !timingCollector) return run()
+  const startedAt = timingCollector ? getNowMs() : 0
+  try {
+    return profilePhases ? measureLayoutPerformance(label, run, metadata) : run()
+  } finally {
+    if (timingCollector) {
+      timingCollector(label, getNowMs() - startedAt, extra)
+    }
+  }
+}
+
+function recordAccumulatedPageExportPlanMetric(
+  timingCollector: PageExportPlanTimingCollector | undefined,
+  label: string,
+  durationMs: number,
+  metadata: LayoutPerformanceMetadata,
+  extra: string,
+): void {
+  void metadata
+  timingCollector?.(label, durationMs, extra)
 }
 
 const PAGE_EXPORT_TEXT_INPUT_CACHE_LIMIT = 5000
@@ -872,6 +905,7 @@ function buildPageExportPlanInternal({
   textMetricsEngineFactory,
   textMetricsService,
   textWrapTraceCollector,
+  timingCollector,
 }: BuildPageExportPlanArgs): PageExportPlan {
   const sourceWidth = result.pageSizePt.width
   const sourceHeight = result.pageSizePt.height
@@ -879,7 +913,7 @@ function buildPageExportPlanInternal({
   const { width: modW, height: modH } = result.module
   const { gridCols, gridRows } = result.settings
   const profilePhases = isLayoutProfilingEnabled()
-  const phaseAccumulator: PageExportPlanPhaseAccumulator | null = profilePhases
+  const phaseAccumulator: PageExportPlanPhaseAccumulator | null = profilePhases || timingCollector
     ? {
         resolveBlocksMs: 0,
         documentVariablesMs: 0,
@@ -899,16 +933,17 @@ function buildPageExportPlanInternal({
         layerOrderMs: 0,
       }
     : null
-  const geometry = profilePhases
-    ? measureLayoutPerformance(
-        "buildPageExportPlan.geometry",
-        () => resolvePageExportGridGeometry(result),
-        {
-          cols: gridCols,
-          rows: gridRows,
-        },
-      )
-    : resolvePageExportGridGeometry(result)
+  const geometry = measurePageExportPlanDiagnostic(
+    "buildPageExportPlan.geometry",
+    () => resolvePageExportGridGeometry(result),
+    profilePhases,
+    timingCollector,
+    {
+      cols: gridCols,
+      rows: gridRows,
+    },
+    `cols=${gridCols} rows=${gridRows}`,
+  )
   const {
     moduleWidths,
     moduleHeights,
@@ -929,29 +964,24 @@ function buildPageExportPlanInternal({
     ? parseHexColor(resolveImageSchemeColor(canvasBackground, imageColorScheme))
     : null
 
-  const { pageOutline, guideGroups } = profilePhases
-    ? measureLayoutPerformance(
-        "buildPageExportPlan.guides",
-        () => buildPageExportGuidePlan({
-          result,
-          geometry,
-          showBaselines,
-          showModules,
-          showMargins,
-        }),
-        {
-          baselines: showBaselines,
-          modules: showModules,
-          margins: showMargins,
-        },
-      )
-    : buildPageExportGuidePlan({
-        result,
-        geometry,
-        showBaselines,
-        showModules,
-        showMargins,
-      })
+  const { pageOutline, guideGroups } = measurePageExportPlanDiagnostic(
+    "buildPageExportPlan.guides",
+    () => buildPageExportGuidePlan({
+      result,
+      geometry,
+      showBaselines,
+      showModules,
+      showMargins,
+    }),
+    profilePhases,
+    timingCollector,
+    {
+      baselines: showBaselines,
+      modules: showModules,
+      margins: showMargins,
+    },
+    `baselines=${showBaselines} modules=${showModules} margins=${showMargins}`,
+  )
 
   const imageOrder = layout?.imageOrder?.filter(
     (key): key is BlockId => typeof key === "string" && key.length > 0,
@@ -1000,40 +1030,9 @@ function buildPageExportPlanInternal({
   }
 
   const imagePlans = showImagePlaceholders
-    ? (
-        profilePhases
-          ? measureLayoutPerformance(
-              "buildPageExportPlan.images",
-              () => buildPageExportImagePlans({
-                imageOrder,
-                imageColorScheme,
-                imageModulePositions: storedImageModulePositions,
-                imageColumnSpans,
-                imageRowSpans,
-                imageHeightBaselines,
-                imageSnapToColumns,
-                imageSnapToBaseline,
-                imageRotations,
-                imageColors,
-                imageOpacities,
-                geometry,
-                contentLeft,
-                baselineOriginTop,
-                baselineStep,
-                maxBaselineRow,
-                gridCols,
-                gridRows,
-                gridUnit,
-                gutterX: gridMarginHorizontal,
-                gutterY: gridMarginVertical,
-                fallbackModuleHeight: modH,
-                getHeightMetrics,
-              }),
-              {
-                placeholders: imageOrder.length,
-              },
-            )
-          : buildPageExportImagePlans({
+    ? measurePageExportPlanDiagnostic(
+        "buildPageExportPlan.images",
+        () => buildPageExportImagePlans({
           imageOrder,
           imageColorScheme,
           imageModulePositions: storedImageModulePositions,
@@ -1057,7 +1056,13 @@ function buildPageExportPlanInternal({
           gutterY: gridMarginVertical,
           fallbackModuleHeight: modH,
           getHeightMetrics,
-        })
+        }),
+        profilePhases,
+        timingCollector,
+        {
+          placeholders: imageOrder.length,
+        },
+        `placeholders=${imageOrder.length}`,
       )
     : []
 
@@ -1453,7 +1458,7 @@ function buildPageExportPlanInternal({
   }
 
   const layoutOutput = showTypography
-    ? measureLayoutPerformance(
+    ? measurePageExportPlanDiagnostic(
         "buildPageExportPlan.typographyLayout",
         () => buildTypographyLayoutPlan<BlockId, TypographyStyleKey, ExportTextContext>({
       blockOrder,
@@ -1625,9 +1630,12 @@ function buildPageExportPlanInternal({
       },
       phaseAccumulator: phaseAccumulator ?? undefined,
     }),
+        profilePhases,
+        timingCollector,
         {
           blocks: blockOrder.length,
         },
+        `blocks=${blockOrder.length}`,
       )
     : { plans: [] as TypographyLayoutPlan<BlockId, TypographyStyleKey>[], rects: {} as Record<BlockId, PageExportRect>, overflowByBlock: {} }
 
@@ -1746,17 +1754,16 @@ function buildPageExportPlanInternal({
       phaseAccumulator.graphemeMetricsMs += textFormatAccumulator.graphemeMetricsMs
     }
   }
-  if (profilePhases) {
-    measureLayoutPerformance(
-      "buildPageExportPlan.positionedGlyphs",
-      positionTextGlyphs,
-      {
-        textPlans: textPlans.length,
-      },
-    )
-  } else {
-    positionTextGlyphs()
-  }
+  measurePageExportPlanDiagnostic(
+    "buildPageExportPlan.positionedGlyphs",
+    positionTextGlyphs,
+    profilePhases,
+    timingCollector,
+    {
+      textPlans: textPlans.length,
+    },
+    `textPlans=${textPlans.length}`,
+  )
 
   const layerOrderStartedAt = phaseAccumulator ? getNowMs() : 0
   const plannedImageKeys = new Set(imagePlans.map((plan) => plan.key))
@@ -1835,6 +1842,56 @@ function buildPageExportPlanInternal({
     recordLayoutPerformanceMetric("buildPageExportPlan.layerOrder", phaseAccumulator.layerOrderMs, {
       layers: resolvedOrderedLayerKeys.length,
     })
+    if (timingCollector) {
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.resolveBlocks", phaseAccumulator.resolveBlocksMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.documentVariables", phaseAccumulator.documentVariablesMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.wrapText", phaseAccumulator.wrapTextMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.textMeasureWidth", phaseAccumulator.textMeasureWidthMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.textAscent", phaseAccumulator.textAscentMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.textDescent", phaseAccumulator.textDescentMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.opticalOffsets", phaseAccumulator.opticalOffsetsMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.paragraphBoxes", phaseAccumulator.paragraphBoxesMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.lineCommands", phaseAccumulator.lineCommandsMs, {
+        blocks: blockOrder.length,
+      }, `blocks=${blockOrder.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.glyphGraphemes", phaseAccumulator.glyphGraphemesMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.glyphSegments", phaseAccumulator.glyphSegmentsMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.resolveFontTrackingGraphemes", phaseAccumulator.resolveFontTrackingGraphemesMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.measureFormattedTextRangeWidth", phaseAccumulator.measureFormattedTextRangeWidthMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.graphemeAdvance", phaseAccumulator.graphemeAdvanceMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.graphemeMetrics", phaseAccumulator.graphemeMetricsMs, {
+        textPlans: textPlans.length,
+      }, `textPlans=${textPlans.length}`)
+      recordAccumulatedPageExportPlanMetric(timingCollector, "buildPageExportPlan.layerOrder", phaseAccumulator.layerOrderMs, {
+        layers: resolvedOrderedLayerKeys.length,
+      }, `layers=${resolvedOrderedLayerKeys.length}`)
+    }
   }
 
   return {
@@ -1852,16 +1909,20 @@ function buildPageExportPlanInternal({
 }
 
 export function buildPageExportPlan(args: BuildPageExportPlanArgs): PageExportPlan {
-  if (!isLayoutProfilingEnabled()) return buildPageExportPlanInternal(args)
+  const profilePhases = isLayoutProfilingEnabled()
+  if (!profilePhases && !args.timingCollector) return buildPageExportPlanInternal(args)
 
-  return measureLayoutPerformance(
+  return measurePageExportPlanDiagnostic(
     "buildPageExportPlan",
     () => buildPageExportPlanInternal(args),
+    profilePhases,
+    args.timingCollector,
     {
       width: args.result.pageSizePt.width,
       height: args.result.pageSizePt.height,
       typography: args.showTypography,
       placeholders: args.showImagePlaceholders,
     },
+    `width=${args.result.pageSizePt.width} height=${args.result.pageSizePt.height}`,
   )
 }
