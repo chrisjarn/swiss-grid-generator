@@ -1019,14 +1019,16 @@ function buildPageExportPlanInternal({
       return [Math.max(heightBaselines * baselineStep, lineStep)]
     }
 
-    return Array.from({ length: Math.max(1, rowSpan) }, (_, rowOffset) => {
-      const rowIndex = rowStart + rowOffset
-      const rowHeight = rowIndex < 0 || rowIndex >= gridRows
-        ? modH
-        : moduleHeights[rowIndex] ?? modH
-      const extraHeight = rowOffset === rowSpan - 1 ? heightBaselines * baselineStep : 0
-      return rowHeight + extraHeight
-    })
+    return [resolveBlockHeight({
+      rowStart,
+      rows: rowSpan,
+      baselines: heightBaselines,
+      gridRows,
+      moduleHeights,
+      fallbackModuleHeight: modH,
+      gutterY: gridMarginVertical,
+      baselineStep,
+    })]
   }
 
   const imagePlans = showImagePlaceholders

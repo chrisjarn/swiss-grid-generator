@@ -27,7 +27,7 @@ test("typography layout plan reflows across the full stacked row height before a
   assert.match(source, /export\s+function\s+getTypographyLineCapacityForHeight\([\s\S]*?firstLineHeight\s*=\s*lineStep/)
   assert.match(source, /const\s+safeFirstLineHeight\s*=\s*Math\.max\(0\.0001,\s*firstLineHeight\)/)
   assert.match(source, /return\s+Math\.max\(1,\s*1\s*\+\s*Math\.floor\(\(availableHeight\s*-\s*safeFirstLineHeight\)\s*\/\s*safeLineStep\)\)/)
-  assert.match(source, /export\s+function\s+getTypographyReflowLineCapacityForHeight\([\s\S]*?return\s+Math\.max\(1,\s*Math\.floor\(\(availableHeight\s*\+\s*0\.0001\)\s*\/\s*safeLineStep\)\)/)
+  assert.match(source, /export\s+function\s+getTypographyReflowLineCapacityForHeight\([\s\S]*?return\s+Math\.max\(1,\s*Math\.ceil\(Math\.max\(0,\s*availableHeight\s*-\s*0\.0001\)\s*\/\s*safeLineStep\)\)/)
   assert.match(source, /const\s+getLineCapacityForHeight\s*=\s*\(availableHeight:\s*number,\s*lineStep:\s*number,\s*firstLineHeight:\s*number\)\s*=>/)
   assert.match(source, /const\s+getReflowLineCapacityForHeight\s*=\s*\(availableHeight:\s*number,\s*lineStep:\s*number\)\s*=>/)
   assert.match(source, /const\s+buildReflowRowLayouts\s*=\s*\([\s\S]*?rowStart:\s*number,[\s\S]*?rowSpan:\s*number,[\s\S]*?heightBaselines:\s*number,[\s\S]*?lineStep:\s*number,/)

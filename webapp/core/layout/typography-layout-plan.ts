@@ -64,7 +64,7 @@ export function getTypographyReflowLineCapacityForHeight(
 ): number {
   if (!Number.isFinite(availableHeight) || availableHeight <= 0) return 0
   const safeLineStep = Math.max(lineStep, 0.0001)
-  return Math.max(1, Math.floor((availableHeight + 0.0001) / safeLineStep))
+  return Math.max(1, Math.ceil(Math.max(0, availableHeight - 0.0001) / safeLineStep))
 }
 
 export function getTypographyReflowLineCapacityForRowHeights(
@@ -257,17 +257,6 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       baselineStep,
     })
   }
-  const getRowHeightAt = (rowIndex: number) => {
-    if (rowIndex < 0 || rowIndex >= gridRows) return moduleHeight
-    return resolvedModuleHeights[rowIndex] ?? moduleHeight
-  }
-  const getRowOffset = (rowStart: number, offset: number) => {
-    let position = 0
-    for (let index = 0; index < offset; index += 1) {
-      position += getRowHeightAt(rowStart + index) + gutterY
-    }
-    return position
-  }
   const getLineCapacityForHeight = (availableHeight: number, lineStep: number, firstLineHeight: number) => {
     return getTypographyLineCapacityForHeight(availableHeight, lineStep, firstLineHeight)
   }
@@ -289,15 +278,12 @@ export function buildTypographyLayoutPlan<BlockId extends string, StyleKey exten
       }]
     }
 
-    return Array.from({ length: Math.max(1, rowSpan) }, (_, rowOffset) => {
-      const height = getRowHeightAt(rowStart + rowOffset)
-      const extraHeight = rowOffset === rowSpan - 1 ? heightBaselines * baselineStep : 0
-      return {
-        yOffset: getRowOffset(rowStart, rowOffset),
-        height: height + extraHeight,
-        lineCapacity: Math.max(1, getReflowLineCapacityForHeight(height + extraHeight, lineStep)),
-      }
-    })
+    const height = getRowSpanHeight(rowStart, rowSpan, heightBaselines)
+    return [{
+      yOffset: 0,
+      height,
+      lineCapacity: Math.max(1, getReflowLineCapacityForHeight(height, lineStep)),
+    }]
   }
   const getReflowColumnLineCapacity = (rowLayouts: readonly ReflowRowLayout[]) => (
     rowLayouts.reduce((capacity, rowLayout) => capacity + rowLayout.lineCapacity, 0)

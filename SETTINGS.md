@@ -469,7 +469,7 @@ Editor controls:
 - Info section: geometry, type/color summary, counts, and `Max/Line`
 - section headers single-click to toggle one section; double-click opens or closes all editor sections
 - newspaper reflow is available only with cols > 1
-- reflow with cols > 1: newspaper flow across configured columns, exhausting the selected `rows + baselines` height before moving to the next column
+- reflow with cols > 1: newspaper flow across configured columns, exhausting the selected continuous `rows + baselines` height, including interior row gutters, before moving to the next column
 - overflow is reported only for active newspaper reflow; ordinary paragraphs continue drawing their full text even when it exceeds the selected row height
 - font cut uses the available family-specific weight/style list
 - tracking applies letter-spacing, not horizontal scaling

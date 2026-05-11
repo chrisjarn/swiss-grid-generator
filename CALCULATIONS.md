@@ -708,17 +708,18 @@ If `reflow = false`:
 If `reflow = true`:
 - newspaper flow by columns inside selected span
 - width per text column = active module-column width at placement
-- lines per column constrained by the selected module-row slots
+- lines per column constrained by the continuous selected block height
 
 ```
-rowHeight(i) = moduleHeight(rowStartIndex + i)
-slotHeight(i) = rowHeight(i) + (i is final row ? heightBaselines × baselineStep : 0)
-rowLineCapacity(i) = max(1, floor(slotHeight(i) / lineStep))
-maxLinesPerColumn = sum(rowLineCapacity(i)) over selected rows
+blockHeight =
+  sum(moduleHeight(rowStartIndex + i)) over selected rows
+  + max(0, rows - 1) × gutterY
+  + heightBaselines × baselineStep
+maxLinesPerColumn = max(1, ceil((blockHeight - ε) / lineStep))
 neededCols = ceil(totalWrappedLines / maxLinesPerColumn)
 ```
 
-This is intentionally row-based rather than a continuous-height division. A paragraph spanning `10` module rows therefore has `10` row slots when the leading equals the module step (`module height + gutter`), without adding a synthetic gutter after the final row.
+Interior row gutters are part of the selected text frame for newspaper reflow. A paragraph spanning `5` module rows therefore flows continuously down a column through the four interior row gutters before moving to the next column. The small epsilon excludes a baseline that would sit exactly on the hard bottom edge, while fractional extra height still permits the next valid baseline start.
 
 The same combined `rows + baselines` height is also used for image placeholders, preview guide lines, hover affordances, and export geometry.
 
