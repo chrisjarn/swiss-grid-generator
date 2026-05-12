@@ -77,6 +77,48 @@ function hashPlan(plan) {
     .digest("hex")
 }
 
+function createDocumentVariablePlanArgs() {
+  const args = createStressPagePlanArgs(6)
+  const key = args.layout.blockOrder[3]
+  args.layout = {
+    ...args.layout,
+    textContent: {
+      ...args.layout.textContent,
+      [key]: "<%project_title%> <%page%>/<%pages%>\n<%lorem%>",
+    },
+    blockTextReflow: {
+      ...args.layout.blockTextReflow,
+      [key]: true,
+    },
+    blockColumnSpans: {
+      ...args.layout.blockColumnSpans,
+      [key]: 3,
+    },
+    blockRowSpans: {
+      ...args.layout.blockRowSpans,
+      [key]: 3,
+    },
+    blockHeightBaselines: {
+      ...args.layout.blockHeightBaselines,
+      [key]: 12,
+    },
+  }
+  args.documentVariableContext = {
+    projectTitle: "Variable audit",
+    pageTitle: "Page one",
+    pageNumber: 1,
+    pageCount: 12,
+    now: new Date("2026-05-12T08:30:00.000Z"),
+  }
+  return { args, key }
+}
+
+function findTextPlan(plan, key) {
+  const textPlan = plan.textPlans.find((entry) => entry.key === key)
+  assert.ok(textPlan, `Missing text plan for ${key}`)
+  return textPlan
+}
+
 test("page export plan is deterministic for the stress fixture", () => {
   const args = createStressPagePlanArgs(3)
   const first = buildPageExportPlan(args)
@@ -113,6 +155,69 @@ test("page export plan instrumentation does not change the canonical plan", () =
   assert.ok(timings.some((entry) => entry.label === "buildPageExportPlan.typographyLayout"))
   assert.ok(timings.some((entry) => entry.label === "buildPageExportPlan.wrapText"))
   assert.ok(timings.every((entry) => Number.isFinite(entry.durationMs) && entry.durationMs >= 0))
+})
+
+test("page export plan resolves document variables while preserving raw edit mode", () => {
+  const { args, key } = createDocumentVariablePlanArgs()
+  const rawContent = args.layout.textContent[key]
+  const resolved = findTextPlan(buildPageExportPlan(args), key)
+  const rawEdit = findTextPlan(buildPageExportPlan({
+    ...args,
+    rawDocumentVariableBlockKey: key,
+  }), key)
+
+  assert.equal(args.layout.textContent[key], rawContent)
+  assert.equal(rawEdit.sourceText, rawContent)
+  assert.doesNotMatch(resolved.sourceText, /<%/)
+  assert.match(resolved.sourceText, /Variable audit 1\/12/)
+  assert.match(resolved.sourceText, /Lorem ipsum/)
+  assert.notEqual(resolved.sourceText, rawContent)
+})
+
+test("lorem document variable output is stable for geometry-neutral changes", () => {
+  const { args, key } = createDocumentVariablePlanArgs()
+  args.layout.textContent[key] = "<%lorem%>"
+  const baseline = findTextPlan(buildPageExportPlan(args), key)
+  const guideOnlyChange = findTextPlan(buildPageExportPlan({
+    ...args,
+    showBaselines: !args.showBaselines,
+    showModules: !args.showModules,
+    showMargins: !args.showMargins,
+  }), key)
+  const irrelevantContextChange = findTextPlan(buildPageExportPlan({
+    ...args,
+    documentVariableContext: {
+      ...args.documentVariableContext,
+      projectTitle: "Changed but unused",
+      pageTitle: "Changed but unused",
+      pageNumber: 9,
+      pageCount: 99,
+    },
+  }), key)
+
+  assert.doesNotMatch(baseline.sourceText, /<%/)
+  assert.equal(guideOnlyChange.sourceText, baseline.sourceText)
+  assert.deepEqual(guideOnlyChange.commands, baseline.commands)
+  assert.equal(irrelevantContextChange.sourceText, baseline.sourceText)
+  assert.deepEqual(irrelevantContextChange.commands, baseline.commands)
+})
+
+test("document variable cache key is derived from authored content, style, geometry, and relevant context", () => {
+  const source = readText("core/layout/page-export-plan.ts")
+
+  assert.match(source, /const pageExportDocumentVariableCache = new Map/)
+  assert.match(source, /const pageExportLoremLineCountCache = new Map/)
+  assert.match(source, /readPageExportLruValue\(pageExportDocumentVariableCache, loremCacheKey\)/)
+  assert.match(source, /rawText: blockPlan\.rawText/)
+  assert.match(source, /context: getRelevantDocumentVariableContextKey/)
+  assert.match(source, /formatRuns: blockPlan\.rawFormatRuns/)
+  assert.match(source, /trackingRuns: blockPlan\.rawTrackingRuns/)
+  assert.match(source, /maxLoremLines: includeMaxLoremLines \? blockPlan\.maxLoremLines : undefined/)
+  assert.match(source, /wrapWidth: blockPlan\.wrapWidth/)
+  assert.match(source, /hyphenate: blockPlan\.hyphenate/)
+  assert.match(source, /baseFontSize: blockPlan\.baseFontSize/)
+  assert.match(source, /resolveFontSize: buildPageExportResolveFontSizeKey\(blockPlan\)/)
+  assert.match(source, /layoutEngine/)
 })
 
 test("row-based reflow uses the final module row for 150 Fonts display paragraphs", () => {
