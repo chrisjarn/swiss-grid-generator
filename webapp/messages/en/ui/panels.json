@@ -107,6 +107,7 @@
       "title": "Feedback",
       "close": "Close feedback panel",
       "email": "Email",
+      "emailPlaceholder": "name@example.com",
       "comment": "Comment",
       "commentPlaceholder": "Issue, constraint, workflow.",
       "screenshots": "Screenshots",
@@ -232,6 +233,11 @@
   "presets": {
     "title": "Presets",
     "description": "Double-click to load. Esc closes.",
+    "groups": {
+      "presets": "Presets",
+      "examples": "Examples",
+      "users": "Users"
+    },
     "storageInfo": "User storage",
     "storageLocal": "Stored in the local browser library.",
     "storageRisk": "Clearing browser data removes local layouts.",

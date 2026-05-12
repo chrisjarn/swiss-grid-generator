@@ -7,6 +7,7 @@ const pkg = require("./package.json")
 const configDir = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig = {
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
   output: "export",
   outputFileTracingRoot: path.join(configDir, ".."),
   trailingSlash: true,

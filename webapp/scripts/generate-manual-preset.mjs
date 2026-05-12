@@ -7,6 +7,7 @@ const REPO_ROOT = path.resolve(WEBAPP_ROOT, "..")
 const MANUAL_PATH = path.join(WEBAPP_ROOT, "messages", "en", "content", "manual.md")
 const SECTION_TEMPLATE_PATH = path.join(WEBAPP_ROOT, "lib", "presets", "templates", "manual-section-page-template.json")
 const OUTPUT_PATH = path.join(WEBAPP_ROOT, "lib", "presets", "data", "100 Swiss Grid Generator Manual.json")
+const MANUAL_CREATED_AT = "2026-04-07T12:00:00.000Z"
 
 function normalizeText(value) {
   return value
@@ -54,6 +55,19 @@ function formatTitlePageTitle(rawTitle) {
 
 function makePageId(index) {
   return `page-manual-${String(index).padStart(2, "0")}`
+}
+
+async function readExistingExportedAt() {
+  try {
+    const existingSource = await fs.readFile(OUTPUT_PATH, "utf8")
+    const existingPayload = JSON.parse(existingSource)
+    const exportedAt = existingPayload?.exportedAt
+    if (typeof exportedAt !== "string") return MANUAL_CREATED_AT
+    if (!Number.isFinite(Date.parse(exportedAt))) return MANUAL_CREATED_AT
+    return exportedAt
+  } catch {
+    return MANUAL_CREATED_AT
+  }
 }
 
 function parseManualMarkdown(source) {
@@ -136,6 +150,7 @@ async function main() {
 
   const sectionTemplate = JSON.parse(sectionTemplateSource)
   const { title, sections } = parseManualMarkdown(manualMd)
+  const exportedAt = await readExistingExportedAt()
 
   const pages = []
 
@@ -164,11 +179,11 @@ async function main() {
 
   const payload = {
     schemaVersion: 2,
-    exportedAt: new Date().toISOString(),
+    exportedAt,
     title,
     description: "swiss grid generator software manual",
     author: "Swiss Grid Generator",
-    createdAt: "2026-04-07T12:00:00.000Z",
+    createdAt: MANUAL_CREATED_AT,
     visibilitySettings: {
       showBaselines: true,
       showModules: true,

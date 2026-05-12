@@ -107,3 +107,15 @@ Changes are **non-destructive until committed**, reinforcing the principle of co
 - Rely on shadows for depth
 - Break typographic discipline
 - Add any stroke that cannot be justified
+
+## 9. Redesign Guardrails
+
+Broad interface restructuring, GUI sorting, and CSS visual-system cleanup should happen after the current interface redesign direction is settled. Until then, changes should stay narrow and avoid rewriting shared spacing, radius, color, or icon-button rules.
+
+When the redesign pass begins, every component-level visual decision must be checked against:
+
+- Tactile Brutalism: solid, exact, functional, non-decorative.
+- 8px / 4px UI rhythm and consistent alignment.
+- Functional color only, with no decorative accent drift.
+- Component discipline over broad global overrides.
+- "Every stroke must be there for a reason."

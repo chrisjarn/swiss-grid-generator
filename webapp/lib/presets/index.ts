@@ -4,6 +4,7 @@ import type {
   LayoutPreset,
   LayoutPresetProjectSource,
 } from "@/lib/presets/types"
+import { translateMessage } from "@/lib/i18n"
 import { buildPresetBrowserPage } from "@/lib/presets/browser-page"
 import { GENERATED_PRESET_MANIFEST } from "./generated-manifest"
 
@@ -21,9 +22,9 @@ const PRESET_METADATA_OVERRIDES: Readonly<Record<string, PresetMetadataOverride>
 export const LAYOUT_PRESET_CATEGORY_ORDER = ["presets", "examples", "users"] as const satisfies readonly LayoutPresetCategory[]
 
 export const LAYOUT_PRESET_CATEGORY_LABELS: Readonly<Record<LayoutPresetCategory, string>> = {
-  presets: "Presets",
-  examples: "Examples",
-  users: "Users",
+  presets: translateMessage("ui.panels.presets.groups.presets"),
+  examples: translateMessage("ui.panels.presets.groups.examples"),
+  users: translateMessage("ui.panels.presets.groups.users"),
 }
 
 export type LayoutPresetGroup = {

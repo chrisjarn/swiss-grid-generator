@@ -309,7 +309,7 @@ async function keyEvent(cdp, sessionId, type, key, code, windowsVirtualKeyCode, 
 
 async function selectInlineEditorTextWithKeyboard(cdp, sessionId, characterCount) {
   await evaluate(cdp, sessionId, `(() => {
-    const node = document.querySelector('textarea[aria-label^="inline edit"]')
+    const node = document.querySelector('textarea[aria-label^="Inline edit"]')
     if (!node) return false
     node.focus()
     node.setSelectionRange(0, 0)
@@ -321,6 +321,46 @@ async function selectInlineEditorTextWithKeyboard(cdp, sessionId, characterCount
     await keyEvent(cdp, sessionId, "keyUp", "ArrowRight", "ArrowRight", 39, 8)
   }
   await keyEvent(cdp, sessionId, "keyUp", "Shift", "ShiftLeft", 16, 0)
+}
+
+async function waitForLivePageCanvas(cdp, sessionId) {
+  return waitForExpression(cdp, sessionId, `(() => {
+    const canvases = Array.from(document.querySelectorAll("canvas")).map((node, index) => {
+      const rect = node.getBoundingClientRect()
+      return {
+        index,
+        x: rect.x,
+        y: rect.y,
+        width: rect.width,
+        height: rect.height,
+        pointerEvents: getComputedStyle(node).pointerEvents,
+      }
+    })
+    return canvases.find((canvas) => (
+      canvas.pointerEvents === "auto" && canvas.width > 300 && canvas.height > 500
+    )) ?? null
+  })()`)
+}
+
+async function findPreviewTextLayerPoint(cdp, sessionId, canvas) {
+  const xSteps = 10
+  const ySteps = 12
+  for (let yStep = 1; yStep < ySteps; yStep += 1) {
+    for (let xStep = 1; xStep < xSteps; xStep += 1) {
+      const point = {
+        x: canvas.x + (canvas.width * xStep) / xSteps,
+        y: canvas.y + (canvas.height * yStep) / ySteps,
+      }
+      await mouseMove(cdp, sessionId, point.x, point.y)
+      await sleep(80)
+      const hasParagraphAffordance = await evaluate(cdp, sessionId, `Array.from(document.querySelectorAll('[data-preview-edit-affordance="true"]')).some((node) => {
+        const label = node.getAttribute("aria-label") ?? node.getAttribute("title") ?? ""
+        return /paragraph/i.test(label)
+      })`)
+      if (hasParagraphAffordance) return point
+    }
+  }
+  return null
 }
 
 async function main() {
@@ -372,22 +412,6 @@ async function main() {
     })()`)
     await doubleClick(cdp, sessionId, manualThumb.x, manualThumb.y)
 
-    const pageCanvas = await waitForExpression(cdp, sessionId, `(() => {
-      const canvases = Array.from(document.querySelectorAll("canvas")).map((node, index) => {
-        const rect = node.getBoundingClientRect()
-        return {
-          index,
-          x: rect.x,
-          y: rect.y,
-          width: rect.width,
-          height: rect.height,
-          pointerEvents: getComputedStyle(node).pointerEvents,
-        }
-      })
-      return canvases.find((canvas) => (
-        canvas.pointerEvents === "auto" && canvas.width > 300 && canvas.height > 500
-      )) ?? null
-    })()`)
     await evaluate(cdp, sessionId, `(() => {
       const closeButton = document.querySelector('button[aria-label="close"]')
       if (!(closeButton instanceof HTMLButtonElement)) return false
@@ -396,10 +420,11 @@ async function main() {
     })()`)
     await sleep(300)
 
+    const pageCanvas = await waitForLivePageCanvas(cdp, sessionId)
     const dragStart = { x: pageCanvas.x + 94, y: pageCanvas.y + 73 }
     const dragEnd = { x: dragStart.x + 95, y: dragStart.y + 120 }
     await drag(cdp, sessionId, dragStart, dragEnd, 12)
-    await sleep(500)
+    await sleep(800)
 
     const canvasStillVisible = await evaluate(cdp, sessionId, `Array.from(document.querySelectorAll("canvas")).some((node) => {
       const rect = node.getBoundingClientRect()
@@ -407,27 +432,30 @@ async function main() {
     })`)
     if (!canvasStillVisible) throw new Error("Live preview canvas disappeared after text drag.")
 
-	    const editorOpen = await (async () => {
-	      const attempts = [
-	        { x: dragEnd.x, y: dragEnd.y },
-	        { x: dragEnd.x - 30, y: dragEnd.y - 30 },
-	        { x: pageCanvas.x + 94, y: pageCanvas.y + 73 },
-	      ]
-	      for (let row = 0; row < 4; row += 1) {
-	        for (let column = 0; column < 4; column += 1) {
-	          attempts.push({
-	            x: pageCanvas.x + 48 + column * 72,
-	            y: pageCanvas.y + 48 + row * 86,
-	          })
-	        }
-	      }
-	      for (const point of attempts) {
-	        await doubleClick(cdp, sessionId, point.x, point.y)
-	        await sleep(300)
-	        const isOpen = await evaluate(
-	          cdp,
+    const postDragPageCanvas = await waitForLivePageCanvas(cdp, sessionId)
+    const hoveredTextLayerPoint = await findPreviewTextLayerPoint(cdp, sessionId, postDragPageCanvas)
+    const editorOpen = await (async () => {
+      const attempts = [
+        hoveredTextLayerPoint,
+        { x: dragEnd.x, y: dragEnd.y },
+        { x: dragEnd.x - 30, y: dragEnd.y - 30 },
+        { x: postDragPageCanvas.x + 94, y: postDragPageCanvas.y + 73 },
+      ].filter(Boolean)
+      for (let row = 0; row < 4; row += 1) {
+        for (let column = 0; column < 4; column += 1) {
+          attempts.push({
+            x: postDragPageCanvas.x + 48 + column * 72,
+            y: postDragPageCanvas.y + 48 + row * 86,
+          })
+        }
+      }
+      for (const point of attempts) {
+        await doubleClick(cdp, sessionId, point.x, point.y)
+        await sleep(300)
+        const isOpen = await evaluate(
+          cdp,
           sessionId,
-          `Boolean(document.querySelector('textarea[aria-label^="inline edit"]'))`,
+          `Boolean(document.querySelector('textarea[aria-label^="Inline edit"]'))`,
         )
         if (isOpen) return true
       }
@@ -436,7 +464,7 @@ async function main() {
     if (!editorOpen) throw new Error("Inline editor did not open from live preview geometry.")
 
     await waitForExpression(cdp, sessionId, `(() => {
-      const node = document.querySelector('textarea[aria-label^="inline edit"]')
+      const node = document.querySelector('textarea[aria-label^="Inline edit"]')
       if (!node) return null
       const rect = node.getBoundingClientRect()
       if (rect.width <= 0 || rect.height <= 0) return null
@@ -447,7 +475,7 @@ async function main() {
     await sleep(250)
 
     const selection = await evaluate(cdp, sessionId, `(() => {
-      const node = document.querySelector('textarea[aria-label^="inline edit"]')
+      const node = document.querySelector('textarea[aria-label^="Inline edit"]')
       return node ? { start: node.selectionStart, end: node.selectionEnd, length: node.value.length } : null
     })()`)
     if (!selection || selection.end <= selection.start) {

@@ -451,7 +451,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
               field: "email",
               type: "email",
               id: "feedback-panel-email",
-              placeholder: "name@example.com",
+              placeholder: t("ui.panels.sidebar.feedback.emailPlaceholder"),
             })}
           </section>
 

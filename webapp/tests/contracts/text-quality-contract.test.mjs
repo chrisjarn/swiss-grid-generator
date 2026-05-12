@@ -42,6 +42,36 @@ const CASUAL_OR_MARKETING_PATTERNS = [
   /\byour\b/i,
 ]
 
+const USER_FACING_LITERAL_PROPERTIES = [
+  "ariaLabel",
+  "cancelLabel",
+  "confirmLabel",
+  "description",
+  "emptyMessage",
+  "label",
+  "message",
+  "placeholder",
+  "statusMessage",
+  "title",
+  "tooltip",
+]
+
+const USER_FACING_JSX_ATTRIBUTES = [
+  "aria-label",
+  "alt",
+  "placeholder",
+  "title",
+]
+
+const HARDCODED_LITERAL_ALLOWED_FILES = new Set([
+  "core/config/color-schemes.ts",
+  "core/config/fonts.ts",
+  "core/document/session.ts",
+  "lib/export-engine.ts",
+  "lib/export-format-options.ts",
+  "lib/project-export-runner.ts",
+])
+
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
 }
@@ -104,6 +134,61 @@ function formatViolation(entry, reason) {
   return `${entry.source} ${entry.pointer}: ${reason}: ${JSON.stringify(entry.value)}`
 }
 
+function shouldScanForHardcodedUserFacingLiterals(relPath) {
+  if (!/\.(ts|tsx)$/.test(relPath)) return false
+  if (relPath.startsWith("messages/")) return false
+  if (relPath.startsWith("tests/")) return false
+  if (relPath.startsWith("scripts/")) return false
+  if (relPath.includes("/generated-")) return false
+  if (relPath.includes("generated-")) return false
+  if (relPath.endsWith(".stories.tsx")) return false
+  if (HARDCODED_LITERAL_ALLOWED_FILES.has(relPath)) return false
+  return (
+    relPath.startsWith("app/")
+    || relPath.startsWith("gui/")
+    || relPath.startsWith("shared/")
+    || relPath.startsWith("lib/")
+  )
+}
+
+function isUserFacingLiteral(value) {
+  const trimmed = value.trim()
+  if (trimmed.length === 0) return false
+  if (!/[A-Za-z]/.test(trimmed)) return false
+  if (/^[A-Z0-9./+-]+$/.test(trimmed)) return false
+  if (/^(true|false|null|undefined)$/i.test(trimmed)) return false
+  if (/^(#[0-9a-f]{3,8}|[a-z]+-[a-z0-9-]+)$/i.test(trimmed)) return false
+  return true
+}
+
+function collectHardcodedUserFacingLiteralViolations(relPath, source) {
+  const violations = []
+  const propPattern = new RegExp(
+    `\\b(${USER_FACING_LITERAL_PROPERTIES.join("|")})\\s*:\\s*(["'])([^"'\\\\]*(?:\\\\.[^"'\\\\]*)*)\\2`,
+    "g",
+  )
+  const jsxPattern = new RegExp(
+    `\\b(${USER_FACING_JSX_ATTRIBUTES.join("|")})=(["'])([^"']+)\\2`,
+    "g",
+  )
+
+  for (const match of source.matchAll(propPattern)) {
+    const [, propertyName, , value] = match
+    if (isUserFacingLiteral(value)) {
+      violations.push(`${relPath}: ${propertyName}: ${JSON.stringify(value)}`)
+    }
+  }
+
+  for (const match of source.matchAll(jsxPattern)) {
+    const [, attributeName, , value] = match
+    if (isUserFacingLiteral(value)) {
+      violations.push(`${relPath}: ${attributeName}: ${JSON.stringify(value)}`)
+    }
+  }
+
+  return violations
+}
+
 test("product text stays calm, source-normal, and non-marketing", () => {
   const jsonEntries = collectJsonStrings(JSON.parse(readText("messages/en.json")), "messages/en.json")
   const markdownEntries = [
@@ -160,6 +245,7 @@ test("application code keeps message access behind the typed i18n boundary", () 
   const sourceFiles = listFiles(".", (relPath) => /\.(ts|tsx|mjs)$/.test(relPath))
   const directImportViolations = []
   const hardcodedCapitalizationViolations = []
+  const hardcodedUserFacingLiteralViolations = []
 
   for (const relPath of sourceFiles) {
     if (
@@ -175,8 +261,12 @@ test("application code keeps message access behind the typed i18n boundary", () 
     if (/draft(?:Vertical)?Align[\s\S]{0,120}\.toUpperCase\(/.test(source)) {
       hardcodedCapitalizationViolations.push(relPath)
     }
+    if (shouldScanForHardcodedUserFacingLiterals(relPath)) {
+      hardcodedUserFacingLiteralViolations.push(...collectHardcodedUserFacingLiteralViolations(relPath, source))
+    }
   }
 
   assert.deepEqual(directImportViolations, [])
   assert.deepEqual(hardcodedCapitalizationViolations, [])
+  assert.deepEqual(hardcodedUserFacingLiteralViolations, [])
 })
