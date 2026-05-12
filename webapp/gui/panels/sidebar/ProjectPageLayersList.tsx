@@ -409,7 +409,7 @@ export function ProjectPageLayersList({
           const allowLayerInteractions = isActivePage && !isLocked
           const showPreviewHighlight = isSelected || isHovered || isEditing
           const editingHighlightClassName = isEditing
-            ? "shadow-[inset_1px_0_0_0_var(--swiss-orange),inset_0_1px_0_0_var(--swiss-orange)]"
+            ? "shadow-[inset_1px_0_0_0_var(--color-accent),inset_0_1px_0_0_var(--color-accent)]"
             : ""
           return (
             <Fragment key={`${pageId}-${thumb.key}`}>
@@ -506,7 +506,7 @@ export function ProjectPageLayersList({
                         isLocked
                           ? (isDarkMode ? "bg-surface text-accent" : "bg-surface text-accent")
                           : tone.rowMuted
-                      } ${isLocked ? "" : "hover:text-swiss-orange-soft"}`}
+                      } ${isLocked ? "" : "hover:text-accent"}`}
                       onClick={(event) => {
                         event.stopPropagation()
                         const previousClick = lastLockButtonClickRef.current

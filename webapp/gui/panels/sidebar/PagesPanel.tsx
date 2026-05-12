@@ -173,13 +173,13 @@ export function PagesPanel({
         expandedControls: "bg-surface",
         rowMuted: "text-muted-foreground",
         close: "text-muted-foreground hover:bg-surface hover:text-foreground",
-        accent: "text-swiss-orange-soft",
+        accent: "text-accent",
       }
     : {
         expandedControls: "bg-surface",
         rowMuted: "text-muted-foreground",
         close: "text-muted-foreground hover:bg-panel hover:text-foreground",
-        accent: "text-swiss-orange",
+        accent: "text-accent",
       }
   const renameInputClassName = getNeutralFormControlClassName(isDarkMode, "h-6 w-full rounded-sm px-2 text-[12px] leading-none")
   const pageListClassName = getSettingsOpenListClassName(isDarkMode)

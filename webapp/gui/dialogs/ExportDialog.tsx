@@ -158,7 +158,7 @@ export function ExportDialog({
       <div className={getPopupSurfaceClassName(isDarkUi, "relative max-h-[90vh] w-full max-w-[29.4rem] overflow-y-auto [scrollbar-gutter:stable]")}>
         <div className={cn("absolute left-0 right-0 top-0 h-[3px]", isDarkUi ? "bg-divider" : "bg-border")}>
           <div
-            className="h-full bg-swiss-orange transition-[width] duration-200"
+            className="h-full bg-accent transition-[width] duration-200"
             style={{ width: isExporting ? `${totalProgressPercent}%` : "0%" }}
           />
         </div>

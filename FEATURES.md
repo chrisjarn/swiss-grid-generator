@@ -180,7 +180,7 @@ Current capability inventory for Swiss Grid Generator.
 - Preset rollover tooltip with title, subject, author, and creation date metadata when rollover info is enabled.
 - User-library layouts are listed after bundled `Presets` and `Examples` when any local or synced user layouts are available.
 - The Users section header includes an info rollover describing local browser storage, data-clearing risk, and signed-in cloud sync.
-- User-library thumbnails show a green status dot only while signed in and synced; signed-out, pending, or local-only states stay orange.
+- User-library thumbnails show a green status dot only while signed in and synced; signed-out, pending, or local-only states use the warning color.
 - Deleting a user-library thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary.
 - Double-click preset to load.
 - `Esc` closes the browser without loading.
@@ -242,7 +242,7 @@ Current capability inventory for Swiss Grid Generator.
 - Feedback sidebar with required email/comment fields, optional screenshots, and optional support-log attachment.
 - Legal Notice sidebar with provider, contact, privacy, cloud storage, terms, and dispute-resolution information.
 - Account, feedback, and legal notice panels use the right content panel surface and remain available from preset browser view.
-- Header account panel with email-code sign-in, cloud sync status, and a green/orange header status dot.
+- Header account panel with email-code sign-in, cloud sync status, and a green/warning header status dot.
 - When signed out, the account panel status row reads `Not connected`.
 - The account panel `Status` row expands to show recent local cloud/account events and a `Download` support action.
 - Auth and cloud-sync failures surface as actionable product messages instead of raw provider errors.

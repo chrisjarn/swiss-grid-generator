@@ -47,7 +47,7 @@ Color is used with extreme discipline — always functional, never decorative. W
 - **Braun Signal Red** — `#C02820` — Primary action color, power indicators, emphasis
 - **Braun Green** — `#00A97A` — Status / on-state indicators
 - **Braun Yellow** — `#D4B018` — Function / attention signals
-- **Braun Blue** — `#2979C8` — Connectivity signals
+- **Braun Blue** — `#2979C8` — Main interface accent, active states, and connectivity signals
 - **Braun Orange** — `#E87820` — Secondary status (e.g. mute)
 
 **Color Rule (Dieter Rams influence):**  

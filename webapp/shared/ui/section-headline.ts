@@ -1,1 +1,1 @@
-export const SECTION_HEADLINE_CLASSNAME = "text-[11px] font-semibold uppercase tracking-[0.08em] text-swiss-orange-soft"
+export const SECTION_HEADLINE_CLASSNAME = "text-[11px] font-semibold uppercase tracking-[0.08em] text-accent"

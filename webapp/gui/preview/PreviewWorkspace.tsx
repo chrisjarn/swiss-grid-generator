@@ -533,7 +533,7 @@ export function PreviewWorkspace({
             cancelPageNumberEdit()
           }
         }}
-        className="h-4 w-9 cursor-text rounded-sm border border-input bg-background px-1 text-right text-[11px] leading-none text-foreground outline-none focus:border-swiss-orange"
+        className="h-4 w-9 cursor-text rounded-sm border border-input bg-background px-1 text-right text-[11px] leading-none text-foreground outline-none focus:border-accent"
       />
       <span className="px-1">{t("ui.common.of")}</span>
       <span>{documentVariablePageCount}</span>
@@ -832,7 +832,7 @@ export function PreviewWorkspace({
   function renderPageAddActions() {
     const addShiftActive = pageAddShiftActive && pageAddHovered
     const pageAddButtonActiveClassName = addShiftActive
-      ? "border-swiss-orange bg-swiss-orange text-background hover:brightness-95"
+      ? "border-accent bg-accent text-background hover:brightness-95"
       : ""
     const tooltip = pageAddDisabled
       ? t("ui.panels.project.pageLimitTooltip", { count: MAX_GUI_PROJECT_PAGES })

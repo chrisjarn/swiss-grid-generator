@@ -36,7 +36,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - The left settings panel and right Project panel use the same shared width (`280px` on desktop, full width on mobile), side gutters, and top inset rhythm.
 - The left panel does not auto-scroll or reposition when section headers are toggled.
 - Preset browser mode hides the left settings panel.
-- Section headlines use the shared spaced-uppercase headline style; opened section headlines use Swiss orange soft, while collapsed section headlines and left-panel parameter labels use neutral gray.
+- Section headlines use the shared spaced-uppercase headline style; opened section headlines use the Braun Blue accent, while collapsed section headlines and left-panel parameter labels use neutral gray.
 - Collapsed left-panel sections temporarily open on rollover, scroll into the visible panel area, and close again on hover-out; clicking a section toggle persists the open state.
 - Left-panel settings sections render a full-width `#f3f4f6` divider at the bottom of each section; open sections use a darker gray background band while collapsed sections stay on the panel background.
 - Supported dropdown controls preview hovered items live in the page while the menu is open; leaving or closing the menu restores the committed value until you select an option.
@@ -163,7 +163,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - `Background`: applies a page background color from the selected scheme using clickable swatches; clicking the active swatch toggles the background off. This setting is stored per page.
 - `Background` swatches preview live on rollover before commit.
 - Available schemes:
-  - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#fd8b7b`
+  - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#2979c8`
   - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`
   - `Fresh Contrast`: `#fef9f7`, `#1aa9bc`, `#457c39`, `#ffeb00`
 - The text editor and image editor Color controls show a `COLOR` headline above the active color swatches, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
@@ -180,10 +180,10 @@ The header `>` support submenu uses the same open-list visual system as panel li
 - `Presets` (layout-template icon): opens/closes the presets browser in the preview area
 - When user layouts exist locally or through cloud sync, the `Users` section appears after bundled `Presets` and `Examples`
 - The `Users` section header includes an info rollover describing local browser storage, browser-data clearing risk, and signed-in cloud sync
-- User thumbnails in `Users` show a green status dot only while signed in and synced; signed-out, pending, and local-only states stay orange
+- User thumbnails in `Users` show a green status dot only while signed in and synced; signed-out, pending, and local-only states use the warning color
 - Deleting a user thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary
 - `Import` (download icon): import project JSON or compressed `.swissgridgenerator` archive
-- `Save` (save icon): opens Save to Library dialog; its status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced
+- `Save` (save icon): opens Save to Library dialog; its status dot is red when the current project is not saved locally, warning-colored when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced
 - `Export` (upload icon): opens the export dialog
 - `Save` and `Export` stay disabled until a preview layout is available.
 - `Esc` closes the presets browser without loading a preset
@@ -218,7 +218,7 @@ The header `>` support submenu uses the same open-list visual system as panel li
 - `Show Hover Info`/`Hide Hover Info`: toggles rollover info/tooltips globally
 - Rollover info tooltips appear after a 500ms hover/focus delay.
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar
-- `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot stays orange
+- `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot uses the warning color
 - `Documentation`: opens `/docs` in a new tab, relative to the current host
 - `>` opens a support submenu with `Text Edit Zoom on/off`, `Show Hover Info`/`Hide Hover Info`, `Dark Mode`, layout clipboard transfer, `Documentation`, `Feedback`, and `Legal Notice`
 - `Dark Mode`: toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor; the label stays stable and the row marks active state.

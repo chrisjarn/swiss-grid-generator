@@ -405,7 +405,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
 
   const renderSupportLogCheckbox = () => (
     <label className="flex items-center justify-between gap-3">
-      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-swiss-orange-soft">
+      <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-accent">
         {t("ui.panels.sidebar.feedback.attachLocalLog")}
       </span>
       <input

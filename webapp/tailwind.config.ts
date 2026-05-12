@@ -60,10 +60,6 @@ const config: Config = {
           DEFAULT: "var(--color-panel-bg)",
           foreground: "var(--color-text-primary)",
         },
-        "swiss-orange": {
-          DEFAULT: "var(--color-accent)",
-          soft: "var(--color-accent)",
-        },
         panel: "var(--color-panel-bg)",
         surface: "var(--color-surface-bg)",
         divider: "var(--color-divider)",

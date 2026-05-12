@@ -40,7 +40,7 @@ const meta = {
           <span className="font-mono">8</span>
         </div>
         <div className="h-1.5 rounded-sm bg-gray-300">
-          <div className="h-1.5 w-2/3 rounded-sm bg-[#fd8b7b]" />
+          <div className="h-1.5 w-2/3 rounded-sm bg-accent" />
         </div>
       </div>
     ),
