@@ -279,6 +279,16 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
       } else if (hoveredTextGuideRect && hoveredTextGuidePlan) {
         drawTextGuideFill(hoveredTextGuidePlan, hoveredTextGuideRects)
         drawTextGuideEdges(hoveredTextGuidePlan, hoveredTextGuideRect)
+      } else if (hoveredTextGuideRect) {
+        for (const rect of hoveredTextGuideRects.length > 0 ? hoveredTextGuideRects : [hoveredTextGuideRect]) {
+          drawPreviewGuideFill(rect.x, rect.y, rect.width, rect.height)
+        }
+        drawPreviewGuideEdges(
+          hoveredTextGuideRect.x,
+          hoveredTextGuideRect.y,
+          hoveredTextGuideRect.width,
+          hoveredTextGuideRect.height,
+        )
       } else if (hoveredImageRect) {
         drawPreviewGuideFill(
           hoveredImageRect.x,

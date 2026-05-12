@@ -672,7 +672,9 @@ rawRow = round((pageY - baselineOriginTop) / baselineStep)
 
 Keyboard nudging reuses the same logical placement rules for the selected unlocked layer. Snapped X steps by whole columns, snapped Y steps by module rows by default and by baseline rows on `Shift`, and unsnapped axes move in tenth-steps of the fine logical unit (`0.1` baseline rows on Y, `1 / (baselinesPerGridModule * 10)` columns on X). When that axis is unsnapped, `Shift` multiplies the fine nudge by `10`.
 
-Image placeholders now use the same X/Y drag resolution model as paragraphs. Their width and height still resolve from image spans and `rows + baselines`, and rotation pivots around the placeholder frame's visible top-left origin.
+The shared bottom-right paragraph and image-placeholder resize handle keeps the layer anchor fixed. Default resize resolves the right and bottom edges to module boundaries and writes `Cols` plus `Rows`. Holding `Shift` still resolves columns to module boundaries, but resolves the bottom edge to baseline starts and writes the nearest `Rows + Baselines` height. Pointer movement updates only transient guide rectangles; layer state is committed once on release, and paragraph text layout is recomputed only after release. Paragraph backgrounds use one full frame for ordinary paragraphs and per-column rectangles only when newspaper reflow is active; image-placeholder backgrounds remain full-frame.
+
+Image placeholders now use the same X/Y drag and resize resolution model as paragraphs. Their width and height still resolve from image spans and `rows + baselines`, and rotation pivots around the placeholder frame's visible top-left origin.
 
 ### Per-Paragraph Span
 

@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { Label } from "@/shared/ui/label"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
 import { Switch } from "@/shared/ui/switch"
 import {
@@ -197,49 +197,45 @@ export const GutterPanel = memo(function GutterPanel({
           </div>
         </div>
       ) : null}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.grid.columns")}</Label>
-          <span className={valueBadgeClassName}>{gridCols}</span>
-        </div>
-        <DebouncedSlider
-          value={[gridCols]}
-          min={1}
-          max={13}
-          step={1}
-          onValueCommit={([v]) => onGridColsChange(v)}
-        />
-      </div>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.grid.rows")}</Label>
-          <span className={valueBadgeClassName}>{gridRows}</span>
-        </div>
-        <DebouncedSlider
-          value={[gridRows]}
-          min={1}
-          max={13}
-          step={1}
-          onValueCommit={([v]) => onGridRowsChange(v)}
-        />
-      </div>
+      <EditableSlider
+        label={t("settings.grid.columns")}
+        inputAriaLabel={t("settings.grid.columns")}
+        value={[gridCols]}
+        defaultValue={[4]}
+        min={1}
+        max={13}
+        step={1}
+        onValueCommit={([v]) => onGridColsChange(v)}
+        labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+        valueClassName={valueBadgeClassName}
+      />
+      <EditableSlider
+        label={t("settings.grid.rows")}
+        inputAriaLabel={t("settings.grid.rows")}
+        value={[gridRows]}
+        defaultValue={[5]}
+        min={1}
+        max={13}
+        step={1}
+        onValueCommit={([v]) => onGridRowsChange(v)}
+        labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+        valueClassName={valueBadgeClassName}
+      />
       <hr />
-      <div className="mt-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.grid.gutterMultiple")}</Label>
-          <span className={valueBadgeClassName}>
-            {gutterMultiple}×
-          </span>
-        </div>
-        <DebouncedSlider
-          value={[gutterMultiple]}
-          min={GUTTER_MULTIPLE_RANGE.min}
-          max={GUTTER_MULTIPLE_RANGE.max}
-          step={GUTTER_MULTIPLE_RANGE.step}
-          onValueCommit={([v]) => onGutterMultipleChange(v)}
-          onThumbDoubleClick={() => onGutterMultipleChange(1)}
-        />
-      </div>
+      <EditableSlider
+        containerClassName="mt-5"
+        label={t("settings.grid.gutterMultiple")}
+        inputAriaLabel={t("settings.grid.gutterMultiple")}
+        value={[gutterMultiple]}
+        defaultValue={[1]}
+        min={GUTTER_MULTIPLE_RANGE.min}
+        max={GUTTER_MULTIPLE_RANGE.max}
+        step={GUTTER_MULTIPLE_RANGE.step}
+        onValueCommit={([v]) => onGutterMultipleChange(v)}
+        formatValue={(value) => `${value}×`}
+        labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+        valueClassName={valueBadgeClassName}
+      />
     </PanelCard>
   )
 })

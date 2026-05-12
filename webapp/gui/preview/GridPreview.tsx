@@ -31,9 +31,13 @@ import {
   PREVIEW_TOUCH_CANCEL_DISTANCE_PX,
   PREVIEW_TOUCH_LONG_PRESS_MS,
 } from "@/gui/preview/lib/preview-interaction-constants"
+import { clampRotation, hasSignificantRotation } from "@/core/layout/block-constraints"
 import { buildSmartTextZoomGeometrySignature } from "@/gui/preview/lib/preview-smart-text-zoom"
 import { getPreviewTextGuideBounds, getPreviewTextGuideRects } from "@/gui/preview/lib/preview-guide-rect"
-import { isPointWithinRect } from "@/gui/preview/lib/preview-hover-affordance"
+import {
+  isPointWithinRect,
+  resolvePreviewResizeHandleHitRect,
+} from "@/gui/preview/lib/preview-hover-affordance"
 import { removeTextLayerFromCollections } from "@/gui/preview/lib/preview-layer-state"
 import {
   clampTextBlockPosition,
@@ -47,6 +51,12 @@ import {
   type TextStyleTransferSnapshot,
 } from "@/gui/preview/lib/preview-text-style-transfer"
 import { resolveTextCopyAffordanceAction } from "@/gui/preview/lib/preview-copy-affordance"
+import {
+  resolveLayerResizeGeometry,
+  resolveLayerResizePreviewGuideRects,
+  resolveLayerResizeRect,
+  type PreviewLayerResizeGeometry,
+} from "@/gui/preview/lib/preview-text-resize"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
 import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
 import { findNearestAxisIndex } from "@/core/layout/grid-rhythm"
@@ -59,6 +69,7 @@ import {
 } from "@/gui/preview/lib/preview-types"
 import { PREVIEW_STYLE_OPTIONS, formatPtSize, getDummyTextForStyle } from "@/gui/preview/lib/preview-text-config"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
+import type { TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-primitives"
 import { getDefaultColumnSpan } from "@/core/layout/text-layout"
 import {
   CURRENT_LAYOUT_ENGINE_CONTRACT,
@@ -123,6 +134,41 @@ type HeldPreviewFrame = {
   widthPx: number
   heightPx: number
   visible: boolean
+}
+
+type LayerResizeKind = "text" | "image"
+
+type ParagraphRolloverControlPatch = Partial<{
+  align: TextAlignMode
+  verticalAlign: TextVerticalAlignMode
+  rotation: number
+  reflow: boolean
+  hyphenation: boolean
+  snapX: boolean
+  snapY: boolean
+}>
+
+type ImageRolloverControlPatch = Partial<{
+  rotation: number
+  snapX: boolean
+  snapY: boolean
+}>
+
+type LayerResizePreviewState = {
+  kind: LayerResizeKind
+  key: BlockId
+  rect: BlockRect
+  guideRects: BlockRect[]
+  geometry: PreviewLayerResizeGeometry
+}
+
+function isSameLayerResizeGeometry(
+  a: PreviewLayerResizeGeometry,
+  b: PreviewLayerResizeGeometry,
+): boolean {
+  return a.columns === b.columns
+    && a.rows === b.rows
+    && a.heightBaselines === b.heightBaselines
 }
 
 function unionRects(rects: BlockRect[]): BlockRect | null {
@@ -313,6 +359,7 @@ export const GridPreview = memo(function GridPreview({
   const lastAppliedLayerLockRequestKeyRef = useRef(0)
   const suppressReflowCheckRef = useRef(false)
   const dragEndedAtRef = useRef(0)
+  const rolloverControlHistoryKeyRef = useRef<BlockId | null>(null)
   const layoutEmissionFrameRef = useRef<number | null>(null)
   const typographyBufferRef = useRef<HTMLCanvasElement | null>(null)
   const previousPlansRef = useRef<Map<BlockId, BlockRenderPlan<BlockId>>>(new Map())
@@ -325,6 +372,7 @@ export const GridPreview = memo(function GridPreview({
   const [hoverState, setHoverState] = useState<PreviewHoverState<BlockId> | null>(null)
   const [hoverImageKey, setHoverImageKey] = useState<BlockId | null>(null)
   const [hoverCopyIntent, setHoverCopyIntent] = useState(false)
+  const [layerResizePreview, setLayerResizePreview] = useState<LayerResizePreviewState | null>(null)
   const [pendingTextStyleTransfer, setPendingTextStyleTransfer] = useState<PendingTextStyleTransfer | null>(null)
   const [pendingLayerDuplicate, setPendingLayerDuplicate] = useState<PendingLayerDuplicate | null>(null)
   const [layoutEmissionEnabled, setLayoutEmissionEnabled] = useState(initialLayoutToken === 0)
@@ -824,6 +872,18 @@ export const GridPreview = memo(function GridPreview({
     () => Math.max(1, Math.round(result.module.height / Math.max(0.0001, result.grid.gridUnit))),
     [result.grid.gridUnit, result.module.height],
   )
+  const overlayGridColumnRightEdgesCss = useMemo(() => {
+    const metrics = getGridMetrics()
+    const rightEdges: number[] = []
+    metrics.moduleWidths.forEach((moduleWidth, index) => {
+      const start = metrics.contentLeft + (metrics.colStarts[index] ?? 0) * scale
+      const end = start + moduleWidth * scale
+      if (Number.isFinite(end)) rightEdges.push(end)
+    })
+    return Array.from(new Set(rightEdges.map((edge) => Math.round(edge * 1000) / 1000)))
+      .filter((edge) => edge >= 0 && edge <= result.pageSizePt.width * scale)
+      .sort((a, b) => a - b)
+  }, [getGridMetrics, result.pageSizePt.width, scale])
   const freeColumnNudgeStep = useMemo(
     () => 1 / (baselinesPerGridModule * FREE_AXIS_NUDGE_DIVISOR),
     [baselinesPerGridModule],
@@ -1029,6 +1089,9 @@ export const GridPreview = memo(function GridPreview({
     shouldKeepEditorsOpenForPointerDown: (event: PointerEvent) => {
       const target = event.target
       if (target instanceof HTMLElement && target.closest("[data-preview-header-action]")) {
+        return true
+      }
+      if (target instanceof HTMLElement && target.closest("[data-preview-edit-affordance='true']")) {
         return true
       }
       if (!(target instanceof HTMLCanvasElement) && !(target instanceof HTMLElement && target.closest("canvas"))) {
@@ -1489,6 +1552,340 @@ export const GridPreview = memo(function GridPreview({
     setLockedLayers,
   ])
 
+  const getResizeStartRow = useCallback((kind: LayerResizeKind, key: BlockId) => {
+    const metrics = getGridMetrics()
+    const position = kind === "image" ? imageModulePositions[key] : blockModulePositions[key]
+    if (position) {
+      return findNearestAxisIndex(metrics.rowStartBaselines, position.row)
+    }
+    const rect = kind === "image" ? imageRectsRef.current[key] : blockRectsRef.current[key]
+    if (!rect) return 0
+    return metrics.getNearestRowIndex(rect.y)
+  }, [blockModulePositions, getGridMetrics, imageModulePositions])
+
+  const getResizeStartColumn = useCallback((kind: LayerResizeKind, key: BlockId) => {
+    const metrics = getGridMetrics()
+    const position = kind === "image" ? imageModulePositions[key] : blockModulePositions[key]
+    if (position) return Math.round(position.col)
+    const rect = kind === "image" ? imageRectsRef.current[key] : blockRectsRef.current[key]
+    if (!rect) return 0
+    return metrics.getNearestCol(rect.x)
+  }, [blockModulePositions, getGridMetrics, imageModulePositions])
+
+  const getCurrentLayerResizeGeometry = useCallback((kind: LayerResizeKind, key: BlockId) => {
+    if (kind === "image") {
+      if (imageEditorState?.target === key) {
+        return {
+          columns: imageEditorState.draftColumns,
+          rows: imageEditorState.draftRows,
+          heightBaselines: imageEditorState.draftHeightBaselines,
+        }
+      }
+      return {
+        columns: getImageSpan(key),
+        rows: getImageRows(key),
+        heightBaselines: getImageHeightBaselines(key),
+      }
+    }
+
+    if (editorState?.target === key) {
+      return {
+        columns: editorState.draftColumns,
+        rows: editorState.draftRows,
+        heightBaselines: editorState.draftHeightBaselines,
+      }
+    }
+    return {
+      columns: getBlockSpan(key),
+      rows: getBlockRows(key),
+      heightBaselines: getBlockHeightBaselines(key),
+    }
+  }, [
+    editorState?.draftColumns,
+    editorState?.draftHeightBaselines,
+    editorState?.draftRows,
+    editorState?.target,
+    getBlockHeightBaselines,
+    getBlockRows,
+    getBlockSpan,
+    getImageHeightBaselines,
+    getImageRows,
+    getImageSpan,
+    imageEditorState?.draftColumns,
+    imageEditorState?.draftHeightBaselines,
+    imageEditorState?.draftRows,
+    imageEditorState?.target,
+  ])
+
+  const resolveLayerResizePreviewState = useCallback((args: {
+    kind: LayerResizeKind
+    key: BlockId
+    startColumn: number
+    startRow: number
+    pageX: number
+    pageY: number
+    baselineMode: boolean
+  }): LayerResizePreviewState | null => {
+    const pagePoint = { x: args.pageX, y: args.pageY }
+    if (!Number.isFinite(pagePoint.x) || !Number.isFinite(pagePoint.y)) return null
+    const metrics = getGridMetrics()
+    const resizeMetrics = {
+      contentLeft: metrics.contentLeft,
+      contentTop: metrics.contentTop,
+      gridCols: metrics.gridCols,
+      gridRows: metrics.gridRows,
+      moduleWidths: metrics.moduleWidths,
+      moduleHeights: metrics.moduleHeights,
+      colStarts: metrics.colStarts,
+      rowStarts: metrics.rowStarts,
+      scale,
+      baselineStep: metrics.baselineStep,
+    }
+    const geometry = resolveLayerResizeGeometry({
+      metrics: resizeMetrics,
+      startColumn: args.startColumn,
+      startRow: args.startRow,
+      pageX: pagePoint.x,
+      pageY: pagePoint.y,
+      baselineMode: args.baselineMode,
+      maxHeightBaselines: baselinesPerGridModule,
+    })
+    const rect = resolveLayerResizeRect({
+      metrics: resizeMetrics,
+      startColumn: args.startColumn,
+      startRow: args.startRow,
+      geometry,
+    })
+    const columnReflowActive = args.kind === "text" && geometry.columns > 1 && (
+      editorState?.target === args.key
+        ? editorState.draftReflow
+        : isTextReflowEnabled(args.key)
+    )
+    return {
+      kind: args.kind,
+      key: args.key,
+      rect,
+      guideRects: resolveLayerResizePreviewGuideRects({
+        metrics: resizeMetrics,
+        startColumn: args.startColumn,
+        rect,
+        columns: geometry.columns,
+        columnReflowActive,
+      }),
+      geometry,
+    }
+  }, [
+    baselinesPerGridModule,
+    editorState?.draftReflow,
+    editorState?.target,
+    getGridMetrics,
+    isTextReflowEnabled,
+    scale,
+  ])
+
+  const applyLayerResizeGeometry = useCallback((kind: LayerResizeKind, key: BlockId, geometry: {
+    columns: number
+    rows: number
+    heightBaselines: number
+  }) => {
+    const nextColumns = Math.max(1, Math.min(result.settings.gridCols, Math.round(geometry.columns)))
+    const nextRows = Math.max(0, Math.min(result.settings.gridRows, Math.round(geometry.rows)))
+    const nextHeightBaselines = Math.max(0, Math.min(baselinesPerGridModule, Math.round(geometry.heightBaselines)))
+
+    if (kind === "image") {
+      if (imageEditorState?.target === key) {
+        setImageEditorState((prev) => {
+          if (!prev || prev.target !== key) return prev
+          if (
+            prev.draftColumns === nextColumns
+            && prev.draftRows === nextRows
+            && prev.draftHeightBaselines === nextHeightBaselines
+          ) {
+            return prev
+          }
+          return {
+            ...prev,
+            draftColumns: nextColumns,
+            draftRows: nextRows,
+            draftHeightBaselines: nextHeightBaselines,
+          }
+        })
+        return
+      }
+
+      setImageColumnSpans((prev) => (
+        prev[key] === nextColumns ? prev : { ...prev, [key]: nextColumns }
+      ))
+      setImageRowSpans((prev) => (
+        prev[key] === nextRows ? prev : { ...prev, [key]: nextRows }
+      ))
+      setImageHeightBaselines((prev) => (
+        prev[key] === nextHeightBaselines ? prev : { ...prev, [key]: nextHeightBaselines }
+      ))
+      return
+    }
+
+    if (editorState?.target === key) {
+      setEditorState((prev) => {
+        if (!prev || prev.target !== key) return prev
+        if (
+          prev.draftColumns === nextColumns
+          && prev.draftRows === nextRows
+          && prev.draftHeightBaselines === nextHeightBaselines
+        ) {
+          return prev
+        }
+        return {
+          ...prev,
+          draftColumns: nextColumns,
+          draftRows: nextRows,
+          draftHeightBaselines: nextHeightBaselines,
+          draftReflow: nextColumns > 1 ? prev.draftReflow : false,
+        }
+      })
+      return
+    }
+
+    setBlockCollections((current) => {
+      const currentColumns = current.blockColumnSpans[key] ?? getDefaultColumnSpan(key, result.settings.gridCols)
+      const currentRows = current.blockRowSpans[key] ?? getBlockRows(key)
+      const currentHeightBaselines = current.blockHeightBaselines[key] ?? getBlockHeightBaselines(key)
+      if (
+        currentColumns === nextColumns
+        && currentRows === nextRows
+        && currentHeightBaselines === nextHeightBaselines
+      ) {
+        return current
+      }
+
+      return {
+        ...current,
+        blockColumnSpans: {
+          ...current.blockColumnSpans,
+          [key]: nextColumns,
+        },
+        blockRowSpans: {
+          ...current.blockRowSpans,
+          [key]: nextRows,
+        },
+        blockHeightBaselines: {
+          ...current.blockHeightBaselines,
+          [key]: nextHeightBaselines,
+        },
+        blockTextReflow: nextColumns > 1
+          ? current.blockTextReflow
+          : {
+              ...current.blockTextReflow,
+              [key]: false,
+            },
+      }
+    })
+  }, [
+    baselinesPerGridModule,
+    editorState?.target,
+    getBlockHeightBaselines,
+    getBlockRows,
+    imageEditorState?.target,
+    result.settings.gridCols,
+    result.settings.gridRows,
+    setBlockCollections,
+    setEditorState,
+    setImageColumnSpans,
+    setImageEditorState,
+    setImageHeightBaselines,
+    setImageRowSpans,
+  ])
+
+  const handleLayerResizeHandlePointerDown = useCallback((
+    kind: LayerResizeKind,
+    key: BlockId,
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) => {
+    if (isLayerLocked(key)) return
+    const startPoint = toPagePointFromClient(event.clientX, event.clientY)
+    if (!startPoint) return
+    event.preventDefault()
+    event.stopPropagation()
+    onSelectLayer?.(key)
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // Ignore unsupported pointer-capture failures.
+    }
+
+    const startColumn = getResizeStartColumn(kind, key)
+    const startRow = getResizeStartRow(kind, key)
+    const initialGeometry = getCurrentLayerResizeGeometry(kind, key)
+    let lastGeometry = initialGeometry
+
+    const updatePreviewFromPointer = (clientX: number, clientY: number, baselineMode: boolean) => {
+      const pagePoint = toPagePointFromClient(clientX, clientY)
+      if (!pagePoint) return null
+      const nextPreview = resolveLayerResizePreviewState({
+        kind,
+        key,
+        startColumn,
+        startRow,
+        pageX: pagePoint.x,
+        pageY: pagePoint.y,
+        baselineMode,
+      })
+      if (!nextPreview) return null
+      lastGeometry = nextPreview.geometry
+      setLayerResizePreview((current) => {
+        if (
+          current?.kind === nextPreview.kind
+          && current.key === nextPreview.key
+          && isSameLayerResizeGeometry(current.geometry, nextPreview.geometry)
+        ) {
+          return current
+        }
+        return nextPreview
+      })
+      return nextPreview.geometry
+    }
+
+    const cleanupResizeListeners = () => {
+      window.removeEventListener("pointermove", handlePointerMove)
+      window.removeEventListener("pointerup", handlePointerUp)
+      window.removeEventListener("pointercancel", handlePointerCancel)
+    }
+
+    const commitResize = (geometry: PreviewLayerResizeGeometry) => {
+      setLayerResizePreview((current) => (current?.kind === kind && current.key === key ? null : current))
+      if (isSameLayerResizeGeometry(geometry, initialGeometry)) return
+      recordHistoryBeforeChange()
+      applyLayerResizeGeometry(kind, key, geometry)
+    }
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      updatePreviewFromPointer(moveEvent.clientX, moveEvent.clientY, moveEvent.shiftKey)
+    }
+    const handlePointerUp = (upEvent: PointerEvent) => {
+      const finalGeometry = updatePreviewFromPointer(upEvent.clientX, upEvent.clientY, upEvent.shiftKey) ?? lastGeometry
+      cleanupResizeListeners()
+      commitResize(finalGeometry)
+    }
+    const handlePointerCancel = () => {
+      cleanupResizeListeners()
+      setLayerResizePreview((current) => (current?.kind === kind && current.key === key ? null : current))
+    }
+
+    window.addEventListener("pointermove", handlePointerMove)
+    window.addEventListener("pointerup", handlePointerUp)
+    window.addEventListener("pointercancel", handlePointerCancel)
+  }, [
+    applyLayerResizeGeometry,
+    getCurrentLayerResizeGeometry,
+    getResizeStartColumn,
+    getResizeStartRow,
+    isLayerLocked,
+    onSelectLayer,
+    recordHistoryBeforeChange,
+    resolveLayerResizePreviewState,
+    toPagePointFromClient,
+  ])
+
   const activeHoveredLayerKey = hoverState?.key ?? hoverImageKey ?? null
   const activeHoveredLayerLocked = activeHoveredLayerKey ? isLayerLocked(activeHoveredLayerKey) : false
 
@@ -1519,6 +1916,17 @@ export const GridPreview = memo(function GridPreview({
         return true
       }
       return isPointWithinRect(pageX, pageY, blockRectsRef.current[key] ?? null)
+    },
+    isPointWithinHoverAffordanceTarget: (key, pageX, pageY) => {
+      const targetRect = isImagePlaceholderKey(key)
+        ? imageRectsRef.current[key] ?? null
+        : (() => {
+            const plan = previousPlansRef.current.get(key)
+            return plan ? getPreviewTextGuideBounds(plan) : blockRectsRef.current[key] ?? null
+          })()
+      return targetRect
+        ? isPointWithinRect(pageX, pageY, resolvePreviewResizeHandleHitRect({ targetRect }))
+        : false
     },
     toPagePointFromClient,
   })
@@ -1570,6 +1978,7 @@ export const GridPreview = memo(function GridPreview({
     imageRectsRef.current = {} as Record<BlockId, BlockRect>
     previousPlansRef.current.clear()
     setOverflowLinesByBlock({})
+    setLayerResizePreview(null)
   }, [blockRectsRef, imageRectsRef, previewSurfaceSignature, previousPlansRef, showHeldPreviewFrame])
 
   useLayoutEffect(() => {
@@ -1786,8 +2195,19 @@ export const GridPreview = memo(function GridPreview({
     pixelRatio,
   })
 
-  const hoveredTextPlan = hoverState?.key ? previousPlansRef.current.get(hoverState.key) ?? null : null
-  const hoveredTextRect = hoverState?.key ? blockRectsRef.current[hoverState.key] ?? null : null
+  const activeTextResizePreview = layerResizePreview?.kind === "text"
+    && (hoverState?.key === layerResizePreview.key || selectedLayerKey === layerResizePreview.key)
+    ? layerResizePreview
+    : null
+  const activeImageResizePreview = layerResizePreview?.kind === "image"
+    && (hoverImageKey === layerResizePreview.key || selectedLayerKey === layerResizePreview.key)
+    ? layerResizePreview
+    : null
+  const hoveredTextPlan = !activeTextResizePreview && hoverState?.key
+    ? previousPlansRef.current.get(hoverState.key) ?? null
+    : null
+  const hoveredTextRect = activeTextResizePreview?.rect
+    ?? (hoverState?.key ? blockRectsRef.current[hoverState.key] ?? null : null)
   const linkedHoveredTextPlan = !hoverState?.key && hoveredLayerKey
     ? previousPlansRef.current.get(hoveredLayerKey) ?? null
     : null
@@ -1795,19 +2215,60 @@ export const GridPreview = memo(function GridPreview({
     ? imageRectsRef.current[hoveredLayerKey] ?? null
     : null
   const hoveredTextGuideRects = useMemo(() => {
+    if (activeTextResizePreview) return activeTextResizePreview.guideRects
     if (hoveredTextPlan) return getPreviewTextGuideRects(hoveredTextPlan)
     if (linkedHoveredTextPlan) return getPreviewTextGuideRects(linkedHoveredTextPlan)
     return hoveredTextRect ? [hoveredTextRect] : []
-  }, [hoveredTextPlan, hoveredTextRect, linkedHoveredTextPlan])
-  const hoveredTextGuideRect = hoveredTextPlan
+  }, [activeTextResizePreview, hoveredTextPlan, hoveredTextRect, linkedHoveredTextPlan])
+  const hoveredTextGuideRect = activeTextResizePreview
+    ? activeTextResizePreview.rect
+    : hoveredTextPlan
     ? getPreviewTextGuideBounds(hoveredTextPlan)
     : linkedHoveredTextPlan
       ? getPreviewTextGuideBounds(linkedHoveredTextPlan)
       : hoveredTextRect
-  const hoveredTextGuidePlan = hoveredTextPlan ?? linkedHoveredTextPlan
-  const hoveredImageRect = hoverImageKey
-    ? imageRectsRef.current[hoverImageKey] ?? null
-    : linkedHoveredImageRect
+  const hoveredTextGuidePlan = activeTextResizePreview ? null : hoveredTextPlan ?? linkedHoveredTextPlan
+  const hoveredTextControls = useMemo(() => {
+    const key = hoverState?.key
+    if (!key) return null
+    return {
+      align: blockTextAlignments[key] ?? "left",
+      verticalAlign: blockVerticalAlignments[key] ?? "top",
+      rotation: getBlockRotation(key),
+      reflow: isTextReflowEnabled(key),
+      reflowDisabled: getBlockSpan(key) <= 1,
+      hyphenation: isSyllableDivisionEnabled(key),
+      snapX: isSnapToColumnsEnabled(key),
+      snapY: isSnapToBaselineEnabled(key),
+    }
+  }, [
+    blockTextAlignments,
+    blockVerticalAlignments,
+    getBlockRotation,
+    getBlockSpan,
+    hoverState?.key,
+    isSnapToBaselineEnabled,
+    isSnapToColumnsEnabled,
+    isSyllableDivisionEnabled,
+    isTextReflowEnabled,
+  ])
+  const hoveredImageRect = activeImageResizePreview?.rect
+    ?? (hoverImageKey
+      ? imageRectsRef.current[hoverImageKey] ?? null
+      : linkedHoveredImageRect)
+  const hoveredImageControls = useMemo(() => {
+    if (!hoverImageKey) return null
+    return {
+      rotation: getImageRotation(hoverImageKey),
+      snapX: isImageSnapToColumnsEnabled(hoverImageKey),
+      snapY: isImageSnapToBaselineEnabled(hoverImageKey),
+    }
+  }, [
+    getImageRotation,
+    hoverImageKey,
+    isImageSnapToBaselineEnabled,
+    isImageSnapToColumnsEnabled,
+  ])
   usePreviewOverlayCanvas({
     overlayCanvasRef,
     blockRectsRef,
@@ -1938,6 +2399,220 @@ export const GridPreview = memo(function GridPreview({
     setImageSnapToColumns,
     setLockedLayers,
     setLayerOrder,
+  ])
+
+  const handleParagraphRolloverControlStart = useCallback((key: BlockId) => {
+    if (isLayerLocked(key) || isImagePlaceholderKey(key)) return
+    if (rolloverControlHistoryKeyRef.current === key) return
+    recordHistoryBeforeChange()
+    rolloverControlHistoryKeyRef.current = key
+  }, [isImagePlaceholderKey, isLayerLocked, recordHistoryBeforeChange])
+
+  const handleParagraphRolloverControlEnd = useCallback(() => {
+    rolloverControlHistoryKeyRef.current = null
+  }, [])
+
+  const handleParagraphRolloverControlChange = useCallback((
+    key: BlockId,
+    patch: ParagraphRolloverControlPatch,
+  ) => {
+    if (isLayerLocked(key) || isImagePlaceholderKey(key)) return
+    const nextRotation = patch.rotation === undefined
+      ? undefined
+      : clampRotation(patch.rotation)
+    const nextReflow = patch.reflow === undefined
+      ? undefined
+      : patch.reflow && getBlockSpan(key) > 1
+    const hasChange = (
+      (patch.align !== undefined && patch.align !== (blockTextAlignments[key] ?? "left"))
+      || (patch.verticalAlign !== undefined && patch.verticalAlign !== (blockVerticalAlignments[key] ?? "top"))
+      || (nextRotation !== undefined && Math.abs(nextRotation - getBlockRotation(key)) >= 0.0001)
+      || (nextReflow !== undefined && nextReflow !== isTextReflowEnabled(key))
+      || (patch.hyphenation !== undefined && patch.hyphenation !== isSyllableDivisionEnabled(key))
+      || (patch.snapX !== undefined && patch.snapX !== isSnapToColumnsEnabled(key))
+      || (patch.snapY !== undefined && patch.snapY !== isSnapToBaselineEnabled(key))
+    )
+    if (!hasChange) return
+
+    if (rolloverControlHistoryKeyRef.current !== key) {
+      recordHistoryBeforeChange()
+      rolloverControlHistoryKeyRef.current = key
+    }
+
+    setBlockCollections((current) => {
+      let next = current
+      const ensureNext = () => {
+        if (next === current) next = { ...current }
+        return next
+      }
+      if (nextRotation !== undefined) {
+        const blockRotationsNext = { ...current.blockRotations }
+        if (hasSignificantRotation(nextRotation)) {
+          if (Math.abs((current.blockRotations[key] ?? 0) - nextRotation) >= 0.0001) {
+            blockRotationsNext[key] = nextRotation
+            ensureNext().blockRotations = blockRotationsNext
+          }
+        } else {
+          if (key in blockRotationsNext) {
+            delete blockRotationsNext[key]
+            ensureNext().blockRotations = blockRotationsNext
+          }
+        }
+      }
+      if (patch.align !== undefined) {
+        if ((current.blockTextAlignments[key] ?? "left") !== patch.align) {
+          ensureNext().blockTextAlignments = {
+            ...current.blockTextAlignments,
+            [key]: patch.align,
+          }
+        }
+      }
+      if (patch.verticalAlign !== undefined) {
+        if ((current.blockVerticalAlignments[key] ?? "top") !== patch.verticalAlign) {
+          ensureNext().blockVerticalAlignments = {
+            ...current.blockVerticalAlignments,
+            [key]: patch.verticalAlign,
+          }
+        }
+      }
+      if (nextReflow !== undefined) {
+        if (current.blockTextReflow[key] !== nextReflow) {
+          ensureNext().blockTextReflow = {
+            ...current.blockTextReflow,
+            [key]: nextReflow,
+          }
+        }
+      }
+      if (patch.hyphenation !== undefined) {
+        if (current.blockSyllableDivision[key] !== patch.hyphenation) {
+          ensureNext().blockSyllableDivision = {
+            ...current.blockSyllableDivision,
+            [key]: patch.hyphenation,
+          }
+        }
+      }
+      if (patch.snapX !== undefined) {
+        if (current.blockSnapToColumns[key] !== patch.snapX) {
+          ensureNext().blockSnapToColumns = {
+            ...current.blockSnapToColumns,
+            [key]: patch.snapX,
+          }
+        }
+      }
+      if (patch.snapY !== undefined) {
+        if (current.blockSnapToBaseline[key] !== patch.snapY) {
+          ensureNext().blockSnapToBaseline = {
+            ...current.blockSnapToBaseline,
+            [key]: patch.snapY,
+          }
+        }
+      }
+      return next
+    })
+  }, [
+    getBlockRotation,
+    getBlockSpan,
+    blockTextAlignments,
+    blockVerticalAlignments,
+    isImagePlaceholderKey,
+    isLayerLocked,
+    isSnapToBaselineEnabled,
+    isSnapToColumnsEnabled,
+    isSyllableDivisionEnabled,
+    isTextReflowEnabled,
+    recordHistoryBeforeChange,
+    setBlockCollections,
+  ])
+
+  const handleImageRolloverControlStart = useCallback((key: BlockId) => {
+    if (isLayerLocked(key) || !isImagePlaceholderKey(key)) return
+    if (rolloverControlHistoryKeyRef.current === key) return
+    recordHistoryBeforeChange()
+    rolloverControlHistoryKeyRef.current = key
+  }, [isImagePlaceholderKey, isLayerLocked, recordHistoryBeforeChange])
+
+  const handleImageRolloverControlEnd = useCallback(() => {
+    rolloverControlHistoryKeyRef.current = null
+  }, [])
+
+  const handleImageRolloverControlChange = useCallback((
+    key: BlockId,
+    patch: ImageRolloverControlPatch,
+  ) => {
+    if (isLayerLocked(key) || !isImagePlaceholderKey(key)) return
+    const nextRotation = patch.rotation === undefined
+      ? undefined
+      : clampRotation(patch.rotation)
+    const hasChange = (
+      (nextRotation !== undefined && Math.abs(nextRotation - getImageRotation(key)) >= 0.0001)
+      || (patch.snapX !== undefined && patch.snapX !== isImageSnapToColumnsEnabled(key))
+      || (patch.snapY !== undefined && patch.snapY !== isImageSnapToBaselineEnabled(key))
+    )
+    if (!hasChange) return
+
+    if (rolloverControlHistoryKeyRef.current !== key) {
+      recordHistoryBeforeChange()
+      rolloverControlHistoryKeyRef.current = key
+    }
+
+    if (nextRotation !== undefined) {
+      setImageRotations((prev) => {
+        const next = { ...prev }
+        if (hasSignificantRotation(nextRotation)) {
+          if (Math.abs((prev[key] ?? 0) - nextRotation) < 0.0001) return prev
+          next[key] = nextRotation
+          return next
+        }
+        if (next[key] === undefined) return prev
+        delete next[key]
+        return next
+      })
+    }
+    if (patch.snapX !== undefined) {
+      setImageSnapToColumns((prev) => (
+        prev[key] === patch.snapX ? prev : { ...prev, [key]: patch.snapX }
+      ))
+    }
+    if (patch.snapY !== undefined) {
+      setImageSnapToBaseline((prev) => (
+        prev[key] === patch.snapY ? prev : { ...prev, [key]: patch.snapY }
+      ))
+    }
+    if (patch.snapX !== undefined || patch.snapY !== undefined) {
+      setImageModulePositions((prev) => {
+        const current = prev[key]
+        if (!current) return prev
+        const metrics = getGridMetrics()
+        const snapToColumns = patch.snapX ?? isImageSnapToColumnsEnabled(key)
+        const snapToBaseline = patch.snapY ?? isImageSnapToBaselineEnabled(key)
+        const nextPosition = {
+          col: clampLayerColumn(snapToColumns ? Math.round(current.col) : current.col, {
+            span: getImageSpan(key),
+            gridCols: metrics.gridCols,
+            snapToColumns,
+          }),
+          row: clampFreePlacementRow(
+            snapToBaseline ? Math.round(current.row) : current.row,
+            metrics.maxBaselineRow,
+          ),
+        }
+        if (current.col === nextPosition.col && current.row === nextPosition.row) return prev
+        return { ...prev, [key]: nextPosition }
+      })
+    }
+  }, [
+    getGridMetrics,
+    getImageRotation,
+    getImageSpan,
+    isImagePlaceholderKey,
+    isImageSnapToBaselineEnabled,
+    isImageSnapToColumnsEnabled,
+    isLayerLocked,
+    recordHistoryBeforeChange,
+    setImageModulePositions,
+    setImageRotations,
+    setImageSnapToBaseline,
+    setImageSnapToColumns,
   ])
 
   const isEditorOpen = Boolean(editorState || imageEditorState)
@@ -2129,18 +2804,29 @@ export const GridPreview = memo(function GridPreview({
         pageWidthCss={pageWidthCss}
         pageHeightCss={pageHeightCss}
         pageRotation={rotation}
+        baselineStepCss={result.grid.gridUnit * scale}
+        gridColumnRightEdgesCss={overlayGridColumnRightEdgesCss}
         editorState={editorState}
         imageEditorState={imageEditorState}
         textEditorControls={textEditorControls}
         hoveredTextKey={hoverState?.key ?? null}
         hoveredTextRect={hoveredTextGuideRect}
+        hoveredTextControls={hoveredTextControls}
         hoveredImageKey={hoverImageKey}
         hoveredImageRect={hoveredImageRect}
+        hoveredImageControls={hoveredImageControls}
         hoveredLayerLocked={activeHoveredLayerLocked}
         onHoveredLayerLockToggle={handleHoveredLayerLockToggle}
         openTextEditor={openTextEditor}
         openImageEditor={openImageEditor}
         onCopyAffordanceActivate={handleCopyAffordanceActivate}
+        onLayerResizeHandlePointerDown={handleLayerResizeHandlePointerDown}
+        onParagraphRolloverControlStart={handleParagraphRolloverControlStart}
+        onParagraphRolloverControlChange={handleParagraphRolloverControlChange}
+        onParagraphRolloverControlEnd={handleParagraphRolloverControlEnd}
+        onImageRolloverControlStart={handleImageRolloverControlStart}
+        onImageRolloverControlChange={handleImageRolloverControlChange}
+        onImageRolloverControlEnd={handleImageRolloverControlEnd}
         deletePreviewTarget={deletePreviewTarget}
         clearHover={clearHover}
         setImageEditorState={setImageEditorState}

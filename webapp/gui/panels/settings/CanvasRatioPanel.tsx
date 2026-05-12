@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useState } from "react"
 import { RectangleHorizontal, RectangleVertical } from "lucide-react"
 import { Label } from "@/shared/ui/label"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
 import {
@@ -226,20 +226,21 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
           </div>
         </LabeledControlRow>
       </div>
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.rotation")}</Label>
-          <span className={valueBadgeClassName}>{rotation}°</span>
-        </div>
-        <DebouncedSlider
-          value={[rotation]}
-          min={-180}
-          max={180}
-          step={1}
-          onValueCommit={([v]) => onRotationChange(v)}
-          onThumbDoubleClick={() => onRotationChange(0)}
-        />
-      </div>
+      <EditableSlider
+        label={t("settings.canvas.rotation")}
+        inputAriaLabel={t("settings.canvas.rotation")}
+        value={[rotation]}
+        defaultValue={[0]}
+        min={-180}
+        max={180}
+        step={1}
+        shiftStep={5}
+        fibonacciStep
+        onValueCommit={([v]) => onRotationChange(v)}
+        formatValue={(value) => `${Math.round(value)}°`}
+        labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+        valueClassName={valueBadgeClassName}
+      />
     </PanelCard>
   )
 })

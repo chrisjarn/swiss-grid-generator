@@ -4,6 +4,7 @@ import type { SectionKey } from "@/core/types/workspace-ui-schema"
 import { useSettingsHelpNavigation } from "@/gui/panels/settings/help-navigation-context"
 import { ChevronUp } from "lucide-react"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
+import { SETTINGS_FINE_CHEVRON_ICON_CLASSNAME } from "@/gui/panels/settings/settings-panel-styles"
 import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
 
 type Props = {
@@ -69,7 +70,7 @@ export function PanelCard({
                 labelClassName={collapsed || interactionsDisabled ? SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME : ""}
                 actionIcon={(
                   <ChevronUp
-                    className={`h-2 w-2 transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}
+                    className={`${SETTINGS_FINE_CHEVRON_ICON_CLASSNAME} transition-transform ${collapsed ? "rotate-90" : "rotate-180"}`}
                     aria-hidden="true"
                   />
                 )}

@@ -4,6 +4,8 @@ import { SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-head
 
 export const SETTINGS_ROW_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} ${SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME} flex h-8 items-center text-left leading-none`
 export const SETTINGS_OPEN_LIST_LABEL_CLASSNAME = `${SECTION_HEADLINE_CLASSNAME} ${SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME} flex h-7 items-center text-left leading-none`
+export const SETTINGS_FINE_CHEVRON_ICON_CLASSNAME = "h-2 w-2 stroke-[1.5]"
+export const SETTINGS_FINE_ICON_CLASSNAME = "h-3 w-3 stroke-[1.5]"
 
 export function getSettingsControlClassName(isDarkMode: boolean, className = "") {
   return getNeutralFormControlClassName(
@@ -13,7 +15,7 @@ export function getSettingsControlClassName(isDarkMode: boolean, className = "")
 }
 
 export function getSettingsValueBadgeClassName(isDarkMode: boolean) {
-  return `rounded-sm px-1.5 py-0.5 text-xs font-mono ${
+  return `inline-flex min-w-max items-center justify-end whitespace-nowrap rounded-sm px-1.5 py-0.5 text-xs font-mono ${
     isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"
   }`
 }

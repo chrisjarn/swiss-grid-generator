@@ -1,6 +1,5 @@
 import { memo } from "react"
-import { Label } from "@/shared/ui/label"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
 import { useTranslation } from "@/lib/i18n"
 import {
@@ -29,6 +28,26 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
 }: Props) {
   const { t } = useTranslation()
   const valueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
+  const selectedBaselineIndex = availableBaselineOptions.indexOf(customBaseline) >= 0
+    ? availableBaselineOptions.indexOf(customBaseline)
+    : 0
+  const defaultBaselineIndex = availableBaselineOptions.indexOf(12) >= 0
+    ? availableBaselineOptions.indexOf(12)
+    : selectedBaselineIndex
+  const resolveBaselineOptionIndex = (value: string) => {
+    const parsed = Number(value.trim().replace(/\s+/g, "").replace(/,/g, "."))
+    if (!Number.isFinite(parsed)) return Number.NaN
+    let nearestIndex = 0
+    let nearestDistance = Number.POSITIVE_INFINITY
+    availableBaselineOptions.forEach((option, index) => {
+      const distance = Math.abs(option - parsed)
+      if (distance < nearestDistance) {
+        nearestIndex = index
+        nearestDistance = distance
+      }
+    })
+    return nearestIndex
+  }
 
   return (
     <PanelCard
@@ -42,26 +61,20 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
       isDarkMode={isDarkMode}
     >
       {availableBaselineOptions.length > 0 && (
-        <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.baseline.gridUnit")}</Label>
-          <span className={valueBadgeClassName}>
-            {customBaseline} pt
-          </span>
-          </div>
-          <DebouncedSlider
-            value={[
-              availableBaselineOptions.indexOf(customBaseline) >= 0
-                ? availableBaselineOptions.indexOf(customBaseline)
-                : 0,
-            ]}
-            min={0}
-            max={availableBaselineOptions.length - 1}
-            step={1}
-            onValueCommit={([v]) => onCustomBaselineChange(availableBaselineOptions[v])}
-            onThumbDoubleClick={() => onCustomBaselineChange(12)}
-          />
-        </div>
+        <EditableSlider
+          label={t("settings.baseline.gridUnit")}
+          inputAriaLabel={t("settings.baseline.gridUnit")}
+          value={[selectedBaselineIndex]}
+          defaultValue={[defaultBaselineIndex]}
+          min={0}
+          max={availableBaselineOptions.length - 1}
+          step={1}
+          onValueCommit={([v]) => onCustomBaselineChange(availableBaselineOptions[v])}
+          formatValue={(value) => `${availableBaselineOptions[value] ?? customBaseline} pt`}
+          parseValue={resolveBaselineOptionIndex}
+          labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+          valueClassName={valueBadgeClassName}
+        />
       )}
     </PanelCard>
   )

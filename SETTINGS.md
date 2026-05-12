@@ -81,6 +81,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - max: `180`
 - step: `1`
 - default: `0`
+- Rotation sliders use 5 degree steps while dragging with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops within the slider range.
 
 ### Baseline
 
@@ -264,8 +265,10 @@ The header renders a vertical-more menu directly after the account icon; the men
 - Image layer rows display a full-width color rectangle instead of the `Image Placeholder` label.
 - Hovering an active-page layer row mirrors the same active preview rollover/guides for that block.
 - Hovering an active-page layer row temporarily routes keyboard layer nudging to that hovered layer; leaving the row restores keyboard nudging to the selected layer.
-- Hovered text paragraphs in preview expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
-- Hovered image placeholders expose a `+` affordance for duplication.
+- Hovered text paragraphs and image placeholders expose a `>` controls affordance and a bottom-right resize handle. The controls submenu contains edit, duplicate, and delete actions. Paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls expose rotation, column snap, and baseline snap.
+- Rollover rotation uses the shared rotation slider behavior: `Shift` drags in 5 degree steps, and `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.
+- Paragraph duplicate still follows the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. The next click on a paragraph applies the copied settings, even across pages and loaded layouts.
+- Dragging the resize handle keeps the layer anchor fixed and snaps `Rows` and `Cols` to the modular grid; `Shift` + drag keeps column snapping but resolves height as `Rows + Baselines`. During drag, only the guide indicators and background preview update; paragraph text content reflows after release. Paragraph drag backgrounds are column-wise only when newspaper reflow is active; image placeholders use one full-frame background. The resize handle is fixed-size and remains inside the layer frame.
 - Dragging active-page layer rows changes z-index using a visible insertion marker between rows.
 - Single-clicking an active-page layer row selects that layer; double-clicking opens or retargets its editor.
 - Layer rows include a lock toggle to the left of delete. Clicking it locks or unlocks that layer; double-clicking applies the same lock state to every layer on the page. Locked layers stay visible in the stack and still show preview rollover guides and their unlock affordance, but editing, duplication, deletion, and movement stay disabled until unlocked.
@@ -517,8 +520,10 @@ Syllable division behavior:
 
 Drag behavior:
 - Default drag moves a paragraph.
-- Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. Click another paragraph to apply the copied settings, even across pages and loaded layouts.
-- Hovered image placeholders expose a `+` affordance for duplication.
+- Hovered text paragraphs and image placeholders expose a `>` controls affordance and a bottom-right resize handle. The controls submenu contains edit, duplicate, and delete actions. Paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls expose rotation, column snap, and baseline snap.
+- Rollover rotation uses the shared rotation slider behavior: `Shift` drags in 5 degree steps, and `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.
+- Paragraph duplicate still follows the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both. Click another paragraph to apply the copied settings, even across pages and loaded layouts.
+- Dragging the resize handle keeps the layer anchor fixed and snaps `Rows` and `Cols` to the modular grid; `Shift` + drag keeps column snapping but resolves height as `Rows + Baselines`. During drag, only the guide indicators and background preview update; paragraph text content reflows after release. Paragraph drag backgrounds are column-wise only when newspaper reflow is active; image placeholders use one full-frame background. The resize handle is fixed-size and remains inside the layer frame.
 - Paragraphs and image placeholders are stored as logical anchors: `{ column, row, baselineOffset }`.
 - Paragraphs and image placeholders also persist independent `Snap to Columns (X)` and `Snap to Baseline (Y)` flags. When either axis snap is off, the corresponding `column` and/or `baselineOffset` value may remain fractional while the logical row anchor stays stable.
 - With `Snap to Columns (X)` off, horizontal placement clamps symmetrically: one-column side-margin overhang remains available on both left and right.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "exportedAt": "2026-05-11T10:39:27.914Z",
+  "exportedAt": "2026-05-12T12:29:03.374Z",
   "title": "Swiss Grid Generator manual",
   "description": "swiss grid generator software manual",
   "author": "Swiss Grid Generator",
@@ -1680,7 +1680,7 @@
           "cover-title": "8.\nexport",
           "cover-step-1": "swiss grid generator - manual - page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "export is translation, not correction.",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "choose the export format according to what happens next. use PDF for faithful vector document output, SVG for frozen vector geometry per page, and IDML when the document continues in InDesign.\n\nbefore exporting, confirm page range, page order, numbering, document size, and editorial variables. on long documents or rotated pages, make a visual check after export.\n\nPDF, SVG, and IDML share the same deterministic page-planning path. the progress display reports preparation, page rendering, finalization, and elapsed time."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "choose the export format according to what happens next. use PDF for faithful vector document output, SVG for frozen vector geometry per page, and IDML when the document continues in InDesign.\n\nbefore exporting, confirm page range, page order, numbering, document size, and editorial variables. on long documents or rotated pages, make a visual check after export.\n\nPDF, SVG, and IDML share the same deterministic page-planning path. the progress display reports preparation, planning, page rendering, finalization, elapsed time, and the same progress log used by CLI export."
         },
         "blockTextEdited": {
           "cover-title": true,

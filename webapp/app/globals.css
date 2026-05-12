@@ -99,6 +99,27 @@
     background-color: transparent !important;
   }
 
+  button[data-preview-edit-affordance="true"][data-preview-icon-surface="true"]:has(svg),
+  button[data-preview-edit-affordance="true"][data-preview-icon-surface="true"]:has(svg):hover {
+    background-color: #e5e7eb !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  button[data-preview-edit-affordance="true"][data-preview-menu-control="true"]:has(svg),
+  button[data-preview-edit-affordance="true"][data-preview-menu-control="true"]:has(svg):hover {
+    background-color: #f3f4f6 !important;
+    border-color: #d1d5db !important;
+    box-shadow: none !important;
+  }
+
+  button[data-preview-edit-affordance="true"][data-preview-menu-control="true"][aria-pressed="true"]:has(svg),
+  button[data-preview-edit-affordance="true"][data-preview-menu-control="true"][aria-pressed="true"]:has(svg):hover {
+    background-color: rgba(253, 139, 123, 0.15) !important;
+    border-color: rgba(253, 139, 123, 0.7) !important;
+    color: #9d4039 !important;
+  }
+
   button[aria-pressed="true"]:has(svg),
   button[class*="text-white"]:has(svg) {
     color: var(--swiss-orange) !important;

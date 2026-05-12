@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { Label } from "@/shared/ui/label"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import { PanelCard } from "@/gui/panels/settings/PanelCard"
 import { translateMessage, useTranslation } from "@/lib/i18n"
 import {
@@ -136,41 +136,38 @@ export const MarginsPanel = memo(function MarginsPanel({
       {useCustomMargins ? (
         <div className="space-y-4 pt-1">
           {(["top", "left", "right"] as const).map((side) => (
-            <div key={side} className="space-y-3">
-              <div className="flex items-center justify-between">
-                <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{sideLabels[side]}</Label>
-                <span className={valueBadgeClassName}>
-                  {customMarginMultipliers[side]}×
-                </span>
-              </div>
-              <DebouncedSlider
-                value={[customMarginMultipliers[side]]}
-                min={1}
-                max={9}
-                step={1}
-                onValueCommit={([v]) =>
-                  onCustomMarginMultipliersChange({ ...customMarginMultipliers, [side]: v })
-                }
-              />
-            </div>
-          ))}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.margins.bottom")}</Label>
-              <span className={valueBadgeClassName}>
-                {customMarginMultipliers.bottom}×
-              </span>
-            </div>
-            <DebouncedSlider
-              value={[customMarginMultipliers.bottom]}
+            <EditableSlider
+              key={side}
+              label={sideLabels[side]}
+              inputAriaLabel={sideLabels[side]}
+              value={[customMarginMultipliers[side]]}
+              defaultValue={[1]}
               min={1}
               max={9}
               step={1}
               onValueCommit={([v]) =>
-                onCustomMarginMultipliersChange({ ...customMarginMultipliers, bottom: v })
+                onCustomMarginMultipliersChange({ ...customMarginMultipliers, [side]: v })
               }
+              formatValue={(value) => `${value}×`}
+              labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+              valueClassName={valueBadgeClassName}
             />
-          </div>
+          ))}
+          <EditableSlider
+            label={t("settings.margins.bottom")}
+            inputAriaLabel={t("settings.margins.bottom")}
+            value={[customMarginMultipliers.bottom]}
+            defaultValue={[1]}
+            min={1}
+            max={9}
+            step={1}
+            onValueCommit={([v]) =>
+              onCustomMarginMultipliersChange({ ...customMarginMultipliers, bottom: v })
+            }
+            formatValue={(value) => `${value}×`}
+            labelClassName={SETTINGS_ROW_LABEL_CLASSNAME}
+            valueClassName={valueBadgeClassName}
+          />
         </div>
       ) : null}
     </PanelCard>

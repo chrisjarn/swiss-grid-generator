@@ -34,8 +34,10 @@ Core editing and layout workflows.
 - Hold `1..5` while double-clicking empty space to choose the new paragraph hierarchy: `1 Caption`, `2 Body`, `3 Subhead`, `4 Headline`, `5 Display`. New hierarchy blocks start as Caption `1x1`, Body/Subhead `1x2`, Headline/Display `1x3`, clamped to the remaining columns from the clicked module.
 - Hover a layer to reveal edit access and placement guides.
 - Drag to move.
-- Hovered text paragraphs expose a `+` affordance: click to duplicate the paragraph, then click the target placement, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.
-- Hovered image placeholders expose a `+` affordance for duplication.
+- Hovered text paragraphs and image placeholders expose `>` controls and a bottom-right resize handle. The controls submenu contains edit, duplicate, and delete. Paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls expose rotation, column snap, and baseline snap.
+- Rotation sliders use 5 degree steps while dragging with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.
+- Paragraph duplicate follows the same placement path as dragging, even after switching pages. `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both onto another paragraph, even on a different page or after loading another layout.
+- Drag the bottom-right layer handle to resize rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the layer frame.
 - Preview visibility toggles control whether baselines, margins, modules, typography, and image placeholders are shown for the layout. The same project-level visibility state is used for export.
 - Locked layers still show preview rollover guides and their unlock affordance, but they cannot be moved, edited, duplicated, deleted, or retargeted until unlocked in the Project panel.
 - Arrow keys nudge the selected unlocked layer. Snapped axes move by the grid; unsnapped axes move in fine steps. `Shift` increases the unsnapped step and switches snapped Y to baseline movement.
@@ -57,6 +59,8 @@ Core editing and layout workflows.
 - Height is `rows + baselines`.
 - `Rows` may be `0` when `Baselines` is greater than `0`, so shallow editorial frames stay possible.
 - `Rows`, `Baselines`, and `Cols` preview on dropdown hover before commit.
+- Rotation uses 5 degree steps with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.
+- Drag the bottom-right paragraph handle to resize rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the paragraph frame.
 - `Snap to Columns (X)` locks to columns. Off allows free horizontal placement with controlled side overhang.
 - `Snap to Baseline (Y)` locks to the editorial Y system. Off allows free vertical placement.
 
@@ -95,6 +99,9 @@ Core editing and layout workflows.
 - Set rows, baselines, columns, X/Y snap, and rotation.
 - Height is `rows + baselines`.
 - `Rows`, `Baselines`, and `Cols` preview on dropdown hover before commit.
+- Hovered image placeholders expose `>` controls for edit, duplicate, delete, rotation, column snap, and baseline snap.
+- Rotation uses 5 degree steps with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.
+- Drag the bottom-right image placeholder handle to resize rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the placeholder frame.
 
 #### Color Section {#help-image-editor-color}
 - Set scheme, swatch color, and transparency.

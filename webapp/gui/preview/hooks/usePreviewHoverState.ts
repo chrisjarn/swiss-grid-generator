@@ -29,6 +29,7 @@ type Args<Key extends string> = {
   findTopmostBlockAtPoint: (pageX: number, pageY: number) => Key | null
   findTopmostImageAtPoint: (pageX: number, pageY: number) => Key | null
   isPointWithinHoverTarget: (key: Key, pageX: number, pageY: number) => boolean
+  isPointWithinHoverAffordanceTarget?: (key: Key, pageX: number, pageY: number) => boolean
   toPagePointFromClient: (clientX: number, clientY: number) => PagePoint | null
 }
 
@@ -47,6 +48,7 @@ export function usePreviewHoverState<Key extends string>({
   findTopmostBlockAtPoint,
   findTopmostImageAtPoint,
   isPointWithinHoverTarget,
+  isPointWithinHoverAffordanceTarget,
   toPagePointFromClient,
 }: Args<Key>) {
   const mouseMoveRafRef = useRef<number | null>(null)
@@ -81,6 +83,7 @@ export function usePreviewHoverState<Key extends string>({
       findTopmostBlockAtPoint,
       findTopmostImageAtPoint,
       isPointWithinHoverTarget,
+      isPointWithinHoverAffordanceTarget,
     })
 
     if (!nextHoverTarget) {
@@ -111,6 +114,7 @@ export function usePreviewHoverState<Key extends string>({
     findTopmostImageAtPoint,
     hoverImageKey,
     hoverState,
+    isPointWithinHoverAffordanceTarget,
     isPointWithinHoverTarget,
     setHoverCopyIntent,
     setHoverImageKey,

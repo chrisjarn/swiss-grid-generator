@@ -7,6 +7,12 @@ import { resolveNearestPreviewColumn } from "../../core/layout/preview-column-sn
 import { resolveTextCopyAffordanceAction } from "../../gui/preview/lib/preview-copy-affordance.ts"
 import { resolvePreviewHoverTarget } from "../../gui/preview/lib/preview-hover-target.ts"
 import {
+  resolvePreviewHoverDeleteActionLeft,
+  resolvePreviewParagraphMenuWidth,
+  resolvePreviewResizeHandleHitRect,
+  shouldUseCompactParagraphActions,
+} from "../../gui/preview/lib/preview-hover-affordance.ts"
+import {
   getPreviewTextGuideBounds,
   getPreviewTextGuideGeometry,
   getPreviewTextGuideRects,
@@ -142,6 +148,27 @@ test("topmost text target wins over the current overlapping paragraph", () => {
   assert.deepEqual(resolved, { kind: "text", key: "small-paragraph" })
 })
 
+test("current resize handle hit zone preserves the hovered paragraph over adjacent targets", () => {
+  const resolved = resolvePreviewHoverTarget({
+    pageX: 206,
+    pageY: 156,
+    currentTextKey: "marked-paragraph",
+    currentImageKey: null,
+    findTopmostBlockAtPoint: () => "right-paragraph",
+    findTopmostImageAtPoint: () => null,
+    isPointWithinHoverTarget: () => false,
+    isPointWithinHoverAffordanceTarget: (key, pageX, pageY) => (
+      key === "marked-paragraph"
+      && pageX >= 189
+      && pageX <= 211
+      && pageY >= 139
+      && pageY <= 161
+    ),
+  })
+
+  assert.deepEqual(resolved, { kind: "text", key: "marked-paragraph" })
+})
+
 test("current text target is preserved when nothing else resolves but the pointer is still inside it", () => {
   const resolved = resolvePreviewHoverTarget({
     pageX: 120,
@@ -154,6 +181,55 @@ test("current text target is preserved when nothing else resolves but the pointe
   })
 
   assert.deepEqual(resolved, { kind: "text", key: "paragraph" })
+})
+
+test("resize handle hit rect expands around the bottom-right frame corner", () => {
+  assert.deepEqual(
+    resolvePreviewResizeHandleHitRect({
+      targetRect: { x: 10, y: 20, width: 190, height: 130 },
+    }),
+    { x: 189, y: 139, width: 22, height: 22 },
+  )
+})
+
+test("paragraph rollover actions compact before four icons would collide", () => {
+  assert.equal(shouldUseCompactParagraphActions(99), true)
+  assert.equal(shouldUseCompactParagraphActions(100), false)
+})
+
+test("delete affordance accounts for the visible left action group", () => {
+  assert.equal(
+    resolvePreviewHoverDeleteActionLeft({ x: 0, y: 0, width: 130, height: 30 }, false, 3),
+    108,
+  )
+  assert.equal(
+    resolvePreviewHoverDeleteActionLeft({ x: 0, y: 0, width: 98, height: 30 }, false, 3),
+    78,
+  )
+})
+
+test("paragraph submenu width follows module edges inside the usable range", () => {
+  assert.equal(
+    resolvePreviewParagraphMenuWidth({
+      left: 100,
+      verticalEdges: [140, 292, 380],
+    }),
+    192,
+  )
+  assert.equal(
+    resolvePreviewParagraphMenuWidth({
+      left: 100,
+      verticalEdges: [120, 140],
+    }),
+    180,
+  )
+  assert.equal(
+    resolvePreviewParagraphMenuWidth({
+      left: 100,
+      verticalEdges: [380],
+    }),
+    240,
+  )
 })
 
 test("hover clears when no topmost or current target matches the pointer", () => {

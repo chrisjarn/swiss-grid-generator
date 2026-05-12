@@ -2,7 +2,12 @@ import type { BlockRect } from "@/gui/preview/lib/preview-types"
 
 const ACTION_BUTTON_SIZE = 22
 const ACTION_BUTTON_GAP = 4
-const ACTION_EDGE_INSET = 6
+const ACTION_EDGE_INSET = 0
+const RESIZE_HANDLE_SIZE = 10
+const RESIZE_HANDLE_HIT_PADDING = 6
+const PARAGRAPH_MENU_FALLBACK_WIDTH = 224
+const PARAGRAPH_MENU_MIN_WIDTH = 180
+const PARAGRAPH_MENU_MAX_WIDTH = 240
 
 export function isPointWithinRect(pageX: number, pageY: number, rect: BlockRect | null | undefined): boolean {
   if (!rect || rect.width <= 0 || rect.height <= 0) return false
@@ -74,8 +79,14 @@ export function resolvePreviewHoverPrimaryActionLeft(bandRect: BlockRect): numbe
   return bandRect.x + ACTION_EDGE_INSET
 }
 
-export function resolvePreviewHoverDeleteActionLeft(bandRect: BlockRect, locked: boolean): number {
-  const leftActionGroupWidth = ACTION_BUTTON_SIZE * 2 + ACTION_BUTTON_GAP
+export function resolvePreviewHoverDeleteActionLeft(
+  bandRect: BlockRect,
+  locked: boolean,
+  leftActionCount = 2,
+): number {
+  const safeLeftActionCount = Math.max(1, Math.round(leftActionCount))
+  const leftActionGroupWidth = ACTION_BUTTON_SIZE * safeLeftActionCount
+    + ACTION_BUTTON_GAP * Math.max(0, safeLeftActionCount - 1)
   if (locked) return bandRect.x + ACTION_EDGE_INSET
 
   const preferredLeft = bandRect.x + bandRect.width - ACTION_BUTTON_SIZE - ACTION_EDGE_INSET
@@ -87,4 +98,58 @@ export function resolvePreviewHoverDeleteActionLeft(bandRect: BlockRect, locked:
 
 export function resolvePreviewHoverActionTop(bandRect: BlockRect): number {
   return bandRect.y + ACTION_EDGE_INSET
+}
+
+export function resolvePreviewResizeHandleHitRect({
+  targetRect,
+}: {
+  targetRect: BlockRect
+}): BlockRect {
+  const hitSize = RESIZE_HANDLE_SIZE + RESIZE_HANDLE_HIT_PADDING * 2
+  return {
+    x: targetRect.x + targetRect.width - hitSize / 2,
+    y: targetRect.y + targetRect.height - hitSize / 2,
+    width: hitSize,
+    height: hitSize,
+  }
+}
+
+export function shouldUseCompactParagraphActions(targetWidth: number): boolean {
+  const fullActionWidth = ACTION_BUTTON_SIZE * 4
+    + ACTION_BUTTON_GAP * 3
+    + ACTION_EDGE_INSET * 2
+  return !Number.isFinite(targetWidth) || targetWidth < fullActionWidth
+}
+
+export function resolvePreviewParagraphMenuWidth({
+  left,
+  verticalEdges,
+  minWidth = PARAGRAPH_MENU_MIN_WIDTH,
+  maxWidth = PARAGRAPH_MENU_MAX_WIDTH,
+  fallbackWidth = PARAGRAPH_MENU_FALLBACK_WIDTH,
+}: {
+  left: number
+  verticalEdges: readonly number[]
+  minWidth?: number
+  maxWidth?: number
+  fallbackWidth?: number
+}): number {
+  const safeMin = Number.isFinite(minWidth) && minWidth > 0 ? minWidth : PARAGRAPH_MENU_MIN_WIDTH
+  const safeMax = Number.isFinite(maxWidth) && maxWidth >= safeMin ? maxWidth : Math.max(safeMin, PARAGRAPH_MENU_MAX_WIDTH)
+  const safeFallback = Math.min(
+    safeMax,
+    Math.max(safeMin, Number.isFinite(fallbackWidth) && fallbackWidth > 0 ? fallbackWidth : PARAGRAPH_MENU_FALLBACK_WIDTH),
+  )
+  if (!Number.isFinite(left)) return safeFallback
+
+  const distances = verticalEdges
+    .map((edge) => edge - left)
+    .filter((distance) => Number.isFinite(distance) && distance > 0.5)
+    .sort((a, b) => a - b)
+  const inRange = distances.find((distance) => distance >= safeMin && distance <= safeMax)
+  if (inRange !== undefined) return inRange
+  const wider = distances.find((distance) => distance > safeMax)
+  if (wider !== undefined) return safeMax
+  if (distances.length > 0) return safeMin
+  return safeFallback
 }

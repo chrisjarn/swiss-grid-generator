@@ -8,7 +8,7 @@ import { FontSelect } from "@/shared/ui/font-select"
 import { EditorColorSchemeControls } from "@/gui/editors/EditorColorSchemeControls"
 import { Label } from "@/shared/ui/label"
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import {
   Select,
   SelectItem,
@@ -737,6 +737,7 @@ export function TextEditorPanel<StyleKey extends string>({
   const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
   const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
+  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`
   const segmentButtonClassName = (active: boolean) => (
     `h-8 rounded-sm border px-3 text-xs ${active ? tone.buttonActive : tone.button}`
   )
@@ -922,32 +923,26 @@ export function TextEditorPanel<StyleKey extends string>({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className={sectionLabelClassName}>{t("editor.paragraph.rotation")}</Label>
-              <span className={`rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
-                {Math.round(controls.editorState.draftRotation)}°
-              </span>
-            </div>
-            <DebouncedSlider
-              value={[controls.editorState.draftRotation]}
-              min={-180}
-              max={180}
-              step={1}
-              onValueCommit={([value]) => {
-                controls.setEditorState((prev) => prev ? {
-                  ...prev,
-                  draftRotation: clampRotation(value),
-                } : prev)
-              }}
-              onThumbDoubleClick={() => {
-                controls.setEditorState((prev) => prev ? {
-                  ...prev,
-                  draftRotation: 0,
-                } : prev)
-              }}
-            />
-          </div>
+          <EditableSlider
+            label={t("editor.paragraph.rotation")}
+            inputAriaLabel={t("editor.paragraph.rotation")}
+            value={[controls.editorState.draftRotation]}
+            defaultValue={[0]}
+            min={-180}
+            max={180}
+            step={1}
+            shiftStep={5}
+            fibonacciStep
+            onValueCommit={([value]) => {
+              controls.setEditorState((prev) => prev ? {
+                ...prev,
+                draftRotation: clampRotation(value),
+              } : prev)
+            }}
+            formatValue={(value) => `${Math.round(value)}°`}
+            labelClassName={sectionLabelClassName}
+            valueClassName={sliderValueClassName}
+          />
 
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">

@@ -7,7 +7,7 @@ import { SidebarSectionScrollFrame } from "@/gui/panels/SidebarSectionScrollFram
 import { EditorColorSchemeControls } from "@/gui/editors/EditorColorSchemeControls"
 import { Label } from "@/shared/ui/label"
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
-import { DebouncedSlider } from "@/shared/ui/slider"
+import { EditableSlider } from "@/shared/ui/slider"
 import {
   Select,
   SelectItem,
@@ -246,6 +246,7 @@ export function ImageEditorDialog({
   const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
   const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
+  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`
   const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
   const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
   const infoRows = [
@@ -383,32 +384,26 @@ export function ImageEditorDialog({
           </div>
 
           <div className="mt-4 space-y-3">
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.rotation")}</Label>
-                <span className={`rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`}>
-                  {Math.round(editorState.draftRotation)}°
-                </span>
-              </div>
-              <DebouncedSlider
-                value={[editorState.draftRotation]}
-                min={-180}
-                max={180}
-                step={1}
-                onValueCommit={([value]) => {
-                  setEditorState((prev) => prev ? {
-                    ...prev,
-                    draftRotation: clampRotation(value),
-                  } : prev)
-                }}
-                onThumbDoubleClick={() => {
-                  setEditorState((prev) => prev ? {
-                    ...prev,
-                    draftRotation: 0,
-                  } : prev)
-                }}
-              />
-            </div>
+            <EditableSlider
+              label={t("editor.paragraph.rotation")}
+              inputAriaLabel={t("editor.paragraph.rotation")}
+              value={[editorState.draftRotation]}
+              defaultValue={[0]}
+              min={-180}
+              max={180}
+              step={1}
+              shiftStep={5}
+              fibonacciStep
+              onValueCommit={([value]) => {
+                setEditorState((prev) => prev ? {
+                  ...prev,
+                  draftRotation: clampRotation(value),
+                } : prev)
+              }}
+              formatValue={(value) => `${Math.round(value)}°`}
+              labelClassName={sectionLabelClassName}
+              valueClassName={sliderValueClassName}
+            />
 
             <div className="flex items-center justify-between gap-3">
               <div>

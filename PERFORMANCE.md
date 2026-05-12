@@ -160,6 +160,7 @@ Today's work stayed outside layout math and removed repeated preview/editor book
 - Keyboard nudging and image/text placement helpers stop allocating throwaway arrays around row/column axis lookups.
 - Opening, re-targeting, duplicating, and reusing large text paragraphs avoids some repeated tracking/format-run normalization work.
 - Page changes stop exposing intermediate image/layer state while the new page snapshot is still settling.
+- Paragraph and image-placeholder resize dragging updates only transient guide rectangles until release, so text wrapping and typography rendering are not recomputed for every pointer movement. Paragraph transient backgrounds split by column only for active newspaper reflow; image placeholders remain full-frame.
 
 ### Validation
 

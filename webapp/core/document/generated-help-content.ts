@@ -201,7 +201,11 @@ export const HELP_CONTENT_GROUPS = [
               "`shift` + double-click adds an image placeholder.",
               "hold `1..5` while double-clicking to set the new paragraph hierarchy: `1` caption, `2` body, `3` subhead, `4` headline, `5` display.",
               "hover a layer to reveal edit access and placement guides.",
+              "hovered paragraphs and image placeholders show `>` controls and a bottom-right resize handle.",
+              "controls contain edit, duplicate, and delete. paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. image controls expose rotation, column snap, and baseline snap.",
+              "rotation sliders use 5 degree steps while dragging with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
               "drag to place, then nudge with arrow keys.",
+              "drag the bottom-right layer handle to resize paragraph or image placeholder rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the layer frame.",
               "preview visibility toggles also control export visibility.",
               "locked layers show guides, but cannot be moved, edited, duplicated, deleted, or retargeted.",
               "`page up`, `page down`, `home`, and `end` navigate pages.",
@@ -241,6 +245,8 @@ export const HELP_CONTENT_GROUPS = [
                   "height is `rows + baselines`.",
                   "`rows` may be `0` when `baselines` is greater than `0`.",
                   "`rows`, `baselines`, and `cols` preview on hover before commit.",
+                  "rotation uses 5 degree steps with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
+                  "drag the bottom-right paragraph handle to resize rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the paragraph frame.",
                   "column snap locks x to column anchors.",
                   "baseline snap locks y to the editorial rhythm."
                 ]
@@ -337,7 +343,10 @@ export const HELP_CONTENT_GROUPS = [
                 "items": [
                   "set rows, baselines, columns, x/y snap, and rotation.",
                   "height is `rows + baselines`.",
-                  "`rows`, `baselines`, and `cols` preview on hover before commit."
+                  "`rows`, `baselines`, and `cols` preview on hover before commit.",
+                  "hovered image placeholders expose `>` controls for edit, duplicate, delete, rotation, column snap, and baseline snap.",
+                  "rotation uses 5 degree steps with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
+                  "drag the bottom-right image placeholder handle to resize rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the placeholder frame."
                 ]
               }
             ]
