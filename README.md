@@ -8,6 +8,29 @@ Implementation-accurate reference docs live in [SETTINGS.md](SETTINGS.md), [CALC
 
 [Try it live →](https://preview.swiss-grid-generator.com)
 
+## Quick Onboarding
+
+Record the current onboarding flow from the project root:
+
+```bash
+npm run record:poster
+```
+
+Output: [quick-onboarding-001.mp4](screencasts/quick-onboarding-001.mp4)
+
+The recording ends by opening the 1000-page performance fixture, selecting five pages, inspecting the Layers panel, exporting page 5 as PDF, and opening the resulting PDF in Chromium.
+
+The same command also writes reference screenshots:
+
+- [Presets browser](screencasts/quick-onboarding-presets-browser.png)
+- [Open layout, project panel off](screencasts/quick-onboarding-layout-project-panel-off.png)
+- [Ratio rollover, 1:1 square](screencasts/quick-onboarding-ratio-square-hover.png)
+- [Paragraph text edit submenu](screencasts/quick-onboarding-paragraph-submenu.png)
+- [Performance 1000 pages, pages panel open](screencasts/quick-onboarding-performance-pages-panel.png)
+- [Export popup, PDF active](screencasts/quick-onboarding-export-pdf-popup.png)
+
+The PDF export created during the run is [quick-onboarding-performance-page-0005.pdf](screencasts/quick-onboarding-performance-page-0005.pdf).
+
 ---
 
 ## ✨ Why Swiss Grid Generator?
@@ -21,17 +44,19 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 
 ## Screenshots
 
-### Web Application
-![Web App Screenshot 001](swiss-grid-generator-app-screenshot_001.png?002)
+![Presets browser](screencasts/quick-onboarding-presets-browser.png)
 
-![Web App Screenshot 002](swiss-grid-generator-app-screenshot_002.png?001)
+![Open layout, project panel off](screencasts/quick-onboarding-layout-project-panel-off.png)
 
-![Web App Screenshot 003](swiss-grid-generator-webapp-screenshot_001.png)
+![Ratio rollover, 1:1 square](screencasts/quick-onboarding-ratio-square-hover.png)
 
-### PDF Export
-![PDF Screenshot 001](swiss-grid-generator-pdfexport-screenshot_001.png?001)
+![Paragraph text edit submenu](screencasts/quick-onboarding-paragraph-submenu.png)
 
-![PDF Screenshot 002](swiss-grid-generator-pdfexport-screenshot_002.png?001)
+![Performance 1000 pages, pages panel open](screencasts/quick-onboarding-performance-pages-panel.png)
+
+![Export popup, PDF active](screencasts/quick-onboarding-export-pdf-popup.png)
+
+![PDF export screenshot 002](screencasts/archive/swiss-grid-generator-pdfexport-screenshot_002.png)
 
 ---
 

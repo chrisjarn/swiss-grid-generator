@@ -25,6 +25,8 @@ COMMIT_HISTORY.md
 node_modules/
 *.log
 *.tgz
+test-results/
+playwright-report/
 
 # Next.js
 .next/
@@ -48,5 +50,12 @@ __pycache__/
 *_grid.json
 *_grid.txt
 *_grid.pdf
+screencasts/*.mp4
+screencasts/*.webm
+screencasts/*.png
+screencasts/*.pdf
+!screencasts/quick-onboarding-001.mp4
+!screencasts/quick-onboarding-*.png
+!screencasts/quick-onboarding-performance-page-0005.pdf
 assets/
 webapp/tests/fixtures/performance-1000-pages-static-text.json

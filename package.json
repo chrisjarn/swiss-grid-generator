@@ -1,0 +1,15 @@
+{
+  "name": "swiss-grid-generator-e2e",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "record:poster": "playwright test tests/record-poster-1x1.spec.ts --project=chromium",
+    "playwright:install": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.7.0",
+    "ffmpeg-static": "^5.3.0",
+    "typescript": "^6.0.3"
+  }
+}
