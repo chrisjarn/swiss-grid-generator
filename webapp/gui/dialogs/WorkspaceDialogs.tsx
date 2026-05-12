@@ -1,20 +1,10 @@
 "use client"
 
 import { ExportDialog } from "@/gui/dialogs/ExportDialog"
-import { NoticeDialog } from "@/gui/dialogs/NoticeDialog"
 import { SaveLibraryDialog } from "@/gui/dialogs/SaveLibraryDialog"
 import type { ExportProgressState } from "@/gui/shell/hooks/useExportActions"
 import type { LoadedProject } from "@/core/document/session"
 import type { ExportFormat } from "@/lib/export-format-options"
-
-type NoticeState = {
-  title: string
-  message: string
-  confirmLabel?: string
-  cancelLabel?: string
-  onConfirm?: () => void
-  onCancel?: () => void
-} | null
 
 type Props = {
   isDarkUi: boolean
@@ -66,18 +56,12 @@ type Props = {
     onAuthorChange: (value: string) => void
     onConfirm: () => void
   }
-  noticeState: NoticeState
-  onCloseNotice: () => void
-  onConfirmNotice: () => void
 }
 
 export function WorkspaceDialogs({
   isDarkUi,
   exportDialog,
   saveLibraryDialog,
-  noticeState,
-  onCloseNotice,
-  onConfirmNotice,
 }: Props) {
   return (
     <>
@@ -133,16 +117,6 @@ export function WorkspaceDialogs({
         onConfirm={saveLibraryDialog.onConfirm}
       />
 
-      <NoticeDialog
-        isOpen={noticeState !== null}
-        isDarkUi={isDarkUi}
-        title={noticeState?.title ?? ""}
-        message={noticeState?.message ?? ""}
-        confirmLabel={noticeState?.confirmLabel}
-        cancelLabel={noticeState?.cancelLabel}
-        onConfirm={noticeState?.onConfirm ? onConfirmNotice : undefined}
-        onClose={onCloseNotice}
-      />
     </>
   )
 }

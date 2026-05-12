@@ -1,6 +1,5 @@
 export * from "./GridPreview"
 export * from "./GridPreviewCanvasStage"
-export * from "./GridPreviewFeedback"
 export * from "./GridPreviewOverlays"
 export * from "./LayoutOpenTooltipOverlay"
 export * from "./PreviewWorkspace"

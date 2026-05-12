@@ -1,6 +1,5 @@
 export * from "./ExportDialog"
 export * from "./ExportPreviewCanvas"
 export * from "./ImageEditorDialog"
-export * from "./NoticeDialog"
 export * from "./SaveLibraryDialog"
 export * from "./WorkspaceDialogs"

@@ -37,8 +37,6 @@ type Props = {
   onRequestNotice?: (notice: {
     title: string
     message: string
-    confirmLabel?: string
-    cancelLabel?: string
     onConfirm?: () => void
     onCancel?: () => void
   }) => void
@@ -546,8 +544,6 @@ export function PagesPanel({
                   onRequestNotice?.({
                     title: t("ui.panels.project.deletePageTitle"),
                     message: t("ui.panels.project.deletePageMessage", { name: page.name }),
-                    confirmLabel: t("ui.common.delete"),
-                    cancelLabel: t("ui.common.cancel"),
                     onConfirm: () => {
                       onDeletePage(page.id)
                     },

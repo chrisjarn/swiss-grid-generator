@@ -1,7 +1,6 @@
 "use client"
 
 import { GridPreviewCanvasStage } from "@/gui/preview/GridPreviewCanvasStage"
-import { GridPreviewFeedback } from "@/gui/preview/GridPreviewFeedback"
 import { GridPreviewOverlays } from "@/gui/preview/GridPreviewOverlays"
 import type { BlockEditorStyleOption } from "@/gui/editors/block-editor-types"
 import { GridResult } from "@/core/layout/grid-calculator"
@@ -236,8 +235,6 @@ interface GridPreviewProps {
   onLayoutChange?: (layout: PreviewLayoutState) => void
   onSnapshotGetterChange?: (getSnapshot: (() => PreviewLayoutState) | null) => void
   onRequestGridRestore?: (cols: number, rows: number) => void
-  gridReductionWarningToast?: { id: number; message: string } | null
-  onDismissGridReductionWarningToast?: () => void
   onRequestGridReductionWarning?: (message: string) => void
   onHistoryAvailabilityChange?: (canUndo: boolean, canRedo: boolean) => void
   onHistoryRecord?: () => void
@@ -302,8 +299,6 @@ export const GridPreview = memo(function GridPreview({
   onLayoutChange,
   onSnapshotGetterChange,
   onRequestGridRestore,
-  gridReductionWarningToast = null,
-  onDismissGridReductionWarningToast,
   onRequestGridReductionWarning,
   onHistoryAvailabilityChange,
   onHistoryRecord,
@@ -2865,14 +2860,6 @@ export const GridPreview = memo(function GridPreview({
           onDocumentHelpHover={!presentationMode && showPreviewHelpIndicator ? () => onOpenHelpSection?.("help-preview-workspace") : undefined}
         />
       </div>
-
-      {!presentationMode ? (
-        <GridPreviewFeedback
-          warningToast={gridReductionWarningToast}
-          dismissWarningToast={onDismissGridReductionWarningToast ?? (() => {})}
-          isDarkMode={isDarkMode}
-        />
-      ) : null}
 
       {!presentationMode ? (
       <GridPreviewOverlays

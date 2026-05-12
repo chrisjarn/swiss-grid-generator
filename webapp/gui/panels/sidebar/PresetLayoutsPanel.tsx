@@ -34,8 +34,6 @@ type Props = {
   onRequestNotice?: (notice: {
     title: string
     message: string
-    confirmLabel?: string
-    cancelLabel?: string
     onConfirm?: () => void
     onCancel?: () => void
   }) => void
@@ -466,8 +464,6 @@ export function PresetLayoutsPanel({
     onRequestNotice?.({
       title: t("ui.panels.presets.deleteTitle"),
       message: t("ui.panels.presets.deleteMessage", { title: presetLabel, cloudText }),
-      confirmLabel: t("ui.common.delete"),
-      cancelLabel: t("ui.common.cancel"),
       onConfirm: () => {
         void (async () => {
           try {

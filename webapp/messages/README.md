@@ -25,7 +25,7 @@ messages/
 ```
 
 - `en/app.json` contains product metadata and seeded document content.
-- `en/ui/common.json` contains shared actions, nouns, and notice dialog labels.
+- `en/ui/common.json` contains shared actions and nouns.
 - `en/ui/shell.json` contains the top bar, global shortcuts, and shell-owned dialogs.
 - `en/ui/panels.json` contains settings, project, preset, account, legal, and feedback panels.
 - `en/ui/preview.json` contains canvas interaction hints, preview feedback, tours, and layout tooltip chrome.

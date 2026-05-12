@@ -110,7 +110,7 @@ flowchart LR
 | preview canvas | planned page rendering and direct manipulation | page, baselines, margins, modules, typography guides, image placeholders, hover affordances | loading, ready, editing, dragging, zoomed, presentation, locked layer hover, hidden during page settle | renders planned geometry; does not own layout calculation | `webapp/gui/preview` |
 | right project panel | project structure, pages, layers, metadata, support panels | title, metadata, page list, layer list, help, feedback, account, legal notice | closed, open, active page, opened page row, selected layer, locked layer, sync states | only one right panel is active at a time; layer rows mirror preview selection | `webapp/gui/panels/sidebar` |
 | editors | focused layer editing | text editor panel, image editor panel, inline textarea, section controls | open, closed, retargeted, dirty draft, committed, locked-disabled | editor state must preserve the active layer contract and avoid outside-pointer loss | `webapp/gui/editors` |
-| dialogs | blocking or export/save workflows | save library, export, notice, export preview | idle, confirming, exporting, cancellable, error, success | modal surfaces are functional tools, not decorative cards | `webapp/gui/dialogs` |
+| dialogs | blocking export/save workflows | save library, export, export preview | idle, confirming, exporting, cancellable, error, success | modal surfaces are functional tools, not decorative cards; notices use browser alerts/confirms | `webapp/gui/dialogs` |
 
 ## Component Inventory
 
@@ -131,7 +131,6 @@ flowchart LR
 | grid preview | production interaction canvas and preview orchestration | `webapp/gui/preview/GridPreview.tsx` |
 | canvas stage | canvas stack, inline editor position, and help line placement | `webapp/gui/preview/GridPreviewCanvasStage.tsx` |
 | overlays | text/image editor overlays and active editor panels | `webapp/gui/preview/GridPreviewOverlays.tsx` |
-| feedback | transient preview warnings and status messages | `webapp/gui/preview/GridPreviewFeedback.tsx` |
 | preview workspace | page field plus side panels and project overlays | `webapp/gui/preview/PreviewWorkspace.tsx` |
 | swiss canvas | plan-only canvas foundation | `webapp/gui/preview/SwissCanvas.tsx` |
 
@@ -176,11 +175,10 @@ flowchart LR
 
 | Component | Design responsibility | Path |
 |---|---|---|
-| workspace dialogs | central dialog router for save, export, notices | `webapp/gui/dialogs/WorkspaceDialogs.tsx` |
+| workspace dialogs | central dialog router for save and export | `webapp/gui/dialogs/WorkspaceDialogs.tsx` |
 | save library | local/cloud library metadata workflow | `webapp/gui/dialogs/SaveLibraryDialog.tsx` |
 | export | format, metadata, range, bleed, progress, cancellation | `webapp/gui/dialogs/ExportDialog.tsx` |
 | export preview | compact export preview canvas | `webapp/gui/dialogs/ExportPreviewCanvas.tsx` |
-| notice | confirmation and risk messaging | `webapp/gui/dialogs/NoticeDialog.tsx` |
 | onboarding video | quick-start video overlay with transparent controls and system fullscreen | `webapp/gui/dialogs/OnboardingVideoDialog.tsx` |
 
 ### Shared Primitives

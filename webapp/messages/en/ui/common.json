@@ -24,13 +24,5 @@
   "subject": "Subject",
   "subjectOptional": "Subject, optional",
   "title": "Title",
-  "version": "Version",
-  "dialogs": {
-    "notice": {
-      "actions": "Actions",
-      "cancel": "Cancel",
-      "confirm": "Confirm",
-      "ok": "OK"
-    }
-  }
+  "version": "Version"
 }

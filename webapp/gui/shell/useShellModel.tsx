@@ -92,16 +92,9 @@ const DEFAULT_PAGE_PREVIEW_LAYOUT: PreviewLayoutState | null = null
 type NoticeState = {
   title: string
   message: string
-  confirmLabel?: string
-  cancelLabel?: string
   onConfirm?: () => void
   onCancel?: () => void
-} | null
-
-type GridReductionWarningToastState = {
-  id: number
-  message: string
-} | null
+}
 
 type EditableProjectMetadataField = "title" | "description" | "author"
 
@@ -109,6 +102,24 @@ const MAX_PROJECT_PAGE_COUNT = 1000
 
 type ProjectLoadTimingState = {
   elapsedMs: number | null
+}
+
+function formatBrowserNoticeMessage(notice: Pick<NoticeState, "title" | "message">): string {
+  return notice.message ? `${notice.title}\n\n${notice.message}` : notice.title
+}
+
+function showBrowserNotice(notice: NoticeState): void {
+  if (typeof window === "undefined") return
+  const message = formatBrowserNoticeMessage(notice)
+  if (notice.onConfirm) {
+    if (window.confirm(message)) {
+      notice.onConfirm()
+    } else {
+      notice.onCancel?.()
+    }
+    return
+  }
+  window.alert(message)
 }
 
 async function writeClipboardText(text: string): Promise<void> {
@@ -430,8 +441,6 @@ export function ShellModelView() {
     handleNextLayoutOpenTooltip,
     layoutOpenTooltipTotalCount,
   } = useLayoutOpenTooltipController()
-  const [noticeState, setNoticeState] = useState<NoticeState>(null)
-  const [gridReductionWarningToast, setGridReductionWarningToast] = useState<GridReductionWarningToastState>(null)
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
@@ -486,21 +495,6 @@ export function ShellModelView() {
       dirty: action.type !== "APPLY_SNAPSHOT",
     })
   }, [commitUiSnapshot, ui])
-  const handleRequestNotice = useCallback((notice: NonNullable<NoticeState>) => {
-    setNoticeState(notice)
-  }, [])
-  const handleCloseNotice = useCallback(() => {
-    setNoticeState((current) => {
-      current?.onCancel?.()
-      return null
-    })
-  }, [])
-  const handleConfirmNotice = useCallback(() => {
-    setNoticeState((current) => {
-      current?.onConfirm?.()
-      return null
-    })
-  }, [])
   const {
     supabase,
     user,
@@ -511,37 +505,6 @@ export function ShellModelView() {
     verifySignInCode,
     signOut,
   } = useSupabaseAuth()
-  const {
-    status: cloudSyncStatus,
-    statusLabel: cloudStatusLabel,
-    pendingQueueCount,
-    conflictQueueCount,
-    deleteProjectByLocalId,
-    queueProjectSyncByLocalId,
-    requestCloudSync,
-    resolveConflictByLocalId,
-    syncAllProjects,
-    syncProjectByLocalId,
-  } = useCloudProjectSync({
-    supabase,
-    user,
-    onRequestNotice: handleRequestNotice,
-  })
-  const handleProjectPageLimitReached = useCallback((limit: number) => {
-    handleRequestNotice({
-      title: translateMessage("ui.status.notices.pageLimitTitle"),
-      message: translateMessage("ui.status.notices.pageLimitMessage", { count: limit }),
-    })
-  }, [handleRequestNotice])
-  const handleRequestGridReductionWarning = useCallback((message: string) => {
-    setGridReductionWarningToast({
-      id: Date.now(),
-      message,
-    })
-  }, [])
-  const dismissGridReductionWarningToast = useCallback(() => {
-    setGridReductionWarningToast(null)
-  }, [])
   const {
     canvasRatio,
     customRatioWidth, customRatioHeight,
@@ -655,10 +618,43 @@ export function ShellModelView() {
     setWorkspaceActivePanel(next)
   }, [setShowLayers, setWorkspaceActivePanel])
 
-  useEffect(() => {
-    if (noticeState?.title !== translateMessage("ui.status.cloud.conflictTitle")) return
-    openSidebarPanel("account")
-  }, [noticeState, openSidebarPanel])
+  const handleRequestNotice = useCallback((notice: NoticeState) => {
+    if (notice.title === translateMessage("ui.status.cloud.conflictTitle")) {
+      openSidebarPanel("account")
+    }
+    showBrowserNotice(notice)
+  }, [openSidebarPanel])
+
+  const {
+    status: cloudSyncStatus,
+    statusLabel: cloudStatusLabel,
+    pendingQueueCount,
+    conflictQueueCount,
+    deleteProjectByLocalId,
+    queueProjectSyncByLocalId,
+    requestCloudSync,
+    resolveConflictByLocalId,
+    syncAllProjects,
+    syncProjectByLocalId,
+  } = useCloudProjectSync({
+    supabase,
+    user,
+    onRequestNotice: handleRequestNotice,
+  })
+
+  const handleProjectPageLimitReached = useCallback((limit: number) => {
+    handleRequestNotice({
+      title: translateMessage("ui.status.notices.pageLimitTitle"),
+      message: translateMessage("ui.status.notices.pageLimitMessage", { count: limit }),
+    })
+  }, [handleRequestNotice])
+
+  const handleRequestGridReductionWarning = useCallback((message: string) => {
+    handleRequestNotice({
+      title: translateMessage("ui.preview.feedback.gridUnchanged"),
+      message,
+    })
+  }, [handleRequestNotice])
 
   useEffect(() => {
     const handleFocus = () => {
@@ -1416,10 +1412,8 @@ export function ShellModelView() {
         return
       }
     }
-    dismissGridReductionWarningToast()
     setGridCols(nextGridCols)
   }, [
-    dismissGridReductionWarningToast,
     getGridReductionConflicts,
     gridCols,
     gridRows,
@@ -1436,10 +1430,8 @@ export function ShellModelView() {
         return
       }
     }
-    dismissGridReductionWarningToast()
     setGridRows(nextGridRows)
   }, [
-    dismissGridReductionWarningToast,
     getGridReductionConflicts,
     gridCols,
     gridRows,
@@ -2257,8 +2249,6 @@ export function ShellModelView() {
       onUndoRequest={undoAny}
       onRedoRequest={redoAny}
       onRequestGridRestore={handlePreviewGridRestore}
-      gridReductionWarningToast={gridReductionWarningToast}
-      onDismissGridReductionWarningToast={dismissGridReductionWarningToast}
       onRequestGridReductionWarning={handleRequestGridReductionWarning}
       onRequestNotice={handleRequestNotice}
       onLayoutChange={handleCommittedPreviewLayoutChange}
@@ -2534,9 +2524,6 @@ export function ShellModelView() {
             onAuthorChange: exportActions.setSaveAuthorDraft,
             onConfirm: handleSaveToLibrary,
           }}
-          noticeState={noticeState}
-          onCloseNotice={handleCloseNotice}
-          onConfirmNotice={handleConfirmNotice}
         />
       </div>
     </>
