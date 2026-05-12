@@ -68,9 +68,9 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
     <div className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label={t("rightPanel.legal.title")}
+          label={t("ui.panels.sidebar.legal.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel={t("rightPanel.legal.close")}
+          actionLabel={t("ui.panels.sidebar.legal.close")}
           actionClassName={tone.action}
           onActionClick={onClose}
         />

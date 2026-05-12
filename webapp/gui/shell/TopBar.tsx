@@ -122,8 +122,8 @@ export function TopBar({
           {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
           <div ref={supportMenuRef} className="relative inline-flex h-8 w-8 items-center justify-center">
             <HeaderIconButton
-              ariaLabel={supportMenuOpen ? t("topBar.supportMenu.close") : t("topBar.supportMenu.open")}
-              tooltip={t("topBar.supportMenu.more")}
+              ariaLabel={supportMenuOpen ? t("ui.shell.topBar.supportMenu.close") : t("ui.shell.topBar.supportMenu.open")}
+              tooltip={t("ui.shell.topBar.supportMenu.more")}
               variant={supportMenuOpen ? "default" : "outline"}
               aria-pressed={supportMenuOpen}
               onClick={() => setSupportMenuOpen((current) => !current)}
@@ -142,7 +142,7 @@ export function TopBar({
                     onToggleDarkMode(event)
                   }}
                 >
-                  {isDarkUi ? t("topBar.supportMenu.lightMode") : t("topBar.supportMenu.darkMode")}
+                  {isDarkUi ? t("ui.shell.topBar.supportMenu.lightMode") : t("ui.shell.topBar.supportMenu.darkMode")}
                 </button>
                 <button
                   type="button"
@@ -152,7 +152,7 @@ export function TopBar({
                     onToggleHelpPanel()
                   }}
                 >
-                  {t("topBar.supportMenu.help")}
+                  {t("ui.shell.topBar.supportMenu.help")}
                 </button>
                 <button
                   type="button"
@@ -162,7 +162,7 @@ export function TopBar({
                     onToggleFeedbackPanel()
                   }}
                 >
-                  {t("topBar.supportMenu.feedback")}
+                  {t("ui.shell.topBar.supportMenu.feedback")}
                 </button>
                 <button
                   type="button"
@@ -172,7 +172,7 @@ export function TopBar({
                     onToggleLegalNoticePanel()
                   }}
                 >
-                  {t("topBar.supportMenu.legalNotice")}
+                  {t("ui.shell.topBar.supportMenu.legalNotice")}
                 </button>
               </div>
             ) : null}

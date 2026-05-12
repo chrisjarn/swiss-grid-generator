@@ -76,16 +76,16 @@ export function useHeaderActions(args: Args) {
   const canUseLayerControls = args.hasPreviewLayout && !args.showPresetsBrowser
   const t = translateMessage
   const accountTooltip = args.accountUserEmail
-    ? t("topBar.actions.account.tooltipSignedIn", { email: args.accountUserEmail, status: args.accountCloudStatusLabel })
-    : t("topBar.actions.account.tooltipSignedOut", { status: args.accountCloudStatusLabel })
+    ? t("ui.shell.topBar.actions.account.tooltipSignedIn", { email: args.accountUserEmail, status: args.accountCloudStatusLabel })
+    : t("ui.shell.topBar.actions.account.tooltipSignedOut", { status: args.accountCloudStatusLabel })
 
   const fileGroup: HeaderItem[] = [
     {
       type: "action",
       action: {
         key: "presets",
-        ariaLabel: t("topBar.actions.presets.aria"),
-        tooltip: t("topBar.actions.presets.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.presets.aria"),
+        tooltip: t("ui.shell.topBar.actions.presets.tooltip"),
         shortcutId: "toggle_example_panel",
         variant: args.showPresetsBrowser ? "default" : "outline",
         pressed: args.showPresetsBrowser,
@@ -97,8 +97,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "save",
-        ariaLabel: t("topBar.actions.save.aria"),
-        tooltip: `${t("topBar.actions.save.tooltip")}\n${t("topBar.actions.save.status", { status: args.saveStatusLabel })}`,
+        ariaLabel: t("ui.shell.topBar.actions.save.aria"),
+        tooltip: `${t("ui.shell.topBar.actions.save.tooltip")}\n${t("ui.shell.topBar.actions.save.status", { status: args.saveStatusLabel })}`,
         shortcutId: "save_to_library",
         showStatusDot: args.hasPreviewLayout,
         statusDotClassName: args.saveStatusDotClassName,
@@ -111,8 +111,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "import",
-        ariaLabel: t("topBar.actions.import.aria"),
-        tooltip: t("topBar.actions.import.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.import.aria"),
+        tooltip: t("ui.shell.topBar.actions.import.tooltip"),
         shortcutId: "import_project",
         onClick: args.onImportProject,
         icon: <Download className="h-4 w-4" />,
@@ -122,8 +122,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "export",
-        ariaLabel: t("topBar.actions.export.aria"),
-        tooltip: t("topBar.actions.export.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.export.aria"),
+        tooltip: t("ui.shell.topBar.actions.export.tooltip"),
         shortcutId: "open_export",
         disabled: !canSaveOrExport,
         onClick: args.onOpenExportDialog,
@@ -135,8 +135,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "undo",
-        ariaLabel: t("topBar.actions.undo.aria"),
-        tooltip: t("topBar.actions.undo.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.undo.aria"),
+        tooltip: t("ui.shell.topBar.actions.undo.tooltip"),
         shortcutId: "undo",
         disabled: !args.canUndo,
         onClick: args.onUndo,
@@ -147,8 +147,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "redo",
-        ariaLabel: t("topBar.actions.redo.aria"),
-        tooltip: t("topBar.actions.redo.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.redo.aria"),
+        tooltip: t("ui.shell.topBar.actions.redo.tooltip"),
         shortcutId: "redo",
         disabled: !args.canRedo,
         onClick: args.onRedo,
@@ -162,8 +162,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "smart-text-zoom",
-        ariaLabel: args.smartTextZoomEnabled ? t("topBar.actions.smartTextZoom.disable") : t("topBar.actions.smartTextZoom.enable"),
-        tooltip: t("topBar.actions.smartTextZoom.tooltip"),
+        ariaLabel: args.smartTextZoomEnabled ? t("ui.shell.topBar.actions.smartTextZoom.disable") : t("ui.shell.topBar.actions.smartTextZoom.enable"),
+        tooltip: t("ui.shell.topBar.actions.smartTextZoom.tooltip"),
         variant: args.smartTextZoomEnabled ? "default" : "outline",
         pressed: args.smartTextZoomEnabled,
         disabled: !args.hasPreviewLayout,
@@ -176,8 +176,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "baselines",
-        ariaLabel: t("topBar.actions.baselines.aria"),
-        tooltip: t("topBar.actions.baselines.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.baselines.aria"),
+        tooltip: t("ui.shell.topBar.actions.baselines.tooltip"),
         shortcutId: "toggle_baselines",
         variant: args.showBaselines ? "default" : "outline",
         pressed: args.showBaselines,
@@ -190,8 +190,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "margins",
-        ariaLabel: t("topBar.actions.margins.aria"),
-        tooltip: t("topBar.actions.margins.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.margins.aria"),
+        tooltip: t("ui.shell.topBar.actions.margins.tooltip"),
         shortcutId: "toggle_margins",
         variant: args.showMargins ? "default" : "outline",
         pressed: args.showMargins,
@@ -204,8 +204,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "modules",
-        ariaLabel: t("topBar.actions.modules.aria"),
-        tooltip: t("topBar.actions.modules.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.modules.aria"),
+        tooltip: t("ui.shell.topBar.actions.modules.tooltip"),
         shortcutId: "toggle_modules",
         variant: args.showModules ? "default" : "outline",
         pressed: args.showModules,
@@ -218,8 +218,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "typography",
-        ariaLabel: t("topBar.actions.typography.aria"),
-        tooltip: t("topBar.actions.typography.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.typography.aria"),
+        tooltip: t("ui.shell.topBar.actions.typography.tooltip"),
         shortcutId: "toggle_typography",
         variant: args.showTypography ? "default" : "outline",
         pressed: args.showTypography,
@@ -232,8 +232,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "image-placeholders",
-        ariaLabel: t("topBar.actions.imagePlaceholders.aria"),
-        tooltip: t("topBar.actions.imagePlaceholders.tooltip"),
+        ariaLabel: t("ui.shell.topBar.actions.imagePlaceholders.aria"),
+        tooltip: t("ui.shell.topBar.actions.imagePlaceholders.tooltip"),
         shortcutId: "toggle_image_placeholders",
         variant: args.showImagePlaceholders ? "default" : "outline",
         pressed: args.showImagePlaceholders,
@@ -247,8 +247,8 @@ export function useHeaderActions(args: Args) {
       type: "action",
       action: {
         key: "layers",
-        ariaLabel: args.showLayers ? t("topBar.actions.layers.hide") : t("topBar.actions.layers.show"),
-        tooltip: t("topBar.actions.layers.tooltip"),
+        ariaLabel: args.showLayers ? t("ui.shell.topBar.actions.layers.hide") : t("ui.shell.topBar.actions.layers.show"),
+        tooltip: t("ui.shell.topBar.actions.layers.tooltip"),
         shortcutId: "toggle_layers_panel",
         variant: args.showLayers ? "default" : "outline",
         pressed: args.showLayers,
@@ -262,7 +262,7 @@ export function useHeaderActions(args: Args) {
   const sidebarGroup: HeaderAction[] = [
     {
       key: "account",
-      ariaLabel: args.activeSidebarPanel === "account" ? t("topBar.actions.account.hide") : t("topBar.actions.account.show"),
+      ariaLabel: args.activeSidebarPanel === "account" ? t("ui.shell.topBar.actions.account.hide") : t("ui.shell.topBar.actions.account.show"),
       tooltip: accountTooltip,
       showStatusDot: true,
       statusDotClassName: args.accountStatusDotClassName,

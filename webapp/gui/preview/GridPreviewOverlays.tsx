@@ -152,10 +152,10 @@ type Props<StyleKey extends string> = {
 
 function getTextCopyRolloverTitle(t: ReturnType<typeof useTranslation>["t"]): string {
   return [
-    t("overlayActions.duplicateParagraph"),
-    t("overlayActions.copyParagraphSettings"),
-    t("overlayActions.copyTypographySettings"),
-    t("overlayActions.copyParagraphTypographySettings"),
+    t("ui.editor.overlayActions.duplicateParagraph"),
+    t("ui.editor.overlayActions.copyParagraphSettings"),
+    t("ui.editor.overlayActions.copyTypographySettings"),
+    t("ui.editor.overlayActions.copyParagraphTypographySettings"),
   ].join("\n")
 }
 
@@ -253,11 +253,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
   const paragraphMenuRenderedWidth = paragraphMenuWidth + 1
   const paragraphMenuGutterWidth = paragraphMenuRenderedWidth / 7
   const hoveredKindLabel = hoveredEditTarget?.kind === "text"
-    ? t("overlayActions.paragraph")
-    : t("overlayActions.imagePlaceholder")
+    ? t("ui.editor.overlayActions.paragraph")
+    : t("ui.editor.overlayActions.imagePlaceholder")
   const rolloverControlsLabel = hoveredEditTarget?.kind === "image"
-    ? t("overlayActions.imageControls")
-    : t("overlayActions.paragraphControls")
+    ? t("ui.editor.overlayActions.imageControls")
+    : t("ui.editor.overlayActions.paragraphControls")
   const rolloverMenuOpen = Boolean(
     hoveredEditTarget
     && openRolloverMenuKey === hoveredEditTarget.key,
@@ -408,28 +408,28 @@ export function GridPreviewOverlays<StyleKey extends string>({
       ? [
         {
           key: "reflow",
-          label: t("editor.paragraph.newspaperReflow"),
+          label: t("ui.editor.paragraph.newspaperReflow"),
           checked: hoveredTextControls.reflow && !hoveredTextControls.reflowDisabled,
           disabled: hoveredTextControls.reflowDisabled,
           patch: (checked: boolean): ParagraphRolloverControlPatch => ({ reflow: checked }),
         },
         {
           key: "hyphenation",
-          label: t("editor.paragraph.hyphenation"),
+          label: t("ui.editor.paragraph.hyphenation"),
           checked: hoveredTextControls.hyphenation,
           disabled: false,
           patch: (checked: boolean): ParagraphRolloverControlPatch => ({ hyphenation: checked }),
         },
         {
           key: "snapX",
-          label: t("editor.paragraph.snapColumns"),
+          label: t("ui.editor.paragraph.snapColumns"),
           checked: hoveredTextControls.snapX,
           disabled: false,
           patch: (checked: boolean): ParagraphRolloverControlPatch => ({ snapX: checked }),
         },
         {
           key: "snapY",
-          label: t("editor.paragraph.snapBaseline"),
+          label: t("ui.editor.paragraph.snapBaseline"),
           checked: hoveredTextControls.snapY,
           disabled: false,
           patch: (checked: boolean): ParagraphRolloverControlPatch => ({ snapY: checked }),
@@ -450,13 +450,13 @@ export function GridPreviewOverlays<StyleKey extends string>({
       ? [
         {
           key: "snapX",
-          label: t("editor.paragraph.snapColumns"),
+          label: t("ui.editor.paragraph.snapColumns"),
           checked: hoveredImageControls.snapX,
           patch: (checked: boolean): ImageRolloverControlPatch => ({ snapX: checked }),
         },
         {
           key: "snapY",
-          label: t("editor.paragraph.snapBaseline"),
+          label: t("ui.editor.paragraph.snapBaseline"),
           checked: hoveredImageControls.snapY,
           patch: (checked: boolean): ImageRolloverControlPatch => ({ snapY: checked }),
         },
@@ -523,8 +523,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
         }
         openImageEditor(hoveredEditTarget.key)
       }}
-      aria-label={t("overlayActions.edit", { kind: hoveredKindLabel })}
-      title={t("overlayActions.edit", { kind: hoveredKindLabel })}
+      aria-label={t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel })}
+      title={t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel })}
     >
       <SquarePen className={paragraphControlIconClassName} />
     </button>
@@ -553,11 +553,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
         })
       }}
       aria-label={hoveredEditTarget?.kind === "text"
-        ? t("overlayActions.duplicateText")
-        : t("overlayActions.duplicateImage")}
+        ? t("ui.editor.overlayActions.duplicateText")
+        : t("ui.editor.overlayActions.duplicateImage")}
       title={hoveredEditTarget?.kind === "text"
         ? getTextCopyRolloverTitle(t)
-        : t("overlayActions.duplicateImageTooltip")}
+        : t("ui.editor.overlayActions.duplicateImageTooltip")}
     >
       <Copy className={paragraphControlIconClassName} />
     </button>
@@ -578,8 +578,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
         if (!hoveredEditTarget) return
         deletePreviewTarget(hoveredEditTarget.key)
       }}
-      aria-label={t("overlayActions.delete", { kind: hoveredKindLabel })}
-      title={t("overlayActions.delete", { kind: hoveredKindLabel })}
+      aria-label={t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel })}
+      title={t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel })}
     >
       <Trash2 className={paragraphControlIconClassName} />
     </button>
@@ -613,8 +613,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
           stopPreviewButtonEvent(event)
           handleParagraphAlignmentChange(patch)
         }}
-        aria-label={t(`editor.paragraph.${value}`)}
-        title={t(`editor.paragraph.${value}`)}
+        aria-label={t(`ui.editor.paragraph.${value}`)}
+        title={t(`ui.editor.paragraph.${value}`)}
       >
         <AlignIcon className={paragraphControlIconClassName} />
       </button>
@@ -667,7 +667,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 className={`${paragraphMenuLabelClassName} group-hover:hidden group-focus-within:hidden`}
                 style={{ paddingLeft: paragraphMenuGutterWidth }}
               >
-                {t("editor.paragraph.alignment")}
+                {t("ui.editor.paragraph.alignment")}
               </Label>
               <div
                 className={`hidden group-hover:grid group-focus-within:grid ${paragraphMenuRowClassName}`}
@@ -689,8 +689,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
               style={{ paddingLeft: paragraphMenuGutterWidth }}
             >
               <EditableSlider
-                label={t("editor.paragraph.rotation")}
-                inputAriaLabel={t("editor.paragraph.rotation")}
+                label={t("ui.editor.paragraph.rotation")}
+                inputAriaLabel={t("ui.editor.paragraph.rotation")}
                 value={rolloverRotationValue}
                 defaultValue={[0]}
                 min={-180}
@@ -708,11 +708,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 valueClassName={paragraphMenuValueBadgeClassName}
               />
               <div className="space-y-1.5">
-                <Label className={paragraphMenuLabelClassName}>{t("editor.paragraph.options")}</Label>
+                <Label className={paragraphMenuLabelClassName}>{t("ui.editor.paragraph.options")}</Label>
                 <div
                   role="listbox"
                   aria-multiselectable="true"
-                  aria-label={t("editor.paragraph.options")}
+                  aria-label={t("ui.editor.paragraph.options")}
                   className={paragraphMenuOptionListClassName}
                 >
                   {paragraphToggleRows.map((row) => (
@@ -731,7 +731,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
                     >
                       <span className="min-w-0 truncate">{row.label}</span>
                       <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                        {row.checked ? t("common.on") : t("common.off")}
+                        {row.checked ? t("ui.common.on") : t("ui.common.off")}
                       </span>
                     </button>
                   ))}
@@ -746,8 +746,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
             style={{ paddingLeft: paragraphMenuGutterWidth }}
           >
             <EditableSlider
-              label={t("editor.paragraph.rotation")}
-              inputAriaLabel={t("editor.paragraph.rotation")}
+              label={t("ui.editor.paragraph.rotation")}
+              inputAriaLabel={t("ui.editor.paragraph.rotation")}
               value={imageRolloverRotationValue}
               defaultValue={[0]}
               min={-180}
@@ -765,11 +765,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
               valueClassName={paragraphMenuValueBadgeClassName}
             />
             <div className="space-y-1.5">
-              <Label className={paragraphMenuLabelClassName}>{t("editor.paragraph.options")}</Label>
+              <Label className={paragraphMenuLabelClassName}>{t("ui.editor.paragraph.options")}</Label>
               <div
                 role="listbox"
                 aria-multiselectable="true"
-                aria-label={t("editor.paragraph.options")}
+                aria-label={t("ui.editor.paragraph.options")}
                 className={paragraphMenuOptionListClassName}
               >
                 {imageToggleRows.map((row) => (
@@ -786,7 +786,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
                   >
                     <span className="min-w-0 truncate">{row.label}</span>
                     <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                      {row.checked ? t("common.on") : t("common.off")}
+                      {row.checked ? t("ui.common.on") : t("ui.common.off")}
                     </span>
                   </button>
                 ))}
@@ -835,8 +835,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
                 stopPreviewButtonEvent(event)
                 onHoveredLayerLockToggle(hoveredEditTarget.key, false)
               }}
-              aria-label={t("overlayActions.unlock", { kind: hoveredKindLabel })}
-              title={t("overlayActions.unlock", { kind: hoveredKindLabel })}
+              aria-label={t("ui.editor.overlayActions.unlock", { kind: hoveredKindLabel })}
+              title={t("ui.editor.overlayActions.unlock", { kind: hoveredKindLabel })}
             >
               <Lock className="h-3 w-3" />
             </button>
@@ -892,11 +892,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
                   onLayerResizeHandlePointerDown(hoveredEditTarget.kind, hoveredEditTarget.key, event)
                 }}
                 aria-label={hoveredEditTarget.kind === "text"
-                  ? t("overlayActions.resizeParagraph")
-                  : t("overlayActions.resizeImagePlaceholder")}
+                  ? t("ui.editor.overlayActions.resizeParagraph")
+                  : t("ui.editor.overlayActions.resizeImagePlaceholder")}
                 title={hoveredEditTarget.kind === "text"
-                  ? t("overlayActions.resizeParagraphTooltip")
-                  : t("overlayActions.resizeImagePlaceholderTooltip")}
+                  ? t("ui.editor.overlayActions.resizeParagraphTooltip")
+                  : t("ui.editor.overlayActions.resizeImagePlaceholderTooltip")}
               >
                 <MoveDiagonal2 className={previewRolloverIconClassName} />
               </button>

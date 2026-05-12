@@ -476,7 +476,7 @@ export function useExportActions(ctx: ExportActionsContext) {
       current
         ? {
             ...current,
-            currentLabel: translateMessage("status.export.cancelling"),
+            currentLabel: translateMessage("ui.export.status.cancelling"),
           }
         : current
     ))
@@ -715,7 +715,7 @@ export function useExportActions(ctx: ExportActionsContext) {
         completedSteps: 0,
         totalSteps: exportSelectedPageCount,
         currentPageNumber: parsedPageSelection.fromPage,
-        currentLabel: translateMessage("status.export.preparing"),
+        currentLabel: translateMessage("ui.export.status.preparing"),
         phase: "preparing",
       })
     })
@@ -745,7 +745,7 @@ export function useExportActions(ctx: ExportActionsContext) {
             ...current,
             totalSteps: exportSelectedPageCount,
             currentPageNumber: parsedPageSelection.fromPage,
-            currentLabel: currentProjectSnapshot.pages[parsedPageSelection.fromPage - 1]?.name || translateMessage("status.export.preparingIdml"),
+            currentLabel: currentProjectSnapshot.pages[parsedPageSelection.fromPage - 1]?.name || translateMessage("ui.export.status.preparingIdml"),
           } : current)
         }
         await exportVector(exportFormatDraft, currentProjectSnapshot, parsedPageSelection.pageNumbers, currentProjectSnapshot.visibilitySettings, filename, bleed, normalizedMetadata)

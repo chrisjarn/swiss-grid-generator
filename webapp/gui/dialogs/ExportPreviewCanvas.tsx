@@ -90,7 +90,7 @@ export function ExportPreviewCanvas({
       }
     } catch (cause) {
       return {
-        error: cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewBuildError"),
+        error: cause instanceof Error ? cause.message : translateMessage("ui.export.dialog.previewBuildError"),
         page: null,
       }
     }
@@ -120,7 +120,7 @@ export function ExportPreviewCanvas({
           thumbnailRenderOptions,
         )
       } catch (cause) {
-        setDrawError(cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewDrawError"))
+        setDrawError(cause instanceof Error ? cause.message : translateMessage("ui.export.dialog.previewDrawError"))
       }
     }
 
@@ -142,7 +142,7 @@ export function ExportPreviewCanvas({
         if (!cancelled) scheduleDraw()
       })
       .catch((cause) => {
-        setDrawError(cause instanceof Error ? cause.message : translateMessage("dialogs.export.previewPrepareError"))
+        setDrawError(cause instanceof Error ? cause.message : translateMessage("ui.export.dialog.previewPrepareError"))
         if (!cancelled) scheduleDraw()
       })
 
@@ -158,7 +158,7 @@ export function ExportPreviewCanvas({
     }
   }, [thumbnailPage.page, thumbnailRenderOptions])
 
-  const error = thumbnailPage.error ?? (thumbnailPage.page ? drawError : t("dialogs.export.previewNoPage"))
+  const error = thumbnailPage.error ?? (thumbnailPage.page ? drawError : t("ui.export.dialog.previewNoPage"))
 
   return (
     <div
@@ -168,7 +168,7 @@ export function ExportPreviewCanvas({
         isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-200 bg-white",
       )}
     >
-      <canvas ref={canvasRef} className="block h-full w-full" aria-label={t("dialogs.export.previewCanvas")} />
+      <canvas ref={canvasRef} className="block h-full w-full" aria-label={t("ui.export.dialog.previewCanvas")} />
       {error ? (
         <div className={cn(
           "absolute inset-0 flex items-center justify-center px-3 text-center text-[11px] leading-tight",

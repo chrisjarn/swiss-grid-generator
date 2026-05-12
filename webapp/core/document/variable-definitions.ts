@@ -8,30 +8,30 @@ export type DocumentVariableDefinition = {
 export const DOCUMENT_VARIABLE_DEFINITIONS: readonly DocumentVariableDefinition[] = [
   {
     token: "<%lorem%>",
-    description: translateMessage("documentVariables.lorem"),
+    description: translateMessage("ui.editor.documentVariables.lorem"),
   },
   {
     token: "<%project_title%>",
-    description: translateMessage("documentVariables.projectTitle"),
+    description: translateMessage("ui.editor.documentVariables.projectTitle"),
   },
   {
     token: "<%page_title%>",
-    description: translateMessage("documentVariables.pageTitle"),
+    description: translateMessage("ui.editor.documentVariables.pageTitle"),
   },
   {
     token: "<%page%>",
-    description: translateMessage("documentVariables.page"),
+    description: translateMessage("ui.editor.documentVariables.page"),
   },
   {
     token: "<%pages%>",
-    description: translateMessage("documentVariables.pages"),
+    description: translateMessage("ui.editor.documentVariables.pages"),
   },
   {
     token: "<%date%>",
-    description: translateMessage("documentVariables.date"),
+    description: translateMessage("ui.editor.documentVariables.date"),
   },
   {
     token: "<%time%>",
-    description: translateMessage("documentVariables.time"),
+    description: translateMessage("ui.editor.documentVariables.time"),
   },
 ] as const

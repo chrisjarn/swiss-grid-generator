@@ -843,28 +843,28 @@ export const GridPreview = memo(function GridPreview({
     if (!onRequestNotice) return
     if (mode === "full") {
       onRequestNotice({
-        title: translateMessage("overlayActions.paragraphCopiedTitle"),
-        message: translateMessage("overlayActions.paragraphCopiedMessage"),
+        title: translateMessage("ui.editor.overlayActions.paragraphCopiedTitle"),
+        message: translateMessage("ui.editor.overlayActions.paragraphCopiedMessage"),
       })
       return
     }
     if (mode === "paragraph") {
       onRequestNotice({
-        title: translateMessage("overlayActions.paragraphSettingsCopiedTitle"),
-        message: translateMessage("overlayActions.paragraphSettingsCopiedMessage"),
+        title: translateMessage("ui.editor.overlayActions.paragraphSettingsCopiedTitle"),
+        message: translateMessage("ui.editor.overlayActions.paragraphSettingsCopiedMessage"),
       })
       return
     }
     if (mode === "typo") {
       onRequestNotice({
-        title: translateMessage("overlayActions.typographyCopiedTitle"),
-        message: translateMessage("overlayActions.typographyCopiedMessage"),
+        title: translateMessage("ui.editor.overlayActions.typographyCopiedTitle"),
+        message: translateMessage("ui.editor.overlayActions.typographyCopiedMessage"),
       })
       return
     }
     onRequestNotice({
-      title: translateMessage("overlayActions.paragraphTypographyCopiedTitle"),
-      message: translateMessage("overlayActions.paragraphTypographyCopiedMessage"),
+      title: translateMessage("ui.editor.overlayActions.paragraphTypographyCopiedTitle"),
+      message: translateMessage("ui.editor.overlayActions.paragraphTypographyCopiedMessage"),
     })
   }, [onRequestNotice])
 
@@ -1222,8 +1222,8 @@ export const GridPreview = memo(function GridPreview({
       const maxParagraphCount = result.settings.gridCols * result.settings.gridRows
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
-          title: translateMessage("status.notices.paragraphLimitTitle"),
-          message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
+          title: translateMessage("ui.status.notices.paragraphLimitTitle"),
+          message: translateMessage("ui.status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
         })
         return true
       }

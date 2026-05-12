@@ -31,22 +31,22 @@ export type HelpGroup = {
 
 export const HELP_CONTENT_GROUPS = [
   {
-    "title": "first sequence",
+    "title": "First sequence",
     "sections": [
       {
-        "title": "first sequence",
+        "title": "First sequence",
         "id": "help-quick-start",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "set ratio, orientation, and rotation in `canvas`.",
-              "set the baseline first. it governs the vertical rhythm.",
-              "choose a margin canon or custom baseline-unit frame.",
-              "define columns, rows, gutter, and grid rhythm.",
-              "set type rhythm and base family.",
-              "inspect baselines, margins, modules, typography, and placeholders before export."
+              "Set ratio, orientation, and rotation in `canvas`.",
+              "Set the baseline first. It governs the vertical rhythm.",
+              "Choose a margin canon or custom baseline-unit frame.",
+              "Define columns, rows, gutter, and grid rhythm.",
+              "Set type rhythm and base family.",
+              "Inspect baselines, margins, modules, typography, and placeholders before export."
             ]
           }
         ],
@@ -55,22 +55,22 @@ export const HELP_CONTENT_GROUPS = [
     ]
   },
   {
-    "title": "settings",
+    "title": "Settings",
     "sections": [
       {
-        "title": "settings reference",
+        "title": "Settings reference",
         "id": "help-settings-overview",
         "indexed": false,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "core system controls."
+            "text": "Core system controls."
           }
         ],
         "subsections": []
       },
       {
-        "title": "canvas",
+        "title": "Canvas",
         "id": "help-canvas-ratio",
         "indexed": true,
         "blocks": [
@@ -78,7 +78,7 @@ export const HELP_CONTENT_GROUPS = [
             "type": "list",
             "items": [
               "`ratio` sets page proportion.",
-              "custom ratio preserves a4-equivalent area before orientation is applied.",
+              "Custom ratio preserves A4-equivalent area before orientation is applied.",
               "`orientation` changes the axis.",
               "`rotation` turns the planned page without changing its geometry."
             ]
@@ -87,84 +87,84 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "baseline",
+        "title": "Baseline",
         "id": "help-baseline-grid",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "the baseline is the shared vertical unit.",
-              "type leading, margins, module height, and many movement steps depend on it.",
-              "choose the smallest rhythm that still gives the page calm."
+              "The baseline is the shared vertical unit.",
+              "Type leading, margins, module height, and many movement steps depend on it.",
+              "Choose the smallest rhythm that still gives the page calm."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "margins",
+        "title": "Margins",
         "id": "help-margins",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "margin methods express the content field in baseline units.",
-              "progressive gives a measured lower weight.",
-              "van de Graaf creates a classical asymmetric field.",
-              "baseline gives an equal frame.",
-              "custom margins should be used when the page needs a precise exception."
+              "Margin methods express the content field in baseline units.",
+              "Progressive gives a measured lower weight.",
+              "Van de Graaf creates a classical asymmetric field.",
+              "Baseline gives an equal frame.",
+              "Custom margins should be used when the page needs a precise exception."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "grid",
+        "title": "Grid",
         "id": "help-gutter",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "columns and rows define the modular field.",
-              "gutter multiple sets the distance between modules in baseline units.",
-              "repetitive rhythm is the neutral control.",
-              "non-repetitive rhythms should strengthen proportion, not decorate the page."
+              "Columns and rows define the modular field.",
+              "Gutter multiple sets the distance between modules in baseline units.",
+              "Repetitive rhythm is the neutral control.",
+              "Non-repetitive rhythms should strengthen proportion, not decorate the page."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "typography",
+        "title": "Typography",
         "id": "help-typo",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "base family sets the document default.",
-              "type rhythm controls the hierarchy scale.",
-              "fibonacci rhythm can shift its sequence while remaining tied to the a4 body reference.",
-              "custom type belongs to individual paragraphs, not the global system."
+              "Base family sets the document default.",
+              "Type rhythm controls the hierarchy scale.",
+              "Fibonacci rhythm can Shift its sequence while remaining tied to the A4 body reference.",
+              "Custom type belongs to individual paragraphs, not the global system."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "color",
+        "title": "Color",
         "id": "help-color-scheme",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "base scheme defines the placeholder palette.",
-              "page ground is stored per page.",
-              "color is a signal. use it sparingly."
+              "Base scheme defines the placeholder palette.",
+              "Page ground is stored per page.",
+              "Color is a signal. Use it sparingly."
             ]
           }
         ],
@@ -173,143 +173,143 @@ export const HELP_CONTENT_GROUPS = [
     ]
   },
   {
-    "title": "general guidance",
+    "title": "General guidance",
     "sections": [
       {
-        "title": "general guidance",
+        "title": "General guidance",
         "id": "help-general-overview",
         "indexed": false,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "core editing and layout workflows."
+            "text": "Core editing and layout workflows."
           }
         ],
         "subsections": []
       },
       {
-        "title": "preview workspace",
+        "title": "Preview workspace",
         "id": "help-preview-workspace",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "the preview is the live layout surface for the active page.",
-              "a loaded page appears only after its snapshot and first final page plan are ready.",
-              "double-click inside a module to add text.",
-              "`shift` + double-click adds an image placeholder.",
-              "hold `1..5` while double-clicking to set the new paragraph hierarchy: `1` caption, `2` body, `3` subhead, `4` headline, `5` display.",
-              "hover a layer to reveal edit access and placement guides.",
-              "hovered paragraphs and image placeholders show `>` controls and a bottom-right resize handle.",
-              "controls contain edit, duplicate, and delete. paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. image controls expose rotation, column snap, and baseline snap.",
-              "rotation sliders use 5 degree steps while dragging with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
-              "drag to place, then nudge with arrow keys.",
-              "drag the bottom-right layer handle to resize paragraph or image placeholder rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the layer frame.",
-              "preview visibility toggles also control export visibility.",
-              "locked layers show guides, but cannot be moved, edited, duplicated, deleted, or retargeted.",
+              "The preview is the live layout surface for the active page.",
+              "A loaded page appears only after its snapshot and first final page plan are ready.",
+              "Double-click inside a module to add text.",
+              "`Shift` + double-click adds an image placeholder.",
+              "Hold `1..5` while double-clicking to set the new paragraph hierarchy: `1` caption, `2` body, `3` subhead, `4` headline, `5` display.",
+              "Hover a layer to reveal edit access and placement guides.",
+              "Hovered paragraphs and image placeholders show `>` controls and a bottom-right resize handle.",
+              "Controls contain edit, duplicate, and delete. Paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls expose rotation, column snap, and baseline snap.",
+              "Rotation sliders use 5 degree steps while dragging with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.",
+              "Drag to place, then nudge with arrow keys.",
+              "Drag the bottom-right layer handle to resize paragraph or image placeholder rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the layer frame.",
+              "Preview visibility toggles also control export visibility.",
+              "Locked layers show guides, but cannot be moved, edited, duplicated, deleted, or retargeted.",
               "`page up`, `page down`, `home`, and `end` navigate pages.",
-              "undo and redo cover settings, content, placement, duplication, deletion, and editor changes."
+              "Undo and redo cover settings, content, placement, duplication, deletion, and editor changes."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "text editor",
+        "title": "Text editor",
         "id": "help-editor",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "open from the preview affordance or an unlocked text layer card.",
-              "retarget an open editor by selecting another unlocked paragraph.",
-              "the left sidebar switches to `paragraph`, `typography`, `symbols`, `placeholders`, and `info`.",
-              "editor sections remember their open state within the current document.",
-              "`esc` or outside click exits edit mode.",
-              "inline editing follows the rendered line layout."
+              "Open from the preview affordance or an unlocked text layer card.",
+              "Retarget an open editor by selecting another unlocked paragraph.",
+              "The left sidebar switches to `paragraph`, `typography`, `symbols`, `placeholders`, and `info`.",
+              "Editor sections remember their open state within the current document.",
+              "`Esc` or outside click exits edit mode.",
+              "Inline editing follows the rendered line layout."
             ]
           }
         ],
         "subsections": [
           {
-            "title": "paragraph section",
+            "title": "Paragraph section",
             "id": "help-editor-paragraph",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "set rows, baselines, columns, alignment, reflow, hyphenation, x/y snap, and rotation.",
-                  "height is `rows + baselines`.",
+                  "Set rows, baselines, columns, alignment, reflow, hyphenation, x/y snap, and rotation.",
+                  "Height is `rows + baselines`.",
                   "`rows` may be `0` when `baselines` is greater than `0`.",
                   "`rows`, `baselines`, and `cols` preview on hover before commit.",
-                  "rotation uses 5 degree steps with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
-                  "drag the bottom-right paragraph handle to resize rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the paragraph frame.",
-                  "column snap locks x to column anchors.",
-                  "baseline snap locks y to the editorial rhythm."
+                  "Rotation uses 5 degree steps with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.",
+                  "Drag the bottom-right paragraph handle to resize rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the paragraph frame.",
+                  "Column snap locks x to column anchors.",
+                  "Baseline snap locks y to the editorial rhythm."
                 ]
               }
             ]
           },
           {
-            "title": "typography section",
+            "title": "Typography section",
             "id": "help-editor-typo",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "set family, cut, hierarchy, color, kerning, tracking, and custom size or leading.",
-                  "selecting `custom` seeds size and leading from the paragraph's resolved metrics.",
-                  "if text is selected, type and color controls apply to the selection.",
-                  "font, cut, hierarchy, and scheme preview on hover before commit."
+                  "Set family, cut, hierarchy, color, kerning, tracking, and custom size or leading.",
+                  "Selecting `custom` seeds size and leading from the paragraph's resolved metrics.",
+                  "If text is selected, type and color controls apply to the selection.",
+                  "Font, cut, hierarchy, and scheme preview on hover before commit."
                 ]
               }
             ]
           },
           {
-            "title": "symbols section",
+            "title": "Symbols section",
             "id": "help-editor-symbols",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "insert typographic symbols at the caret or over the current selection.",
-                  "the palette includes arrows, bullets, marks, math, greek lowercase, geometry, and editorial punctuation.",
-                  "symbols export through `Noto Sans Symbols 2` for stable geometry.",
-                  "recent symbols appear after first use."
+                  "Insert typographic symbols at the caret or over the current selection.",
+                  "The palette includes arrows, bullets, marks, math, Greek lowercase, geometry, and editorial punctuation.",
+                  "Symbols export through `Noto Sans Symbols 2` for stable geometry.",
+                  "Recent symbols appear after first use."
                 ]
               }
             ]
           },
           {
-            "title": "placeholders section",
+            "title": "Placeholders section",
             "id": "help-editor-placeholders",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "insert document-variable tokens at the caret or over the current selection.",
+                  "Insert document-variable tokens at the caret or over the current selection.",
                   "`<%lorem%>` fills the active frame using current geometry and reflow.",
-                  "`<%page%>` and `<%pages%>` use physical page counts. on facing spreads, the right side resolves to the next physical page number.",
-                  "available tokens: {{DOCUMENT_VARIABLE_TOKENS}}."
+                  "`<%page%>` and `<%pages%>` use physical page counts. On facing spreads, the right side resolves to the next physical page number.",
+                  "Available tokens: {{DOCUMENT_VARIABLE_TOKENS}}."
                 ]
               }
             ]
           },
           {
-            "title": "info section",
+            "title": "Info section",
             "id": "help-editor-info",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "shows geometry, type summary, counts, and maximum line length."
+                  "Shows geometry, type summary, counts, and maximum line length."
                 ]
               }
             ]
@@ -317,62 +317,62 @@ export const HELP_CONTENT_GROUPS = [
         ]
       },
       {
-        "title": "image editor",
+        "title": "Image editor",
         "id": "help-image-editor",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "`shift` + double-click creates a new image placeholder.",
-              "open from the preview affordance or an unlocked image layer card.",
-              "the left sidebar switches to `geometry`, `color`, and `info`.",
-              "editor sections remember their open state within the current document.",
-              "`esc` or outside click exits edit mode."
+              "`Shift` + double-click creates a new image placeholder.",
+              "Open from the preview affordance or an unlocked image layer card.",
+              "The left sidebar switches to `geometry`, `color`, and `info`.",
+              "Editor sections remember their open state within the current document.",
+              "`Esc` or outside click exits edit mode."
             ]
           }
         ],
         "subsections": [
           {
-            "title": "geometry section",
+            "title": "Geometry section",
             "id": "help-image-editor-geometry",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "set rows, baselines, columns, x/y snap, and rotation.",
-                  "height is `rows + baselines`.",
+                  "Set rows, baselines, columns, x/y snap, and rotation.",
+                  "Height is `rows + baselines`.",
                   "`rows`, `baselines`, and `cols` preview on hover before commit.",
-                  "hovered image placeholders expose `>` controls for edit, duplicate, delete, rotation, column snap, and baseline snap.",
-                  "rotation uses 5 degree steps with `shift`; `alt/option` + `shift` snaps to signed fibonacci degree stops.",
-                  "drag the bottom-right image placeholder handle to resize rows and columns. `shift` + drag adjusts height by baseline steps. the handle stays inside the placeholder frame."
+                  "Hovered image placeholders expose `>` controls for edit, duplicate, delete, rotation, column snap, and baseline snap.",
+                  "Rotation uses 5 degree steps with `Shift`; `Alt/Option` + `Shift` snaps to signed Fibonacci degree stops.",
+                  "Drag the bottom-right image placeholder handle to resize rows and columns. `Shift` + drag adjusts height by baseline steps. The handle stays inside the placeholder frame."
                 ]
               }
             ]
           },
           {
-            "title": "color section",
+            "title": "Color section",
             "id": "help-image-editor-color",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "set scheme, swatch color, and transparency."
+                  "Set scheme, swatch color, and transparency."
                 ]
               }
             ]
           },
           {
-            "title": "info section",
+            "title": "Info section",
             "id": "help-image-editor-info",
             "indexed": true,
             "blocks": [
               {
                 "type": "list",
                 "items": [
-                  "shows geometry, snap state, rotation, scheme, color, and transparency."
+                  "Shows geometry, snap state, rotation, scheme, color, and transparency."
                 ]
               }
             ]
@@ -380,108 +380,108 @@ export const HELP_CONTENT_GROUPS = [
         ]
       },
       {
-        "title": "drag and placement",
+        "title": "Drag and placement",
         "id": "help-drag-placement",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "drag respects each layer's x/y snap settings.",
-              "with baseline snap on, normal drag uses module tops.",
-              "hold `shift` during drag to move y by baseline rows.",
-              "unsnapped layers stay inside allowed placement bounds.",
-              "with column snap off, layers may overhang by one column into the side margins.",
-              "selected layers can be moved with arrow keys. `shift` increases unsnapped movement and switches snapped y to baseline steps."
+              "Drag respects each layer's x/y snap settings.",
+              "With baseline snap on, normal drag uses module tops.",
+              "Hold `Shift` during drag to move y by baseline rows.",
+              "Unsnapped layers stay inside allowed placement bounds.",
+              "With column snap off, layers may overhang by one column into the side margins.",
+              "Selected layers can be moved with arrow keys. `Shift` increases unsnapped movement and switches snapped y to baseline steps."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "history and reflow",
+        "title": "History and reflow",
         "id": "help-history-reflow",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "undo and redo cover settings, content, and placement.",
-              "reducing rows or columns never auto-repositions existing layers.",
-              "if a grid reduction would push content out of bounds, the change is blocked."
+              "Undo and redo cover settings, content, and placement.",
+              "Reducing rows or columns never auto-repositions existing layers.",
+              "If a grid reduction would push content out of bounds, the change is blocked."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "save and load",
+        "title": "Save and load",
         "id": "help-save-load",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "save stores metadata, pages, settings, layers, and tours.",
+              "Save stores metadata, pages, settings, layers, and tours.",
               "`save to library` stores a compressed local archive.",
-              "`import` restores json or `.swissgridgenerator`.",
-              "imported projects require the 2.0 `pages` schema.",
-              "positioned layers use logical anchors so layouts stay stable across grid changes.",
-              "supabase email-code auth is optional and used only for cloud sync."
+              "`import` restores JSON or `.swissgridgenerator`.",
+              "Imported projects require the 2.0 `pages` schema.",
+              "Positioned layers use logical anchors so layouts stay stable across grid changes.",
+              "Supabase email-code auth is optional and used only for cloud sync."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "export",
+        "title": "Export",
         "id": "help-export",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "export supports `JSON`, vector `PDF`, `SVG`, and `IDML`.",
-              "multi-page projects can export a range or explicit page selection.",
-              "export uses current guide visibility.",
+              "Export supports `JSON`, vector `PDF`, `SVG`, and `IDML`.",
+              "Multi-page projects can export a range or explicit page selection.",
+              "Export uses current guide visibility.",
               "`PDF`, `SVG`, and `IDML` consume the canonical page plan.",
-              "typography exports as shared glyph-outline geometry in the normal vector path.",
+              "Typography exports as shared glyph-outline geometry in the normal vector path.",
               "`JSON` exports an editable project document with metadata and layout state.",
-              "export metadata can be adjusted without changing the live project unless `JSON` is saved.",
-              "bleed is shared by `PDF`, `SVG`, and `IDML` and changes the export box, not the layout math.",
-              "`esc` closes the dialog when no export is running and cancels an active export at the next safe point."
+              "Export metadata can be adjusted without changing the live project unless `JSON` is saved.",
+              "Bleed is shared by `PDF`, `SVG`, and `IDML` and changes the export box, not the layout math.",
+              "`Esc` closes the dialog when no export is running and cancels an active export at the next safe point."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "project tours",
+        "title": "Project tours",
         "id": "help-project-tours",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "a loaded project may include a guided tour overlay.",
-              "reopen closed tours from `open tour`.",
-              "steps can move between pages, highlight layers, open editors, jump to help topics, or wait for a layer selection."
+              "A loaded project may include a guided tour overlay.",
+              "Reopen closed tours from `open tour`.",
+              "Steps can move between pages, highlight layers, open editors, jump to help topics, or wait for a layer selection."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "layout tooltips",
+        "title": "Layout tooltips",
         "id": "help-layout-tooltips",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "loading a preset or project opens a short workflow note at the bottom of the preview.",
+              "Loading a preset or project opens a short workflow note at the bottom of the preview.",
               "`next` advances the sequence.",
-              "when help is open, marked tooltip areas jump to their matching help topic on hover."
+              "When help is open, marked tooltip areas jump to their matching help topic on hover."
             ]
           }
         ],
@@ -490,262 +490,262 @@ export const HELP_CONTENT_GROUPS = [
     ]
   },
   {
-    "title": "application controls",
+    "title": "Application controls",
     "sections": [
       {
-        "title": "ux reference",
+        "title": "Ux reference",
         "id": "help-ux-overview",
         "indexed": false,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "global controls and panel behavior."
+            "text": "Global controls and panel behavior."
           }
         ],
         "subsections": []
       },
       {
-        "title": "application controls",
+        "title": "Application controls",
         "id": "help-application-controls-overview",
         "indexed": false,
         "blocks": [],
         "subsections": []
       },
       {
-        "title": "header and sidebars",
+        "title": "Header and sidebars",
         "id": "help-sidebars-header",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "header actions cover presets, import, save, export, undo, redo, paragraph zoom, display toggles, project, cloud account, and the more menu.",
-              "the more menu contains light/dark mode, help, feedback, and legal notice.",
-              "the project panel can be toggled with `cmd/ctrl+shift+p`."
+              "Header actions cover presets, import, save, export, undo, redo, paragraph zoom, display toggles, project, cloud account, and the more menu.",
+              "The more menu contains light/dark mode, help, feedback, and legal notice.",
+              "The project panel can be toggled with `Cmd/Ctrl+Shift+P`."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "help navigation",
+        "title": "Help navigation",
         "id": "help-help-navigation",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "open help, then hover marked targets.",
-              "markers cover header actions, settings panels, preview surface, editor sections, tooltip popup, and preset browser.",
-              "use the up arrow beside a help title to return to the index."
+              "Open help, then hover marked targets.",
+              "Markers cover header actions, settings panels, preview surface, editor sections, tooltip popup, and preset browser.",
+              "Use the up arrow beside a help title to return to the index."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "presets",
+        "title": "Presets",
         "id": "help-header-examples",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "opens the preset browser.",
-              "bundled files are grouped into `presets` and `examples`.",
-              "user files appear under `users` when local or cloud layouts exist.",
-              "user storage is local to the browser unless cloud sync is active.",
-              "double-click a thumbnail to load it.",
-              "`esc` closes without loading.",
-              "shortcut: `cmd/ctrl+shift+4`."
+              "Opens the preset browser.",
+              "Bundled files are grouped into `presets` and `examples`.",
+              "User files appear under `users` when local or cloud layouts exist.",
+              "User storage is local to the browser unless cloud sync is active.",
+              "Double-click a thumbnail to load it.",
+              "`Esc` closes without loading.",
+              "Shortcut: `Cmd/Ctrl+Shift+4`."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "import",
+        "title": "Import",
         "id": "help-header-load",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "imports json or `.swissgridgenerator`. shortcut: `cmd/ctrl+o`."
+            "text": "Imports JSON or `.swissgridgenerator`. Shortcut: `Cmd/Ctrl+O`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "save",
+        "title": "Save",
         "id": "help-header-save",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "opens `save to library`, then stores the project in the local `users` library. the status dot is red when unsaved, orange when saved locally, and green only when signed in and cloud-synced. shortcut: `cmd/ctrl+s`."
+            "text": "Opens `save to library`, then stores the project in the local `users` library. The status dot is red when unsaved, orange when saved locally, and green only when signed in and cloud-synced. Shortcut: `Cmd/Ctrl+S`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "cloud account",
+        "title": "Cloud account",
         "id": "help-cloud-account",
         "indexed": true,
         "blocks": [
           {
             "type": "list",
             "items": [
-              "opens the cloud account panel.",
-              "the account dot is green only when signed in and fully synced.",
-              "email-code sign-in uses supabase browser auth.",
-              "signed-in saved projects auto-save locally and sync when possible.",
-              "remote deletions apply locally when no newer unsynced local change exists.",
-              "failures are translated into rate-limit, permission, offline, session, and setup messages."
+              "Opens the cloud account panel.",
+              "The account dot is green only when signed in and fully synced.",
+              "Email-code sign-in uses Supabase browser auth.",
+              "Signed-in saved projects auto-save locally and sync when possible.",
+              "Remote deletions apply locally when no newer unsynced local change exists.",
+              "Failures are translated into rate-limit, permission, offline, session, and setup messages."
             ]
           }
         ],
         "subsections": []
       },
       {
-        "title": "export",
+        "title": "Export",
         "id": "help-header-export",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "opens export. shortcut: `cmd/ctrl+shift+e`."
+            "text": "Opens export. Shortcut: `Cmd/Ctrl+Shift+E`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "undo",
+        "title": "Undo",
         "id": "help-header-undo",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "reverts the latest history step. shortcut: `cmd/ctrl+z`."
+            "text": "Reverts the latest history step. Shortcut: `Cmd/Ctrl+Z`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "redo",
+        "title": "Redo",
         "id": "help-header-redo",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "reapplies an undone history step. shortcut: `cmd/ctrl+shift+z` or `cmd/ctrl+y`."
+            "text": "Reapplies an undone history step. Shortcut: `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "dark mode",
+        "title": "Dark mode",
         "id": "help-header-dark-mode",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "toggles light and dark ui. shortcut: `cmd/ctrl+shift+d`."
+            "text": "Toggles light and dark UI. Shortcut: `Cmd/Ctrl+Shift+D`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "paragraph zoom",
+        "title": "Paragraph zoom",
         "id": "help-header-smart-text-zoom",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "toggles zoom-to-paragraph during text editing."
+            "text": "Toggles zoom-to-paragraph during text editing."
           }
         ],
         "subsections": []
       },
       {
-        "title": "baselines toggle",
+        "title": "Baselines toggle",
         "id": "help-header-baselines",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows baseline rhythm. shortcut: `cmd/ctrl+shift+b`."
+            "text": "Shows baseline rhythm. Shortcut: `Cmd/Ctrl+Shift+B`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "margins toggle",
+        "title": "Margins toggle",
         "id": "help-header-margins",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows margin frame. shortcut: `cmd/ctrl+shift+m`."
+            "text": "Shows margin frame. Shortcut: `Cmd/Ctrl+Shift+M`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "modules toggle",
+        "title": "Modules toggle",
         "id": "help-header-modules",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows modular field and gutters. shortcut: `cmd/ctrl+shift+g`."
+            "text": "Shows modular field and gutters. Shortcut: `Cmd/Ctrl+Shift+G`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "typography toggle",
+        "title": "Typography toggle",
         "id": "help-header-typography",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows typography overlay. shortcut: `cmd/ctrl+shift+t`."
+            "text": "Shows typography overlay. Shortcut: `Cmd/Ctrl+Shift+T`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "image placeholders toggle",
+        "title": "Image placeholders toggle",
         "id": "help-header-image-placeholders",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows image placeholders. shortcut: `cmd/ctrl+shift+j`."
+            "text": "Shows image placeholders. Shortcut: `Cmd/Ctrl+Shift+J`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "project panel",
+        "title": "Project panel",
         "id": "help-header-layers",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows project metadata, page order, and page layers. shortcut: `cmd/ctrl+shift+p`."
+            "text": "Shows project metadata, page order, and page layers. Shortcut: `Cmd/Ctrl+Shift+P`."
           }
         ],
         "subsections": []
       },
       {
-        "title": "information toggle",
+        "title": "Information toggle",
         "id": "help-header-information",
         "indexed": true,
         "blocks": [
           {
             "type": "paragraph",
-            "text": "shows contextual help markers. shortcut: `cmd/ctrl+shift+i`."
+            "text": "Shows contextual help markers. Shortcut: `Cmd/Ctrl+Shift+I`."
           }
         ],
         "subsections": []
@@ -753,10 +753,10 @@ export const HELP_CONTENT_GROUPS = [
     ]
   },
   {
-    "title": "reference",
+    "title": "Reference",
     "sections": [
       {
-        "title": "fonts",
+        "title": "Fonts",
         "id": "help-reference-fonts",
         "indexed": true,
         "blocks": [
@@ -768,7 +768,7 @@ export const HELP_CONTENT_GROUPS = [
         "subsections": []
       },
       {
-        "title": "shortcuts",
+        "title": "Shortcuts",
         "id": "help-reference-shortcuts",
         "indexed": true,
         "blocks": [
@@ -785,171 +785,171 @@ export const HELP_CONTENT_GROUPS = [
 
 export const HELP_INDEX_GROUPS = [
   {
-    "title": "first sequence",
+    "title": "First sequence",
     "items": [
       {
         "id": "help-quick-start",
-        "label": "first sequence"
+        "label": "First sequence"
       }
     ]
   },
   {
-    "title": "settings",
+    "title": "Settings",
     "items": [
       {
         "id": "help-canvas-ratio",
-        "label": "canvas"
+        "label": "Canvas"
       },
       {
         "id": "help-baseline-grid",
-        "label": "baseline"
+        "label": "Baseline"
       },
       {
         "id": "help-margins",
-        "label": "margins"
+        "label": "Margins"
       },
       {
         "id": "help-gutter",
-        "label": "grid"
+        "label": "Grid"
       },
       {
         "id": "help-typo",
-        "label": "typography"
+        "label": "Typography"
       },
       {
         "id": "help-color-scheme",
-        "label": "color"
+        "label": "Color"
       }
     ]
   },
   {
-    "title": "general guidance",
+    "title": "General guidance",
     "items": [
       {
         "id": "help-preview-workspace",
-        "label": "preview workspace"
+        "label": "Preview workspace"
       },
       {
         "id": "help-editor",
-        "label": "text editor"
+        "label": "Text editor"
       },
       {
         "id": "help-image-editor",
-        "label": "image editor"
+        "label": "Image editor"
       },
       {
         "id": "help-drag-placement",
-        "label": "drag and placement"
+        "label": "Drag and placement"
       },
       {
         "id": "help-history-reflow",
-        "label": "history and reflow"
+        "label": "History and reflow"
       },
       {
         "id": "help-save-load",
-        "label": "save and load"
+        "label": "Save and load"
       },
       {
         "id": "help-export",
-        "label": "export"
+        "label": "Export"
       },
       {
         "id": "help-project-tours",
-        "label": "project tours"
+        "label": "Project tours"
       },
       {
         "id": "help-layout-tooltips",
-        "label": "layout tooltips"
+        "label": "Layout tooltips"
       }
     ]
   },
   {
-    "title": "application controls",
+    "title": "Application controls",
     "items": [
       {
         "id": "help-sidebars-header",
-        "label": "header and sidebars"
+        "label": "Header and sidebars"
       },
       {
         "id": "help-help-navigation",
-        "label": "help navigation"
+        "label": "Help navigation"
       },
       {
         "id": "help-header-examples",
-        "label": "presets"
+        "label": "Presets"
       },
       {
         "id": "help-header-load",
-        "label": "import"
+        "label": "Import"
       },
       {
         "id": "help-header-save",
-        "label": "save"
+        "label": "Save"
       },
       {
         "id": "help-cloud-account",
-        "label": "cloud account"
+        "label": "Cloud account"
       },
       {
         "id": "help-header-export",
-        "label": "export"
+        "label": "Export"
       },
       {
         "id": "help-header-undo",
-        "label": "undo"
+        "label": "Undo"
       },
       {
         "id": "help-header-redo",
-        "label": "redo"
+        "label": "Redo"
       },
       {
         "id": "help-header-dark-mode",
-        "label": "dark mode"
+        "label": "Dark mode"
       },
       {
         "id": "help-header-smart-text-zoom",
-        "label": "paragraph zoom"
+        "label": "Paragraph zoom"
       },
       {
         "id": "help-header-baselines",
-        "label": "baselines toggle"
+        "label": "Baselines toggle"
       },
       {
         "id": "help-header-margins",
-        "label": "margins toggle"
+        "label": "Margins toggle"
       },
       {
         "id": "help-header-modules",
-        "label": "modules toggle"
+        "label": "Modules toggle"
       },
       {
         "id": "help-header-typography",
-        "label": "typography toggle"
+        "label": "Typography toggle"
       },
       {
         "id": "help-header-image-placeholders",
-        "label": "image placeholders toggle"
+        "label": "Image placeholders toggle"
       },
       {
         "id": "help-header-layers",
-        "label": "project panel"
+        "label": "Project panel"
       },
       {
         "id": "help-header-information",
-        "label": "information toggle"
+        "label": "Information toggle"
       }
     ]
   },
   {
-    "title": "reference",
+    "title": "Reference",
     "items": [
       {
         "id": "help-reference-fonts",
-        "label": "fonts"
+        "label": "Fonts"
       },
       {
         "id": "help-reference-shortcuts",
-        "label": "shortcuts"
+        "label": "Shortcuts"
       }
     ]
   }
@@ -958,198 +958,198 @@ export const HELP_INDEX_GROUPS = [
 export const ALL_HELP_INDEX_ITEMS = [
   {
     "id": "help-quick-start",
-    "label": "first sequence"
+    "label": "First sequence"
   },
   {
     "id": "help-settings-overview",
-    "label": "settings reference"
+    "label": "Settings reference"
   },
   {
     "id": "help-canvas-ratio",
-    "label": "canvas"
+    "label": "Canvas"
   },
   {
     "id": "help-baseline-grid",
-    "label": "baseline"
+    "label": "Baseline"
   },
   {
     "id": "help-margins",
-    "label": "margins"
+    "label": "Margins"
   },
   {
     "id": "help-gutter",
-    "label": "grid"
+    "label": "Grid"
   },
   {
     "id": "help-typo",
-    "label": "typography"
+    "label": "Typography"
   },
   {
     "id": "help-color-scheme",
-    "label": "color"
+    "label": "Color"
   },
   {
     "id": "help-general-overview",
-    "label": "general guidance"
+    "label": "General guidance"
   },
   {
     "id": "help-preview-workspace",
-    "label": "preview workspace"
+    "label": "Preview workspace"
   },
   {
     "id": "help-editor",
-    "label": "text editor"
+    "label": "Text editor"
   },
   {
     "id": "help-image-editor",
-    "label": "image editor"
+    "label": "Image editor"
   },
   {
     "id": "help-drag-placement",
-    "label": "drag and placement"
+    "label": "Drag and placement"
   },
   {
     "id": "help-history-reflow",
-    "label": "history and reflow"
+    "label": "History and reflow"
   },
   {
     "id": "help-save-load",
-    "label": "save and load"
+    "label": "Save and load"
   },
   {
     "id": "help-export",
-    "label": "export"
+    "label": "Export"
   },
   {
     "id": "help-project-tours",
-    "label": "project tours"
+    "label": "Project tours"
   },
   {
     "id": "help-layout-tooltips",
-    "label": "layout tooltips"
+    "label": "Layout tooltips"
   },
   {
     "id": "help-ux-overview",
-    "label": "ux reference"
+    "label": "Ux reference"
   },
   {
     "id": "help-application-controls-overview",
-    "label": "application controls"
+    "label": "Application controls"
   },
   {
     "id": "help-sidebars-header",
-    "label": "header and sidebars"
+    "label": "Header and sidebars"
   },
   {
     "id": "help-help-navigation",
-    "label": "help navigation"
+    "label": "Help navigation"
   },
   {
     "id": "help-header-examples",
-    "label": "presets"
+    "label": "Presets"
   },
   {
     "id": "help-header-load",
-    "label": "import"
+    "label": "Import"
   },
   {
     "id": "help-header-save",
-    "label": "save"
+    "label": "Save"
   },
   {
     "id": "help-cloud-account",
-    "label": "cloud account"
+    "label": "Cloud account"
   },
   {
     "id": "help-header-export",
-    "label": "export"
+    "label": "Export"
   },
   {
     "id": "help-header-undo",
-    "label": "undo"
+    "label": "Undo"
   },
   {
     "id": "help-header-redo",
-    "label": "redo"
+    "label": "Redo"
   },
   {
     "id": "help-header-dark-mode",
-    "label": "dark mode"
+    "label": "Dark mode"
   },
   {
     "id": "help-header-smart-text-zoom",
-    "label": "paragraph zoom"
+    "label": "Paragraph zoom"
   },
   {
     "id": "help-header-baselines",
-    "label": "baselines toggle"
+    "label": "Baselines toggle"
   },
   {
     "id": "help-header-margins",
-    "label": "margins toggle"
+    "label": "Margins toggle"
   },
   {
     "id": "help-header-modules",
-    "label": "modules toggle"
+    "label": "Modules toggle"
   },
   {
     "id": "help-header-typography",
-    "label": "typography toggle"
+    "label": "Typography toggle"
   },
   {
     "id": "help-header-image-placeholders",
-    "label": "image placeholders toggle"
+    "label": "Image placeholders toggle"
   },
   {
     "id": "help-header-layers",
-    "label": "project panel"
+    "label": "Project panel"
   },
   {
     "id": "help-header-information",
-    "label": "information toggle"
+    "label": "Information toggle"
   },
   {
     "id": "help-reference-fonts",
-    "label": "fonts"
+    "label": "Fonts"
   },
   {
     "id": "help-reference-shortcuts",
-    "label": "shortcuts"
+    "label": "Shortcuts"
   }
 ] as const
 
 export const EDITOR_HELP_SUBSECTION_ITEMS = [
   {
     "id": "help-editor-paragraph",
-    "label": "text editor / paragraph section"
+    "label": "Text editor / Paragraph section"
   },
   {
     "id": "help-editor-typo",
-    "label": "text editor / typography section"
+    "label": "Text editor / Typography section"
   },
   {
     "id": "help-editor-symbols",
-    "label": "text editor / symbols section"
+    "label": "Text editor / Symbols section"
   },
   {
     "id": "help-editor-placeholders",
-    "label": "text editor / placeholders section"
+    "label": "Text editor / Placeholders section"
   },
   {
     "id": "help-editor-info",
-    "label": "text editor / info section"
+    "label": "Text editor / Info section"
   },
   {
     "id": "help-image-editor-geometry",
-    "label": "image editor / geometry section"
+    "label": "Image editor / Geometry section"
   },
   {
     "id": "help-image-editor-color",
-    "label": "image editor / color section"
+    "label": "Image editor / Color section"
   },
   {
     "id": "help-image-editor-info",
-    "label": "image editor / info section"
+    "label": "Image editor / Info section"
   }
 ] as const
 

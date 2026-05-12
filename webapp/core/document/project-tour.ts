@@ -114,7 +114,7 @@ export function parseProjectTour(value: unknown): ProjectTour | null {
   }
 
   const id = toOptionalText(payload.id) ?? "project-tour"
-  const title = toOptionalText(payload.title) ?? translateMessage("projectPanel.tourTitle")
+  const title = toOptionalText(payload.title) ?? translateMessage("ui.panels.project.tourTitle")
 
   return {
     id,

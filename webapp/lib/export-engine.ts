@@ -467,7 +467,7 @@ async function runBrowserPageSetWorkers<TRequest, TResponse, TResult>({
         completedSteps: completedPages,
         totalSteps: options.pages.length,
         currentPageNumber: getLastCompletedPageNumber(options, completedPages),
-        currentLabel: translateMessage("status.export.pageSet", {
+        currentLabel: translateMessage("ui.export.status.pageSet", {
           label,
           current: pageSet.index + 1,
           total: pageSets.length,
@@ -644,7 +644,7 @@ async function buildPlannedPagesWithProgress(
         completedSteps: completed,
         totalSteps: total,
         currentPageNumber: options.pageNumbers?.[index] ?? (options.startPageNumber ?? 1) + index,
-        currentLabel: translateMessage("status.export.planning", { completed, total }),
+        currentLabel: translateMessage("ui.export.status.planning", { completed, total }),
         phase: "preparing",
       })
       await yieldForBrowserPlanningProgress()
@@ -695,10 +695,10 @@ async function exportPdf(
     })
     instance.setDocumentProperties({
       title: trimmedTitle || options.filenames?.pdf || `${options.baseName}.pdf`,
-      author: trimmedAuthor || translateMessage("exportMetadata.generatedAuthor"),
-      subject: trimmedDescription || translateMessage("exportMetadata.vectorTitle"),
-      creator: translateMessage("exportMetadata.creatorTool"),
-      keywords: translateMessage("exportMetadata.pdfKeywords"),
+      author: trimmedAuthor || translateMessage("ui.export.metadata.generatedAuthor"),
+      subject: trimmedDescription || translateMessage("ui.export.metadata.vectorTitle"),
+      creator: translateMessage("ui.export.metadata.creatorTool"),
+      keywords: translateMessage("ui.export.metadata.pdfKeywords"),
     })
     instance.setCreationDate(Number.isNaN(parsedCreatedAt) ? new Date() : new Date(parsedCreatedAt))
     instance.setLanguage("en-US")
@@ -739,7 +739,7 @@ async function exportPdf(
     completedSteps: 0,
     totalSteps: plannedPages.length,
     currentPageNumber: options.pageNumbers?.[0] ?? options.startPageNumber ?? 1,
-    currentLabel: translateMessage("status.export.renderingPdfPages", { count: plannedPages.length }),
+    currentLabel: translateMessage("ui.export.status.renderingPdfPages", { count: plannedPages.length }),
     phase: "rendering",
   })
   await record.measure("pdf render pages", async () => {
@@ -792,7 +792,7 @@ async function exportPdf(
         completedSteps: completed,
         totalSteps: plannedPages.length,
         currentPageNumber: options.pageNumbers?.[index] ?? completed,
-        currentLabel: translateMessage("status.export.renderingPdf", { completed, total: plannedPages.length }),
+        currentLabel: translateMessage("ui.export.status.renderingPdf", { completed, total: plannedPages.length }),
         phase: "rendering",
       })
       if (completed % PDF_CANCEL_CHECK_PAGE_INTERVAL === 0) {
@@ -809,7 +809,7 @@ async function exportPdf(
       completedSteps: plannedPages.length,
       totalSteps: plannedPages.length,
       currentPageNumber: options.pageNumbers?.[plannedPages.length - 1] ?? plannedPages.length,
-      currentLabel: translateMessage("status.export.finalizingPdf"),
+      currentLabel: translateMessage("ui.export.status.finalizingPdf"),
       phase: "packaging",
     })
     await yieldForMainThreadCancellation()
@@ -886,7 +886,7 @@ async function renderSvgPageSetsSequentially(
       completedSteps: completedPages,
       totalSteps: options.pages.length,
       currentPageNumber: options.pageNumbers?.[Math.max(0, completedPages - 1)] ?? completedPages,
-      currentLabel: translateMessage("status.export.svgPageSet", {
+      currentLabel: translateMessage("ui.export.status.svgPageSet", {
         current: pageSet.index + 1,
         total: pageSets.length,
       }),
@@ -1030,7 +1030,7 @@ async function exportSvg(
     completedSteps: plannedPages.length,
     totalSteps: plannedPages.length,
     currentPageNumber: options.pageNumbers?.[plannedPages.length - 1] ?? (options.startPageNumber ?? 1) + plannedPages.length - 1,
-    currentLabel: translateMessage("status.export.packagingSvg"),
+    currentLabel: translateMessage("ui.export.status.packagingSvg"),
     phase: "packaging",
   })
   return record.measure("svg zip", async () => {
@@ -1143,7 +1143,7 @@ async function renderIdmlPageSetsSequentially(
       completedSteps: completedPages,
       totalSteps: options.pages.length,
       currentPageNumber: options.pageNumbers?.[Math.max(0, completedPages - 1)] ?? completedPages,
-      currentLabel: translateMessage("status.export.idmlPageSet", {
+      currentLabel: translateMessage("ui.export.status.idmlPageSet", {
         current: pageSet.index + 1,
         total: pageSets.length,
       }),
@@ -1315,7 +1315,7 @@ async function exportIdml(
     completedSteps: plannedPages.length,
     totalSteps: plannedPages.length,
     currentPageNumber: options.pageNumbers?.[plannedPages.length - 1] ?? (options.startPageNumber ?? 1) + plannedPages.length - 1,
-    currentLabel: translateMessage("status.export.packagingIdml"),
+    currentLabel: translateMessage("ui.export.status.packagingIdml"),
     phase: "packaging",
   })
   return record.measure("idml finalize", async () => ({

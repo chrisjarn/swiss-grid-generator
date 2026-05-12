@@ -89,7 +89,7 @@ Build like the lead engineer of a serious typography product.
 
 **Write like a seasoned Swiss editorial designer** — precise, calm, understated, and authoritative.
 
-- Use **lowercase** for all UI labels, buttons, help text, tooltips, and status messages (Braun influence).
+- Author UI labels, buttons, help text, tooltips, and status messages in normal sentence/label case; the GUI applies lowercase presentation through CSS (Braun influence).
 - Language must be **minimal, exact, and professional** — never marketing-like, playful, or casual.
 - Prefer clarity and brevity over friendliness.
 - Help texts and documentation should feel like they were written by someone who respects the reader’s intelligence and time.

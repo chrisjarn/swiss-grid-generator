@@ -42,9 +42,9 @@ type Props = {
 }
 
 const FONT_GROUPS = [
-  { key: "Sans-Serif", labelKey: "editor.fontGroups.sansSerif" },
-  { key: "Serif", labelKey: "editor.fontGroups.serif" },
-  { key: "Display", labelKey: "editor.fontGroups.poster" },
+  { key: "Sans-Serif", labelKey: "ui.editor.fontGroups.sansSerif" },
+  { key: "Serif", labelKey: "ui.editor.fontGroups.serif" },
+  { key: "Display", labelKey: "ui.editor.fontGroups.poster" },
 ] as const
 
 export function FontSelect({

@@ -238,8 +238,8 @@ export function useBlockEditorCanvasDoubleClick({
     const maxParagraphCount = resultGridCols * resultGridRows
     if (activeParagraphCount >= maxParagraphCount) {
       onRequestNotice?.({
-        title: translateMessage("status.notices.paragraphLimitTitle"),
-        message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
+        title: translateMessage("ui.status.notices.paragraphLimitTitle"),
+        message: translateMessage("ui.status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
       })
       return
     }

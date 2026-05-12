@@ -9,37 +9,37 @@ export type TextSymbolPaletteGroup = {
 export const TEXT_SYMBOL_PALETTE_GROUPS: readonly TextSymbolPaletteGroup[] = [
   {
     id: "arrows",
-    label: translateMessage("editor.symbols.groups.arrows"),
+    label: translateMessage("ui.editor.symbols.groups.arrows"),
     symbols: ["←", "↑", "→", "↓", "↖", "↗", "↘", "↙", "↔", "↕", "↩", "↪"],
   },
   {
     id: "bullets",
-    label: translateMessage("editor.symbols.groups.bullets"),
+    label: translateMessage("ui.editor.symbols.groups.bullets"),
     symbols: ["•", "◦", "▪", "▫", "■", "□", "●", "○", "◆", "◇", "▸", "▹"],
   },
   {
     id: "marks",
-    label: translateMessage("editor.symbols.groups.marks"),
+    label: translateMessage("ui.editor.symbols.groups.marks"),
     symbols: ["§", "¶", "†", "‡", "※", "№", "©", "®", "™", "℠", "℗", "℞"],
   },
   {
     id: "math",
-    label: translateMessage("editor.symbols.groups.math"),
+    label: translateMessage("ui.editor.symbols.groups.math"),
     symbols: ["+", "−", "×", "÷", "=", "≠", "≈", "≤", "≥", "±", "∞", "√"],
   },
   {
     id: "greek",
-    label: translateMessage("editor.symbols.groups.greek"),
+    label: translateMessage("ui.editor.symbols.groups.greek"),
     symbols: ["α", "β", "γ", "δ", "ε", "ζ", "η", "θ", "ι", "κ", "λ", "μ", "ν", "ξ", "ο", "π", "ρ", "σ", "τ", "υ", "φ", "χ", "ψ", "ω"],
   },
   {
     id: "geometry",
-    label: translateMessage("editor.symbols.groups.geometry"),
+    label: translateMessage("ui.editor.symbols.groups.geometry"),
     symbols: ["△", "▽", "▲", "▼", "◁", "▷", "◀", "▶", "◇", "◈", "⬡", "⬢"],
   },
   {
     id: "editorial",
-    label: translateMessage("editor.symbols.groups.editorial"),
+    label: translateMessage("ui.editor.symbols.groups.editorial"),
     symbols: ["«", "»", "‹", "›", "…", "–", "—", "′", "″", "·", "‚", "„"],
   },
 ] as const

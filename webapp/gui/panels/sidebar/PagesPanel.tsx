@@ -508,8 +508,8 @@ export function PagesPanel({
                 type="button"
                 data-card-drag-ignore="true"
                 aria-label={isExpanded
-                  ? t("projectPanel.collapsePage", { name: page.name })
-                  : t("projectPanel.expandPage", { name: page.name })}
+                  ? t("ui.panels.project.collapsePage", { name: page.name })
+                  : t("ui.panels.project.expandPage", { name: page.name })}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${tone.close}`}
                 onClick={(event) => {
                   event.stopPropagation()
@@ -525,7 +525,7 @@ export function PagesPanel({
               {isFacingPage ? (
                 <span
                   className={`inline-flex h-6 w-6 items-center justify-center rounded-sm ${tone.accent}`}
-                  aria-label={t("projectPanel.facingPages")}
+                  aria-label={t("ui.panels.project.facingPages")}
                 >
                   <BookOpen className="h-3.5 w-3.5" strokeWidth={1.9} />
                 </span>
@@ -533,7 +533,7 @@ export function PagesPanel({
               <button
                 type="button"
                 data-card-drag-ignore="true"
-                aria-label={t("projectPanel.deletePage", { name: page.name })}
+                aria-label={t("ui.panels.project.deletePage", { name: page.name })}
                 disabled={deleteDisabled}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${
                   deleteDisabled
@@ -544,10 +544,10 @@ export function PagesPanel({
                   event.stopPropagation()
                   if (deleteDisabled) return
                   onRequestNotice?.({
-                    title: t("projectPanel.deletePageTitle"),
-                    message: t("projectPanel.deletePageMessage", { name: page.name }),
-                    confirmLabel: t("common.delete"),
-                    cancelLabel: t("common.cancel"),
+                    title: t("ui.panels.project.deletePageTitle"),
+                    message: t("ui.panels.project.deletePageMessage", { name: page.name }),
+                    confirmLabel: t("ui.common.delete"),
+                    cancelLabel: t("ui.common.cancel"),
                     onConfirm: () => {
                       onDeletePage(page.id)
                     },
@@ -567,7 +567,7 @@ export function PagesPanel({
             >
               <div className="grid grid-cols-[5.25rem_minmax(0,1fr)] items-center gap-x-3 py-1">
                 <span className={`text-[10px] font-semibold uppercase leading-none tracking-[0.08em] ${tone.accent}`}>
-                  {t("projectPanel.metadata.title")}
+                  {t("ui.panels.project.metadata.title")}
                 </span>
                 <input
                   ref={inputRef}
@@ -592,7 +592,7 @@ export function PagesPanel({
               </div>
               <div className="grid grid-cols-[5.25rem_minmax(0,1fr)] items-center gap-x-3 py-1">
                 <span className={`text-[10px] font-semibold uppercase leading-none tracking-[0.08em] ${tone.accent}`}>
-                  {t("projectPanel.facingPages")}
+                  {t("ui.panels.project.facingPages")}
                 </span>
                 <div className="flex justify-end">
                   <button
@@ -600,7 +600,7 @@ export function PagesPanel({
                     data-card-drag-ignore="true"
                     role="checkbox"
                     aria-checked={isFacingPage}
-                    aria-label={t("projectPanel.toggleFacingPages", { name: page.name })}
+                    aria-label={t("ui.panels.project.toggleFacingPages", { name: page.name })}
                     className={`rounded-sm p-1 transition-colors ${tone.close}`}
                     onClick={() => {
                       onFacingPageToggle(page.id, !isFacingPage)

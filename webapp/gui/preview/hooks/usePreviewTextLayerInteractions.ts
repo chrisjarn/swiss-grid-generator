@@ -82,8 +82,8 @@ export function usePreviewTextLayerInteractions<Key extends string, StyleKey ext
       const maxParagraphCount = gridCols * gridRows
       if (sourceText.trim().length > 0 && activeParagraphCount >= maxParagraphCount) {
         onRequestNotice?.({
-          title: translateMessage("status.notices.paragraphLimitTitle"),
-          message: translateMessage("status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
+          title: translateMessage("ui.status.notices.paragraphLimitTitle"),
+          message: translateMessage("ui.status.notices.paragraphLimitMessage", { count: maxParagraphCount }),
         })
         return
       }

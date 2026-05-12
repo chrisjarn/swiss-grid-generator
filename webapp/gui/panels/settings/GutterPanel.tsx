@@ -28,11 +28,11 @@ import {
 } from "@/gui/panels/settings/settings-panel-styles"
 
 const RHYTHM_OPTIONS: Array<{ value: GridRhythm; label: string; detail: string }> = [
-  { value: "fibonacci", label: translateMessage("settings.grid.fibonacci"), detail: "13:21:34:55:89" },
-  { value: "golden", label: translateMessage("settings.grid.goldenRatio"), detail: "1:1.618" },
-  { value: "fifth", label: translateMessage("settings.grid.perfectFifth"), detail: "3:2" },
-  { value: "fourth", label: translateMessage("settings.grid.perfectFourth"), detail: "4:3" },
-  { value: "repetitive", label: translateMessage("settings.grid.repetitive"), detail: "1:1:1:1" },
+  { value: "fibonacci", label: translateMessage("ui.panels.grid.fibonacci"), detail: "13:21:34:55:89" },
+  { value: "golden", label: translateMessage("ui.panels.grid.goldenRatio"), detail: "1:1.618" },
+  { value: "fifth", label: translateMessage("ui.panels.grid.perfectFifth"), detail: "3:2" },
+  { value: "fourth", label: translateMessage("ui.panels.grid.perfectFourth"), detail: "4:3" },
+  { value: "repetitive", label: translateMessage("ui.panels.grid.repetitive"), detail: "1:1:1:1" },
 ]
 
 type Props = {
@@ -105,8 +105,8 @@ export const GutterPanel = memo(function GutterPanel({
 
   return (
     <PanelCard
-      title={t("settings.grid.title")}
-      tooltip={t("settings.grid.tooltip")}
+      title={t("ui.panels.grid.title")}
+      tooltip={t("ui.panels.grid.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${gridCols} cols, ${gridRows} rows, ${gutterMultiple.toFixed(1)}x`}
       onHeaderClick={onHeaderClick}
@@ -115,10 +115,10 @@ export const GutterPanel = memo(function GutterPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.grid.rhythms")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.grid.rhythms")}</Label>
         <div
           role="listbox"
-          aria-label={t("settings.grid.rhythmAria")}
+          aria-label={t("ui.panels.grid.rhythmAria")}
           className={rhythmListClassName}
           onMouseLeave={() => onRhythmPreviewChange?.(null)}
         >
@@ -146,7 +146,7 @@ export const GutterPanel = memo(function GutterPanel({
         <div className="space-y-3">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.grid.rows")}</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.grid.rows")}</Label>
               <Switch
                 checked={rhythmRowsEnabled}
                 onCheckedChange={onRhythmRowsEnabledChange}
@@ -164,15 +164,15 @@ export const GutterPanel = memo(function GutterPanel({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent onPointerLeave={rowsDirectionSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="ltr" {...rowsDirectionSelectPreview.getItemPreviewProps("ltr")}>{t("settings.grid.leftToRight")}</SelectItem>
-                <SelectItem value="rtl" {...rowsDirectionSelectPreview.getItemPreviewProps("rtl")}>{t("settings.grid.rightToLeft")}</SelectItem>
+                <SelectItem value="ltr" {...rowsDirectionSelectPreview.getItemPreviewProps("ltr")}>{t("ui.panels.grid.leftToRight")}</SelectItem>
+                <SelectItem value="rtl" {...rowsDirectionSelectPreview.getItemPreviewProps("rtl")}>{t("ui.panels.grid.rightToLeft")}</SelectItem>
               </TopSelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.grid.cols")}</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.grid.cols")}</Label>
               <Switch
                 checked={rhythmColsEnabled}
                 onCheckedChange={onRhythmColsEnabledChange}
@@ -190,16 +190,16 @@ export const GutterPanel = memo(function GutterPanel({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent onPointerLeave={colsDirectionSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="ttb" {...colsDirectionSelectPreview.getItemPreviewProps("ttb")}>{t("settings.grid.topToBottom")}</SelectItem>
-                <SelectItem value="btt" {...colsDirectionSelectPreview.getItemPreviewProps("btt")}>{t("settings.grid.bottomToTop")}</SelectItem>
+                <SelectItem value="ttb" {...colsDirectionSelectPreview.getItemPreviewProps("ttb")}>{t("ui.panels.grid.topToBottom")}</SelectItem>
+                <SelectItem value="btt" {...colsDirectionSelectPreview.getItemPreviewProps("btt")}>{t("ui.panels.grid.bottomToTop")}</SelectItem>
               </TopSelectContent>
             </Select>
           </div>
         </div>
       ) : null}
       <EditableSlider
-        label={t("settings.grid.columns")}
-        inputAriaLabel={t("settings.grid.columns")}
+        label={t("ui.panels.grid.columns")}
+        inputAriaLabel={t("ui.panels.grid.columns")}
         value={[gridCols]}
         defaultValue={[4]}
         min={1}
@@ -210,8 +210,8 @@ export const GutterPanel = memo(function GutterPanel({
         valueClassName={valueBadgeClassName}
       />
       <EditableSlider
-        label={t("settings.grid.rows")}
-        inputAriaLabel={t("settings.grid.rows")}
+        label={t("ui.panels.grid.rows")}
+        inputAriaLabel={t("ui.panels.grid.rows")}
         value={[gridRows]}
         defaultValue={[5]}
         min={1}
@@ -224,8 +224,8 @@ export const GutterPanel = memo(function GutterPanel({
       <hr />
       <EditableSlider
         containerClassName="mt-5"
-        label={t("settings.grid.gutterMultiple")}
-        inputAriaLabel={t("settings.grid.gutterMultiple")}
+        label={t("ui.panels.grid.gutterMultiple")}
+        inputAriaLabel={t("ui.panels.grid.gutterMultiple")}
         value={[gutterMultiple]}
         defaultValue={[1]}
         min={GUTTER_MULTIPLE_RANGE.min}

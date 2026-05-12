@@ -13,6 +13,20 @@
     width: 0;
     height: 0;
   }
+
+  [data-sgg-gui-text="lowercase"],
+  [data-sgg-gui-text="lowercase"] :where(:not(input):not(textarea):not([contenteditable="true"]):not(canvas):not(svg)) {
+    text-transform: lowercase !important;
+  }
+
+  [data-sgg-gui-text="lowercase"] :where(input, textarea, [contenteditable="true"]) {
+    text-transform: none !important;
+  }
+
+  [data-sgg-gui-text="lowercase"] input::placeholder,
+  [data-sgg-gui-text="lowercase"] textarea::placeholder {
+    text-transform: lowercase !important;
+  }
 }
 
 @layer base {

@@ -250,15 +250,15 @@ export function ImageEditorDialog({
   const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
   const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
   const infoRows = [
-    [t("editor.paragraph.rows"), String(editorState.draftRows)],
-    [t("editor.paragraph.baselines"), String(editorState.draftHeightBaselines)],
-    [t("editor.paragraph.cols"), String(editorState.draftColumns)],
-    [t("editor.info.snapX"), editorState.draftSnapToColumns ? t("common.on") : t("common.off")],
-    [t("editor.info.snapY"), editorState.draftSnapToBaseline ? t("common.on") : t("common.off")],
-    [t("editor.paragraph.rotation"), `${Math.round(editorState.draftRotation)}deg`],
-    [t("editor.info.scheme"), colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme],
-    [t("editor.color.color"), editorState.draftColor],
-    [t("editor.image.transparency"), `${transparencyPercent}%`],
+    [t("ui.editor.paragraph.rows"), String(editorState.draftRows)],
+    [t("ui.editor.paragraph.baselines"), String(editorState.draftHeightBaselines)],
+    [t("ui.editor.paragraph.cols"), String(editorState.draftColumns)],
+    [t("ui.editor.info.snapX"), editorState.draftSnapToColumns ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.info.snapY"), editorState.draftSnapToBaseline ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.paragraph.rotation"), `${Math.round(editorState.draftRotation)}deg`],
+    [t("ui.editor.info.scheme"), colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme],
+    [t("ui.editor.color.color"), editorState.draftColor],
+    [t("ui.editor.image.transparency"), `${transparencyPercent}%`],
   ]
 
   const commitTransparencyInput = () => {
@@ -290,9 +290,9 @@ export function ImageEditorDialog({
           <EditorSidebarSection
             title={(
               <span className="inline-flex items-center gap-2">
-                <span>I. {t("editor.paragraph.title")}</span>
+                <span>I. {t("ui.editor.paragraph.title")}</span>
                 <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
-                  <span>{t("editor.image.title")}</span>
+                  <span>{t("ui.editor.image.title")}</span>
                   <span
                     className="h-2.5 w-2.5 shrink-0 rounded-sm border border-black/10"
                     style={{ backgroundColor: editorState.draftColor }}
@@ -301,7 +301,7 @@ export function ImageEditorDialog({
                 </span>
               </span>
             )}
-            tooltip={t("editor.image.geometryTooltip")}
+            tooltip={t("ui.editor.image.geometryTooltip")}
             collapsed={collapsed.geometry}
             collapsedSummary={`${editorState.draftRows} rows, ${editorState.draftColumns} cols, ${Math.round(editorState.draftRotation)}deg`}
             onHeaderClick={handleSectionHeaderClick("geometry")}
@@ -312,8 +312,8 @@ export function ImageEditorDialog({
             onHelpNavigate={() => onOpenHelpSection?.(IMAGE_EDITOR_HELP_SECTION_BY_KEY.geometry)}
           >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.rows")}</Label>
-            <Label className={`${sectionLabelClassName} text-right`}>{t("editor.paragraph.cols")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.rows")}</Label>
+            <Label className={`${sectionLabelClassName} text-right`}>{t("ui.editor.paragraph.cols")}</Label>
 
             <Select
               value={rowsSelectPreview.value}
@@ -330,7 +330,7 @@ export function ImageEditorDialog({
                     value={String(count)}
                     {...rowsSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {t(count === 1 ? "editor.format.row" : "editor.format.rows", { count })}
+                    {t(count === 1 ? "ui.editor.format.row" : "ui.editor.format.rows", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -351,13 +351,13 @@ export function ImageEditorDialog({
                     value={String(count)}
                     {...columnsSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {t(count === 1 ? "editor.format.column" : "editor.format.columns", { count })}
+                    {t(count === 1 ? "ui.editor.format.column" : "ui.editor.format.columns", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
             </Select>
 
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.baselines")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.baselines")}</Label>
             <div aria-hidden="true" />
 
             <Select
@@ -369,14 +369,14 @@ export function ImageEditorDialog({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={baselinesSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>{t("editor.format.zeroBaselines")}</SelectItem>
+                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>{t("ui.editor.format.zeroBaselines")}</SelectItem>
                 {Array.from({ length: maxHeightBaselines }, (_, index) => index + 1).map((count) => (
                   <SelectItem
                     key={`image-baselines-${count}`}
                     value={String(count)}
                     {...baselinesSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {t(count === 1 ? "editor.format.baseline" : "editor.format.baselines", { count })}
+                    {t(count === 1 ? "ui.editor.format.baseline" : "ui.editor.format.baselines", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -385,8 +385,8 @@ export function ImageEditorDialog({
 
           <div className="mt-4 space-y-3">
             <EditableSlider
-              label={t("editor.paragraph.rotation")}
-              inputAriaLabel={t("editor.paragraph.rotation")}
+              label={t("ui.editor.paragraph.rotation")}
+              inputAriaLabel={t("ui.editor.paragraph.rotation")}
               value={[editorState.draftRotation]}
               defaultValue={[0]}
               min={-180}
@@ -407,8 +407,8 @@ export function ImageEditorDialog({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapColumns")}</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapColumnsHelp")}</p>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.snapColumns")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("ui.editor.paragraph.snapColumnsHelp")}</p>
               </div>
               <Switch
                 checked={editorState.draftSnapToColumns}
@@ -420,8 +420,8 @@ export function ImageEditorDialog({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapBaseline")}</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapBaselineHelp")}</p>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.snapBaseline")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("ui.editor.paragraph.snapBaselineHelp")}</p>
               </div>
               <Switch
                 checked={editorState.draftSnapToBaseline}
@@ -436,8 +436,8 @@ export function ImageEditorDialog({
 
         <div ref={registerSectionRef("color")}>
           <EditorSidebarSection
-            title={`II. ${t("editor.image.colorTitle")}`}
-            tooltip={t("editor.image.colorTooltip")}
+            title={`II. ${t("ui.editor.image.colorTitle")}`}
+            tooltip={t("ui.editor.image.colorTooltip")}
             collapsed={collapsed.color}
             collapsedSummary={`${colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("color")}
@@ -467,7 +467,7 @@ export function ImageEditorDialog({
           />
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.image.transparency")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.image.transparency")}</Label>}>
             <input
               type="number"
               min={0}
@@ -492,8 +492,8 @@ export function ImageEditorDialog({
 
         <div ref={registerSectionRef("info")}>
           <EditorSidebarSection
-            title={`III. ${t("editor.info.title")}`}
-            tooltip={t("editor.info.imageTooltip")}
+            title={`III. ${t("ui.editor.info.title")}`}
+            tooltip={t("ui.editor.info.imageTooltip")}
             collapsed={collapsed.info}
             collapsedSummary={`${editorState.draftColor}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("info")}

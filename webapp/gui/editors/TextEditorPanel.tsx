@@ -94,15 +94,15 @@ const TEXT_EDITOR_HELP_SECTION_BY_KEY: Record<SectionKey, HelpSectionId> = {
 }
 
 const HORIZONTAL_ALIGN_MESSAGE_KEYS = {
-  left: "editor.paragraph.left",
-  center: "editor.paragraph.center",
-  right: "editor.paragraph.right",
+  left: "ui.editor.paragraph.left",
+  center: "ui.editor.paragraph.center",
+  right: "ui.editor.paragraph.right",
 } satisfies Record<BlockEditorTextAlign, MessageKey>
 
 const VERTICAL_ALIGN_MESSAGE_KEYS = {
-  top: "editor.paragraph.top",
-  center: "editor.paragraph.center",
-  bottom: "editor.paragraph.bottom",
+  top: "ui.editor.paragraph.top",
+  center: "ui.editor.paragraph.center",
+  bottom: "ui.editor.paragraph.bottom",
 } satisfies Record<BlockEditorVerticalAlign, MessageKey>
 
 function readTotalRenderTimeMs(): number | null {
@@ -255,7 +255,7 @@ export function TextEditorPanel<StyleKey extends string>({
     ?? editorColorScheme
   const selectedStyleLabelForSelection = selectionStyleKey
     ? controls.styleOptions.find((option) => option.value === selectionStyleKey)?.label ?? selectionStyleKey
-    : t("editor.mixed")
+    : t("ui.editor.mixed")
   const resolvedFontFamilyForSelection = selectionFontFamily ?? controls.editorState.draftFont
 
   useEffect(() => {
@@ -746,33 +746,33 @@ export function TextEditorPanel<StyleKey extends string>({
   const placeholderButtonClassName = `w-full rounded-sm border px-3 py-2 text-left transition-colors ${tone.button}`
   const symbolButtonClassName = `flex h-9 w-full items-center justify-center rounded-sm border text-[17px] leading-none transition-colors ${tone.button}`
   const infoRows = [
-    [t("editor.paragraph.rows"), String(controls.editorState.draftRows)],
-    [t("editor.paragraph.baselines"), String(controls.editorState.draftHeightBaselines)],
-    [t("editor.paragraph.cols"), String(controls.editorState.draftColumns)],
-    [t("editor.paragraph.rotation"), `${Math.round(controls.editorState.draftRotation)}deg`],
-    [t("editor.info.align"), t(HORIZONTAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftAlign])],
-    [t("editor.info.verticalAlign"), t(VERTICAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftVerticalAlign])],
-    [t("editor.info.reflow"), controls.editorState.draftReflow && canUseNewspaperReflow ? t("common.on") : t("common.off")],
-    [t("editor.info.hyphen"), controls.editorState.draftSyllableDivision ? t("common.on") : t("common.off")],
-    [t("editor.info.snapX"), controls.editorState.draftSnapToColumns ? t("common.on") : t("common.off")],
-    [t("editor.info.snapY"), controls.editorState.draftSnapToBaseline ? t("common.on") : t("common.off")],
-    [t("editor.typography.font"), selectionFontFamily ?? t("editor.mixed")],
-    [t("editor.typography.cut"), selectedFontVariantForSelection?.label ?? t("editor.mixed")],
-    [t("editor.typography.hierarchy"), selectedStyleLabelForSelection],
-    [t("editor.typography.kerning"), controls.editorState.draftOpticalKerning ? t("editor.typography.optical") : t("editor.typography.metric")],
-    [t("editor.typography.tracking"), selectionTrackingScale !== null ? formatTrackingScale(selectionTrackingScale) : t("editor.mixed")],
-    [t("editor.info.scheme"), selectedSchemeLabel],
-    [t("editor.color.color"), selectionColor ?? t("editor.mixed")],
-    [t("editor.info.chars"), String(characterCount)],
-    [t("editor.info.words"), String(wordCount)],
-    [t("editor.info.maxLine"), String(controls.maxCharsPerLine ?? 0)],
-    [t("editor.info.renderTime"), totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
+    [t("ui.editor.paragraph.rows"), String(controls.editorState.draftRows)],
+    [t("ui.editor.paragraph.baselines"), String(controls.editorState.draftHeightBaselines)],
+    [t("ui.editor.paragraph.cols"), String(controls.editorState.draftColumns)],
+    [t("ui.editor.paragraph.rotation"), `${Math.round(controls.editorState.draftRotation)}deg`],
+    [t("ui.editor.info.align"), t(HORIZONTAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftAlign])],
+    [t("ui.editor.info.verticalAlign"), t(VERTICAL_ALIGN_MESSAGE_KEYS[controls.editorState.draftVerticalAlign])],
+    [t("ui.editor.info.reflow"), controls.editorState.draftReflow && canUseNewspaperReflow ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.info.hyphen"), controls.editorState.draftSyllableDivision ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.info.snapX"), controls.editorState.draftSnapToColumns ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.info.snapY"), controls.editorState.draftSnapToBaseline ? t("ui.common.on") : t("ui.common.off")],
+    [t("ui.editor.typography.font"), selectionFontFamily ?? t("ui.editor.mixed")],
+    [t("ui.editor.typography.cut"), selectedFontVariantForSelection?.label ?? t("ui.editor.mixed")],
+    [t("ui.editor.typography.hierarchy"), selectedStyleLabelForSelection],
+    [t("ui.editor.typography.kerning"), controls.editorState.draftOpticalKerning ? t("ui.editor.typography.optical") : t("ui.editor.typography.metric")],
+    [t("ui.editor.typography.tracking"), selectionTrackingScale !== null ? formatTrackingScale(selectionTrackingScale) : t("ui.editor.mixed")],
+    [t("ui.editor.info.scheme"), selectedSchemeLabel],
+    [t("ui.editor.color.color"), selectionColor ?? t("ui.editor.mixed")],
+    [t("ui.editor.info.chars"), String(characterCount)],
+    [t("ui.editor.info.words"), String(wordCount)],
+    [t("ui.editor.info.maxLine"), String(controls.maxCharsPerLine ?? 0)],
+    [t("ui.editor.info.renderTime"), totalRenderTimeMs === null ? "—" : `${totalRenderTimeMs.toFixed(1)} ms`],
   ]
-  const selectedFontTriggerLabel = selectionFontFamily ?? t("editor.mixed")
+  const selectedFontTriggerLabel = selectionFontFamily ?? t("ui.editor.mixed")
   const selectedFontTriggerStyle = selectionFontFamily
     ? { fontFamily: getFontFamilyCss(selectionFontFamily) }
     : undefined
-  const selectedCutTriggerLabel = selectedFontVariantForSelection?.label ?? t("editor.mixed")
+  const selectedCutTriggerLabel = selectedFontVariantForSelection?.label ?? t("ui.editor.mixed")
   const selectedCutTriggerStyle = selectedFontVariantForSelection
     ? {
         fontFamily: getFontFamilyCss(resolvedFontFamilyForSelection),
@@ -794,10 +794,10 @@ export function TextEditorPanel<StyleKey extends string>({
       >
         <div ref={registerSectionRef("layout")}>
           <EditorSidebarSection
-            title={`I. ${t("editor.paragraph.title")}`}
-            tooltip={t("editor.paragraph.tooltip")}
+            title={`I. ${t("ui.editor.paragraph.title")}`}
+            tooltip={t("ui.editor.paragraph.tooltip")}
             collapsed={collapsed.layout}
-            collapsedSummary={`${controls.editorState.draftRows} ${t("editor.paragraph.rows")}, ${controls.editorState.draftColumns} ${t("editor.paragraph.cols")}`}
+            collapsedSummary={`${controls.editorState.draftRows} ${t("ui.editor.paragraph.rows")}, ${controls.editorState.draftColumns} ${t("ui.editor.paragraph.cols")}`}
             onHeaderClick={handleSectionHeaderClick("layout")}
             onHeaderDoubleClick={handleSectionHeaderDoubleClick}
             isDarkMode={isDarkMode}
@@ -806,8 +806,8 @@ export function TextEditorPanel<StyleKey extends string>({
             onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.layout)}
           >
           <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.rows")}</Label>
-            <Label className={`${sectionLabelClassName} text-right`}>{t("editor.paragraph.cols")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.rows")}</Label>
+            <Label className={`${sectionLabelClassName} text-right`}>{t("ui.editor.paragraph.cols")}</Label>
 
             <Select
               value={rowsSelectPreview.value}
@@ -820,7 +820,7 @@ export function TextEditorPanel<StyleKey extends string>({
               <TopSelectContent className={tone.selectContent} onPointerLeave={rowsSelectPreview.handleContentPointerLeave}>
                 {Array.from({ length: controls.gridRows + 1 }, (_, index) => index).map((count) => (
                   <SelectItem key={count} value={String(count)} {...rowsSelectPreview.getItemPreviewProps(String(count))}>
-                    {t(count === 1 ? "editor.format.row" : "editor.format.rows", { count })}
+                    {t(count === 1 ? "ui.editor.format.row" : "ui.editor.format.rows", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -837,13 +837,13 @@ export function TextEditorPanel<StyleKey extends string>({
               <TopSelectContent className={tone.selectContent} onPointerLeave={columnsSelectPreview.handleContentPointerLeave}>
                 {Array.from({ length: controls.gridCols }, (_, index) => index + 1).map((count) => (
                   <SelectItem key={count} value={String(count)} {...columnsSelectPreview.getItemPreviewProps(String(count))}>
-                    {t(count === 1 ? "editor.format.column" : "editor.format.columns", { count })}
+                    {t(count === 1 ? "ui.editor.format.column" : "ui.editor.format.columns", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
             </Select>
 
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.baselines")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.baselines")}</Label>
             <div aria-hidden="true" />
 
             <Select
@@ -855,14 +855,14 @@ export function TextEditorPanel<StyleKey extends string>({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={baselinesSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>{t("editor.format.zeroBaselines")}</SelectItem>
+                <SelectItem value="0" {...baselinesSelectPreview.getItemPreviewProps("0")}>{t("ui.editor.format.zeroBaselines")}</SelectItem>
                 {Array.from({ length: maxHeightBaselines }, (_, index) => index + 1).map((count) => (
                   <SelectItem
                     key={`paragraph-baselines-${count}`}
                     value={String(count)}
                     {...baselinesSelectPreview.getItemPreviewProps(String(count))}
                   >
-                    {t(count === 1 ? "editor.format.baseline" : "editor.format.baselines", { count })}
+                    {t(count === 1 ? "ui.editor.format.baseline" : "ui.editor.format.baselines", { count })}
                   </SelectItem>
                 ))}
               </TopSelectContent>
@@ -870,62 +870,62 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.horizontalAlignment")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.horizontalAlignment")}</Label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "left")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "left" } : prev)}
               >
-                {t("editor.paragraph.left")}
+                {t("ui.editor.paragraph.left")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "center")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "center" } : prev)}
               >
-                {t("editor.paragraph.center")}
+                {t("ui.editor.paragraph.center")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftAlign === "right")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftAlign: "right" } : prev)}
               >
-                {t("editor.paragraph.right")}
+                {t("ui.editor.paragraph.right")}
               </button>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label className={sectionLabelClassName}>{t("editor.paragraph.verticalAlignment")}</Label>
+            <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.verticalAlignment")}</Label>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "top")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "top" } : prev)}
               >
-                {t("editor.paragraph.top")}
+                {t("ui.editor.paragraph.top")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "center")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "center" } : prev)}
               >
-                {t("editor.paragraph.center")}
+                {t("ui.editor.paragraph.center")}
               </button>
               <button
                 type="button"
                 className={segmentButtonClassName(controls.editorState.draftVerticalAlign === "bottom")}
                 onClick={() => controls.setEditorState((prev) => prev ? { ...prev, draftVerticalAlign: "bottom" } : prev)}
               >
-                {t("editor.paragraph.bottom")}
+                {t("ui.editor.paragraph.bottom")}
               </button>
             </div>
           </div>
 
           <EditableSlider
-            label={t("editor.paragraph.rotation")}
-            inputAriaLabel={t("editor.paragraph.rotation")}
+            label={t("ui.editor.paragraph.rotation")}
+            inputAriaLabel={t("ui.editor.paragraph.rotation")}
             value={[controls.editorState.draftRotation]}
             defaultValue={[0]}
             min={-180}
@@ -947,9 +947,9 @@ export function TextEditorPanel<StyleKey extends string>({
           <div className="space-y-3">
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.newspaperReflow")}</Label>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.newspaperReflow")}</Label>
                 <p className={`mt-1 text-[11px] ${tone.muted}`}>
-                  {canUseNewspaperReflow ? t("editor.paragraph.reflowAvailable") : t("editor.paragraph.reflowUnavailable")}
+                  {canUseNewspaperReflow ? t("ui.editor.paragraph.reflowAvailable") : t("ui.editor.paragraph.reflowUnavailable")}
                 </p>
               </div>
               <Switch
@@ -963,8 +963,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.hyphenation")}</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.hyphenationHelp")}</p>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.hyphenation")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("ui.editor.paragraph.hyphenationHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSyllableDivision}
@@ -976,8 +976,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapColumns")}</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapColumnsHelp")}</p>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.snapColumns")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("ui.editor.paragraph.snapColumnsHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSnapToColumns}
@@ -989,8 +989,8 @@ export function TextEditorPanel<StyleKey extends string>({
 
             <div className="flex items-center justify-between gap-3">
               <div>
-                <Label className={sectionLabelClassName}>{t("editor.paragraph.snapBaseline")}</Label>
-                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("editor.paragraph.snapBaselineHelp")}</p>
+                <Label className={sectionLabelClassName}>{t("ui.editor.paragraph.snapBaseline")}</Label>
+                <p className={`mt-1 text-[11px] ${tone.muted}`}>{t("ui.editor.paragraph.snapBaselineHelp")}</p>
               </div>
               <Switch
                 checked={controls.editorState.draftSnapToBaseline}
@@ -1007,15 +1007,15 @@ export function TextEditorPanel<StyleKey extends string>({
         <EditorSidebarSection
           title={hasMixedTypeSettings ? (
             <>
-              II. {t("editor.typography.title")}{" "}
+              II. {t("ui.editor.typography.title")}{" "}
               <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
-                {t("editor.mixed")}
+                {t("ui.editor.mixed")}
               </span>
             </>
-          ) : `II. ${t("editor.typography.title")}`}
-          tooltip={t("editor.typography.tooltip")}
+          ) : `II. ${t("ui.editor.typography.title")}`}
+          tooltip={t("ui.editor.typography.tooltip")}
           collapsed={collapsed.type}
-          collapsedSummary={`${selectionFontFamily ?? t("editor.mixed")}, ${selectedStyleLabelForSelection}`}
+          collapsedSummary={`${selectionFontFamily ?? t("ui.editor.mixed")}, ${selectedStyleLabelForSelection}`}
           onHeaderClick={handleSectionHeaderClick("type")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1024,14 +1024,14 @@ export function TextEditorPanel<StyleKey extends string>({
           onHelpNavigate={() => onOpenHelpSection?.(TEXT_EDITOR_HELP_SECTION_BY_KEY.type)}
         >
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.hierarchy")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.hierarchy")}</Label>}>
             <Select
               value={hierarchySelectPreview.value}
               onOpenChange={hierarchySelectPreview.handleOpenChange}
               onValueChange={hierarchySelectPreview.handleValueChange}
             >
               <SelectTrigger className={triggerClassName}>
-                <SelectValue placeholder={t("editor.mixed")} />
+                <SelectValue placeholder={t("ui.editor.mixed")} />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={hierarchySelectPreview.handleContentPointerLeave}>
                 {controls.styleOptions.map((option) => (
@@ -1051,7 +1051,7 @@ export function TextEditorPanel<StyleKey extends string>({
           {fxSelected ? (
             <div className="space-y-2">
               <div className="space-y-2">
-                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.customSize")}</Label>}>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.customSize")}</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1082,7 +1082,7 @@ export function TextEditorPanel<StyleKey extends string>({
               </div>
 
               <div className="space-y-2">
-                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.customLeading")}</Label>}>
+                <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.customLeading")}</Label>}>
                 <input
                   type="text"
                   inputMode="decimal"
@@ -1115,7 +1115,7 @@ export function TextEditorPanel<StyleKey extends string>({
           ) : null}
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.font")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.font")}</Label>}>
             <FontSelect
               value={fontSelectPreview.value}
               onValueChange={fontSelectPreview.handleValueChange}
@@ -1125,7 +1125,7 @@ export function TextEditorPanel<StyleKey extends string>({
               renderTriggerValue={selectedFontTriggerLabel}
               triggerValueStyle={selectedFontTriggerStyle}
               contentClassName={tone.selectContent}
-              placeholder={t("editor.mixed")}
+              placeholder={t("ui.editor.mixed")}
               onOpenChange={fontSelectPreview.handleOpenChange}
               onContentPointerLeave={fontSelectPreview.handleContentPointerLeave}
               getItemStyle={(option) => ({ fontFamily: getFontFamilyCss(option.value as FontFamily) })}
@@ -1135,7 +1135,7 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.cut")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.cut")}</Label>}>
             <Select
               value={cutSelectPreview.value}
               onOpenChange={cutSelectPreview.handleOpenChange}
@@ -1167,7 +1167,7 @@ export function TextEditorPanel<StyleKey extends string>({
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.kerning")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.kerning")}</Label>}>
             <Select
               value={kerningSelectPreview.value}
               onOpenChange={kerningSelectPreview.handleOpenChange}
@@ -1177,15 +1177,15 @@ export function TextEditorPanel<StyleKey extends string>({
                 <SelectValue />
               </SelectTrigger>
               <TopSelectContent className={tone.selectContent} onPointerLeave={kerningSelectPreview.handleContentPointerLeave}>
-                <SelectItem value="on" {...kerningSelectPreview.getItemPreviewProps("on")}>{t("editor.typography.optical")}</SelectItem>
-                <SelectItem value="off" {...kerningSelectPreview.getItemPreviewProps("off")}>{t("editor.typography.metric")}</SelectItem>
+                <SelectItem value="on" {...kerningSelectPreview.getItemPreviewProps("on")}>{t("ui.editor.typography.optical")}</SelectItem>
+                <SelectItem value="off" {...kerningSelectPreview.getItemPreviewProps("off")}>{t("ui.editor.typography.metric")}</SelectItem>
               </TopSelectContent>
             </Select>
             </LabeledControlRow>
           </div>
 
           <div className="space-y-2">
-            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("editor.typography.tracking")}</Label>}>
+            <LabeledControlRow label={<Label className={sectionLabelClassName}>{t("ui.editor.typography.tracking")}</Label>}>
             <input
               type="number"
               min={MIN_TRACKING_SCALE}
@@ -1193,7 +1193,7 @@ export function TextEditorPanel<StyleKey extends string>({
               step={1}
               inputMode="numeric"
               value={trackingInput}
-              placeholder={selectionTrackingScale === null ? t("editor.mixed") : undefined}
+              placeholder={selectionTrackingScale === null ? t("ui.editor.mixed") : undefined}
               onChange={(event) => {
                 setTrackingInput(event.target.value)
               }}
@@ -1234,10 +1234,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("symbols")}>
         <EditorSidebarSection
-          title={`III. ${t("editor.symbols.title")}`}
-          tooltip={t("editor.symbols.tooltip")}
+          title={`III. ${t("ui.editor.symbols.title")}`}
+          tooltip={t("ui.editor.symbols.tooltip")}
           collapsed={collapsed.symbols}
-          collapsedSummary={t("editor.symbols.summary")}
+          collapsedSummary={t("ui.editor.symbols.summary")}
           onHeaderClick={handleSectionHeaderClick("symbols")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1248,7 +1248,7 @@ export function TextEditorPanel<StyleKey extends string>({
           <div className="space-y-4">
             {recentSymbols.length > 0 ? (
               <div className="space-y-2">
-                <Label className={sectionLabelClassName}>{t("editor.symbols.recent")}</Label>
+                <Label className={sectionLabelClassName}>{t("ui.editor.symbols.recent")}</Label>
                 <div className="grid grid-cols-6 gap-1.5">
                   {recentSymbols.map((symbol) => (
                     <button
@@ -1256,8 +1256,8 @@ export function TextEditorPanel<StyleKey extends string>({
                       type="button"
                       className={symbolButtonClassName}
                       style={{ fontFamily: SYMBOL_FONT_FAMILY }}
-                      aria-label={t("editor.symbols.insert", { symbol })}
-                      title={t("editor.symbols.insert", { symbol })}
+                      aria-label={t("ui.editor.symbols.insert", { symbol })}
+                      title={t("ui.editor.symbols.insert", { symbol })}
                       onMouseDown={(event) => {
                         event.preventDefault()
                       }}
@@ -1280,8 +1280,8 @@ export function TextEditorPanel<StyleKey extends string>({
                       type="button"
                       className={symbolButtonClassName}
                       style={{ fontFamily: SYMBOL_FONT_FAMILY }}
-                      aria-label={t("editor.symbols.insert", { symbol })}
-                      title={t("editor.symbols.insert", { symbol })}
+                      aria-label={t("ui.editor.symbols.insert", { symbol })}
+                      title={t("ui.editor.symbols.insert", { symbol })}
                       onMouseDown={(event) => {
                         event.preventDefault()
                       }}
@@ -1299,10 +1299,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("placeholders")}>
         <EditorSidebarSection
-          title={`IV. ${t("editor.placeholders.title")}`}
-          tooltip={t("editor.placeholders.tooltip")}
+          title={`IV. ${t("ui.editor.placeholders.title")}`}
+          tooltip={t("ui.editor.placeholders.tooltip")}
           collapsed={collapsed.placeholders}
-          collapsedSummary={t("editor.placeholders.summary")}
+          collapsedSummary={t("ui.editor.placeholders.summary")}
           onHeaderClick={handleSectionHeaderClick("placeholders")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}
@@ -1337,10 +1337,10 @@ export function TextEditorPanel<StyleKey extends string>({
 
         <div ref={registerSectionRef("info")}>
           <EditorSidebarSection
-          title={`V. ${t("editor.info.title")}`}
-          tooltip={t("editor.info.paragraphTooltip")}
+          title={`V. ${t("ui.editor.info.title")}`}
+          tooltip={t("ui.editor.info.paragraphTooltip")}
           collapsed={collapsed.info}
-          collapsedSummary={t("editor.info.charsWords", { chars: characterCount, words: wordCount })}
+          collapsedSummary={t("ui.editor.info.charsWords", { chars: characterCount, words: wordCount })}
           onHeaderClick={handleSectionHeaderClick("info")}
           onHeaderDoubleClick={handleSectionHeaderDoubleClick}
           isDarkMode={isDarkMode}

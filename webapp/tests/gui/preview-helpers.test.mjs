@@ -62,12 +62,12 @@ test("preview style options list custom after caption", () => {
   assert.deepEqual(
     PREVIEW_STYLE_OPTIONS.map((option) => `${option.value}:${option.label}`),
     [
-      "display:display",
-      "headline:headline",
-      "subhead:subhead",
-      "body:body",
-      "caption:caption",
-      "fx:custom",
+      "display:Display",
+      "headline:Headline",
+      "subhead:Subhead",
+      "body:Body",
+      "caption:Caption",
+      "fx:Custom",
     ],
   )
 })

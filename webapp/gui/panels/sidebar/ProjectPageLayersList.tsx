@@ -136,7 +136,7 @@ export function ProjectPageLayersList({
       next.set(key, {
         key,
         kind: "text",
-        textPreview: getTextLayerDisplayName(rawText, t("projectPanel.layersList.emptyParagraph")),
+        textPreview: getTextLayerDisplayName(rawText, t("ui.panels.project.layersList.emptyParagraph")),
         color: typeof rawColor === "string" && isImagePlaceholderColor(rawColor)
           ? rawColor.toLowerCase()
           : defaultTextColor,
@@ -375,7 +375,7 @@ export function ProjectPageLayersList({
         onDoubleClick={(event) => event.stopPropagation()}
         className={`${layerListClassName} px-2 py-2 text-[11px] ${tone.empty}`}
       >
-        {t("projectPanel.layersList.empty")} <strong className="font-semibold">{t("projectPanel.layersList.emptyInstruction")}</strong>
+        {t("ui.panels.project.layersList.empty")} <strong className="font-semibold">{t("ui.panels.project.layersList.emptyInstruction")}</strong>
       </div>
     )
   }
@@ -488,7 +488,7 @@ export function ProjectPageLayersList({
                           backgroundColor: thumb.color,
                           opacity: thumb.opacity,
                         }}
-                        aria-label={t("projectPanel.layersList.imageColor")}
+                        aria-label={t("ui.panels.project.layersList.imageColor")}
                       />
                     )}
                   </div>
@@ -498,8 +498,8 @@ export function ProjectPageLayersList({
                     <button
                       type="button"
                       data-card-drag-ignore="true"
-                      aria-label={t(isLocked ? "projectPanel.layersList.unlock" : "projectPanel.layersList.lock", {
-                        kind: thumb.kind === "image" ? t("projectPanel.layersList.imagePlaceholder") : t("projectPanel.layersList.paragraph"),
+                      aria-label={t(isLocked ? "ui.panels.project.layersList.unlock" : "ui.panels.project.layersList.lock", {
+                        kind: thumb.kind === "image" ? t("ui.panels.project.layersList.imagePlaceholder") : t("ui.panels.project.layersList.paragraph"),
                       })}
                       aria-pressed={isLocked}
                       className={`rounded-sm p-1 transition-colors ${
@@ -536,8 +536,8 @@ export function ProjectPageLayersList({
                     <button
                       type="button"
                       data-card-drag-ignore="true"
-                      aria-label={t("projectPanel.layersList.delete", {
-                        kind: thumb.kind === "image" ? t("projectPanel.layersList.imagePlaceholder") : t("projectPanel.layersList.paragraph"),
+                      aria-label={t("ui.panels.project.layersList.delete", {
+                        kind: thumb.kind === "image" ? t("ui.panels.project.layersList.imagePlaceholder") : t("ui.panels.project.layersList.paragraph"),
                       })}
                       className={`rounded-sm p-1 ${tone.rowMuted} hover:text-red-500`}
                       onClick={(event) => {

@@ -53,10 +53,10 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
   const colorSchemeListClassName = getSettingsOpenListClassName(isDarkMode)
   const backgroundRingOffsetClassName = isDarkMode ? "ring-offset-[#151A21]" : "ring-offset-white"
   const colorSlotLabels = [
-    t("settings.color.slots.paper"),
-    t("settings.color.slots.light"),
-    t("settings.color.slots.mid"),
-    t("settings.color.slots.dark"),
+    t("ui.panels.color.slots.paper"),
+    t("ui.panels.color.slots.light"),
+    t("ui.panels.color.slots.mid"),
+    t("ui.panels.color.slots.dark"),
   ] as const
   const handleColorSchemePreview = (value: ImageColorSchemeId) => {
     setPreviewColorScheme(value)
@@ -69,8 +69,8 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
 
   return (
     <PanelCard
-      title={t("settings.color.title")}
-      tooltip={t("settings.color.tooltip")}
+      title={t("ui.panels.color.title")}
+      tooltip={t("ui.panels.color.tooltip")}
       collapsed={collapsed}
       collapsedSummary={(
         <div className="flex items-center gap-1.5">
@@ -90,10 +90,10 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.color.baseScheme")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.color.baseScheme")}</Label>
         <div
           role="listbox"
-          aria-label={t("settings.color.baseSchemeAria")}
+          aria-label={t("ui.panels.color.baseSchemeAria")}
           className={colorSchemeListClassName}
           onMouseLeave={clearColorSchemePreview}
         >
@@ -128,7 +128,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
         </div>
       </div>
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.color.background")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.color.background")}</Label>
         <div
           className="grid grid-cols-4 gap-2"
           onMouseLeave={() => onCanvasBackgroundPreviewChange?.(null)}
@@ -143,7 +143,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
               >
                 <button
                   type="button"
-                  aria-label={t("settings.color.toggleBackground", { slot: colorSlotLabels[index] ?? color })}
+                  aria-label={t("ui.panels.color.toggleBackground", { slot: colorSlotLabels[index] ?? color })}
                   aria-pressed={selectedBackground}
                   title={color}
                   className={`h-5 w-full rounded-sm border transition-colors active:translate-y-px ${

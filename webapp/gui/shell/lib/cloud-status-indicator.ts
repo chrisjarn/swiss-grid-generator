@@ -41,7 +41,7 @@ export function getSaveStatusIndicatorClassName(status: SaveStatusIndicatorStatu
 }
 
 export function getSaveStatusIndicatorLabel(status: SaveStatusIndicatorStatus): string {
-  if (status === "unsaved") return translateMessage("status.save.notSavedLocally")
-  if (status === "synced") return translateMessage("status.save.syncedToCloud")
-  return translateMessage("status.save.savedToLocalStore")
+  if (status === "unsaved") return translateMessage("ui.status.save.notSavedLocally")
+  if (status === "synced") return translateMessage("ui.status.save.syncedToCloud")
+  return translateMessage("ui.status.save.savedToLocalStore")
 }

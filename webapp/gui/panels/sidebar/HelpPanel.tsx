@@ -46,9 +46,9 @@ type Tone = {
 const GOOGLE_FONTS_SPECIMEN_BASE_URL = "https://fonts.google.com/specimen/"
 const FONT_CATEGORY_ORDER = ["Sans-Serif", "Serif", "Display"] as const
 const FONT_CATEGORY_LABEL: Record<(typeof FONT_CATEGORY_ORDER)[number], string> = {
-  "Sans-Serif": translateMessage("editor.fontGroups.sansSerif"),
-  Serif: translateMessage("editor.fontGroups.serif"),
-  Display: translateMessage("editor.fontGroups.poster"),
+  "Sans-Serif": translateMessage("ui.editor.fontGroups.sansSerif"),
+  Serif: translateMessage("ui.editor.fontGroups.serif"),
+  Display: translateMessage("ui.editor.fontGroups.poster"),
 }
 const AVAILABLE_FONT_GROUPS = FONT_CATEGORY_ORDER.map((category) => ({
   category,
@@ -74,7 +74,7 @@ function SectionHeading({
         label={children}
         labelClassName={labelClassName}
         actionIcon={<ChevronUp className="h-2 w-2" />}
-        actionLabel={translateMessage("rightPanel.help.jumpToTop")}
+        actionLabel={translateMessage("ui.panels.sidebar.help.jumpToTop")}
         actionClassName={jumpButtonClassName}
         onActionClick={() => {
           document.getElementById("help-index")?.scrollIntoView({ behavior: "smooth", block: "start" })
@@ -164,8 +164,8 @@ function renderShortcutTable(tone: Tone) {
       <table className={`w-full border-collapse text-xs ${tone.body}`}>
         <thead>
           <tr className={`border-b ${tone.divider}`}>
-            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("rightPanel.help.action")}</th>
-            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("rightPanel.help.shortcut")}</th>
+            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("ui.panels.sidebar.help.action")}</th>
+            <th className={`py-1 text-left font-semibold ${tone.heading}`}>{translateMessage("ui.panels.sidebar.help.shortcut")}</th>
           </tr>
         </thead>
         <tbody>
@@ -186,7 +186,7 @@ function renderDirective(name: HelpDirectiveName, tone: Tone, appVersion: string
     case "APP_VERSION":
       return (
         <p className={`text-xs leading-relaxed ${tone.body}`}>
-          {translateMessage("rightPanel.help.currentVersion", { version: appVersion })}
+          {translateMessage("ui.panels.sidebar.help.currentVersion", { version: appVersion })}
         </p>
       )
     case "AVAILABLE_FONTS":
@@ -305,16 +305,16 @@ export function HelpPanel({ isDarkMode = false, onClose, activeSectionId, appVer
     <div className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label={t("rightPanel.help.title")}
+          label={t("ui.panels.sidebar.help.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel={t("rightPanel.help.close")}
+          actionLabel={t("ui.panels.sidebar.help.close")}
           actionClassName={tone.jumpButton}
           onActionClick={onClose}
         />
       </div>
 
       <div id="help-index" className="space-y-2 pt-[13px]">
-        <SectionHeaderRow label={t("common.index")} />
+        <SectionHeaderRow label={t("ui.common.index")} />
         {HELP_INDEX_GROUPS.map((group, groupIndex) => (
           <div key={group.title} className={groupIndex > 0 ? "mt-2" : ""}>
             <SectionHeaderRow label={group.title} className="mb-1" />

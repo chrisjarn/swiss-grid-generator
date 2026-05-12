@@ -55,7 +55,7 @@ export function NoticeDialog({
           </p>
         </div>
         <div className="shrink-0 space-y-2 pt-4">
-          <SectionHeaderRow label={t("dialogs.notice.actions")} />
+          <SectionHeaderRow label={t("ui.common.dialogs.notice.actions")} />
           {onConfirm ? (
             <div className="grid grid-cols-2 gap-2">
               <Button
@@ -64,20 +64,20 @@ export function NoticeDialog({
                 className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
                 onClick={onClose}
               >
-                {cancelLabel ?? t("dialogs.notice.cancel")}
+                {cancelLabel ?? t("ui.common.dialogs.notice.cancel")}
               </Button>
               <Button
                 size="sm"
                 className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
                 onClick={onConfirm}
               >
-                {confirmLabel ?? t("dialogs.notice.confirm")}
+                {confirmLabel ?? t("ui.common.dialogs.notice.confirm")}
               </Button>
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2">
               <Button size="sm" className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`} onClick={onClose}>
-                {t("dialogs.notice.ok")}
+                {t("ui.common.dialogs.notice.ok")}
               </Button>
             </div>
           )}

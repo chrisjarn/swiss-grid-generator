@@ -51,7 +51,7 @@ export function ProjectTourOverlay({
               : "border-gray-300 bg-white/95 text-gray-800 hover:border-gray-500"
           }`}
         >
-          {t("preview.tour.open")}
+          {t("ui.preview.tour.open")}
         </button>
       </div>
     )
@@ -84,13 +84,13 @@ export function ProjectTourOverlay({
               isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
             }`}
           >
-            {t("preview.tour.close")}
+            {t("ui.preview.tour.close")}
           </button>
         </div>
 
         <div className={`mt-3 border-t pt-3 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
           <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
-            {t("preview.tour.step")} {Math.min(stepIndex + 1, stepCount)} / {Math.max(1, stepCount)}
+            {t("ui.preview.tour.step")} {Math.min(stepIndex + 1, stepCount)} / {Math.max(1, stepCount)}
           </div>
           {stepTitle ? (
             <div className="mt-1 text-sm font-medium">
@@ -104,7 +104,7 @@ export function ProjectTourOverlay({
           ) : null}
           {waitingForLayerClick ? (
             <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
-              {t("preview.tour.waitingForLayer")}
+              {t("ui.preview.tour.waitingForLayer")}
             </div>
           ) : null}
         </div>
@@ -124,7 +124,7 @@ export function ProjectTourOverlay({
                   : "border-gray-300 text-gray-800 hover:border-gray-500"
             }`}
           >
-            {t("preview.tour.back")}
+            {t("ui.preview.tour.back")}
           </button>
           <button
             type="button"
@@ -138,7 +138,7 @@ export function ProjectTourOverlay({
                 : "bg-swiss-orange text-black hover:brightness-95"
             }`}
           >
-            {canGoNext ? t("preview.tour.next") : t("preview.tour.done")}
+            {canGoNext ? t("ui.preview.tour.next") : t("ui.preview.tour.done")}
           </button>
         </div>
       </div>

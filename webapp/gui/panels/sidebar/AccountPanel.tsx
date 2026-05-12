@@ -132,14 +132,14 @@ export function AccountPanel({
 
   const feedbackSection = authError ? (
     <section className="space-y-2">
-      <SectionHeaderRow label={t("common.message")} />
+      <SectionHeaderRow label={t("ui.common.message")} />
       <div className="rounded-md border border-swiss-orange-soft bg-swiss-orange-soft/10 px-3 py-2 text-xs text-[#c55a52] dark:text-swiss-orange-soft">
         {authError}
       </div>
     </section>
   ) : authMessage ? (
     <section className="space-y-2">
-      <SectionHeaderRow label={t("common.message")} />
+      <SectionHeaderRow label={t("ui.common.message")} />
       <div className={fieldClassName}>
         {authMessage}
       </div>
@@ -150,9 +150,9 @@ export function AccountPanel({
     <div className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label={t("rightPanel.account.title")}
+          label={t("ui.panels.sidebar.account.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel={t("rightPanel.account.close")}
+          actionLabel={t("ui.panels.sidebar.account.close")}
           actionClassName={tone.action}
           onActionClick={onClose}
         />
@@ -161,7 +161,7 @@ export function AccountPanel({
         <>
           <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
-              label={t("rightPanel.account.signedInAs")}
+              label={t("ui.panels.sidebar.account.signedInAs")}
               value={userEmail}
               valueClassName={`text-right ${tone.caption}`}
             />
@@ -180,7 +180,7 @@ export function AccountPanel({
                   }
                 }}
               >
-                {t("rightPanel.account.signOut")}
+                {t("ui.panels.sidebar.account.signOut")}
               </Button>
             </div>
           </section>
@@ -189,13 +189,13 @@ export function AccountPanel({
       ) : (
         <section className="space-y-2 pt-[13px]">
           <SectionHeaderRow
-            label={t("rightPanel.account.signIn")}
+            label={t("ui.panels.sidebar.account.signIn")}
             value={(
               <Label
                 className={`text-right text-[11px] leading-none ${tone.caption}`}
                 htmlFor="account-panel-email"
               >
-                {t("common.email")}
+                {t("ui.common.email")}
               </Label>
             )}
           />
@@ -213,7 +213,7 @@ export function AccountPanel({
               if (authError || authMessage) onClearFeedback()
             }}
             className={`w-full ${fieldClassName}`}
-            placeholder={t("rightPanel.account.emailPlaceholder")}
+            placeholder={t("ui.panels.sidebar.account.emailPlaceholder")}
           />
           <div className="pt-1">
             <Button
@@ -233,14 +233,14 @@ export function AccountPanel({
                 }
               }}
             >
-              {hasPendingCode ? t("rightPanel.account.resendCode") : t("rightPanel.account.sendCode")}
+              {hasPendingCode ? t("ui.panels.sidebar.account.resendCode") : t("ui.panels.sidebar.account.sendCode")}
             </Button>
           </div>
           {feedbackSection}
           {hasPendingCode ? (
             <div className="space-y-2 pt-2">
               <SectionHeaderRow
-                label={t("rightPanel.account.code")}
+                label={t("ui.panels.sidebar.account.code")}
                 value={pendingEmail}
                 valueClassName={`text-right ${tone.caption}`}
               />
@@ -255,7 +255,7 @@ export function AccountPanel({
                   if (authError || authMessage) onClearFeedback()
                 }}
                 className={`w-full text-center font-mono tabular-nums ${fieldClassName}`}
-                placeholder={t("rightPanel.account.codePlaceholder")}
+                placeholder={t("ui.panels.sidebar.account.codePlaceholder")}
               />
               <div className="pt-1">
                 <Button
@@ -272,7 +272,7 @@ export function AccountPanel({
                     }
                   }}
                 >
-                  {t("rightPanel.account.verifyCode")}
+                  {t("ui.panels.sidebar.account.verifyCode")}
                 </Button>
               </div>
             </div>
@@ -281,7 +281,7 @@ export function AccountPanel({
       )}
 
       <section className="space-y-2 pt-[13px]">
-        <SectionHeaderRow label={t("rightPanel.account.cloudStatus")} />
+        <SectionHeaderRow label={t("ui.panels.sidebar.account.cloudStatus")} />
         <div className="flex items-center gap-2 text-[11px]">
           <span className={`${cloudStatusIndicatorClassName} h-2.5 w-2.5 shrink-0 rounded-[2px]`} aria-hidden="true" />
           <span className={`min-w-0 truncate ${tone.caption}`}>{cloudStatusLabel}</span>
@@ -293,7 +293,7 @@ export function AccountPanel({
                 {activityEntries.slice(0, 12).map((entry) => (
                   <div key={entry.id} className="grid grid-cols-[54px_1fr] gap-2 py-1 text-[11px] leading-snug">
                     <div className={`tabular-nums ${tone.caption}`}>
-                      {formatActivityTimestamp(entry.createdAt, "time", t("common.noEvents"))}
+                      {formatActivityTimestamp(entry.createdAt, "time", t("ui.common.noEvents"))}
                     </div>
                     <div className="min-w-0">
                       <div className={getActivityLevelClassName(entry.level, isDarkMode)}>
@@ -309,7 +309,7 @@ export function AccountPanel({
                 ))}
               </div>
             ) : (
-              <div className={`py-2 text-[11px] ${tone.caption}`}>{t("rightPanel.account.noLocalActivity")}</div>
+              <div className={`py-2 text-[11px] ${tone.caption}`}>{t("ui.panels.sidebar.account.noLocalActivity")}</div>
             )}
           </div>
           {userEmail && onSyncNow ? (
@@ -328,7 +328,7 @@ export function AccountPanel({
                 }}
               >
                 <RefreshCw className="h-2.5 w-2.5" />
-                {t("rightPanel.account.syncNow")}
+                {t("ui.panels.sidebar.account.syncNow")}
               </Button>
             </div>
           ) : null}
@@ -336,11 +336,11 @@ export function AccountPanel({
             <div className={`rounded-md border px-3 py-2 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
               <div className="grid grid-cols-2 gap-2 text-[11px] leading-tight">
                 <div>
-                  <div className={tone.caption}>{t("rightPanel.account.queued")}</div>
+                  <div className={tone.caption}>{t("ui.panels.sidebar.account.queued")}</div>
                   <div className={tone.body}>{pendingQueueCount}</div>
                 </div>
                 <div>
-                  <div className={tone.caption}>{t("rightPanel.account.conflicts")}</div>
+                  <div className={tone.caption}>{t("ui.panels.sidebar.account.conflicts")}</div>
                   <div className={tone.body}>{conflictQueueCount}</div>
                 </div>
               </div>
@@ -349,21 +349,21 @@ export function AccountPanel({
           {userEmail && hasActiveConflict && onKeepLocalConflict && onUseCloudConflict ? (
             <div className={`space-y-2 rounded-md border px-3 py-2 ${isDarkMode ? "border-[#5a3840] bg-swiss-orange-soft/10" : "border-swiss-orange-soft bg-swiss-orange-soft/10"}`}>
               <div className={`text-[11px] leading-snug ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
-                {t("rightPanel.account.conflictMessage")}
+                {t("ui.panels.sidebar.account.conflictMessage")}
               </div>
               {activeConflictDetails ? (
                 <div className={`grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border px-2 py-2 text-[11px] leading-tight ${isDarkMode ? "border-[#5a3840]" : "border-swiss-orange-soft/40"}`}>
-                  <div className={tone.caption}>{t("common.project")}</div>
-                  <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || t("rightPanel.account.untitledProject")}</div>
-                  <div className={tone.caption}>{t("rightPanel.account.localEdit")}</div>
-                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.localUpdatedAt, "full", t("common.noEvents"))}</div>
-                  <div className={tone.caption}>{t("rightPanel.account.lastSync")}</div>
-                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.lastSyncedAt, "full", t("common.noEvents"))}</div>
-                  <div className={tone.caption}>{t("rightPanel.account.revision")}</div>
+                  <div className={tone.caption}>{t("ui.common.project")}</div>
+                  <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || t("ui.panels.sidebar.account.untitledProject")}</div>
+                  <div className={tone.caption}>{t("ui.panels.sidebar.account.localEdit")}</div>
+                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.localUpdatedAt, "full", t("ui.common.noEvents"))}</div>
+                  <div className={tone.caption}>{t("ui.panels.sidebar.account.lastSync")}</div>
+                  <div className={tone.body}>{formatActivityTimestamp(activeConflictDetails.lastSyncedAt, "full", t("ui.common.noEvents"))}</div>
+                  <div className={tone.caption}>{t("ui.panels.sidebar.account.revision")}</div>
                   <div className={tone.body}>
                     {typeof activeConflictDetails.localRevision === "number"
-                      ? t("rightPanel.account.localBaseRevision", { revision: activeConflictDetails.localRevision })
-                      : t("rightPanel.account.localOnly")}
+                      ? t("ui.panels.sidebar.account.localBaseRevision", { revision: activeConflictDetails.localRevision })
+                      : t("ui.panels.sidebar.account.localOnly")}
                   </div>
                 </div>
               ) : null}
@@ -383,7 +383,7 @@ export function AccountPanel({
                     }}
                   >
                     <Trash2 className="h-2.5 w-2.5" />
-                    {t("common.delete")}
+                    {t("ui.common.delete")}
                   </Button>
                 ) : null}
                 <Button
@@ -399,7 +399,7 @@ export function AccountPanel({
                     }
                   }}
                 >
-                  {t("rightPanel.account.useCloud")}
+                  {t("ui.panels.sidebar.account.useCloud")}
                 </Button>
                 <Button
                   size="sm"
@@ -414,7 +414,7 @@ export function AccountPanel({
                     }
                   }}
                 >
-                  {t("rightPanel.account.keepLocal")}
+                  {t("ui.panels.sidebar.account.keepLocal")}
                 </Button>
               </div>
             </div>

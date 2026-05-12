@@ -166,7 +166,7 @@ export function ProjectMetadataSection({
   return (
     <div className="mt-3 space-y-3">
       <div className="space-y-1.5">
-        <SectionHeaderRow label={t("projectPanel.metadata.title")} />
+        <SectionHeaderRow label={t("ui.panels.project.metadata.title")} />
         <input
           ref={titleInputRef}
           type="text"
@@ -185,11 +185,11 @@ export function ProjectMetadataSection({
             }
           }}
           className={inputClassName}
-          placeholder={t("projectPanel.metadata.projectTitle")}
+          placeholder={t("ui.panels.project.metadata.projectTitle")}
         />
       </div>
       <div className="space-y-1.5">
-        <SectionHeaderRow label={t("projectPanel.metadata.subject")} />
+        <SectionHeaderRow label={t("ui.panels.project.metadata.subject")} />
         <textarea
           rows={5}
           value={descriptionDraft}
@@ -203,11 +203,11 @@ export function ProjectMetadataSection({
             }
           }}
           className={textareaClassName}
-          placeholder={t("projectPanel.metadata.shortSubject")}
+          placeholder={t("ui.panels.project.metadata.shortSubject")}
         />
       </div>
       <div className="space-y-1.5">
-        <SectionHeaderRow label={t("projectPanel.metadata.author")} />
+        <SectionHeaderRow label={t("ui.panels.project.metadata.author")} />
         <input
           type="text"
           value={authorDraft}
@@ -225,7 +225,7 @@ export function ProjectMetadataSection({
             }
           }}
           className={inputClassName}
-          placeholder={t("projectPanel.metadata.authorName")}
+          placeholder={t("ui.panels.project.metadata.authorName")}
         />
       </div>
     </div>

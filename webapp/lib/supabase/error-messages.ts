@@ -36,10 +36,10 @@ function isAuthRateLimitMessage(message: string): boolean {
 }
 
 function getSupabaseAuthFallback(context: SupabaseAuthErrorContext): string {
-  if (context === "sign_out") return translateMessage("status.auth.signOutFailed")
-  if (context === "session") return translateMessage("status.auth.sessionRestoreFailed")
-  if (context === "verify_sign_in_code") return translateMessage("status.auth.verifyCodeFailed")
-  return translateMessage("status.auth.sendCodeFailed")
+  if (context === "sign_out") return translateMessage("ui.status.auth.signOutFailed")
+  if (context === "session") return translateMessage("ui.status.auth.sessionRestoreFailed")
+  if (context === "verify_sign_in_code") return translateMessage("ui.status.auth.verifyCodeFailed")
+  return translateMessage("ui.status.auth.sendCodeFailed")
 }
 
 export function mapSupabaseAuthError(error: unknown, context: SupabaseAuthErrorContext = "send_sign_in_code"): string {
@@ -47,128 +47,128 @@ export function mapSupabaseAuthError(error: unknown, context: SupabaseAuthErrorC
   const { status } = toErrorLike(error)
 
   if (/supabase environment variables are missing/i.test(rawMessage)) {
-    return translateMessage("status.auth.authUnavailable")
+    return translateMessage("ui.status.auth.authUnavailable")
   }
 
   if (/email is required/i.test(rawMessage)) {
-    return translateMessage("status.auth.emailRequired")
+    return translateMessage("ui.status.auth.emailRequired")
   }
 
   if (/code is required/i.test(rawMessage)) {
-    return translateMessage("status.auth.codeRequired")
+    return translateMessage("ui.status.auth.codeRequired")
   }
 
   if (/token.*expired|expired.*token|invalid.*token|otp.*expired|otp.*invalid/i.test(rawMessage)) {
-    return translateMessage("status.auth.codeInvalid")
+    return translateMessage("ui.status.auth.codeInvalid")
   }
 
   if (status === 429 || isAuthRateLimitMessage(rawMessage)) {
-    return translateMessage("status.auth.rateLimit")
+    return translateMessage("ui.status.auth.rateLimit")
   }
 
   if (typeof status === "number" && status >= 500) {
     if (context === "sign_out") {
-      return translateMessage("status.auth.signOutUnavailable")
+      return translateMessage("ui.status.auth.signOutUnavailable")
     }
     if (context === "session") {
-      return translateMessage("status.auth.sessionUnavailable")
+      return translateMessage("ui.status.auth.sessionUnavailable")
     }
     if (context === "verify_sign_in_code") {
-      return translateMessage("status.auth.verifyUnavailable")
+      return translateMessage("ui.status.auth.verifyUnavailable")
     }
-    return translateMessage("status.auth.sendUnavailable")
+    return translateMessage("ui.status.auth.sendUnavailable")
   }
 
   if (/email address not authorized/i.test(rawMessage)) {
-    return translateMessage("status.auth.emailNotAllowed")
+    return translateMessage("ui.status.auth.emailNotAllowed")
   }
 
   if (/redirect/i.test(rawMessage) && /invalid|not allowed|mismatch/i.test(rawMessage)) {
-    return translateMessage("status.auth.redirectNotAllowed")
+    return translateMessage("ui.status.auth.redirectNotAllowed")
   }
 
   if (isNetworkLikeMessage(rawMessage)) {
     if (context === "sign_out") {
-      return translateMessage("status.auth.signOutNetwork")
+      return translateMessage("ui.status.auth.signOutNetwork")
     }
     if (context === "session") {
-      return translateMessage("status.auth.sessionNetwork")
+      return translateMessage("ui.status.auth.sessionNetwork")
     }
-    return translateMessage("status.auth.network")
+    return translateMessage("ui.status.auth.network")
   }
 
   if (context === "sign_out") {
-    return translateMessage("status.auth.signOutWithRaw", { message: rawMessage })
+    return translateMessage("ui.status.auth.signOutWithRaw", { message: rawMessage })
   }
   if (context === "session") {
-    return translateMessage("status.auth.sessionWithRaw", { message: rawMessage })
+    return translateMessage("ui.status.auth.sessionWithRaw", { message: rawMessage })
   }
   if (context === "verify_sign_in_code") {
-    return translateMessage("status.auth.verifyWithRaw", { message: rawMessage })
+    return translateMessage("ui.status.auth.verifyWithRaw", { message: rawMessage })
   }
-  return translateMessage("status.auth.sendWithRaw", { message: rawMessage })
+  return translateMessage("ui.status.auth.sendWithRaw", { message: rawMessage })
 }
 
 export const CLOUD_SYNC_CONFLICT_NOTICE: UserFacingNotice = {
-  title: translateMessage("status.cloud.conflictTitle"),
-  message: translateMessage("status.cloud.conflictMessage"),
+  title: translateMessage("ui.status.cloud.conflictTitle"),
+  message: translateMessage("ui.status.cloud.conflictMessage"),
 }
 
 export function mapCloudSyncError(error: unknown): UserFacingNotice {
-  const rawMessage = getErrorMessage(error, translateMessage("status.cloud.failed"))
+  const rawMessage = getErrorMessage(error, translateMessage("ui.status.cloud.failed"))
   const { status, code } = toErrorLike(error)
 
   if (status === 401 || /jwt|token.*expired|auth session missing|invalid token|not authenticated/i.test(rawMessage)) {
     return {
-      title: translateMessage("status.cloud.sessionExpiredTitle"),
-      message: translateMessage("status.cloud.sessionExpiredMessage"),
+      title: translateMessage("ui.status.cloud.sessionExpiredTitle"),
+      message: translateMessage("ui.status.cloud.sessionExpiredMessage"),
     }
   }
 
   if (status === 403 || /permission denied|row-level security|violates row-level security/i.test(rawMessage)) {
     return {
-      title: translateMessage("status.cloud.permissionsTitle"),
-      message: translateMessage("status.cloud.permissionsMessage"),
+      title: translateMessage("ui.status.cloud.permissionsTitle"),
+      message: translateMessage("ui.status.cloud.permissionsMessage"),
     }
   }
 
   if (/bucket.*not found|project-archives.*not found|storage.*not found/i.test(rawMessage)) {
     return {
-      title: translateMessage("status.cloud.storageMissingTitle"),
-      message: translateMessage("status.cloud.storageMissingMessage"),
+      title: translateMessage("ui.status.cloud.storageMissingTitle"),
+      message: translateMessage("ui.status.cloud.storageMissingMessage"),
     }
   }
 
   if (/relation .*projects.* does not exist|column .* does not exist|schema cache/i.test(rawMessage)) {
     return {
-      title: translateMessage("status.cloud.databaseMissingTitle"),
-      message: translateMessage("status.cloud.databaseMissingMessage"),
+      title: translateMessage("ui.status.cloud.databaseMissingTitle"),
+      message: translateMessage("ui.status.cloud.databaseMissingMessage"),
     }
   }
 
   if (status === 429 || /rate limit/i.test(rawMessage)) {
     return {
-      title: translateMessage("status.cloud.rateLimitTitle"),
-      message: translateMessage("status.cloud.rateLimitMessage"),
+      title: translateMessage("ui.status.cloud.rateLimitTitle"),
+      message: translateMessage("ui.status.cloud.rateLimitMessage"),
     }
   }
 
   if (typeof status === "number" && status >= 500) {
     return {
-      title: translateMessage("status.cloud.serviceUnavailableTitle"),
-      message: translateMessage("status.cloud.serviceUnavailableMessage"),
+      title: translateMessage("ui.status.cloud.serviceUnavailableTitle"),
+      message: translateMessage("ui.status.cloud.serviceUnavailableMessage"),
     }
   }
 
   if (isNetworkLikeMessage(rawMessage) || code === "20") {
     return {
-      title: translateMessage("status.cloud.offlineTitle"),
-      message: translateMessage("status.cloud.offlineMessage"),
+      title: translateMessage("ui.status.cloud.offlineTitle"),
+      message: translateMessage("ui.status.cloud.offlineMessage"),
     }
   }
 
   return {
-    title: translateMessage("status.cloud.errorTitle"),
-    message: translateMessage("status.cloud.errorMessage", { message: rawMessage }),
+    title: translateMessage("ui.status.cloud.errorTitle"),
+    message: translateMessage("ui.status.cloud.errorMessage", { message: rawMessage }),
   }
 }

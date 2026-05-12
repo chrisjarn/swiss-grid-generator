@@ -1,28 +1,9 @@
-import enMessages from "@/messages/en.json"
+import { messages, type MessageKey } from "@/messages"
 
-export const DEFAULT_LOCALE = "en" as const
+export { DEFAULT_LOCALE, messages, messagesByLocale } from "@/messages"
+export type { Locale, MessageKey, Messages } from "@/messages"
 
-export const messages = enMessages
-
-export type Messages = typeof messages
-
-type JoinPath<Prefix extends string, Key extends string> = Prefix extends ""
-  ? Key
-  : `${Prefix}.${Key}`
-
-type MessageLeafPath<Value, Prefix extends string = ""> = Value extends string
-  ? Prefix
-  : Value extends readonly unknown[]
-    ? never
-    : Value extends Record<string, unknown>
-      ? {
-          [Key in Extract<keyof Value, string>]: MessageLeafPath<Value[Key], JoinPath<Prefix, Key>>
-        }[Extract<keyof Value, string>]
-      : never
-
-export type MessageKey = MessageLeafPath<Messages>
-
-type MessageValues = Record<string, string | number>
+export type MessageValues = Record<string, string | number>
 
 function resolveMessage(key: MessageKey): string {
   const value = key.split(".").reduce<unknown>((current, segment) => {

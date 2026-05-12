@@ -78,22 +78,22 @@ function isAcceptedScreenshotType(value: string): value is FeedbackScreenshot["t
 
 function getScreenshotValidationError(files: File[]) {
   if (files.length > MAX_SCREENSHOTS) {
-    return translateMessage("rightPanel.feedback.tooManyScreenshots", { count: MAX_SCREENSHOTS })
+    return translateMessage("ui.panels.sidebar.feedback.tooManyScreenshots", { count: MAX_SCREENSHOTS })
   }
 
   const totalBytes = files.reduce((sum, file) => sum + file.size, 0)
   if (totalBytes > MAX_TOTAL_SCREENSHOT_BYTES) {
-    return translateMessage("rightPanel.feedback.screenshotsTooLarge", { size: formatBytes(MAX_TOTAL_SCREENSHOT_BYTES) })
+    return translateMessage("ui.panels.sidebar.feedback.screenshotsTooLarge", { size: formatBytes(MAX_TOTAL_SCREENSHOT_BYTES) })
   }
 
   const invalidFile = files.find((file) => !isAcceptedScreenshotType(file.type))
   if (invalidFile) {
-    return translateMessage("rightPanel.feedback.invalidScreenshotType", { name: invalidFile.name })
+    return translateMessage("ui.panels.sidebar.feedback.invalidScreenshotType", { name: invalidFile.name })
   }
 
   const oversizedFile = files.find((file) => file.size > MAX_SCREENSHOT_BYTES)
   if (oversizedFile) {
-    return translateMessage("rightPanel.feedback.screenshotTooLarge", { name: oversizedFile.name, size: formatBytes(MAX_SCREENSHOT_BYTES) })
+    return translateMessage("ui.panels.sidebar.feedback.screenshotTooLarge", { name: oversizedFile.name, size: formatBytes(MAX_SCREENSHOT_BYTES) })
   }
 
   return null
@@ -108,15 +108,15 @@ function getValidationErrors(
   const comment = values.comment.trim()
 
   if (!email) {
-    errors.email = translateMessage("rightPanel.feedback.emailRequired")
+    errors.email = translateMessage("ui.panels.sidebar.feedback.emailRequired")
   } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    errors.email = translateMessage("rightPanel.feedback.emailInvalid")
+    errors.email = translateMessage("ui.panels.sidebar.feedback.emailInvalid")
   }
 
   if (!comment) {
-    errors.comment = translateMessage("rightPanel.feedback.commentRequired")
+    errors.comment = translateMessage("ui.panels.sidebar.feedback.commentRequired")
   } else if (comment.length > 4000) {
-    errors.comment = translateMessage("rightPanel.feedback.commentTooLong")
+    errors.comment = translateMessage("ui.panels.sidebar.feedback.commentTooLong")
   }
 
   const screenshotError = getScreenshotValidationError(screenshotFiles)
@@ -137,12 +137,12 @@ function readFileAsBase64(file: File) {
           resolve(base64Data)
           return
         }
-        reject(new Error(translateMessage("rightPanel.feedback.encodeError")))
+        reject(new Error(translateMessage("ui.panels.sidebar.feedback.encodeError")))
         return
       }
-      reject(new Error(translateMessage("rightPanel.feedback.readError")))
+      reject(new Error(translateMessage("ui.panels.sidebar.feedback.readError")))
     }
-    reader.onerror = () => reject(reader.error ?? new Error(translateMessage("rightPanel.feedback.readError")))
+    reader.onerror = () => reject(reader.error ?? new Error(translateMessage("ui.panels.sidebar.feedback.readError")))
     reader.readAsDataURL(file)
   })
 }
@@ -173,26 +173,26 @@ function getFeedbackSubmitErrorMessage(error: unknown): string {
   const diagnosticText = [rawMessage, rawDetails, rawHint].filter(Boolean).join(" ")
 
   if (/support_log|column .* does not exist|schema cache/i.test(diagnosticText)) {
-    return translateMessage("rightPanel.feedback.logColumnMissing")
+    return translateMessage("ui.panels.sidebar.feedback.logColumnMissing")
   }
 
   if (/add_feedback_screenshot|feedback_screenshots|function .* does not exist/i.test(diagnosticText)) {
-    return translateMessage("rightPanel.feedback.screenshotStorageMissing")
+    return translateMessage("ui.panels.sidebar.feedback.screenshotStorageMissing")
   }
 
   if (/ambiguous|column reference .* ambiguous|variable_conflict/i.test(diagnosticText)) {
-    return translateMessage("rightPanel.feedback.screenshotStorageAmbiguous")
+    return translateMessage("ui.panels.sidebar.feedback.screenshotStorageAmbiguous")
   }
 
   if (/row-level security|violates row-level security|permission denied/i.test(diagnosticText)) {
-    return translateMessage("rightPanel.feedback.policyRejected")
+    return translateMessage("ui.panels.sidebar.feedback.policyRejected")
   }
 
   if (/screenshots|check constraint|feedback_messages_screenshots/i.test(diagnosticText)) {
-    return translateMessage("rightPanel.feedback.attachmentLimit")
+    return translateMessage("ui.panels.sidebar.feedback.attachmentLimit")
   }
 
-  return translateMessage("rightPanel.feedback.submitFailed")
+  return translateMessage("ui.panels.sidebar.feedback.submitFailed")
 }
 
 export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmail, onClose }: Props) {
@@ -301,7 +301,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     setErrors(nextErrors)
 
     if (Object.keys(nextErrors).length > 0) {
-      setSubmitMessage(t("rightPanel.feedback.requiredAttention"))
+      setSubmitMessage(t("ui.panels.sidebar.feedback.requiredAttention"))
       scrollPanelToTop()
       return
     }
@@ -310,8 +310,8 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     setSubmitMessage(null)
     void addCloudActivityLogEntry({
       level: "info",
-      action: t("rightPanel.feedback.submitRequested"),
-      message: attachSupportLog ? t("rightPanel.feedback.localLogAttached") : undefined,
+      action: t("ui.panels.sidebar.feedback.submitRequested"),
+      message: attachSupportLog ? t("ui.panels.sidebar.feedback.localLogAttached") : undefined,
     })
 
     try {
@@ -339,9 +339,9 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       setAttachSupportLog(false)
       void addCloudActivityLogEntry({
         level: "success",
-        action: t("rightPanel.feedback.feedbackSent"),
+        action: t("ui.panels.sidebar.feedback.feedbackSent"),
         message: screenshotFiles.length > 0
-          ? `${screenshotFiles.length} ${screenshotFiles.length === 1 ? t("rightPanel.feedback.screenshot") : t("rightPanel.feedback.screenshotsPlural")}`
+          ? `${screenshotFiles.length} ${screenshotFiles.length === 1 ? t("ui.panels.sidebar.feedback.screenshot") : t("ui.panels.sidebar.feedback.screenshotsPlural")}`
           : undefined,
       })
       scrollPanelToTop()
@@ -355,7 +355,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       setSubmitMessage(message)
       void addCloudActivityLogEntry({
         level: "error",
-        action: t("rightPanel.feedback.feedbackFailed"),
+        action: t("ui.panels.sidebar.feedback.feedbackFailed"),
         message: rawMessage ? `${message} (${rawMessage})` : message,
       })
       scrollPanelToTop()
@@ -397,7 +397,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
         onChange={(event) => setField("comment", event.target.value)}
         rows={7}
         className={`min-h-20 w-full resize-none leading-[1.45] ${fieldClassName}`}
-        placeholder={t("rightPanel.feedback.commentPlaceholder")}
+        placeholder={t("ui.panels.sidebar.feedback.commentPlaceholder")}
       />
       <FieldError message={errors.comment} />
     </div>
@@ -406,7 +406,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
   const renderSupportLogCheckbox = () => (
     <label className="flex items-center justify-between gap-3">
       <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-swiss-orange-soft">
-        {t("rightPanel.feedback.attachLocalLog")}
+        {t("ui.panels.sidebar.feedback.attachLocalLog")}
       </span>
       <input
         type="checkbox"
@@ -421,9 +421,9 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
     <div ref={rootRef} className="space-y-4">
       <div className="rounded-md py-2">
         <SectionHeaderRow
-          label={t("rightPanel.feedback.title")}
+          label={t("ui.panels.sidebar.feedback.title")}
           actionIcon={<X className="h-2 w-2" />}
-          actionLabel={t("rightPanel.feedback.close")}
+          actionLabel={t("ui.panels.sidebar.feedback.close")}
           actionClassName={tone.action}
           onActionClick={onClose}
         />
@@ -438,14 +438,14 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
       {hasSubmitted ? (
         <div className="space-y-4">
           <div className={`rounded-md border px-3 py-2 text-xs ${tone.success}`}>
-            {t("rightPanel.feedback.sent")}
+            {t("ui.panels.sidebar.feedback.sent")}
           </div>
         </div>
       ) : (
         <form className={`space-y-4 ${mutedTextClassName}`} onSubmit={handleSubmit} noValidate>
           <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
-              label={t("rightPanel.feedback.email")}
+              label={t("ui.panels.sidebar.feedback.email")}
             />
             {renderInput({
               field: "email",
@@ -457,7 +457,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
 
           <section className="space-y-2 pt-[13px]">
             <SectionHeaderRow
-              label={t("rightPanel.feedback.comment")}
+              label={t("ui.panels.sidebar.feedback.comment")}
               actions={(
                 <span className={`shrink-0 text-right text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
                   {form.comment.trim().length}/4000
@@ -467,7 +467,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
             {renderTextarea()}
           </section>
 
-          <Section title={t("rightPanel.feedback.screenshots")}>
+          <Section title={t("ui.panels.sidebar.feedback.screenshots")}>
             <input
               ref={fileInputRef}
               type="file"
@@ -485,10 +485,10 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                 className={`${feedbackButtonClassName} inline-flex w-full items-center justify-center gap-1.5 disabled:cursor-not-allowed`}
               >
                 <Paperclip className="h-3 w-3" />
-                {t("rightPanel.feedback.attachScreenshots")}
+                {t("ui.panels.sidebar.feedback.attachScreenshots")}
               </Button>
               <p className={`text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
-                {t("rightPanel.feedback.attachmentHelp", { count: MAX_SCREENSHOTS, size: formatBytes(MAX_SCREENSHOT_BYTES) })}
+                {t("ui.panels.sidebar.feedback.attachmentHelp", { count: MAX_SCREENSHOTS, size: formatBytes(MAX_SCREENSHOT_BYTES) })}
               </p>
             </div>
             {screenshotFiles.length > 0 ? (
@@ -508,7 +508,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                     </div>
                     <button
                       type="button"
-                      aria-label={t("rightPanel.feedback.removeScreenshot", { name: file.name })}
+                      aria-label={t("ui.panels.sidebar.feedback.removeScreenshot", { name: file.name })}
                       onClick={() => handleRemoveScreenshot(index)}
                       className={`inline-flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isDarkMode ? "text-gray-400 hover:text-gray-100" : "text-gray-500 hover:text-gray-900"}`}
                     >
@@ -532,12 +532,12 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
               disabled={isSubmitting}
               className={`${feedbackButtonClassName} w-full`}
             >
-              {isSubmitting ? t("rightPanel.feedback.sending") : t("rightPanel.feedback.send")}
+              {isSubmitting ? t("ui.panels.sidebar.feedback.sending") : t("ui.panels.sidebar.feedback.send")}
             </Button>
           </div>
 
           <div className={`pt-1 text-[10px] uppercase tracking-[0.08em] ${tone.caption}`}>
-            {t("common.version")} {appVersion}
+            {t("ui.common.version")} {appVersion}
           </div>
         </form>
       )}

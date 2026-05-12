@@ -486,10 +486,10 @@ export function PreviewWorkspace({
     onPageSelect(targetPageId)
   }
 
-  const pagesSectionHeadlineLabel = isSingleProjectPage ? t("projectPanel.page") : t("projectPanel.pages")
+  const pagesSectionHeadlineLabel = isSingleProjectPage ? t("ui.panels.project.page") : t("ui.panels.project.pages")
 
   const pageCounterTextClassName = "text-muted-foreground"
-  const pagePositionSummary = `${documentPagePosition} ${t("common.of")} ${documentVariablePageCount}`
+  const pagePositionSummary = `${documentPagePosition} ${t("ui.common.of")} ${documentVariablePageCount}`
 
   const pagePositionValue = pageNumberEditing ? (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
@@ -497,7 +497,7 @@ export function PreviewWorkspace({
         ref={pageNumberInputRef}
         type="text"
         inputMode="numeric"
-        aria-label={t("projectPanel.pageNumber")}
+        aria-label={t("ui.panels.project.pageNumber")}
         value={pageNumberDraft}
         onChange={(event) => {
           const nextValue = event.target.value
@@ -518,33 +518,33 @@ export function PreviewWorkspace({
         }}
         className="h-4 w-9 cursor-text rounded-sm border border-input bg-background px-1 text-right text-[11px] leading-none text-foreground outline-none focus:border-swiss-orange"
       />
-      <span className="px-1">{t("common.of")}</span>
+      <span className="px-1">{t("ui.common.of")}</span>
       <span>{documentVariablePageCount}</span>
     </span>
   ) : (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
       <HoverTooltip
         inline
-        label={t("projectPanel.pageCounterTooltip", { page: documentPagePosition, total: documentVariablePageCount })}
+        label={t("ui.panels.project.pageCounterTooltip", { page: documentPagePosition, total: documentVariablePageCount })}
         tooltipClassName="w-56 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] leading-snug text-popover-foreground shadow-lg"
         horizontalAlign="end"
       >
         <button
           type="button"
-          aria-label={t("projectPanel.editPageNumber", { page: documentPagePosition, total: documentVariablePageCount })}
+          aria-label={t("ui.panels.project.editPageNumber", { page: documentPagePosition, total: documentVariablePageCount })}
           onClick={beginPageNumberEdit}
           className="inline-flex min-w-0 cursor-text items-center leading-none text-muted-foreground transition-colors hover:text-foreground"
         >
           {documentPagePosition}
         </button>
       </HoverTooltip>
-      <span className="px-1">{t("common.of")}</span>
+      <span className="px-1">{t("ui.common.of")}</span>
       <span>{documentVariablePageCount}</span>
     </span>
   )
 
   const activePageTitle = useMemo(() => {
-    return activeProjectPage?.name?.trim() || `${t("projectPanel.page")} ${activePageNumber}`
+    return activeProjectPage?.name?.trim() || `${t("ui.panels.project.page")} ${activePageNumber}`
   }, [activePageNumber, activeProjectPage, t])
   const clearProjectPanelRolloverOpenTimer = () => {
     if (projectPanelRolloverOpenTimerRef.current === null) return
@@ -732,15 +732,15 @@ export function PreviewWorkspace({
   const projectInfoSentence = useMemo(() => {
     if (!isProjectSectionExpanded) return ""
     const authorSentence = projectAuthor.trim()
-      ? t("projectPanel.authorSentence", { author: projectAuthor.trim() })
-      : t("projectPanel.noAuthorSentence")
+      ? t("ui.panels.project.authorSentence", { author: projectAuthor.trim() })
+      : t("ui.panels.project.noAuthorSentence")
     const createdSentence = formattedProjectCreatedAt
-      ? t("projectPanel.createdSentence", { date: formattedProjectCreatedAt })
+      ? t("ui.panels.project.createdSentence", { date: formattedProjectCreatedAt })
       : ""
     const loadSentence = formattedProjectLoadTime
-      ? t("projectPanel.loadSentence", { duration: formattedProjectLoadTime })
+      ? t("ui.panels.project.loadSentence", { duration: formattedProjectLoadTime })
       : ""
-    return t("projectPanel.infoSentence", {
+    return t("ui.panels.project.infoSentence", {
       pages: documentVariablePageCount,
       pageWord: documentVariablePageCount === 1 ? "page" : "pages",
       layers: totalLayerCount,
@@ -790,7 +790,7 @@ export function PreviewWorkspace({
       images: layout?.imageOrder?.length ?? 0,
     }
   }, [activePageId, layersPanelPageId, layersPanelProjectPage, previewLayerCounts, projectPanelViewModel.layerCountsByPageId, sidebarControlsUseLivePage])
-  const layersSectionSummary = t("projectPanel.layersSummary", {
+  const layersSectionSummary = t("ui.panels.project.layersSummary", {
     text: activeLayerCounts.text,
     images: activeLayerCounts.images,
   })
@@ -818,8 +818,8 @@ export function PreviewWorkspace({
       ? "border-swiss-orange bg-swiss-orange text-background hover:brightness-95"
       : ""
     const tooltip = pageAddDisabled
-      ? t("projectPanel.pageLimitTooltip", { count: MAX_GUI_PROJECT_PAGES })
-      : t("projectPanel.addPageTooltip")
+      ? t("ui.panels.project.pageLimitTooltip", { count: MAX_GUI_PROJECT_PAGES })
+      : t("ui.panels.project.addPageTooltip")
 
     return (
       <div className="flex shrink-0 items-center gap-1.5">
@@ -830,7 +830,7 @@ export function PreviewWorkspace({
         >
           <button
             type="button"
-            aria-label={addShiftActive ? t("projectPanel.duplicatePage") : t("projectPanel.addCleanPage")}
+            aria-label={addShiftActive ? t("ui.panels.project.duplicatePage") : t("ui.panels.project.addCleanPage")}
             disabled={pageAddDisabled}
             onMouseEnter={(event) => {
               setPageAddHovered(true)
@@ -858,7 +858,7 @@ export function PreviewWorkspace({
       {!showPresetsBrowser && documentVariablePageCount > 1 ? (
         <div
           className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-px overflow-hidden"
-          aria-label={t("projectPanel.pagePosition", { page: documentPagePosition, total: documentVariablePageCount })}
+          aria-label={t("ui.panels.project.pagePosition", { page: documentPagePosition, total: documentVariablePageCount })}
           role="progressbar"
           aria-valuemin={1}
           aria-valuemax={documentVariablePageCount}
@@ -1065,7 +1065,7 @@ export function PreviewWorkspace({
                     {pagesPanelElement}
                   </ProjectPanelSection>
                   <ProjectPanelSection
-                    title={t("projectPanel.layers")}
+                    title={t("ui.panels.project.layers")}
                     collapsedSummary={layersSectionSummary}
                     expanded={isLayersSectionExpanded}
                     isDarkMode={isDarkUi}

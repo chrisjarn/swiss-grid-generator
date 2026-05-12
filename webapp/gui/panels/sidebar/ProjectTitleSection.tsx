@@ -37,7 +37,7 @@ export function ProjectTitleSection({
 }: Props) {
   const { t } = useTranslation()
 
-  const visibleProjectTitle = projectTitle.trim() || t("projectPanel.metadata.untitled")
+  const visibleProjectTitle = projectTitle.trim() || t("ui.panels.project.metadata.untitled")
   const tone = isDarkMode
     ? {
         body: "text-[#A8B1BF]",
@@ -50,7 +50,7 @@ export function ProjectTitleSection({
 
   return (
     <ProjectPanelSection
-      title={t("projectPanel.title")}
+      title={t("ui.panels.project.title")}
       expanded={expanded}
       collapsedSummary={(
         <span className={projectTitle.trim() ? undefined : tone.titleMuted}>

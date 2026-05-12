@@ -82,10 +82,10 @@ export async function renderSvgPageSetFiles({
       title: metadata.title.trim()
         ? `${metadata.title.trim()} - Page ${pageNumber}`
         : `${baseName} - Page ${pageNumber}`,
-      description: metadata.description.trim() || translateMessage("exportMetadata.vectorPageDescription", { page: pageNumber }),
+      description: metadata.description.trim() || translateMessage("ui.export.metadata.vectorPageDescription", { page: pageNumber }),
       author: metadata.author.trim(),
       createdAt: metadata.createdAt,
-      creatorTool: translateMessage("exportMetadata.creatorTool"),
+      creatorTool: translateMessage("ui.export.metadata.creatorTool"),
       exportPlan: page.exportPlan,
       exportBox,
       outlineResolver,

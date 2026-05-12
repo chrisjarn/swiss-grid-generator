@@ -1292,7 +1292,7 @@ function buildTagsXml(): string {
 function buildMetadataXml(document: SwissGridIdmlDocument): string {
   const createdAt = document.metadata.createdAt ?? new Date().toISOString()
   const modifiedAt = new Date().toISOString()
-  const title = document.metadata.title.trim() || translateMessage("exportMetadata.documentTitle")
+  const title = document.metadata.title.trim() || translateMessage("ui.export.metadata.documentTitle")
   const author = document.metadata.author.trim()
   const description = document.metadata.description.trim()
   const seed = `${title}:${author}:${createdAt}:${document.pages.length}`
@@ -1300,7 +1300,7 @@ function buildMetadataXml(document: SwissGridIdmlDocument): string {
   return [
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>`,
     `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>`,
-    `<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="${escapeIdmlXml(translateMessage("exportMetadata.creatorTool"))}">`,
+    `<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="${escapeIdmlXml(translateMessage("ui.export.metadata.creatorTool"))}">`,
     `<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">`,
     `<rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xmp="http://ns.adobe.com/xap/1.0/" xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/">`,
     `<dc:format>application/x-indesign</dc:format>`,
@@ -1314,7 +1314,7 @@ function buildMetadataXml(document: SwissGridIdmlDocument): string {
     `<xmp:CreateDate>${escapeIdmlXml(createdAt)}</xmp:CreateDate>`,
     `<xmp:ModifyDate>${escapeIdmlXml(modifiedAt)}</xmp:ModifyDate>`,
     `<xmp:MetadataDate>${escapeIdmlXml(modifiedAt)}</xmp:MetadataDate>`,
-    `<xmp:CreatorTool>${escapeIdmlXml(translateMessage("exportMetadata.creatorTool"))}</xmp:CreatorTool>`,
+    `<xmp:CreatorTool>${escapeIdmlXml(translateMessage("ui.export.metadata.creatorTool"))}</xmp:CreatorTool>`,
     `<xmpMM:DocumentID>${escapeIdmlXml(createDocumentUuid("xmp.did", seed))}</xmpMM:DocumentID>`,
     `<xmpMM:InstanceID>${escapeIdmlXml(createDocumentUuid("xmp.iid", `${seed}:instance`))}</xmpMM:InstanceID>`,
     `</rdf:Description>`,
@@ -1331,7 +1331,7 @@ function buildDesignMapXml(
   stories: Array<Pick<StoryExportRecord, "id" | "filePath">>,
 ): string {
   const firstPage = document.pages[0]
-  const docName = document.metadata.title.trim() || translateMessage("exportMetadata.documentTitle")
+  const docName = document.metadata.title.trim() || translateMessage("ui.export.metadata.documentTitle")
   const baseFont = firstPage?.baseFont ?? "Inter"
   const unit = firstPage?.result.grid.gridUnit ?? 12
   const storyList = [...stories.map((story) => story.id), BACKING_STORY_ID].join(" ")

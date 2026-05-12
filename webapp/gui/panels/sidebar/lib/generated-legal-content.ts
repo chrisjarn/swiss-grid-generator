@@ -14,16 +14,16 @@ export type LegalSection = {
 
 export const LEGAL_CONTENT_SECTIONS = [
   {
-    "title": "legal notice",
+    "title": "Legal notice",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "information according to Section 5 DDG."
+        "text": "Information according to Section 5 DDG."
       }
     ]
   },
   {
-    "title": "provider",
+    "title": "Provider",
     "blocks": [
       {
         "type": "paragraph",
@@ -32,7 +32,7 @@ export const LEGAL_CONTENT_SECTIONS = [
     ]
   },
   {
-    "title": "contact",
+    "title": "Contact",
     "blocks": [
       {
         "type": "paragraph",
@@ -41,7 +41,7 @@ export const LEGAL_CONTENT_SECTIONS = [
     ]
   },
   {
-    "title": "responsible for own content",
+    "title": "Responsible for own content",
     "blocks": [
       {
         "type": "paragraph",
@@ -50,80 +50,80 @@ export const LEGAL_CONTENT_SECTIONS = [
     ]
   },
   {
-    "title": "privacy",
+    "title": "Privacy",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "controller: Ingo Wörner. contact: email above."
+        "text": "Controller: Ingo Wörner. Contact: email above."
       },
       {
         "type": "paragraph",
-        "text": "processed data:\n- account email\n- authentication data\n- cloud projects\n- feedback\n- screenshots\n- optional support logs\n- service operation data"
+        "text": "Processed data:\n- Account email\n- Authentication data\n- Cloud projects\n- Feedback\n- Screenshots\n- Optional support logs\n- Service operation data"
       },
       {
         "type": "paragraph",
-        "text": "purpose: editor operation, sign-in, cloud storage, feedback, support, security, and synchronization."
+        "text": "Purpose: editor operation, sign-in, cloud storage, feedback, support, security, and synchronization."
       },
       {
         "type": "paragraph",
-        "text": "legal bases: contract performance, legitimate interest, and consent where required."
+        "text": "Legal bases: contract performance, legitimate interest, and consent where required."
       }
     ]
   },
   {
-    "title": "cloud storage",
+    "title": "Cloud storage",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "signed-in users can store projects in Supabase. users remain responsible for project content."
+        "text": "Signed-in users can store projects in Supabase. Users remain responsible for project content."
       }
     ]
   },
   {
-    "title": "local storage",
+    "title": "Local storage",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "the app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync."
+        "text": "The app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync."
       },
       {
         "type": "paragraph",
-        "text": "no advertising or analytics cookies are used."
+        "text": "No advertising or analytics cookies are used."
       }
     ]
   },
   {
-    "title": "feedback",
+    "title": "Feedback",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "feedback is stored in Supabase."
+        "text": "Feedback is stored in Supabase."
       },
       {
         "type": "paragraph",
-        "text": "it may include email, comment, screenshots, app version, and optional support logs."
+        "text": "It may include email, comment, screenshots, app version, and optional support logs."
       },
       {
         "type": "paragraph",
-        "text": "use is limited to support and defect review."
+        "text": "Use is limited to support and defect review."
       }
     ]
   },
   {
-    "title": "user rights",
+    "title": "User rights",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "users may request access, correction, deletion, restriction, portability, or objection by email."
+        "text": "Users may request access, correction, deletion, restriction, portability, or objection by email."
       },
       {
         "type": "paragraph",
-        "text": "complaints may be lodged with a competent supervisory authority."
+        "text": "Complaints may be lodged with a competent supervisory authority."
       }
     ]
   },
   {
-    "title": "terms of use",
+    "title": "Terms of use",
     "blocks": [
       {
         "type": "paragraph",
@@ -131,25 +131,25 @@ export const LEGAL_CONTENT_SECTIONS = [
       },
       {
         "type": "paragraph",
-        "text": "users are responsible for documents, exports, backups, and lawful content use."
+        "text": "Users are responsible for documents, exports, backups, and lawful content use."
       }
     ]
   },
   {
-    "title": "consumer dispute resolution",
+    "title": "Consumer dispute resolution",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "we do not participate in consumer arbitration proceedings."
+        "text": "We do not participate in consumer arbitration proceedings."
       }
     ]
   },
   {
-    "title": "note",
+    "title": "Note",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "this notice is English because the app interface is English."
+        "text": "This notice is English because the app interface is English."
       }
     ]
   }

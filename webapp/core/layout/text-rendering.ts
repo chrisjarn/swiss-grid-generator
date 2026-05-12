@@ -46,15 +46,15 @@ export const MIN_TRACKING_SCALE = -300
 export const MAX_TRACKING_SCALE = 300
 
 export const TRACKING_OPTIONS = [
-  { label: translateMessage("editor.trackingOptions.ultraCondensed"), value: -120 },
-  { label: translateMessage("editor.trackingOptions.extraCondensed"), value: -90 },
-  { label: translateMessage("editor.trackingOptions.condensed"), value: -60 },
-  { label: translateMessage("editor.trackingOptions.semiCondensed"), value: -30 },
-  { label: translateMessage("editor.trackingOptions.normal"), value: DEFAULT_TRACKING_SCALE },
-  { label: translateMessage("editor.trackingOptions.semiExpanded"), value: 30 },
-  { label: translateMessage("editor.trackingOptions.expanded"), value: 60 },
-  { label: translateMessage("editor.trackingOptions.extraExpanded"), value: 120 },
-  { label: translateMessage("editor.trackingOptions.ultraExpanded"), value: 200 },
+  { label: translateMessage("ui.editor.trackingOptions.ultraCondensed"), value: -120 },
+  { label: translateMessage("ui.editor.trackingOptions.extraCondensed"), value: -90 },
+  { label: translateMessage("ui.editor.trackingOptions.condensed"), value: -60 },
+  { label: translateMessage("ui.editor.trackingOptions.semiCondensed"), value: -30 },
+  { label: translateMessage("ui.editor.trackingOptions.normal"), value: DEFAULT_TRACKING_SCALE },
+  { label: translateMessage("ui.editor.trackingOptions.semiExpanded"), value: 30 },
+  { label: translateMessage("ui.editor.trackingOptions.expanded"), value: 60 },
+  { label: translateMessage("ui.editor.trackingOptions.extraExpanded"), value: 120 },
+  { label: translateMessage("ui.editor.trackingOptions.ultraExpanded"), value: 200 },
 ] as const
 
 export type TrackingOption = (typeof TRACKING_OPTIONS)[number]

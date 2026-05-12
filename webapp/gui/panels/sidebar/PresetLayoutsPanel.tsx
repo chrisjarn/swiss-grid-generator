@@ -71,13 +71,13 @@ function getPresetCloudStatusLabel(
   isCloudSignedIn: boolean,
   t: ReturnType<typeof useTranslation>["t"],
 ): string {
-  if (!isCloudSignedIn) return t("presets.notConnected")
-  if (syncState === "synced") return t("presets.cloudSynced")
-  if (syncState === "syncing") return t("presets.cloudSyncing")
-  if (syncState === "conflict") return t("presets.cloudConflict")
-  if (syncState === "error") return t("presets.cloudError")
-  if (syncState === "deleted") return t("presets.cloudDeleteQueued")
-  return t("presets.cloudPending")
+  if (!isCloudSignedIn) return t("ui.panels.presets.notConnected")
+  if (syncState === "synced") return t("ui.panels.presets.cloudSynced")
+  if (syncState === "syncing") return t("ui.panels.presets.cloudSyncing")
+  if (syncState === "conflict") return t("ui.panels.presets.cloudConflict")
+  if (syncState === "error") return t("ui.panels.presets.cloudError")
+  if (syncState === "deleted") return t("ui.panels.presets.cloudDeleteQueued")
+  return t("ui.panels.presets.cloudPending")
 }
 
 function PresetGroupHeaderLabel({
@@ -107,19 +107,19 @@ function PresetGroupHeaderLabel({
         label={(
           <div className="space-y-1">
             <div>
-              {translateMessage("presets.storageLocal")}
+              {translateMessage("ui.panels.presets.storageLocal")}
             </div>
             <div>
-              {translateMessage("presets.storageRisk")}
+              {translateMessage("ui.panels.presets.storageRisk")}
             </div>
             <div>
-              {translateMessage("presets.storageCloud")}
+              {translateMessage("ui.panels.presets.storageCloud")}
             </div>
           </div>
         )}
       >
         <span
-          aria-label={translateMessage("presets.storageInfo")}
+          aria-label={translateMessage("ui.panels.presets.storageInfo")}
           className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-swiss-orange-soft/70 text-[9px] font-semibold normal-case leading-none tracking-normal text-swiss-orange-soft"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
@@ -227,19 +227,19 @@ function PresetCard({
       }`}
       label={(
         <div className="space-y-1">
-          <PresetTooltipRow label={t("presets.titleLabel")} value={preset.title ?? preset.label} />
-          <PresetTooltipRow label={t("presets.subjectLabel")} value={preset.description || "—"} />
-          <PresetTooltipRow label={t("presets.authorLabel")} value={preset.author || "—"} />
-          <PresetTooltipRow label={t("presets.createdLabel")} value={formatPresetCreatedAt(preset.createdAt)} />
-          <PresetTooltipRow label={t("presets.formatLabel")} value={`${result.format} / ${result.settings.orientation}`} />
-          <PresetTooltipRow label={t("presets.gridLabel")} value={`${result.settings.gridCols} x ${result.settings.gridRows}`} />
-          <PresetTooltipRow label={t("presets.baselineLabel")} value={`${formatPresetNumber(baselineGrid)} pt`} />
-          <PresetTooltipRow label={t("presets.marginsLabel")} value={result.settings.marginMethod} />
-          <PresetTooltipRow label={t("presets.rhythmLabel")} value={result.settings.rhythm} />
+          <PresetTooltipRow label={t("ui.panels.presets.titleLabel")} value={preset.title ?? preset.label} />
+          <PresetTooltipRow label={t("ui.panels.presets.subjectLabel")} value={preset.description || "—"} />
+          <PresetTooltipRow label={t("ui.panels.presets.authorLabel")} value={preset.author || "—"} />
+          <PresetTooltipRow label={t("ui.panels.presets.createdLabel")} value={formatPresetCreatedAt(preset.createdAt)} />
+          <PresetTooltipRow label={t("ui.panels.presets.formatLabel")} value={`${result.format} / ${result.settings.orientation}`} />
+          <PresetTooltipRow label={t("ui.panels.presets.gridLabel")} value={`${result.settings.gridCols} x ${result.settings.gridRows}`} />
+          <PresetTooltipRow label={t("ui.panels.presets.baselineLabel")} value={`${formatPresetNumber(baselineGrid)} pt`} />
+          <PresetTooltipRow label={t("ui.panels.presets.marginsLabel")} value={result.settings.marginMethod} />
+          <PresetTooltipRow label={t("ui.panels.presets.rhythmLabel")} value={result.settings.rhythm} />
           {isUserPreset ? (
             <div className={`mt-1 border-t pt-1 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
               <div className="grid grid-cols-[82px_1fr] gap-2">
-                <span className="font-semibold">{t("presets.cloudLabel")}</span>
+                <span className="font-semibold">{t("ui.panels.presets.cloudLabel")}</span>
                 <span className="inline-flex min-w-0 items-center gap-1.5">
                   {syncIndicatorClassName ? (
                     <span
@@ -283,7 +283,7 @@ function PresetCard({
             <div ref={menuRef} className="relative shrink-0">
               <button
                 type="button"
-                aria-label={t("presets.actions.more", { title: preset.label })}
+                aria-label={t("ui.panels.presets.actions.more", { title: preset.label })}
                 className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
                 onClick={(event) => {
                   event.preventDefault()
@@ -307,7 +307,7 @@ function PresetCard({
                       onLoadPreset(preset)
                     }}
                   >
-                    {t("presets.actions.open")}
+                    {t("ui.panels.presets.actions.open")}
                   </button>
                   {onExportPreset ? (
                     <button
@@ -320,7 +320,7 @@ function PresetCard({
                         onExportPreset(preset)
                       }}
                     >
-                      {t("presets.actions.export")}
+                      {t("ui.panels.presets.actions.export")}
                     </button>
                   ) : null}
                   <button
@@ -333,7 +333,7 @@ function PresetCard({
                       onCopyUserPreset(preset)
                     }}
                   >
-                    {t("presets.actions.copy")}
+                    {t("ui.panels.presets.actions.copy")}
                   </button>
                   <button
                     type="button"
@@ -345,7 +345,7 @@ function PresetCard({
                       onDeleteUserPreset(preset)
                     }}
                   >
-                    {t("presets.actions.delete")}
+                    {t("ui.panels.presets.actions.delete")}
                   </button>
                 </div>
               ) : null}
@@ -416,8 +416,8 @@ export function PresetLayoutsPanel({
   const handleCopyUserPreset = useCallback(async (preset: LayoutPreset) => {
     try {
       const sourceProject = JSON.parse(preset.projectSourceJson) as Record<string, unknown>
-      const nextTitle = (preset.title ?? preset.label).trim() || t("presets.untitled")
-      const duplicatedTitle = `${nextTitle} ${t("presets.copySuffix")}`
+      const nextTitle = (preset.title ?? preset.label).trim() || t("ui.panels.presets.untitled")
+      const duplicatedTitle = `${nextTitle} ${t("ui.panels.presets.copySuffix")}`
       const duplicatedDescription = preset.description ?? ""
       const duplicatedAuthor = preset.author ?? ""
       const createdAt = preset.createdAt && !Number.isNaN(Date.parse(preset.createdAt))
@@ -442,14 +442,14 @@ export function PresetLayoutsPanel({
       })
 
       onRequestNotice?.({
-        title: t("presets.copiedTitle"),
-        message: t("presets.copiedMessage"),
+        title: t("ui.panels.presets.copiedTitle"),
+        message: t("ui.panels.presets.copiedMessage"),
       })
     } catch (error) {
       console.error(error)
       onRequestNotice?.({
-        title: t("presets.copyFailedTitle"),
-        message: t("presets.copyFailedMessage"),
+        title: t("ui.panels.presets.copyFailedTitle"),
+        message: t("ui.panels.presets.copyFailedMessage"),
       })
     }
   }, [onRequestNotice, t])
@@ -458,15 +458,15 @@ export function PresetLayoutsPanel({
     const targetId = preset.userProjectId ?? preset.id
     if (!targetId) return
 
-    const presetLabel = (preset.title ?? preset.label).trim() || t("presets.untitled")
+    const presetLabel = (preset.title ?? preset.label).trim() || t("ui.panels.presets.untitled")
     const cloudText = isCloudSignedIn
-      ? t("presets.deleteSyncedCloudText")
-      : t("presets.deleteQueuedCloudText")
+      ? t("ui.panels.presets.deleteSyncedCloudText")
+      : t("ui.panels.presets.deleteQueuedCloudText")
     onRequestNotice?.({
-      title: t("presets.deleteTitle"),
-      message: t("presets.deleteMessage", { title: presetLabel, cloudText }),
-      confirmLabel: t("common.delete"),
-      cancelLabel: t("common.cancel"),
+      title: t("ui.panels.presets.deleteTitle"),
+      message: t("ui.panels.presets.deleteMessage", { title: presetLabel, cloudText }),
+      confirmLabel: t("ui.common.delete"),
+      cancelLabel: t("ui.common.cancel"),
       onConfirm: () => {
         void (async () => {
           try {
@@ -477,16 +477,16 @@ export function PresetLayoutsPanel({
 
             await deleteUserProjectFromLibrary(targetId)
             onRequestNotice?.({
-              title: t("presets.deletedTitle"),
+              title: t("ui.panels.presets.deletedTitle"),
               message: isCloudSignedIn
-                ? t("presets.deleteNoHandlerMessage")
-                : t("presets.deleteSignedOutMessage"),
+                ? t("ui.panels.presets.deleteNoHandlerMessage")
+                : t("ui.panels.presets.deleteSignedOutMessage"),
             })
           } catch (error) {
             console.error(error)
             onRequestNotice?.({
-              title: t("presets.deleteFailedTitle"),
-              message: t("presets.deleteFailedMessage"),
+              title: t("ui.panels.presets.deleteFailedTitle"),
+              message: t("ui.panels.presets.deleteFailedMessage"),
             })
           }
         })()
@@ -506,10 +506,10 @@ export function PresetLayoutsPanel({
       {!compact ? (
         <>
           <h3 className={`text-sm font-semibold mb-2 flex items-center gap-1.5 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}>
-            <span>{t("presets.title")}</span>
+            <span>{t("ui.panels.presets.title")}</span>
           </h3>
           <p className={`text-xs mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
-            {t("presets.description")}
+            {t("ui.panels.presets.description")}
           </p>
         </>
       ) : null}

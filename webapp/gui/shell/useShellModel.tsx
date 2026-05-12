@@ -499,8 +499,8 @@ export function ShellModelView() {
   })
   const handleProjectPageLimitReached = useCallback((limit: number) => {
     handleRequestNotice({
-      title: translateMessage("status.notices.pageLimitTitle"),
-      message: translateMessage("status.notices.pageLimitMessage", { count: limit }),
+      title: translateMessage("ui.status.notices.pageLimitTitle"),
+      message: translateMessage("ui.status.notices.pageLimitMessage", { count: limit }),
     })
   }, [handleRequestNotice])
   const handleRequestGridReductionWarning = useCallback((message: string) => {
@@ -627,7 +627,7 @@ export function ShellModelView() {
   }, [setShowLayers, setWorkspaceActivePanel])
 
   useEffect(() => {
-    if (noticeState?.title !== translateMessage("status.cloud.conflictTitle")) return
+    if (noticeState?.title !== translateMessage("ui.status.cloud.conflictTitle")) return
     openSidebarPanel("account")
   }, [noticeState, openSidebarPanel])
 
@@ -1193,8 +1193,8 @@ export function ShellModelView() {
   const projectMetadata = project.metadata
   const handleProjectLoadFailed = useCallback(() => {
     handleRequestNotice({
-      title: translateMessage("status.notices.loadFailedTitle"),
-      message: translateMessage("status.notices.loadFailedMessage"),
+      title: translateMessage("ui.status.notices.loadFailedTitle"),
+      message: translateMessage("ui.status.notices.loadFailedMessage"),
     })
   }, [handleRequestNotice])
 
@@ -1294,24 +1294,24 @@ export function ShellModelView() {
 
     if (deleteResult === "deleted_cloud") {
       handleRequestNotice({
-        title: translateMessage("status.notices.deletedFromCloudTitle"),
-        message: translateMessage("status.notices.deletedFromCloudMessage"),
+        title: translateMessage("ui.status.notices.deletedFromCloudTitle"),
+        message: translateMessage("ui.status.notices.deletedFromCloudMessage"),
       })
       return
     }
 
     if (deleteResult === "queued_cloud_delete") {
       handleRequestNotice({
-        title: translateMessage("status.notices.deletedLocallyTitle"),
-        message: translateMessage("status.notices.deletedLocallyQueuedMessage"),
+        title: translateMessage("ui.status.notices.deletedLocallyTitle"),
+        message: translateMessage("ui.status.notices.deletedLocallyQueuedMessage"),
       })
       return
     }
 
     if (deleteResult === "purged_local") {
       handleRequestNotice({
-        title: translateMessage("status.notices.deletedFromUsersTitle"),
-        message: translateMessage("status.notices.deletedFromUsersMessage"),
+        title: translateMessage("ui.status.notices.deletedFromUsersTitle"),
+        message: translateMessage("ui.status.notices.deletedFromUsersMessage"),
       })
     }
   }, [activeUserProjectId, deleteProjectByLocalId, handleRequestNotice])
@@ -1680,8 +1680,8 @@ export function ShellModelView() {
     } catch (error) {
       console.error(error)
       handleRequestNotice({
-        title: translateMessage("status.notices.exportFailedTitle"),
-        message: translateMessage("status.notices.exportFailedPresetMessage"),
+        title: translateMessage("ui.status.notices.exportFailedTitle"),
+        message: translateMessage("ui.status.notices.exportFailedPresetMessage"),
       })
     }
   }, [exportActions, handleRequestNotice])
@@ -1689,7 +1689,7 @@ export function ShellModelView() {
   const persistActiveUserProjectPromiseRef = useRef<Promise<void> | null>(null)
 
   const handleSaveToLibrary = useCallback(async () => {
-    const fallbackStem = toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("status.notices.untitledProject")
+    const fallbackStem = toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("ui.status.notices.untitledProject")
     const trimmedTitle = effectiveProjectMetadata.title.trim()
     const trimmedDescription = effectiveProjectMetadata.description.trim()
     const trimmedAuthor = effectiveProjectMetadata.author.trim()
@@ -1737,16 +1737,16 @@ export function ShellModelView() {
       exportActions.setIsSaveLibraryDialogOpen(false)
       markClean()
       handleRequestNotice({
-        title: translateMessage("status.notices.savedToLibraryTitle"),
+        title: translateMessage("ui.status.notices.savedToLibraryTitle"),
         message: user
-          ? translateMessage("status.notices.savedToLibrarySignedInMessage")
-          : translateMessage("status.notices.savedToLibrarySignedOutMessage"),
+          ? translateMessage("ui.status.notices.savedToLibrarySignedInMessage")
+          : translateMessage("ui.status.notices.savedToLibrarySignedOutMessage"),
       })
     } catch (error) {
       console.error(error)
       handleRequestNotice({
-        title: translateMessage("status.notices.librarySaveFailedTitle"),
-        message: translateMessage("status.notices.librarySaveFailedMessage"),
+        title: translateMessage("ui.status.notices.librarySaveFailedTitle"),
+        message: translateMessage("ui.status.notices.librarySaveFailedMessage"),
       })
     }
   }, [
@@ -1788,7 +1788,7 @@ export function ShellModelView() {
       try {
         const savedId = await saveProjectToUserLibrary({
           id: activeUserProjectId,
-          label: normalizedMetadata.title || toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("status.notices.untitledProject"),
+          label: normalizedMetadata.title || toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("ui.status.notices.untitledProject"),
           title: normalizedMetadata.title,
           description: normalizedMetadata.description,
           author: normalizedMetadata.author,
@@ -1849,11 +1849,11 @@ export function ShellModelView() {
     const resolved = await resolveConflictByLocalId(activeUserProjectId, "keep_local")
     handleRequestNotice({
       title: resolved
-        ? translateMessage("status.notices.conflictResolvedTitle")
-        : translateMessage("status.notices.conflictResolutionFailedTitle"),
+        ? translateMessage("ui.status.notices.conflictResolvedTitle")
+        : translateMessage("ui.status.notices.conflictResolutionFailedTitle"),
       message: resolved
-        ? translateMessage("status.notices.conflictResolvedMessage")
-        : translateMessage("status.notices.conflictResolutionFailedMessage"),
+        ? translateMessage("ui.status.notices.conflictResolvedMessage")
+        : translateMessage("ui.status.notices.conflictResolutionFailedMessage"),
     })
   }, [activeUserProjectId, handleRequestNotice, resolveConflictByLocalId])
 
@@ -1862,8 +1862,8 @@ export function ShellModelView() {
     const resolved = await resolveConflictByLocalId(activeUserProjectId, "use_cloud")
     if (!resolved) {
       handleRequestNotice({
-        title: translateMessage("status.notices.conflictResolutionFailedTitle"),
-        message: translateMessage("status.notices.conflictCloudLoadFailedMessage"),
+        title: translateMessage("ui.status.notices.conflictResolutionFailedTitle"),
+        message: translateMessage("ui.status.notices.conflictCloudLoadFailedMessage"),
       })
       return
     }
@@ -1874,8 +1874,8 @@ export function ShellModelView() {
       markClean()
     }
     handleRequestNotice({
-      title: translateMessage("status.notices.cloudCopyRestoredTitle"),
-      message: translateMessage("status.notices.cloudCopyRestoredMessage"),
+      title: translateMessage("ui.status.notices.cloudCopyRestoredTitle"),
+      message: translateMessage("ui.status.notices.cloudCopyRestoredMessage"),
     })
   }, [activeUserProjectId, handleApplyLoadedProject, handleRequestNotice, markClean, resolveConflictByLocalId])
 
@@ -1887,23 +1887,23 @@ export function ShellModelView() {
 
     if (deleteResult === "deleted_cloud") {
       handleRequestNotice({
-        title: translateMessage("status.notices.conflictDeletedTitle"),
-        message: translateMessage("status.notices.conflictDeletedCloudMessage"),
+        title: translateMessage("ui.status.notices.conflictDeletedTitle"),
+        message: translateMessage("ui.status.notices.conflictDeletedCloudMessage"),
       })
       return
     }
 
     if (deleteResult === "queued_cloud_delete") {
       handleRequestNotice({
-        title: translateMessage("status.notices.conflictDeleteQueuedTitle"),
-        message: translateMessage("status.notices.conflictDeleteQueuedMessage"),
+        title: translateMessage("ui.status.notices.conflictDeleteQueuedTitle"),
+        message: translateMessage("ui.status.notices.conflictDeleteQueuedMessage"),
       })
       return
     }
 
     handleRequestNotice({
-      title: translateMessage("status.notices.conflictDeletedLocallyTitle"),
-      message: translateMessage("status.notices.conflictDeletedLocallyMessage"),
+      title: translateMessage("ui.status.notices.conflictDeletedLocallyTitle"),
+      message: translateMessage("ui.status.notices.conflictDeletedLocallyMessage"),
     })
   }, [
     activeUserProjectId,
@@ -2304,7 +2304,7 @@ export function ShellModelView() {
 
   if (isSmartphone) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-6 text-white">
+      <div data-sgg-gui-text="lowercase" className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-6 text-white">
         <div className="w-full max-w-md rounded-lg border border-white/20 bg-white/5 p-6">
           <h2 className="text-lg font-semibold">{translateMessage("app.screenTooSmall")}</h2>
           <p className="mt-3 text-sm leading-relaxed text-white/85">
@@ -2324,7 +2324,7 @@ export function ShellModelView() {
         className="hidden"
         onChange={loadProjectFromInput}
       />
-      <div className={`flex h-screen overflow-hidden flex-col ${uiTheme.root}`}>
+      <div data-sgg-gui-text="lowercase" className={`flex h-screen overflow-hidden flex-col ${uiTheme.root}`}>
         {previewWorkspace}
 
         <WorkspaceDialogs

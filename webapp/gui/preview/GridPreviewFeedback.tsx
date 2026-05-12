@@ -49,7 +49,7 @@ export function GridPreviewFeedback({
       <div className={`text-[10px] font-semibold uppercase tracking-[0.16em] ${
         isDarkMode ? "text-gray-400" : "text-gray-500"
       }`}>
-        {t("preview.feedback.gridUnchanged")}
+        {t("ui.preview.feedback.gridUnchanged")}
       </div>
       <div className={`mt-1 text-xs leading-5 ${
         isDarkMode ? "text-gray-200" : "text-gray-700"

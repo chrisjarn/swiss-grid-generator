@@ -1,78 +1,78 @@
-# legal notice
+# Legal notice
 
-## legal notice
+## Legal notice
 
-information according to Section 5 DDG.
+Information according to Section 5 DDG.
 
-## provider
+## Provider
 
 **Ingo Wörner**  
 Naststr. 1  
 70376 Stuttgart  
 Germany
 
-## contact
+## Contact
 
 [hello@swiss-grid-generator.com](mailto:hello@swiss-grid-generator.com)
 
-## responsible for own content
+## Responsible for own content
 
 Ingo Wörner  
 Naststr. 1  
 70376 Stuttgart  
 Germany
 
-## privacy
+## Privacy
 
-controller: Ingo Wörner. contact: email above.
+Controller: Ingo Wörner. Contact: email above.
 
-processed data:
-- account email
-- authentication data
-- cloud projects
-- feedback
-- screenshots
-- optional support logs
-- service operation data
+Processed data:
+- Account email
+- Authentication data
+- Cloud projects
+- Feedback
+- Screenshots
+- Optional support logs
+- Service operation data
 
-purpose: editor operation, sign-in, cloud storage, feedback, support, security, and synchronization.
+Purpose: editor operation, sign-in, cloud storage, feedback, support, security, and synchronization.
 
-legal bases: contract performance, legitimate interest, and consent where required.
+Legal bases: contract performance, legitimate interest, and consent where required.
 
-## cloud storage
+## Cloud storage
 
-signed-in users can store projects in Supabase. users remain responsible for project content.
+Signed-in users can store projects in Supabase. Users remain responsible for project content.
 
-## local storage
+## Local storage
 
-the app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync.
+The app uses local storage and IndexedDB for preferences, offline cache, local activity, and sync.
 
-no advertising or analytics cookies are used.
+No advertising or analytics cookies are used.
 
-## feedback
+## Feedback
 
-feedback is stored in Supabase.
+Feedback is stored in Supabase.
 
-it may include email, comment, screenshots, app version, and optional support logs.
+It may include email, comment, screenshots, app version, and optional support logs.
 
-use is limited to support and defect review.
+Use is limited to support and defect review.
 
-## user rights
+## User rights
 
-users may request access, correction, deletion, restriction, portability, or objection by email.
+Users may request access, correction, deletion, restriction, portability, or objection by email.
 
-complaints may be lodged with a competent supervisory authority.
+Complaints may be lodged with a competent supervisory authority.
 
-## terms of use
+## Terms of use
 
 Swiss Grid Generator is provided without guaranteed uninterrupted availability.
 
-users are responsible for documents, exports, backups, and lawful content use.
+Users are responsible for documents, exports, backups, and lawful content use.
 
-## consumer dispute resolution
+## Consumer dispute resolution
 
-we do not participate in consumer arbitration proceedings.
+We do not participate in consumer arbitration proceedings.
 
-## note
+## Note
 
-this notice is English because the app interface is English.
+This notice is English because the app interface is English.

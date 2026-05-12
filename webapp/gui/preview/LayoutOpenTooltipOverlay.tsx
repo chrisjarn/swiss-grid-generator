@@ -95,7 +95,7 @@ export function LayoutOpenTooltipOverlay({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
-                  {t("tooltips.counter", { index: index + 1, total: totalCount })}
+                  {t("ui.preview.tooltips.counter", { index: index + 1, total: totalCount })}
                 </div>
                 <div className="mt-1 text-[12px] font-semibold leading-[1.55]">
                   {tooltip.title}
@@ -109,11 +109,11 @@ export function LayoutOpenTooltipOverlay({
                     isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
                   }`}
                 >
-                  {t("tooltips.next")}
+                  {t("ui.preview.tooltips.next")}
                 </button>
                 <button
                   type="button"
-                  aria-label={t("tooltips.close")}
+                  aria-label={t("ui.preview.tooltips.close")}
                   onClick={closeForSessionWithFade}
                   className={`shrink-0 transition-colors ${
                     isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"

@@ -53,7 +53,7 @@ export function EditorColorSchemeControls({
   return (
     <>
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("editor.color.color")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.editor.color.color")}</Label>
         <div className="grid grid-cols-4 gap-2">
           {displayedColors.map((color, index) => {
             const selected = selectedColor.toLowerCase() === color.toLowerCase()
@@ -69,7 +69,7 @@ export function EditorColorSchemeControls({
                     isDarkMode ? "border-gray-700" : "border-gray-200"
                   } ${selected ? `ring-2 ring-gray-500 ring-offset-1 ${ringOffsetClassName}` : ""}`}
                   style={{ backgroundColor: color }}
-                  aria-label={t("editor.color.selectColor", { color })}
+                  aria-label={t("ui.editor.color.selectColor", { color })}
                   title={color}
                 />
                 <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -82,10 +82,10 @@ export function EditorColorSchemeControls({
       </div>
 
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("editor.color.baseScheme")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.editor.color.baseScheme")}</Label>
         <div
           role="listbox"
-          aria-label={t("editor.color.baseSchemeAria")}
+          aria-label={t("ui.editor.color.baseSchemeAria")}
           className={colorSchemeListClassName}
           onMouseLeave={onSchemeContentPointerLeave}
           onPointerLeave={onSchemeContentPointerLeave}

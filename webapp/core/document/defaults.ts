@@ -7,11 +7,11 @@ export type BaseBlockId = typeof BASE_BLOCK_IDS[number]
 const DEFAULT_COPYRIGHT_YEAR = new Date().getFullYear()
 
 export const DEFAULT_TEXT_CONTENT: Readonly<Record<BaseBlockId, string>> = {
-  display: translateMessage("defaultContent.display"),
-  headline: translateMessage("defaultContent.headline"),
-  subhead: translateMessage("defaultContent.subhead"),
-  body: translateMessage("defaultContent.body"),
-  caption: translateMessage("defaultContent.caption", { year: DEFAULT_COPYRIGHT_YEAR }),
+  display: translateMessage("app.defaultContent.display"),
+  headline: translateMessage("app.defaultContent.headline"),
+  subhead: translateMessage("app.defaultContent.subhead"),
+  body: translateMessage("app.defaultContent.body"),
+  caption: translateMessage("app.defaultContent.caption", { year: DEFAULT_COPYRIGHT_YEAR }),
 }
 
 export const DEFAULT_STYLE_ASSIGNMENTS: Readonly<Record<BaseBlockId, BaseBlockId>> = {

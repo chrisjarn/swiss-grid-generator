@@ -42,7 +42,7 @@ export function useSupabaseAuth() {
         setStatus("signed_out")
         void addCloudActivityLogEntry({
           level: "error",
-          action: translateMessage("status.activity.sessionRestoreFailed"),
+          action: translateMessage("ui.status.activity.sessionRestoreFailed"),
           message: mapSupabaseAuthError(error, "session"),
         })
         return
@@ -52,7 +52,7 @@ export function useSupabaseAuth() {
       if (data.session?.user?.email) {
         void addCloudActivityLogEntry({
           level: "success",
-          action: translateMessage("status.activity.sessionRestored"),
+          action: translateMessage("ui.status.activity.sessionRestored"),
           message: maskEmailForLog(data.session.user.email),
         })
       }
@@ -88,10 +88,10 @@ export function useSupabaseAuth() {
     }
 
     setAuthError(null)
-    setAuthMessage(translateMessage("status.auth.sendingCode", { email: normalizedEmail }))
+    setAuthMessage(translateMessage("ui.status.auth.sendingCode", { email: normalizedEmail }))
     void addCloudActivityLogEntry({
       level: "info",
-      action: translateMessage("status.activity.signInCodeRequested"),
+      action: translateMessage("ui.status.activity.signInCodeRequested"),
       message: maskEmailForLog(normalizedEmail),
     })
 
@@ -106,16 +106,16 @@ export function useSupabaseAuth() {
       setAuthError(mapSupabaseAuthError(error, "send_sign_in_code"))
       void addCloudActivityLogEntry({
         level: "error",
-        action: translateMessage("status.activity.signInCodeFailed"),
+        action: translateMessage("ui.status.activity.signInCodeFailed"),
         message: mapSupabaseAuthError(error, "send_sign_in_code"),
       })
       throw error
     }
 
-    setAuthMessage(translateMessage("status.auth.codeSent", { email: normalizedEmail }))
+    setAuthMessage(translateMessage("ui.status.auth.codeSent", { email: normalizedEmail }))
     void addCloudActivityLogEntry({
       level: "success",
-      action: translateMessage("status.activity.signInCodeSent"),
+      action: translateMessage("ui.status.activity.signInCodeSent"),
       message: maskEmailForLog(normalizedEmail),
     })
   }, [supabase])
@@ -140,7 +140,7 @@ export function useSupabaseAuth() {
     }
 
     setAuthError(null)
-    setAuthMessage(translateMessage("status.auth.verifyingCode"))
+    setAuthMessage(translateMessage("ui.status.auth.verifyingCode"))
 
     const { error } = await supabase.auth.verifyOtp({
       email: normalizedEmail,
@@ -152,7 +152,7 @@ export function useSupabaseAuth() {
       setAuthError(mapSupabaseAuthError(error, "verify_sign_in_code"))
       void addCloudActivityLogEntry({
         level: "error",
-        action: translateMessage("status.activity.signInCodeRejected"),
+        action: translateMessage("ui.status.activity.signInCodeRejected"),
         message: mapSupabaseAuthError(error, "verify_sign_in_code"),
       })
       throw error
@@ -161,7 +161,7 @@ export function useSupabaseAuth() {
     setAuthMessage(null)
     void addCloudActivityLogEntry({
       level: "success",
-      action: translateMessage("status.activity.signInVerified"),
+      action: translateMessage("ui.status.activity.signInVerified"),
       message: maskEmailForLog(normalizedEmail),
     })
   }, [supabase])
@@ -169,20 +169,20 @@ export function useSupabaseAuth() {
   const signOut = useCallback(async () => {
     if (!supabase) return
     setAuthError(null)
-    setAuthMessage(translateMessage("status.auth.signingOut"))
+    setAuthMessage(translateMessage("ui.status.auth.signingOut"))
     const { error } = await supabase.auth.signOut()
     if (error) {
       setAuthError(mapSupabaseAuthError(error, "sign_out"))
       void addCloudActivityLogEntry({
         level: "error",
-        action: translateMessage("status.activity.signOutFailed"),
+        action: translateMessage("ui.status.activity.signOutFailed"),
         message: mapSupabaseAuthError(error, "sign_out"),
       })
       throw error
     }
     void addCloudActivityLogEntry({
       level: "success",
-      action: translateMessage("status.activity.signedOut"),
+      action: translateMessage("ui.status.activity.signedOut"),
     })
   }, [supabase])
 

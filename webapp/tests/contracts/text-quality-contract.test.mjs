@@ -42,34 +42,6 @@ const CASUAL_OR_MARKETING_PATTERNS = [
   /\byour\b/i,
 ]
 
-const APPROVED_UPPERCASE_STARTS = [
-  "A0",
-  "A4",
-  "ANSI",
-  "Besley",
-  "Bodoni Moda",
-  "CALCULATIONS.md",
-  "DIN",
-  "EB Garamond",
-  "FEATURES.md",
-  "IBM Plex Mono",
-  "IBM Plex Sans",
-  "IDML",
-  "InDesign",
-  "Inter",
-  "JSON",
-  "Jost",
-  "Libre Baskerville",
-  "Noto Sans Symbols 2",
-  "PDF",
-  "SETTINGS.md",
-  "SVG",
-  "Space Grotesk",
-  "Supabase",
-  "Swiss Grid Generator",
-  "Work Sans",
-]
-
 function readText(relPath) {
   return fs.readFileSync(path.join(ROOT, relPath), "utf8")
 }
@@ -124,39 +96,6 @@ function collectPresetMetadataStrings(relPath) {
   return entries
 }
 
-function stripInlineSyntax(value) {
-  return value
-    .replace(/\{\{[A-Z_]+\}\}/g, "")
-    .replace(/<%[a-z_]+%>/g, "")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
-}
-
-function sentenceFragments(value) {
-  return stripInlineSyntax(value)
-    .split(/\n|(?<=[.!?])\s+/u)
-    .map((fragment) => fragment
-      .replace(/^#+\s*/, "")
-      .replace(/^[-*]\s*/, "")
-      .replace(/^\d+\.\s*/, "")
-      .replace(/^[\s"'([{]+/, "")
-      .trim())
-    .filter(Boolean)
-}
-
-function startsWithApprovedUppercase(fragment) {
-  return APPROVED_UPPERCASE_STARTS.some((term) => fragment === term || fragment.startsWith(`${term} `) || fragment.startsWith(`${term},`))
-}
-
-function hasDisallowedUppercaseStart(value) {
-  if (value.replace(/\s+/g, " ").trim() === "Swiss Grid Generator") return false
-  return sentenceFragments(value).some((fragment) => {
-    if (startsWithApprovedUppercase(fragment)) return false
-    const firstLetter = fragment.match(/\p{L}/u)?.[0]
-    return Boolean(firstLetter && firstLetter.toLocaleLowerCase("en-US") !== firstLetter)
-  })
-}
-
 function isIntentionalSpecimenText(entry) {
   return entry.source.endsWith("150 Fonts.json") || entry.pointer.includes("author")
 }
@@ -165,7 +104,7 @@ function formatViolation(entry, reason) {
   return `${entry.source} ${entry.pointer}: ${reason}: ${JSON.stringify(entry.value)}`
 }
 
-test("product text stays calm, lowercase, and non-marketing", () => {
+test("product text stays calm, source-normal, and non-marketing", () => {
   const jsonEntries = collectJsonStrings(JSON.parse(readText("messages/en.json")), "messages/en.json")
   const markdownEntries = [
     ...collectMarkdownLines("messages/en/content/help.md"),
@@ -191,9 +130,6 @@ test("product text stays calm, lowercase, and non-marketing", () => {
       if (pattern.test(entry.value)) {
         violations.push(formatViolation(entry, `casual or marketing term ${pattern}`))
       }
-    }
-    if (hasDisallowedUppercaseStart(entry.value)) {
-      violations.push(formatViolation(entry, "sentence starts uppercase"))
     }
   }
 
@@ -226,7 +162,12 @@ test("application code keeps message access behind the typed i18n boundary", () 
   const hardcodedCapitalizationViolations = []
 
   for (const relPath of sourceFiles) {
-    if (relPath === "lib/i18n/messages.ts" || relPath === "core/i18n/messages.ts" || relPath.startsWith("tests/")) continue
+    if (
+      relPath === "messages/index.ts"
+      || relPath === "lib/i18n/messages.ts"
+      || relPath === "core/i18n/messages.ts"
+      || relPath.startsWith("tests/")
+    ) continue
     const source = readText(relPath)
     if (source.includes("@/messages/en.json") || source.includes("messages/en.json")) {
       directImportViolations.push(relPath)

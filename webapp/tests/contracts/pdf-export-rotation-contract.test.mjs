@@ -271,7 +271,7 @@ test("export dialog exposes the shared export progress log without owning export
   assert.match(hookSource, /onLog:\s*appendLog/)
   assert.match(workspaceDialogsSource, /progressLog:\s*readonly\s+string\[\]/)
   assert.match(workspaceDialogsSource, /exportProgressLog=\{exportDialog\.progressLog\}/)
-  assert.match(dialogSource, /t\("dialogs\.export\.progressLog"\)/)
+  assert.match(dialogSource, /t\("ui\.export\.dialog\.progressLog"\)/)
   assert.match(dialogSource, /exportProgressLog\.join\("\\n"\)/)
   assert.doesNotMatch(dialogSource, /buildPageExportPlan|runProjectExport|runPdfExportInBrowserWorker/)
 })
@@ -365,8 +365,8 @@ test("vector export options expose one shared bleed setting and keep pdf color m
 
 test("export dialog exposes shared bleed controls instead of print presets", () => {
   const source = readText("gui/dialogs/ExportDialog.tsx")
-  assert.match(source, /t\("dialogs\.export\.bleed"\)/)
-  assert.match(source, /t\("dialogs\.export\.bleedWidth"\)/)
+  assert.match(source, /t\("ui\.export\.dialog\.bleed"\)/)
+  assert.match(source, /t\("ui\.export\.dialog\.bleedWidth"\)/)
   assert.match(source, /bleedEnabledDraft/)
   assert.match(source, /onBleedEnabledChange/)
   assert.doesNotMatch(source, /Print Pro/)

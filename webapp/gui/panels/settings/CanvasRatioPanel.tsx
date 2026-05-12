@@ -99,8 +99,8 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
 
   return (
     <PanelCard
-      title={t("settings.canvas.title")}
-      tooltip={t("settings.canvas.tooltip")}
+      title={t("ui.panels.canvas.title")}
+      tooltip={t("ui.panels.canvas.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${ratioLabel}, ${orientation}, ${rotation}°`}
       onHeaderClick={onHeaderClick}
@@ -109,10 +109,10 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.canvas.ratio")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.canvas.ratio")}</Label>
         <div
           role="listbox"
-          aria-label={t("settings.canvas.ratioAria")}
+          aria-label={t("ui.panels.canvas.ratioAria")}
           className={ratioListClassName}
           onMouseLeave={() => onCanvasRatioPreviewChange?.(null)}
         >
@@ -141,14 +141,14 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
       {canvasRatio === "custom" ? (
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-3">
-            <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.ratioUnits")}</Label>
+            <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.canvas.ratioUnits")}</Label>
             <span className={valueBadgeClassName}>
               {customRatioText}
             </span>
           </div>
           <div className="grid grid-cols-[1fr_auto_1fr] items-end gap-2">
             <div className="space-y-1">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.width")}</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.canvas.width")}</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -164,12 +164,12 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
                   ;(event.currentTarget as HTMLInputElement).blur()
                 }}
                 className={inputClassName}
-                aria-label={t("settings.canvas.customRatioWidth")}
+                aria-label={t("ui.panels.canvas.customRatioWidth")}
               />
             </div>
             <span className="pb-2 text-sm text-gray-500">:</span>
             <div className="space-y-1">
-              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.height")}</Label>
+              <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.canvas.height")}</Label>
               <input
                 type="text"
                 inputMode="decimal"
@@ -185,23 +185,23 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
                   ;(event.currentTarget as HTMLInputElement).blur()
                 }}
                 className={inputClassName}
-                aria-label={t("settings.canvas.customRatioHeight")}
+                aria-label={t("ui.panels.canvas.customRatioHeight")}
               />
             </div>
           </div>
         </div>
       ) : null}
       <div className="space-y-2">
-        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("settings.canvas.orientation")}</Label>}>
+        <LabeledControlRow variant="popup" label={<Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.canvas.orientation")}</Label>}>
           <div
             className="grid grid-cols-2 gap-1.5"
             onMouseLeave={() => onOrientationPreviewChange?.(null)}
           >
             <button
               type="button"
-              aria-label={t("settings.canvas.portraitAria")}
+              aria-label={t("ui.panels.canvas.portraitAria")}
               aria-pressed={orientation === "portrait"}
-              title={t("settings.canvas.portrait")}
+              title={t("ui.panels.canvas.portrait")}
               className={getSettingsIconButtonClassName(isDarkMode, orientation === "portrait")}
               onFocus={() => onOrientationPreviewChange?.("portrait")}
               onBlur={() => onOrientationPreviewChange?.(null)}
@@ -212,9 +212,9 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
             </button>
             <button
               type="button"
-              aria-label={t("settings.canvas.landscapeAria")}
+              aria-label={t("ui.panels.canvas.landscapeAria")}
               aria-pressed={orientation === "landscape"}
-              title={t("settings.canvas.landscape")}
+              title={t("ui.panels.canvas.landscape")}
               className={getSettingsIconButtonClassName(isDarkMode, orientation === "landscape")}
               onFocus={() => onOrientationPreviewChange?.("landscape")}
               onBlur={() => onOrientationPreviewChange?.(null)}
@@ -227,8 +227,8 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
         </LabeledControlRow>
       </div>
       <EditableSlider
-        label={t("settings.canvas.rotation")}
-        inputAriaLabel={t("settings.canvas.rotation")}
+        label={t("ui.panels.canvas.rotation")}
+        inputAriaLabel={t("ui.panels.canvas.rotation")}
         value={[rotation]}
         defaultValue={[0]}
         min={-180}

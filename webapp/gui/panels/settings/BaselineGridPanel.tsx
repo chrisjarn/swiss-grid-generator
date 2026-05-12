@@ -51,8 +51,8 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
 
   return (
     <PanelCard
-      title={t("settings.baseline.title")}
-      tooltip={t("settings.baseline.tooltip")}
+      title={t("ui.panels.baseline.title")}
+      tooltip={t("ui.panels.baseline.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${customBaseline} pt`}
       onHeaderClick={onHeaderClick}
@@ -62,8 +62,8 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
     >
       {availableBaselineOptions.length > 0 && (
         <EditableSlider
-          label={t("settings.baseline.gridUnit")}
-          inputAriaLabel={t("settings.baseline.gridUnit")}
+          label={t("ui.panels.baseline.gridUnit")}
+          inputAriaLabel={t("ui.panels.baseline.gridUnit")}
           value={[selectedBaselineIndex]}
           defaultValue={[defaultBaselineIndex]}
           min={0}

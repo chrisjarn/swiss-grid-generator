@@ -59,7 +59,7 @@ Maximum one strong accent color per screen or context. Color always serves a cle
 - **Display & Branding:** `Space Grotesk` — geometric, modern, strong presence
 
 **Rules:**
-- UI text is predominantly **lowercase**
+- UI text is authored in normal sentence/label case and rendered predominantly lowercase through the GUI CSS layer.
 - Strong hierarchy through size, weight and spacing — never decoration
 - Generous use of whitespace and baseline alignment
 
@@ -78,7 +78,21 @@ Maximum one strong accent color per screen or context. Color always serves a cle
 - All UI elements respect an 8px / 4px baseline grid
 - Clear visual separation between content area and controls
 
-## 7. Do’s and Don’ts
+## 7. Interaction Philosophy
+
+**Hover. Observe. Commit.**
+
+The interface follows a deliberate three-step interaction model:
+
+- **Hover** — Immediate live preview of changes (real-time exploration of rhythm, proportion, hierarchy, etc.).
+- **Observe** — The user calmly evaluates the effect on the page ground and modular field.
+- **Commit** — A conscious action finalizes the change.
+
+This model encourages thoughtful decision-making while allowing fluid discovery. It respects the user’s intelligence and mirrors the precision required in professional typography.
+
+Changes are **non-destructive until committed**, reinforcing the principle of considered action.
+
+## 8. Do’s and Don’ts
 
 **Do:**
 - Make structure visible
@@ -93,7 +107,3 @@ Maximum one strong accent color per screen or context. Color always serves a cle
 - Rely on shadows for depth
 - Break typographic discipline
 - Add any stroke that cannot be justified
-
----
-
-This version now accurately reflects the latest Braun color references you provided, while keeping the overall philosophy clean and general.

@@ -15,8 +15,9 @@ The interface is a professional typography instrument. The gui must support exac
 - use color only for state, action, warning, selection, or status.
 - keep spacing aligned to the 8px / 4px interface rhythm.
 - keep controls stable; hover previews must not create layout jumps.
-- use lowercase for authored ui copy: labels, buttons, help text, tooltips, and status messages.
-- preserve required casing for file formats, code identifiers, keyboard shortcuts, serialized values, and imported names.
+- author ui copy in normal sentence/label case: labels, buttons, help text, tooltips, and status messages.
+- apply lowercase presentation in the gui through CSS, not by lowercasing source strings.
+- preserve required source casing for file formats, code identifiers, keyboard shortcuts, serialized values, and imported names.
 - use sharp geometry, restrained borders, and flat tactile surfaces.
 - avoid decorative gradients, gloss, arbitrary shadows, large rounded containers, and ornamental imagery.
 
@@ -200,8 +201,8 @@ flowchart LR
 
 ### typography
 
-- ui labels and help copy use lowercase unless the value is a file format, shortcut, code identifier, imported label, or serialized value.
-- section headlines may use spaced-uppercase styling where the current system requires it.
+- ui labels and help copy are authored in normal sentence/label case and rendered lowercase by the gui CSS layer.
+- section headlines may use spacing, weight, and color for hierarchy; casing is still controlled by the gui CSS layer.
 - hierarchy is built through size, weight, spacing, and baseline alignment.
 - avoid oversized type inside dense panels.
 

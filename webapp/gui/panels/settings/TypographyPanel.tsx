@@ -28,9 +28,9 @@ const TYPOGRAPHY_SCALE_OPTIONS: Array<{ value: TypographyScale; label: string }>
   .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }))
 
 const FONT_GROUPS = [
-  { key: "Sans-Serif", labelKey: "editor.fontGroups.sansSerif" },
-  { key: "Serif", labelKey: "editor.fontGroups.serif" },
-  { key: "Display", labelKey: "editor.fontGroups.poster" },
+  { key: "Sans-Serif", labelKey: "ui.editor.fontGroups.sansSerif" },
+  { key: "Serif", labelKey: "ui.editor.fontGroups.serif" },
+  { key: "Display", labelKey: "ui.editor.fontGroups.poster" },
 ] as const
 
 function splitParentheticalLabel(label: string): { label: string; detail: string | null } {
@@ -136,8 +136,8 @@ export const TypographyPanel = memo(function TypographyPanel({
 
   return (
     <PanelCard
-      title={t("settings.typography.title")}
-      tooltip={t("settings.typography.tooltip")}
+      title={t("ui.panels.typography.title")}
+      tooltip={t("ui.panels.typography.tooltip")}
       collapsed={collapsed}
       collapsedSummary={`${activeTypographyScaleLabel}, ${baseFont}`}
       onHeaderClick={onHeaderClick}
@@ -148,10 +148,10 @@ export const TypographyPanel = memo(function TypographyPanel({
       <div className="space-y-2">
         <div className="space-y-1.5">
           <div className="flex h-7 items-center justify-between">
-            <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.rhythm")}</Label>
+            <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.typography.rhythm")}</Label>
             <button
               type="button"
-              aria-label={t("settings.typography.toggleHierarchy")}
+              aria-label={t("ui.panels.typography.toggleHierarchy")}
               aria-pressed={showHierarchyTable}
               className={`inline-flex h-5 w-5 items-center justify-center rounded-sm transition-colors ${
                 showHierarchyTable
@@ -169,7 +169,7 @@ export const TypographyPanel = memo(function TypographyPanel({
           </div>
           <div
             role="listbox"
-            aria-label={t("settings.typography.rhythmAria")}
+            aria-label={t("ui.panels.typography.rhythmAria")}
             className={typographyRhythmListClassName}
             onMouseLeave={clearTypographyScalePreview}
           >
@@ -194,7 +194,7 @@ export const TypographyPanel = memo(function TypographyPanel({
                       <span className="min-w-0 truncate">{displayLabel.label}</span>
                       <button
                         type="button"
-                        aria-label={t("settings.typography.shiftFibonacciLeft")}
+                        aria-label={t("ui.panels.typography.shiftFibonacciLeft")}
                         disabled={normalizedFibonacciStartIndex <= MIN_FIBONACCI_SEQUENCE_START_INDEX}
                         className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
                         onClick={handleFibonacciSequenceStep(-1)}
@@ -203,7 +203,7 @@ export const TypographyPanel = memo(function TypographyPanel({
                       </button>
                       <button
                         type="button"
-                        aria-label={t("settings.typography.shiftFibonacciRight")}
+                        aria-label={t("ui.panels.typography.shiftFibonacciRight")}
                         disabled={normalizedFibonacciStartIndex >= MAX_FIBONACCI_SEQUENCE_START_INDEX}
                         className="h-5 w-5 shrink-0 text-center text-[11px] leading-5 text-inherit disabled:opacity-30"
                         onClick={handleFibonacciSequenceStep(1)}
@@ -256,10 +256,10 @@ export const TypographyPanel = memo(function TypographyPanel({
           </div>
         ) : null}
         <div className="space-y-1.5">
-          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.typography.base")}</Label>
+          <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.typography.base")}</Label>
           <div
             role="listbox"
-            aria-label={t("settings.typography.base")}
+            aria-label={t("ui.panels.typography.base")}
             className={fontFamilyListClassName}
             onMouseLeave={baseFontSelectPreview.handleContentPointerLeave}
           >

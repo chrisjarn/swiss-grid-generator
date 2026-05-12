@@ -462,7 +462,7 @@ export async function upsertCloudProjectToUserLibrary({
 
   return saveProjectToUserLibrary({
     id: existing?.id ?? remoteProjectId,
-    label: project.metadata.title.trim() || project.pages[0]?.name || translateMessage("presets.untitled"),
+    label: project.metadata.title.trim() || project.pages[0]?.name || translateMessage("ui.panels.presets.untitled"),
     title: project.metadata.title,
     description: project.metadata.description,
     author: project.metadata.author,
@@ -745,7 +745,7 @@ export function formatCloudActivityLogForSupport(entries: readonly CloudActivity
     ].filter(Boolean)
     return parts.join(" | ")
   })
-  return lines.length > 0 ? lines.join("\n") : translateMessage("cloudActivity.empty")
+  return lines.length > 0 ? lines.join("\n") : translateMessage("ui.panels.cloudActivity.empty")
 }
 
 export async function listUserLayoutPresets(): Promise<LayoutPreset[]> {

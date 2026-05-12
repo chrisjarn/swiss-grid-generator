@@ -15,10 +15,10 @@ type CustomMarginMultipliers = { top: number; left: number; right: number; botto
 type MarginMode = "1" | "2" | "3" | "custom"
 
 const MARGIN_METHOD_OPTIONS: Array<{ value: MarginMode; label: string; detail: string | null }> = [
-  { value: "1", label: translateMessage("settings.margins.progressive"), detail: "1:2:2:3" },
-  { value: "2", label: translateMessage("settings.margins.vanDeGraaf"), detail: "2:3:4:6" },
-  { value: "3", label: translateMessage("settings.margins.baseline"), detail: "1:1:1:1" },
-  { value: "custom", label: translateMessage("settings.margins.custom"), detail: null },
+  { value: "1", label: translateMessage("ui.panels.margins.progressive"), detail: "1:2:2:3" },
+  { value: "2", label: translateMessage("ui.panels.margins.vanDeGraaf"), detail: "2:3:4:6" },
+  { value: "3", label: translateMessage("ui.panels.margins.baseline"), detail: "1:1:1:1" },
+  { value: "custom", label: translateMessage("ui.panels.margins.custom"), detail: null },
 ]
 
 type Props = {
@@ -77,24 +77,24 @@ export const MarginsPanel = memo(function MarginsPanel({
     ? "custom"
     : (marginMethod.toString() as "1" | "2" | "3")
   const sideLabels = {
-    top: t("settings.margins.top"),
-    left: t("settings.margins.left"),
-    right: t("settings.margins.right"),
+    top: t("ui.panels.margins.top"),
+    left: t("ui.panels.margins.left"),
+    right: t("ui.panels.margins.right"),
   }
 
   const collapsedSummary = useCustomMargins
-    ? t("settings.margins.customSummary", {
+    ? t("ui.panels.margins.customSummary", {
         top: customMarginMultipliers.top,
         left: customMarginMultipliers.left,
         right: customMarginMultipliers.right,
         bottom: customMarginMultipliers.bottom,
       })
-    : `${marginMethod === 1 ? t("settings.margins.progressive") : marginMethod === 2 ? t("settings.margins.vanDeGraaf") : t("settings.margins.baseline")}`
+    : `${marginMethod === 1 ? t("ui.panels.margins.progressive") : marginMethod === 2 ? t("ui.panels.margins.vanDeGraaf") : t("ui.panels.margins.baseline")}`
 
   return (
     <PanelCard
-      title={t("settings.margins.title")}
-      tooltip={t("settings.margins.tooltip")}
+      title={t("ui.panels.margins.title")}
+      tooltip={t("ui.panels.margins.tooltip")}
       collapsed={collapsed}
       collapsedSummary={collapsedSummary}
       onHeaderClick={onHeaderClick}
@@ -103,10 +103,10 @@ export const MarginsPanel = memo(function MarginsPanel({
       isDarkMode={isDarkMode}
     >
       <div className="space-y-1.5">
-        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("settings.margins.method")}</Label>
+        <Label className={SETTINGS_OPEN_LIST_LABEL_CLASSNAME}>{t("ui.panels.margins.method")}</Label>
         <div
           role="listbox"
-          aria-label={t("settings.margins.methodAria")}
+          aria-label={t("ui.panels.margins.methodAria")}
           className={marginMethodListClassName}
           onMouseLeave={() => onMarginMethodPreviewChange?.(null)}
         >
@@ -154,8 +154,8 @@ export const MarginsPanel = memo(function MarginsPanel({
             />
           ))}
           <EditableSlider
-            label={t("settings.margins.bottom")}
-            inputAriaLabel={t("settings.margins.bottom")}
+            label={t("ui.panels.margins.bottom")}
+            inputAriaLabel={t("ui.panels.margins.bottom")}
             value={[customMarginMultipliers.bottom]}
             defaultValue={[1]}
             min={1}

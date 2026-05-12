@@ -1,27 +1,25 @@
 {
-  "preview": {
-    "interactionHints": {
-      "edit": "hover a layer, then edit.",
-      "createParagraph": "double-click an empty module for text.",
-      "createImage": "shift-double-click for an image placeholder.",
-      "duplicate": "+ duplicates. shift-drag follows baseline rhythm."
-    },
-    "feedback": {
-      "gridUnchanged": "field unchanged"
-    },
-    "tour": {
-      "open": "open tour",
-      "close": "close",
-      "step": "step",
-      "waitingForLayer": "select the marked layer to continue",
-      "back": "back",
-      "next": "next",
-      "done": "done"
-    }
+  "interactionHints": {
+    "edit": "Hover a layer, then edit.",
+    "createParagraph": "Double-click an empty module for text.",
+    "createImage": "Shift-Double-click for an image placeholder.",
+    "duplicate": "+ duplicates. Shift-drag follows baseline rhythm."
+  },
+  "feedback": {
+    "gridUnchanged": "Field unchanged"
+  },
+  "tour": {
+    "open": "Open tour",
+    "close": "Close",
+    "step": "Step",
+    "waitingForLayer": "Select the marked layer to continue",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done"
   },
   "tooltips": {
-    "counter": "tip {index} of {total}",
-    "next": "next",
-    "close": "close tip"
+    "counter": "Tip {index} of {total}",
+    "next": "Next",
+    "close": "Close tip"
   }
 }

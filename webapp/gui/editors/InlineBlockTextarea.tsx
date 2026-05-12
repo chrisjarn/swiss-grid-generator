@@ -1046,7 +1046,7 @@ export function InlineBlockTextarea<StyleKey extends string>({
               margin: 0,
             }}
             className="absolute bg-transparent outline-none"
-            aria-label={translateMessage("editor.inlineEditor", { target: editorState.target })}
+            aria-label={translateMessage("ui.editor.inlineEditor", { target: editorState.target })}
           />
         </div>
       </div>
