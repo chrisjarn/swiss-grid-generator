@@ -16,6 +16,7 @@ import {
 import { getNeutralFormControlClassName } from "@/shared/ui/popup-styles"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { ProjectPanelPageRow } from "@/gui/panels/sidebar/project-panel-view-model"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
 
 export type PagePanelListItem = ProjectPanelPageRow
 
@@ -34,12 +35,7 @@ type Props = {
   onFacingPageToggle: (pageId: string, enabled: boolean) => void
   onRenamePage: (pageId: string, nextName: string) => void
   onDeletePage: (pageId: string) => void
-  onRequestNotice?: (notice: {
-    title: string
-    message: string
-    onConfirm?: () => void
-    onCancel?: () => void
-  }) => void
+  onRequestNotice?: (notice: NoticeRequest) => void
   onPageOrderChange: (orderedIds: string[]) => void
   isDarkMode?: boolean
 }

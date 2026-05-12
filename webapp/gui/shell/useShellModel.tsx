@@ -83,18 +83,13 @@ import {
 import { translateMessage } from "@/lib/i18n"
 import { openDocumentation } from "@/lib/documentation"
 import { exitFullscreenIfActive, getFullscreenElement, requestElementFullscreen } from "@/shared/dom/fullscreen"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
+import { showBrowserNotice } from "@/gui/shell/lib/browser-notice"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 const DEFAULT_PAGE_PREVIEW_LAYOUT: PreviewLayoutState | null = null
-
-type NoticeState = {
-  title: string
-  message: string
-  onConfirm?: () => void
-  onCancel?: () => void
-}
 
 type EditableProjectMetadataField = "title" | "description" | "author"
 
@@ -102,24 +97,6 @@ const MAX_PROJECT_PAGE_COUNT = 1000
 
 type ProjectLoadTimingState = {
   elapsedMs: number | null
-}
-
-function formatBrowserNoticeMessage(notice: Pick<NoticeState, "title" | "message">): string {
-  return notice.message ? `${notice.title}\n\n${notice.message}` : notice.title
-}
-
-function showBrowserNotice(notice: NoticeState): void {
-  if (typeof window === "undefined") return
-  const message = formatBrowserNoticeMessage(notice)
-  if (notice.onConfirm) {
-    if (window.confirm(message)) {
-      notice.onConfirm()
-    } else {
-      notice.onCancel?.()
-    }
-    return
-  }
-  window.alert(message)
 }
 
 async function writeClipboardText(text: string): Promise<void> {
@@ -618,7 +595,7 @@ export function ShellModelView() {
     setWorkspaceActivePanel(next)
   }, [setShowLayers, setWorkspaceActivePanel])
 
-  const handleRequestNotice = useCallback((notice: NoticeState) => {
+  const handleRequestNotice = useCallback((notice: NoticeRequest) => {
     if (notice.title === translateMessage("ui.status.cloud.conflictTitle")) {
       openSidebarPanel("account")
     }

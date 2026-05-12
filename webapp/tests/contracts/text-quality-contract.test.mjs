@@ -43,8 +43,6 @@ const CASUAL_OR_MARKETING_PATTERNS = [
 
 const USER_FACING_LITERAL_PROPERTIES = [
   "ariaLabel",
-  "cancelLabel",
-  "confirmLabel",
   "description",
   "emptyMessage",
   "label",

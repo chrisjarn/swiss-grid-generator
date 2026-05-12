@@ -45,16 +45,11 @@ import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { OnboardingVideoId } from "@/lib/onboarding/videos"
 import { OnboardingVideoDialog } from "@/gui/dialogs/OnboardingVideoDialog"
 import type { WorkspacePanel } from "@/core/types/workspace"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
 type PreviewProjectPage = ProjectPage<PreviewLayoutState>
-type WorkspaceNoticeRequest = {
-  title: string
-  message: string
-  onConfirm?: () => void
-  onCancel?: () => void
-}
 
 const MAX_GUI_PROJECT_PAGES = 1000
 const PROJECT_PANEL_ROLLOVER_DELAY_MS = 30
@@ -151,7 +146,7 @@ type Props = {
   onBeforePreviewMutation: (layout: PreviewLayoutState) => void
   onRequestGridRestore: (cols: number, rows: number) => void
   onRequestGridReductionWarning: (message: string) => void
-  onRequestNotice: (notice: WorkspaceNoticeRequest) => void
+  onRequestNotice: (notice: NoticeRequest) => void
   onLayoutChange: (layout: PreviewLayoutState) => void
   onSnapshotGetterChange: (getSnapshot: (() => PreviewLayoutState) | null) => void
   onProjectTitleChange: (nextTitle: string) => void

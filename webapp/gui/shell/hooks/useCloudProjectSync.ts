@@ -39,6 +39,7 @@ import {
   type CloudSyncQueueEntry,
   type UserProjectRecord,
 } from "@/lib/user-layout-library"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
 
 export type CloudSyncStatus = "signed_out" | "idle" | "syncing" | "synced" | "offline" | "error" | "conflict"
 export type CloudSyncRequestReason = "session" | "online" | "focus" | "visible" | "preset_browser" | "manual" | "save" | "retry"
@@ -49,15 +50,10 @@ type CloudSyncRequestOptions = {
   throttleMs?: number
 }
 
-type Notice = {
-  title: string
-  message: string
-}
-
 type Args = {
   supabase: SupabaseClient | null
   user: User | null
-  onRequestNotice?: (notice: Notice) => void
+  onRequestNotice?: (notice: NoticeRequest) => void
 }
 
 const DEFAULT_SYNC_THROTTLE_MS = 60_000

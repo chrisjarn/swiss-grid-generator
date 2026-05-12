@@ -2,17 +2,14 @@ import type { TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-p
 import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
 import type { PositionedTextFormatTrackingSegment } from "@/core/layout/text-format-runs"
 import type { BlockRect, TextDrawCommand } from "@/core/layout/typography-layout-plan"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
 
 export type { BlockRect, TextAlignMode, TextDrawCommand, TextVerticalAlignMode }
+export type { NoticeRequest }
 
 export type PagePoint = {
   x: number
   y: number
-}
-
-export type NoticeRequest = {
-  title: string
-  message: string
 }
 
 export type OverflowLinesByBlock<Key extends string> = Partial<Record<Key, number>>

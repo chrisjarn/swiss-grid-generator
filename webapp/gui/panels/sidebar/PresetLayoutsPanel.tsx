@@ -19,6 +19,7 @@ import {
 } from "@/lib/user-layout-library"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import { translateMessage } from "@/core/i18n/messages"
+import type { NoticeRequest } from "@/gui/lib/notice-request"
 
 type PresetGroupCategory = (typeof LAYOUT_PRESET_GROUPS)[number]["category"]
 const PRESET_GROUP_COLLAPSED_STORAGE_KEY = "swiss-grid-generator.preset-browser.collapsed-groups"
@@ -31,12 +32,7 @@ type Props = {
   isDarkMode?: boolean
   compact?: boolean
   showRolloverInfo?: boolean
-  onRequestNotice?: (notice: {
-    title: string
-    message: string
-    onConfirm?: () => void
-    onCancel?: () => void
-  }) => void
+  onRequestNotice?: (notice: NoticeRequest) => void
 }
 
 function formatPresetCreatedAt(value?: string): string {
