@@ -4,10 +4,20 @@ on:
   push:
     paths:
       - "webapp/**"
+      - "DOCUMENTATION.md"
+      - "docs-site/**"
+      - "scripts/sync-docs-site.mjs"
+      - "package.json"
+      - "package-lock.json"
       - ".github/workflows/webapp-ci.yml"
   pull_request:
     paths:
       - "webapp/**"
+      - "DOCUMENTATION.md"
+      - "docs-site/**"
+      - "scripts/sync-docs-site.mjs"
+      - "package.json"
+      - "package-lock.json"
       - ".github/workflows/webapp-ci.yml"
 
 jobs:
@@ -39,3 +49,23 @@ jobs:
 
       - name: Test
         run: npm test
+
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build docs
+        run: npm run docs:build

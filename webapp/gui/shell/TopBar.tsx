@@ -17,10 +17,12 @@ export type TopBarProps = {
   previewHeaderClassName: string
   dividerClassName: string
   showSectionHelpIcons: boolean
+  showHoverInfo: boolean
   isDarkUi: boolean
   onHeaderHelpNavigate: (actionKey: string) => void
   onToggleDarkMode: (event: MouseEvent<HTMLButtonElement>) => void
-  onToggleHelpPanel: () => void
+  onToggleHoverInfo: () => void
+  onOpenDocumentation: () => void
   onToggleFeedbackPanel: () => void
   onToggleLegalNoticePanel: () => void
 }
@@ -28,6 +30,7 @@ export type TopBarProps = {
 function renderHeaderAction(
   action: HeaderAction,
   showSectionHelpIcons: boolean,
+  showHoverInfo: boolean,
   onHeaderHelpNavigate: (actionKey: string) => void,
   isDarkMode: boolean,
 ): ReactNode {
@@ -52,7 +55,7 @@ function renderHeaderAction(
         onClick={action.onClick}
         showStatusDot={action.showStatusDot}
         statusDotClassName={action.statusDotClassName}
-        showTooltip
+        showTooltip={showHoverInfo}
         buttonClassName={action.buttonClassName}
         isDarkMode={isDarkMode}
       >
@@ -70,10 +73,12 @@ export function TopBar({
   previewHeaderClassName,
   dividerClassName,
   showSectionHelpIcons,
+  showHoverInfo,
   isDarkUi,
   onHeaderHelpNavigate,
   onToggleDarkMode,
-  onToggleHelpPanel,
+  onToggleHoverInfo,
+  onOpenDocumentation,
   onToggleFeedbackPanel,
   onToggleLegalNoticePanel,
 }: TopBarProps) {
@@ -104,7 +109,7 @@ export function TopBar({
   const renderHeaderItem = (item: HeaderItem) => (
     item.type === "divider"
       ? <div key={item.key} className={`h-6 w-px ${dividerClassName}`} aria-hidden="true" />
-      : renderHeaderAction(item.action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi)
+      : renderHeaderAction(item.action, showSectionHelpIcons, showHoverInfo, onHeaderHelpNavigate, isDarkUi)
   )
 
   return (
@@ -119,7 +124,7 @@ export function TopBar({
         </div>
 
         <div className="flex flex-wrap items-start gap-2 md:flex-nowrap md:justify-self-end">
-          {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, onHeaderHelpNavigate, isDarkUi))}
+          {sidebarGroup.map((action) => renderHeaderAction(action, showSectionHelpIcons, showHoverInfo, onHeaderHelpNavigate, isDarkUi))}
           <div ref={supportMenuRef} className="relative inline-flex h-8 w-8 items-center justify-center">
             <HeaderIconButton
               ariaLabel={supportMenuOpen ? t("ui.shell.topBar.supportMenu.close") : t("ui.shell.topBar.supportMenu.open")}
@@ -127,7 +132,7 @@ export function TopBar({
               variant={supportMenuOpen ? "default" : "outline"}
               aria-pressed={supportMenuOpen}
               onClick={() => setSupportMenuOpen((current) => !current)}
-              showTooltip
+              showTooltip={showHoverInfo}
               isDarkMode={isDarkUi}
             >
               <MoreVertical className="h-4 w-4" />
@@ -149,10 +154,20 @@ export function TopBar({
                   className="block w-full px-3 py-2 text-left transition-colors hover:bg-accent"
                   onClick={() => {
                     setSupportMenuOpen(false)
-                    onToggleHelpPanel()
+                    onToggleHoverInfo()
                   }}
                 >
-                  {t("ui.shell.topBar.supportMenu.help")}
+                  {showHoverInfo ? t("ui.shell.topBar.supportMenu.hideHoverInfo") : t("ui.shell.topBar.supportMenu.showHoverInfo")}
+                </button>
+                <button
+                  type="button"
+                  className="block w-full px-3 py-2 text-left transition-colors hover:bg-accent"
+                  onClick={() => {
+                    setSupportMenuOpen(false)
+                    onOpenDocumentation()
+                  }}
+                >
+                  {t("ui.shell.topBar.supportMenu.documentation")}
                 </button>
                 <button
                   type="button"

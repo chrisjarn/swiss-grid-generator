@@ -20,7 +20,7 @@ type Args = {
   onToggleTypography: () => void
   onToggleImagePlaceholders: () => void
   onToggleLayersPanel: () => void
-  onToggleHelpPanel: () => void
+  onOpenDocumentation: () => void
   onToggleLegalNoticePanel: () => void
   onOpenPresets: () => void
   onClosePresets: () => void
@@ -50,7 +50,7 @@ export function useShellKeyboardShortcuts({
   onToggleTypography,
   onToggleImagePlaceholders,
   onToggleLayersPanel,
-  onToggleHelpPanel,
+  onOpenDocumentation,
   onToggleLegalNoticePanel,
   onOpenPresets,
   onClosePresets,
@@ -73,6 +73,12 @@ export function useShellKeyboardShortcuts({
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target)) return
+
+      if (!event.metaKey && !event.ctrlKey && !event.altKey && event.shiftKey && event.key === "?") {
+        event.preventDefault()
+        onOpenDocumentation()
+        return
+      }
 
       if (!showPresetsBrowser && hasMultipleProjectPages && !event.metaKey && !event.ctrlKey && !event.altKey) {
         if (event.key === "PageUp") {
@@ -158,8 +164,8 @@ export function useShellKeyboardShortcuts({
         case "toggle_layers_panel":
           onToggleLayersPanel()
           return
-        case "toggle_help_panel":
-          onToggleHelpPanel()
+        case "open_documentation":
+          onOpenDocumentation()
           return
         case "toggle_legal_notice_panel":
           onToggleLegalNoticePanel()
@@ -190,7 +196,7 @@ export function useShellKeyboardShortcuts({
     onRedo,
     onToggleBaselines,
     onToggleDarkMode,
-    onToggleHelpPanel,
+    onOpenDocumentation,
     onToggleLegalNoticePanel,
     onToggleLayersPanel,
     onToggleMargins,

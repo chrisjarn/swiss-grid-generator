@@ -1,5 +1,6 @@
-**10 Rules of Good Swiss Grid Design**  
-*(in the spirit of Dieter Rams’ 10 Principles of Good Design)*
+# 10 Rules of Good Swiss Grid Design
+
+In the spirit of Dieter Rams' 10 Principles of Good Design.
 
 1. **Good Swiss Grid Design is systematic.**  
    It begins with a clear, logical grid and follows it rigorously. Arbitrary placement is chaos.
@@ -31,10 +32,7 @@
 10. **Good Swiss Grid Design is thorough to the last detail.**  
     Even the smallest element — a caption, a folio number, a hairline rule — is considered with the same care as the headline.
 
----
+## Müller-Brockmann inspired
 
-### Bonus (Müller-Brockmann inspired)
 > “The grid is the tool, not the master.  
 > But only when you master the tool can you forget it.”
-
-Would you like a shorter, more memorable version or a German translation as well?

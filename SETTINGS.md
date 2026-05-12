@@ -1,4 +1,4 @@
-# SETTINGS.md
+# Settings Reference
 
 Current, implementation-accurate reference for all user-facing options and defaults.
 
@@ -173,7 +173,7 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 
 The icon header renders as one full-width row above the left settings panel, preview canvas, and right settings panel. The `Smart Text Zoom` through `Project panel` icon group is centered over the preview column. Header icon buttons use the same active/inactive color logic as compact export popup buttons.
 Multi-page layouts show a dark gray page-position line at the very top of the browser; single-page layouts and the presets browser do not show that line, and it has no underlying track color.
-The header renders a vertical-more menu directly after the account icon; the menu contains `Dark Mode`/`Light Mode`, `Help`, `Feedback`, and `Legal Notice`. The former fixed footer in the left settings panel is not rendered.
+The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hide Hover Info`, `Documentation`, `Feedback`, and `Legal Notice`. The former fixed footer in the left settings panel is not rendered.
 
 ### File Actions (icon buttons)
 
@@ -216,13 +216,13 @@ The header renders a vertical-more menu directly after the account icon; the men
 ### Sidebar Panels And More Menu
 
 - `Layers` (layers icon): opens the right sidebar Project panel
-- `Information` (`i` icon): toggles rollover info/tooltips globally
+- `Show Hover Info`/`Hide Hover Info`: toggles rollover info/tooltips globally
 - Rollover info tooltips appear after a 500ms hover/focus delay.
-- Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar, `Cmd/Ctrl+Shift+I` toggles Information
+- Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar
 - `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot stays orange
-- `More` (vertical ellipsis icon): opens a submenu with `Dark Mode`/`Light Mode`, `Help`, `Feedback`, and `Legal Notice`
+- `Documentation`: opens `/docs` in a new tab, relative to the current host
+- `More` (vertical ellipsis icon): opens a submenu with `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hide Hover Info`, `Documentation`, `Feedback`, and `Legal Notice`
 - `Dark Mode`/`Light Mode`: toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor
-- `Help`: opens help/reference panel
 - `Feedback`: opens the right sidebar feedback panel
 - `Legal Notice`: opens the right sidebar legal notice panel
 - `Presets` (layout-template icon): opens preset thumbnails in the preview area
@@ -281,9 +281,9 @@ The header renders a vertical-more menu directly after the account icon; the men
 ### Support And Legal
 
 - `Feedback` and `Legal Notice` live in the header More submenu and remain active even while the presets browser is open.
-- The current app version appears at the end of the Help page.
+- Full user documentation is external and generated from root `DOCUMENTATION.md`.
 
-When `i` is active, header icons show rollover tooltips with a second line for keyboard shortcuts (including Undo/Redo).
+When hover info is active, header icons show rollover tooltips with a second line for keyboard shortcuts where available.
 
 ### Header Keyboard Shortcuts
 
@@ -299,8 +299,7 @@ When `i` is active, header icons show rollover tooltips with a second line for k
 - `Cmd/Ctrl+Shift+T`: Toggle typography
 - `Cmd/Ctrl+Shift+J`: Toggle image placeholders
 - `Cmd/Ctrl+Shift+P`: Toggle project sidebar
-- `Cmd/Ctrl+Shift+I`: Toggle information
-- `Cmd/Ctrl+Shift+H`: Toggle help sidebar
+- `Shift+?`: Open documentation
 - `Cmd/Ctrl+Shift+3`: Toggle legal notice sidebar
 - `Cmd/Ctrl+Shift+4`: Toggle presets browser
 - `Page Up`: Select previous project page

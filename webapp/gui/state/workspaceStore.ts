@@ -11,7 +11,6 @@ type WorkspaceStoreState = WorkspaceState & {
   setActivePanel: (activePanel: WorkspacePanel) => void
   togglePanel: (panel: Exclude<WorkspacePanel, null>) => void
   setShowPresetsBrowser: (showPresetsBrowser: boolean) => void
-  setActiveHelpSectionId: (activeHelpSectionId: string | null) => void
   setSelection: (selection: { pageId: PageId | null; layerId: LayerId | null }) => void
   setSelectedLayer: (layerId: LayerId | null, pageId?: PageId | null) => void
   clearSelection: () => void
@@ -27,7 +26,6 @@ const DEFAULT_WORKSPACE_STATE: WorkspaceState = {
   activeTool: "select",
   activePanel: null,
   showPresetsBrowser: true,
-  activeHelpSectionId: null,
   selection: {
     pageId: null,
     layerId: null,
@@ -63,8 +61,6 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set) => ({
       activePanel: showPresetsBrowser && state.activePanel === "layers" ? null : state.activePanel,
     }))
   },
-
-  setActiveHelpSectionId: (activeHelpSectionId) => set({ activeHelpSectionId }),
 
   setSelection: (selection) => set({ selection }),
 

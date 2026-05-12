@@ -6,7 +6,9 @@
       "more": "More",
       "darkMode": "Dark mode",
       "lightMode": "Light mode",
-      "help": "Help",
+      "showHoverInfo": "Show hover info",
+      "hideHoverInfo": "Hide hover info",
+      "documentation": "Documentation",
       "feedback": "Feedback",
       "legalNotice": "Legal notice"
     },
@@ -71,6 +73,10 @@
         "hide": "Hide account panel",
         "tooltipSignedIn": "Cloud\n{email}\n{status}",
         "tooltipSignedOut": "Cloud\nNot connected\n{status}"
+      },
+      "docs": {
+        "aria": "Open documentation",
+        "tooltip": "Documentation"
       }
     }
   },
@@ -87,7 +93,7 @@
     "toggleTypography": "Toggle type hierarchy",
     "toggleImagePlaceholders": "Toggle image placeholders",
     "toggleProjectPanel": "Toggle project panel",
-    "toggleHelp": "Toggle help",
+    "openDocumentation": "Open documentation",
     "toggleLegalNotice": "Toggle legal notice",
     "togglePresets": "Toggle presets"
   },

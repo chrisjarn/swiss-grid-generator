@@ -59,3 +59,5 @@ screencasts/*.pdf
 !screencasts/quick-start-video-001-performance-page-0005.pdf
 assets/
 webapp/tests/fixtures/performance-1000-pages-static-text.json
+webapp/public/docs/
+webapp/public/doc/

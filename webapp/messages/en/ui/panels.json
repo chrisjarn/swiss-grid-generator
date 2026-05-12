@@ -91,14 +91,6 @@
     }
   },
   "sidebar": {
-    "help": {
-      "title": "Help",
-      "close": "Close help panel",
-      "jumpToTop": "Return to index",
-      "currentVersion": "Version {version}",
-      "action": "Action",
-      "shortcut": "Shortcut"
-    },
     "legal": {
       "title": "Legal",
       "close": "Close legal notice panel"

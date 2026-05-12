@@ -1,4 +1,4 @@
-# DESIGN.md — Tactile Brutalism
+# Tactile Brutalism
 
 **Swiss Grid Generator Design System**  
 *Version 1.0 — May 2026*

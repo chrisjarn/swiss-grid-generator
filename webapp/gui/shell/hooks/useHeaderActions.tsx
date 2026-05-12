@@ -18,7 +18,7 @@ import {
 import { translateMessage } from "@/lib/i18n"
 import type { PreviewHeaderShortcutId } from "@/gui/shell/lib/preview-header-shortcuts"
 
-export type SidebarPanel = "help" | "legal" | "layers" | "feedback" | "account" | null
+export type SidebarPanel = "legal" | "layers" | "feedback" | "account" | null
 
 export type HeaderAction = {
   key: string

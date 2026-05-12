@@ -5,7 +5,6 @@ import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, typ
 
 import { GridPreview } from "@/gui/preview/GridPreview"
 import { FeedbackPanel } from "@/gui/panels/sidebar/FeedbackPanel"
-import { HelpPanel } from "@/gui/panels/sidebar/HelpPanel"
 import { LegalNoticePanel } from "@/gui/panels/sidebar/LegalNoticePanel"
 import { AccountPanel } from "@/gui/panels/sidebar/AccountPanel"
 import { PagesPanel } from "@/gui/panels/sidebar/PagesPanel"
@@ -21,7 +20,7 @@ import {
   type ImageColorSchemeId,
 } from "@/core/config/color-schemes"
 import { type ProjectPage } from "@/core/document/session"
-import type { HelpSectionId } from "@/core/document/help-registry"
+import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
 import type { HeaderAction, HeaderItem } from "@/gui/shell/hooks/useHeaderActions"
 import type { GridResult } from "@/core/layout/grid-calculator"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
@@ -76,11 +75,11 @@ type Props = {
   fileGroup: HeaderItem[]
   displayGroup: HeaderItem[]
   sidebarGroup: HeaderAction[]
-  activeSidebarPanel: "settings" | "help" | "legal" | "layers" | "feedback" | "account" | null
-  activeHelpSectionId: HelpSectionId | null
+  activeSidebarPanel: "settings" | "legal" | "layers" | "feedback" | "account" | null
   showPresetsBrowser: boolean
   isDarkUi: boolean
   showSectionHelpIcons: boolean
+  showHoverInfo: boolean
   smartTextZoomEnabled: boolean
   showBaselines: boolean
   showModules: boolean
@@ -150,7 +149,8 @@ type Props = {
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
   onToggleDarkMode: (event: MouseEvent<HTMLButtonElement>) => void
-  onToggleHelpPanel: () => void
+  onToggleHoverInfo: () => void
+  onOpenDocumentation: () => void
   onToggleFeedbackPanel: () => void
   onToggleLegalNoticePanel: () => void
   onPreviewPlansCommit?: () => void
@@ -216,10 +216,10 @@ export function PreviewWorkspace({
   displayGroup,
   sidebarGroup,
   activeSidebarPanel,
-  activeHelpSectionId,
   showPresetsBrowser,
   isDarkUi,
   showSectionHelpIcons,
+  showHoverInfo,
   smartTextZoomEnabled,
   showBaselines,
   showModules,
@@ -283,7 +283,8 @@ export function PreviewWorkspace({
   onProjectDescriptionChange,
   onProjectAuthorChange,
   onToggleDarkMode,
-  onToggleHelpPanel,
+  onToggleHoverInfo,
+  onOpenDocumentation,
   onToggleFeedbackPanel,
   onToggleLegalNoticePanel,
   onPreviewPlansCommit,
@@ -404,7 +405,6 @@ export function PreviewWorkspace({
   const pageActionButtonClassName = "inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
   const shouldRenderSidebarPanel = activeSidebarPanel !== null && (
     !showPresetsBrowser
-    || activeSidebarPanel === "help"
     || activeSidebarPanel === "feedback"
     || activeSidebarPanel === "legal"
     || activeSidebarPanel === "account"
@@ -884,10 +884,12 @@ export function PreviewWorkspace({
         previewHeaderClassName={uiTheme.previewHeader}
         dividerClassName={uiTheme.divider}
         showSectionHelpIcons={showSectionHelpIcons}
+        showHoverInfo={showHoverInfo}
         isDarkUi={isDarkUi}
         onHeaderHelpNavigate={onHeaderHelpNavigate}
         onToggleDarkMode={onToggleDarkMode}
-        onToggleHelpPanel={onToggleHelpPanel}
+        onToggleHoverInfo={onToggleHoverInfo}
+        onOpenDocumentation={onOpenDocumentation}
         onToggleFeedbackPanel={onToggleFeedbackPanel}
         onToggleLegalNoticePanel={onToggleLegalNoticePanel}
       />
@@ -937,7 +939,7 @@ export function PreviewWorkspace({
               bottomClassName={tourState ? (tourState.isOpen ? "bottom-36" : "bottom-20") : "bottom-4"}
               onClose={onDismissLayoutOpenTooltip}
               onNext={onNextLayoutOpenTooltip}
-              onHelpHover={() => onOpenHelpSection("help-layout-tooltips")}
+              onHelpHover={() => onOpenHelpSection("tooltip-documentation-link")}
             />
           ) : null}
           {showPresetsBrowser ? (
@@ -953,7 +955,7 @@ export function PreviewWorkspace({
                 onDeleteUserPreset={onDeleteUserPreset}
                 isCloudSignedIn={isCloudSignedIn}
                 onRequestNotice={onRequestNotice}
-                showRolloverInfo
+                showRolloverInfo={showHoverInfo}
                 compact
               />
             </div>
@@ -965,7 +967,7 @@ export function PreviewWorkspace({
               showMargins={showMargins}
               showImagePlaceholders={showImagePlaceholders}
               showTypography={showTypography}
-              showRolloverInfo={false}
+              showRolloverInfo={showHoverInfo}
               smartTextEditZoomEnabled={smartTextZoomEnabled}
               layoutEngine={layoutEngine}
               baseFont={baseFont}
@@ -1019,14 +1021,6 @@ export function PreviewWorkspace({
           </div>
           {shouldRenderSidebarPanel && (
             <RightPanel activeSidebarPanel={activeSidebarPanel} uiTheme={uiTheme}>
-            {activeSidebarPanel === "help" && (
-              <HelpPanel
-                isDarkMode={isDarkUi}
-                onClose={closeSidebarPanel}
-                activeSectionId={activeHelpSectionId}
-                appVersion={appVersion}
-              />
-            )}
             {activeSidebarPanel === "layers" && (
               <div
                 aria-disabled={!sidebarControlsUseLivePage}

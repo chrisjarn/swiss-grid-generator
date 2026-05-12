@@ -1,4 +1,4 @@
-# AGENTS.md
+# Agent Guidelines
 
 ## Swiss Grid Generator – Agent Guidelines
 

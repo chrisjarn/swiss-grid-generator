@@ -1,4 +1,4 @@
-# EDITORIAL.md
+# Editorial Voice
 
 **Editorial Voice & Language Guidelines**  
 **Swiss Grid Generator**  

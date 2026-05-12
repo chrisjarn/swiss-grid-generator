@@ -31,7 +31,7 @@ import {
 import { useAutoScrollOpenedSection } from "@/gui/editors/hooks/useAutoScrollOpenedSection"
 import { usePersistedSectionState } from "@/gui/editors/hooks/usePersistedSectionState"
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
-import type { HelpSectionId } from "@/core/document/help-registry"
+import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 

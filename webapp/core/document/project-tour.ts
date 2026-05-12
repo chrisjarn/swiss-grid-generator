@@ -1,10 +1,6 @@
-import {
-  ALL_HELP_SECTION_ITEMS,
-  type HelpSectionId,
-} from "@/core/document/help-registry"
 import { translateMessage } from "@/core/i18n/messages"
 
-export type ProjectTourSidebarPanel = "layers" | "help"
+export type ProjectTourSidebarPanel = "layers"
 
 export type ProjectTourStepAdvance =
   | { type: "manual" }
@@ -17,7 +13,6 @@ export type ProjectTourStep = {
   pageId?: string
   focusLayerKey?: string
   sidebarPanel?: ProjectTourSidebarPanel
-  helpSectionId?: HelpSectionId
   autoSelectLayer?: boolean
   openEditor?: boolean
   advanceOn?: ProjectTourStepAdvance
@@ -31,8 +26,6 @@ export type ProjectTour = {
   autoStart?: boolean
   steps: ProjectTourStep[]
 }
-
-const HELP_SECTION_IDS = new Set<string>(ALL_HELP_SECTION_ITEMS.map((item) => item.id))
 
 function toOptionalText(value: unknown): string | undefined {
   if (typeof value !== "string") return undefined
@@ -71,12 +64,8 @@ function parseTourStep(value: unknown, index: number): ProjectTourStep | null {
   const title = toOptionalText(payload.title) ?? `Step ${index + 1}`
   const pageId = toOptionalText(payload.pageId)
   const focusLayerKey = toOptionalText(payload.focusLayerKey)
-  const sidebarPanel = payload.sidebarPanel === "layers" || payload.sidebarPanel === "help"
+  const sidebarPanel = payload.sidebarPanel === "layers"
     ? payload.sidebarPanel
-    : undefined
-  const helpSectionIdRaw = toOptionalText(payload.helpSectionId)
-  const helpSectionId = helpSectionIdRaw && HELP_SECTION_IDS.has(helpSectionIdRaw)
-    ? helpSectionIdRaw as HelpSectionId
     : undefined
   const advanceOn = parseTourStepAdvance(payload.advanceOn) ?? { type: "manual" as const }
   const autoSelectLayer = typeof payload.autoSelectLayer === "boolean"
@@ -90,7 +79,6 @@ function parseTourStep(value: unknown, index: number): ProjectTourStep | null {
     pageId,
     focusLayerKey,
     sidebarPanel,
-    helpSectionId,
     autoSelectLayer,
     openEditor: payload.openEditor === true,
     advanceOn,

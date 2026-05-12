@@ -56,7 +56,7 @@ import { useAutoScrollOpenedSection } from "@/gui/editors/hooks/useAutoScrollOpe
 import { usePersistedSectionState } from "@/gui/editors/hooks/usePersistedSectionState"
 import { PREVIEW_PERF_UPDATED_EVENT, type PerfPayload } from "@/gui/preview/hooks/usePreviewPerf"
 import { useStateSnapshotSelectPreview } from "@/gui/editors/hooks/useStateSnapshotSelectPreview"
-import type { HelpSectionId } from "@/core/document/help-registry"
+import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
 import { LabeledControlRow } from "@/shared/ui/labeled-control-row"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { MessageKey } from "@/core/i18n/messages"

@@ -22,13 +22,13 @@ test("buildInlineEditorTransform composes page and block rotations with explicit
 })
 
 test("computeSidebarWithEditorSession restores prior sidebar after text-editor closes", () => {
-  const opened = InlineEditor.computeSidebarWithEditorSession("help", null, true)
+  const opened = InlineEditor.computeSidebarWithEditorSession("legal", null, true)
   assert.equal(opened.nextPanel, "text-editor")
-  assert.equal(opened.nextPreviousPanelBeforeEditor, "help")
+  assert.equal(opened.nextPreviousPanelBeforeEditor, "legal")
 
   const closed = InlineEditor.computeSidebarWithEditorSession(opened.nextPanel, opened.nextPreviousPanelBeforeEditor, false)
-  assert.equal(closed.nextPanel, "help")
-  assert.equal(closed.nextPreviousPanelBeforeEditor, "help")
+  assert.equal(closed.nextPanel, "legal")
+  assert.equal(closed.nextPreviousPanelBeforeEditor, "legal")
 })
 
 test("computeInlineEditorTextBox preserves right-aligned editor width and adds optical hang room", () => {

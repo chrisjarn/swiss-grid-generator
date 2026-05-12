@@ -11,7 +11,7 @@ type RightPanelTheme = {
 }
 
 export type RightPanelProps = {
-  activeSidebarPanel: "settings" | "help" | "legal" | "layers" | "feedback" | "account" | null
+  activeSidebarPanel: "settings" | "legal" | "layers" | "feedback" | "account" | null
   uiTheme: RightPanelTheme
   children: ReactNode
 }

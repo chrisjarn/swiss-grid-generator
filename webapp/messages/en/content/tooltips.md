@@ -151,8 +151,8 @@ Hover a layer to see its edit access and placement guides.
 
 Paragraph guides follow the configured `rows + baselines` frame, not only the visible text bounds.
 
-### Help hover is contextual {#tooltip-help-hover}
-Open help and hover marked areas for the matching reference.
+### Documentation stays external {#tooltip-documentation-link}
+Use the documentation link for the full reference. Keep the canvas focused on the layout.
 
 ## Export readiness
 

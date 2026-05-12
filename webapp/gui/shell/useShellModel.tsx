@@ -10,11 +10,7 @@ import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/type
 import { SECTION_KEYS, type SectionKey, type UiSettingsSnapshot } from "@/core/types/workspace-ui-schema"
 import { useExportActions } from "@/gui/shell/hooks/useExportActions"
 import { useHeaderActions } from "@/gui/shell/hooks/useHeaderActions"
-import {
-  HELP_SECTION_BY_HEADER_ACTION,
-  HELP_SECTION_BY_SETTINGS_SECTION,
-  type HelpSectionId,
-} from "@/core/document/help-registry"
+import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
 import { WorkspaceDialogs } from "@/gui/dialogs/WorkspaceDialogs"
 import { useShellKeyboardShortcuts } from "@/gui/shell/hooks/useShellKeyboardShortcuts"
 import { useWorkspaceUiActions } from "@/gui/shell/hooks/useWorkspaceUiActions"
@@ -85,6 +81,7 @@ import {
   type SaveStatusIndicatorStatus,
 } from "@/gui/shell/lib/cloud-status-indicator"
 import { translateMessage } from "@/lib/i18n"
+import { openDocumentation } from "@/lib/documentation"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
@@ -349,12 +346,12 @@ export function ShellModelView() {
   const workspaceCollapsed = useWorkspaceStore((state) => state.collapsed)
   const workspaceActivePanel = useWorkspaceStore((state) => state.activePanel)
   const showPresetsBrowser = useWorkspaceStore((state) => state.showPresetsBrowser)
-  const activeHelpSectionId = useWorkspaceStore((state) => state.activeHelpSectionId as HelpSectionId | null)
+  const showHoverInfo = useWorkspaceStore((state) => state.informationVisible)
   const isDarkUi = useWorkspaceStore((state) => state.darkMode)
   const setWorkspaceCollapsed = useWorkspaceStore((state) => state.setCollapsed)
   const setWorkspaceActivePanel = useWorkspaceStore((state) => state.setActivePanel)
   const setShowPresetsBrowser = useWorkspaceStore((state) => state.setShowPresetsBrowser)
-  const setActiveHelpSectionId = useWorkspaceStore((state) => state.setActiveHelpSectionId)
+  const setInformationVisible = useWorkspaceStore((state) => state.setInformationVisible)
   const setDarkUi = useWorkspaceStore((state) => state.setDarkMode)
   const selectedLayerKey = useWorkspaceStore((state) => state.selection.layerId)
   const setSelectedLayer = useWorkspaceStore((state) => state.setSelectedLayer)
@@ -560,7 +557,7 @@ export function ShellModelView() {
   })
   const [isSmartphone, setIsSmartphone] = useState(false)
   const activeSidebarPanel = workspaceActivePanel
-  const showSectionHelpIcons = activeSidebarPanel === "help"
+  const showSectionHelpIcons = false
   const uiTheme = useMemo(() => (
     isDarkUi ? DARK_WORKSPACE_THEME : LIGHT_WORKSPACE_THEME
   ), [isDarkUi])
@@ -595,6 +592,10 @@ export function ShellModelView() {
     setDarkUi(!useWorkspaceStore.getState().darkMode)
   }, [setDarkUi])
 
+  const toggleHoverInfo = useCallback(() => {
+    setInformationVisible(!useWorkspaceStore.getState().informationVisible)
+  }, [setInformationVisible])
+
   const openSidebarPanel = useCallback((panel: typeof activeSidebarPanel) => {
     if (showPresetsBrowser && panel === "layers") return
     setWorkspaceActivePanel(panel)
@@ -606,15 +607,9 @@ export function ShellModelView() {
   }, [openSidebarPanel])
 
   const openHelpSection = useCallback((sectionId: HelpSectionId) => {
-    setActiveHelpSectionId(sectionId)
-    openSidebarPanel("help")
-  }, [openSidebarPanel, setActiveHelpSectionId])
-
-  const toggleHelpPanel = useCallback(() => {
-    setWorkspaceActivePanel(useWorkspaceStore.getState().activePanel === "help" ? null : "help")
-    setShowLayers(false)
-    setActiveHelpSectionId(null)
-  }, [setActiveHelpSectionId, setShowLayers, setWorkspaceActivePanel])
+    void sectionId
+    openDocumentation()
+  }, [])
 
   const toggleLayersPanel = useCallback(() => {
     if (useWorkspaceStore.getState().showPresetsBrowser) return
@@ -1340,7 +1335,6 @@ export function ShellModelView() {
     onSelectPage: selectPage,
     onSelectLayer: setSelectedLayerKeyWithGrace,
     onOpenSidebarPanel: openSidebarPanel,
-    onOpenHelpSection: openHelpSection,
     onOpenLayerEditor: handleToggleLayerEditor,
   })
 
@@ -1632,14 +1626,11 @@ export function ShellModelView() {
   }, [toggleAllSections])
 
   const handleSectionHelpNavigate = useCallback((key: SectionKey) => {
-    const targetSectionId = HELP_SECTION_BY_SETTINGS_SECTION[key]
-    setActiveHelpSectionId(targetSectionId)
-  }, [setActiveHelpSectionId])
+    void key
+  }, [])
   const handleHeaderHelpNavigate = useCallback((actionKey: string) => {
-    const targetSectionId = HELP_SECTION_BY_HEADER_ACTION[actionKey]
-    if (!targetSectionId) return
-    setActiveHelpSectionId(targetSectionId)
-  }, [setActiveHelpSectionId])
+    void actionKey
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -1985,7 +1976,7 @@ export function ShellModelView() {
     onToggleTypography: toggleShowTypography,
     onToggleImagePlaceholders: toggleShowImagePlaceholders,
     onToggleLayersPanel: toggleLayersPanel,
-    onToggleHelpPanel: toggleHelpPanel,
+    onOpenDocumentation: openDocumentation,
     onToggleLegalNoticePanel: () => openSidebarPanel(activeSidebarPanel === "legal" ? null : "legal"),
     onOpenPresets: () => setShowPresetsBrowser(true),
     onClosePresets: () => setShowPresetsBrowser(false),
@@ -2059,10 +2050,10 @@ export function ShellModelView() {
       displayGroup={displayGroup}
       sidebarGroup={sidebarGroup}
       activeSidebarPanel={activeSidebarPanel}
-      activeHelpSectionId={activeHelpSectionId}
       showPresetsBrowser={showPresetsBrowser}
       isDarkUi={isDarkUi}
       showSectionHelpIcons={showSectionHelpIcons}
+      showHoverInfo={showHoverInfo}
       smartTextZoomEnabled={smartTextZoomEnabled}
       showBaselines={showBaselines}
       showModules={showModules}
@@ -2135,7 +2126,8 @@ export function ShellModelView() {
       onProjectDescriptionChange={handleProjectDescriptionChange}
       onProjectAuthorChange={handleProjectAuthorChange}
       onToggleDarkMode={toggleDarkUi}
-      onToggleHelpPanel={toggleHelpPanel}
+      onToggleHoverInfo={toggleHoverInfo}
+      onOpenDocumentation={openDocumentation}
       onToggleFeedbackPanel={handleToggleFeedbackPanel}
       onToggleLegalNoticePanel={handleToggleLegalNoticePanel}
       onPreviewPlansCommit={completeProjectLoadTiming}
@@ -2201,7 +2193,7 @@ export function ShellModelView() {
     <SettingsSidebarPanels
       collapsed={collapsed}
       showSectionHelpIcons={showSectionHelpIcons}
-      showRolloverInfo={false}
+      showRolloverInfo={showHoverInfo}
       interactionsDisabled={showPresetsBrowser || !sidebarControlsUseLivePage}
       onHelpNavigate={handleSectionHelpNavigate}
       onSectionHeaderClick={handleSectionHeaderClick}
@@ -2304,6 +2296,7 @@ export function ShellModelView() {
     setFibonacciSequenceStartIndex,
     setTypographyScale,
     setUseCustomMargins,
+    showHoverInfo,
     showSectionHelpIcons,
     showPresetsBrowser,
     sidebarAvailableBaselineOptions,

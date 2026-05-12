@@ -7,10 +7,8 @@ const ROOT = process.cwd()
 
 const PRODUCT_TEXT_FILES = [
   "messages/en.json",
-  "messages/en/content/help.md",
   "messages/en/content/tooltips.md",
   "messages/en/content/manual.md",
-  "core/document/generated-help-content.ts",
   "gui/preview/lib/generated-tooltip-content.ts",
 ]
 
@@ -127,6 +125,13 @@ function collectPresetMetadataStrings(relPath) {
   return entries
 }
 
+function extractEditorialDefaultBodyText() {
+  const source = fs.readFileSync(path.join(ROOT, "..", "EDITORIAL.md"), "utf8")
+  const match = source.match(/\*\((rest of the document remains the same\.\.\.)\)\*/)
+  assert.ok(match, "Expected EDITORIAL.md to keep the default body placeholder sentence.")
+  return match[1]
+}
+
 function isIntentionalSpecimenText(entry) {
   return entry.source.endsWith("150 Fonts.json") || entry.pointer.includes("author")
 }
@@ -193,7 +198,6 @@ function collectHardcodedUserFacingLiteralViolations(relPath, source) {
 test("product text stays calm, source-normal, and non-marketing", () => {
   const jsonEntries = collectJsonStrings(JSON.parse(readText("messages/en.json")), "messages/en.json")
   const markdownEntries = [
-    ...collectMarkdownLines("messages/en/content/help.md"),
     ...collectMarkdownLines("messages/en/content/tooltips.md"),
     ...collectMarkdownLines("messages/en/content/manual.md"),
   ]
@@ -240,6 +244,15 @@ test("generated content does not reintroduce casual tone", () => {
   }
 
   assert.deepEqual(violations, [])
+})
+
+test("new paragraph body default follows the editorial placeholder sentence", () => {
+  const editorialDefaultBody = extractEditorialDefaultBodyText()
+  const appMessages = JSON.parse(readText("messages/en/app.json"))
+  const bundledMessages = JSON.parse(readText("messages/en.json"))
+
+  assert.equal(appMessages.defaultContent.body, editorialDefaultBody)
+  assert.equal(bundledMessages.app.defaultContent.body, editorialDefaultBody)
 })
 
 test("application code keeps message access behind the typed i18n boundary", () => {

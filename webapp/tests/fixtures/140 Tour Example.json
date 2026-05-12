@@ -27,11 +27,10 @@
         "sidebarPanel": "layers"
       },
       {
-        "id": "system-help",
-        "title": "Jump to a Help Context",
-        "caption": "A step can move to another page and open the relevant help section so the user sees both the specimen layout and the reference text.",
-        "pageId": "page-quick-start-system",
-        "helpSectionId": "help-baseline-grid"
+        "id": "system-context",
+        "title": "Jump to a System Page",
+        "caption": "A step can move to another page so the user sees the specimen layout without opening a detached help surface.",
+        "pageId": "page-quick-start-system"
       },
       {
         "id": "click-layer",
@@ -57,8 +56,7 @@
         "id": "save-load",
         "title": "End on Save and Load",
         "caption": "The same project JSON can carry both the document pages and the optional tour definition. This makes quick onboarding portable and editable.",
-        "pageId": "page-quick-start-workflow",
-        "helpSectionId": "help-save-load"
+        "pageId": "page-quick-start-workflow"
       }
     ]
   },

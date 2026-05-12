@@ -1,4 +1,4 @@
-# Swiss Grid Generator - Calculations
+# Layout Calculations
 
 This document describes the mathematical calculations used in the Swiss Grid Generator, based on Josef Müller-Brockmann's *Grid Systems in Graphic Design* (1981).
 

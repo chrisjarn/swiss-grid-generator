@@ -31,7 +31,6 @@ const MIGRATED_CORE_LIB_ALIASES = [
   "@/lib/grid-column-layout",
   "@/lib/grid-reduction-validation",
   "@/lib/grid-rhythm",
-  "@/lib/help-registry",
   "@/lib/image-placeholder-opacity",
   "@/lib/image-placeholder-plan",
   "@/lib/layer-placement",

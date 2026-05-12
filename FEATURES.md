@@ -1,4 +1,4 @@
-# FEATURES.md
+# Feature Inventory
 
 Current capability inventory for Swiss Grid Generator.
 
@@ -231,10 +231,10 @@ Current capability inventory for Swiss Grid Generator.
 - Smart text-edit zoom toggle in the header, enabled by default.
 - While smart text zoom is enabled, entering text edit mode focuses the active paragraph, ordinary text/style edits keep the current zoom, frame-geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit returns to full-page fit.
 - Bottom-of-preview layout-open tooltip popup sourced from `TOOLTIPS.md`, with fade-in, `Next >` sequencing, `Tooltip x of y` count, and dismiss via `X` or outside click.
-- Layout-open tooltip popup participates in the Help system: its orange top indicator appears only while Help is open, and hover routes the Help panel to the tooltip reference section.
+- Layout-open tooltip popup remains inline and contextual without opening a full help surface.
 - Visibility toggles for baselines, margins, modules, image placeholders, and typography.
 - Undo/redo across settings, layout, and editor operations.
-- Help sidebar with hover-jump references.
+- External documentation link opens the generated documentation site.
 - Rollover-info toggle for tooltips and affordances.
 - Feedback sidebar with required email/comment fields, optional screenshots, and optional support-log attachment.
 - Legal Notice sidebar with provider, contact, privacy, cloud storage, terms, and dispute-resolution information.

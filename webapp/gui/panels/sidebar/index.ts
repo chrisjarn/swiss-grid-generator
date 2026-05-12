@@ -1,6 +1,5 @@
 export * from "./AccountPanel"
 export * from "./FeedbackPanel"
-export * from "./HelpPanel"
 export * from "./LegalNoticePanel"
 export * from "./PagesPanel"
 export * from "./PresetLayoutsPanel"

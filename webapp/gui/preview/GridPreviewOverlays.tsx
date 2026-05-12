@@ -30,7 +30,7 @@ import type { PreviewColorSchemeOption, TextEditorControls } from "@/gui/preview
 import type { ImageColorSchemeId } from "@/core/config/color-schemes"
 import type { TextAlignMode, TextVerticalAlignMode } from "@/core/types/layout-primitives"
 import type { BlockRect } from "@/gui/preview/lib/preview-types"
-import type { HelpSectionId } from "@/core/document/help-registry"
+import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
 import {
   getSettingsIconButtonClassName,
   getSettingsOpenListClassName,

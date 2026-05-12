@@ -3,6 +3,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predocs:dev": "node scripts/sync-docs-site.mjs",
+    "docs:dev": "vitepress dev docs-site --host 0.0.0.0",
+    "predocs:build": "node scripts/sync-docs-site.mjs",
+    "docs:build": "vitepress build docs-site",
+    "docs:deploy": "npm run docs:build",
     "record:000-quick-start-video-001": "playwright test tests/000-quick-start-video-001.spec.ts --project=chromium",
     "playwright:install": "playwright install chromium"
   },
@@ -10,6 +15,7 @@
     "@playwright/test": "^1.60.0",
     "@types/node": "^25.7.0",
     "ffmpeg-static": "^5.3.0",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitepress": "^1.6.4"
   }
 }

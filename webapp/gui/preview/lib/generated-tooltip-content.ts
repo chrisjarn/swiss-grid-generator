@@ -378,12 +378,12 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     ]
   },
   {
-    "id": "tooltip-help-hover",
-    "title": "Help hover is contextual",
+    "id": "tooltip-documentation-link",
+    "title": "Documentation stays external",
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Open help and hover marked areas for the matching reference."
+        "text": "Use the documentation link for the full reference. Keep the canvas focused on the layout."
       }
     ]
   },

@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import type { ProjectTour, ProjectTourStep } from "@/core/document/project-tour"
 import { resolveProjectTourStartIndex } from "@/core/document/project-tour"
-import type { HelpSectionId } from "@/core/document/help-registry"
 
 type Args = {
   tour: ProjectTour | null | undefined
@@ -12,8 +11,7 @@ type Args = {
   selectedLayerKey: string | null
   onSelectPage: (pageId: string) => void
   onSelectLayer: (key: string | null) => void
-  onOpenSidebarPanel: (panel: "layers" | "help" | null) => void
-  onOpenHelpSection: (sectionId: HelpSectionId) => void
+  onOpenSidebarPanel: (panel: "layers" | null) => void
   onOpenLayerEditor: (target: string) => void
 }
 
@@ -31,7 +29,6 @@ export function useProjectTourController({
   onSelectPage,
   onSelectLayer,
   onOpenSidebarPanel,
-  onOpenHelpSection,
   onOpenLayerEditor,
 }: Args) {
   const [isOpen, setIsOpen] = useState(false)
@@ -75,9 +72,7 @@ export function useProjectTourController({
       onSelectPage(currentStep.pageId)
     }
 
-    if (currentStep.helpSectionId) {
-      onOpenHelpSection(currentStep.helpSectionId)
-    } else if (currentStep.sidebarPanel) {
+    if (currentStep.sidebarPanel) {
       onOpenSidebarPanel(currentStep.sidebarPanel)
     } else if (currentStep.focusLayerKey || currentStep.openEditor) {
       onOpenSidebarPanel("layers")
@@ -109,7 +104,6 @@ export function useProjectTourController({
     currentStep,
     currentStepIndex,
     isOpen,
-    onOpenHelpSection,
     onOpenLayerEditor,
     onOpenSidebarPanel,
     onSelectLayer,

@@ -13,7 +13,7 @@
       "display": "Swiss design",
       "headline": "Modular grid systems",
       "subhead": "Grid, baseline, measure.",
-      "body": "Field. Baseline. Measure.",
+      "body": "rest of the document remains the same...",
       "caption": "Copyright {year} Swiss Grid Generator"
     }
   },
@@ -62,7 +62,9 @@
           "more": "More",
           "darkMode": "Dark mode",
           "lightMode": "Light mode",
-          "help": "Help",
+          "showHoverInfo": "Show hover info",
+          "hideHoverInfo": "Hide hover info",
+          "documentation": "Documentation",
           "feedback": "Feedback",
           "legalNotice": "Legal notice"
         },
@@ -127,6 +129,10 @@
             "hide": "Hide account panel",
             "tooltipSignedIn": "Cloud\n{email}\n{status}",
             "tooltipSignedOut": "Cloud\nNot connected\n{status}"
+          },
+          "docs": {
+            "aria": "Open documentation",
+            "tooltip": "Documentation"
           }
         }
       },
@@ -143,7 +149,7 @@
         "toggleTypography": "Toggle type hierarchy",
         "toggleImagePlaceholders": "Toggle image placeholders",
         "toggleProjectPanel": "Toggle project panel",
-        "toggleHelp": "Toggle help",
+        "openDocumentation": "Open documentation",
         "toggleLegalNotice": "Toggle legal notice",
         "togglePresets": "Toggle presets"
       },
@@ -248,14 +254,6 @@
         }
       },
       "sidebar": {
-        "help": {
-          "title": "Help",
-          "close": "Close help panel",
-          "jumpToTop": "Return to index",
-          "currentVersion": "Version {version}",
-          "action": "Action",
-          "shortcut": "Shortcut"
-        },
         "legal": {
           "title": "Legal",
           "close": "Close legal notice panel"

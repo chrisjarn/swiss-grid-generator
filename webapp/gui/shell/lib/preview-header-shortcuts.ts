@@ -13,7 +13,7 @@ export type PreviewHeaderShortcutId =
   | "toggle_typography"
   | "toggle_image_placeholders"
   | "toggle_layers_panel"
-  | "toggle_help_panel"
+  | "open_documentation"
   | "toggle_legal_notice_panel"
   | "toggle_example_panel"
 
@@ -104,10 +104,10 @@ export const PREVIEW_HEADER_SHORTCUTS: PreviewHeaderShortcut[] = [
     bindings: [{ key: "p", shift: true }],
   },
   {
-    id: "toggle_help_panel",
-    combo: "Cmd/Ctrl+Shift+H",
-    description: translateMessage("ui.shell.shortcuts.toggleHelp"),
-    bindings: [{ key: "h", shift: true }],
+    id: "open_documentation",
+    combo: "Shift+?",
+    description: translateMessage("ui.shell.shortcuts.openDocumentation"),
+    bindings: [{ key: "?", shift: true }],
   },
   {
     id: "toggle_legal_notice_panel",
