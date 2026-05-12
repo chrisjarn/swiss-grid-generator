@@ -107,7 +107,9 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
       const ctx = canvas.getContext("2d")
       if (!ctx) return
       const guideStrokeColor = readUiColor("--color-accent")
-      const previewGuideFill = withColorAlpha(guideStrokeColor, 0.18)
+      const guideFill = withColorAlpha(guideStrokeColor, 0.18)
+      const paragraphGuideStrokeColor = readUiColor("--color-paragraph-layer-accent")
+      const paragraphGuideFill = withColorAlpha(paragraphGuideStrokeColor, 0.18)
       const overflowBadgeFill = withColorAlpha(readUiColor("--color-error"), 0.85)
       const overflowBadgeText = readUiColor("--color-page-default")
       const cssWidth = canvas.width / pixelRatio
@@ -157,8 +159,9 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         widthPx: number,
         heightPx: number,
         lineWidth: number = GUIDE_STROKE_WIDTH,
+        strokeColor: string = guideStrokeColor,
       ) => {
-        ctx.strokeStyle = guideStrokeColor
+        ctx.strokeStyle = strokeColor
         ctx.lineWidth = lineWidth
         ctx.beginPath()
         ctx.moveTo(horizontalX, lineY)
@@ -175,8 +178,9 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         y: number,
         widthPx: number,
         heightPx: number,
+        fillColor: string = guideFill,
       ) => {
-        ctx.fillStyle = previewGuideFill
+        ctx.fillStyle = fillColor
         ctx.fillRect(x, y, widthPx, heightPx)
       }
 
@@ -185,8 +189,9 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         y: number,
         widthPx: number,
         heightPx: number,
+        strokeColor: string = guideStrokeColor,
       ) => {
-        ctx.strokeStyle = guideStrokeColor
+        ctx.strokeStyle = strokeColor
         ctx.lineWidth = GUIDE_STROKE_WIDTH
         ctx.beginPath()
         ctx.moveTo(x, y)
@@ -215,6 +220,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
             guide.y,
             guide.width,
             guide.height,
+            paragraphGuideFill,
           )
         })
       }
@@ -226,6 +232,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           guide.y,
           guide.width,
           guide.height,
+          paragraphGuideStrokeColor,
         )
       }
 
@@ -242,10 +249,12 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           guide.width,
           guide.height,
           lineWidth,
+          paragraphGuideStrokeColor,
         )
       }
 
       if (dragState) {
+        const isDraggingTextLayer = blockOrder.includes(dragState.key)
         const dragSpan = getPlacementSpan(dragState.key)
         const dragRows = getPlacementRows(dragState.key)
         const dragHeightBaselines = getPlacementHeightBaselines(dragState.key)
@@ -277,19 +286,28 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           gutterY: gridMarginVertical,
           baselineStep: gridUnit,
         }) * scale
-        drawPlacementGuide(snapX, snapX, snapY + baselineStep, snapWidth, snapHeight)
+        drawPlacementGuide(
+          snapX,
+          snapX,
+          snapY + baselineStep,
+          snapWidth,
+          snapHeight,
+          GUIDE_STROKE_WIDTH,
+          isDraggingTextLayer ? paragraphGuideStrokeColor : guideStrokeColor,
+        )
       } else if (hoveredTextGuideRect && hoveredTextGuidePlan) {
         drawTextGuideFill(hoveredTextGuidePlan, hoveredTextGuideRects)
         drawTextGuideEdges(hoveredTextGuidePlan, hoveredTextGuideRect)
       } else if (hoveredTextGuideRect) {
         for (const rect of hoveredTextGuideRects.length > 0 ? hoveredTextGuideRects : [hoveredTextGuideRect]) {
-          drawPreviewGuideFill(rect.x, rect.y, rect.width, rect.height)
+          drawPreviewGuideFill(rect.x, rect.y, rect.width, rect.height, paragraphGuideFill)
         }
         drawPreviewGuideEdges(
           hoveredTextGuideRect.x,
           hoveredTextGuideRect.y,
           hoveredTextGuideRect.width,
           hoveredTextGuideRect.height,
+          paragraphGuideStrokeColor,
         )
       } else if (hoveredImageRect) {
         drawPreviewGuideFill(

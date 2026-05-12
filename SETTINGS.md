@@ -266,6 +266,7 @@ The header `>` support submenu uses the same open-list visual system as panel li
 - The closed `layers` section subline shows the active page's live text and image layer counts and updates immediately when preview layers are created or deleted.
 - Layer rows use the same always-open select-list visual style and local scroll behavior as left-panel list fields and the Project panel page list. When the `layers` section is open, wheel scrolling over layer rows scrolls the layer list, not the surrounding Project panel.
 - Text layer rows display a single Inter text preview row in the paragraph text color.
+- Active text layer rows and paragraph preview overlays use Braun Orange for the background signal and left/top indicators.
 - Image layer rows display a full-width color rectangle instead of the `Image Placeholder` label.
 - Hovering an active-page layer row mirrors the same active preview rollover/guides for that block.
 - Hovering an active-page layer row temporarily routes keyboard layer nudging to that hovered layer; leaving the row restores keyboard nudging to the selected layer.

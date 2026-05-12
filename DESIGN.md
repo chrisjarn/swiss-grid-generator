@@ -48,7 +48,7 @@ Color is used with extreme discipline — always functional, never decorative. W
 - **Braun Green** — `#00A97A` — Status / on-state indicators
 - **Braun Yellow** — `#D4B018` — Function / attention signals
 - **Braun Blue** — `#2979C8` — Main interface accent, active states, and connectivity signals
-- **Braun Orange** — `#E87820` — Secondary status (e.g. mute)
+- **Braun Orange** — `#E87820` — Paragraph layer and preview indicators, plus secondary status (e.g. mute)
 
 **Color Rule (Dieter Rams influence):**  
 Maximum one strong accent color per screen or context. Color always serves a clear functional purpose — never decoration.

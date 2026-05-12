@@ -58,6 +58,17 @@ type LayerThumb = {
 const LAYER_TITLE_FONT_FAMILY = getFontFamilyCss("Inter")
 const LOCK_BUTTON_DOUBLE_CLICK_WINDOW_MS = 320
 const MIN_LAYER_LIST_MAX_HEIGHT_PX = 84
+
+function getParagraphLayerOpenListOptionClassName(isDarkMode: boolean, active: boolean) {
+  if (!active) {
+    return getSettingsOpenListOptionClassName(isDarkMode, false)
+  }
+  return `flex h-7 w-full items-center px-2 text-left font-normal leading-none transition-colors ${
+    isDarkMode
+      ? "bg-[color-mix(in_srgb,var(--color-paragraph-layer-accent)_24%,transparent)] text-foreground"
+      : "bg-[color-mix(in_srgb,var(--color-paragraph-layer-accent)_16%,transparent)] text-foreground"
+  }`
+}
 const LAYER_LIST_BOTTOM_GAP_PX = 16
 
 function reconcileLayerOrder(
@@ -408,9 +419,15 @@ export function ProjectPageLayersList({
           const stationaryIndex = stationaryIndexByKey.get(thumb.key) ?? null
           const allowLayerInteractions = isActivePage && !isLocked
           const showPreviewHighlight = isSelected || isHovered || isEditing
+          const isParagraphLayer = thumb.kind === "text"
           const editingHighlightClassName = isEditing
-            ? "shadow-[inset_1px_0_0_0_var(--color-accent),inset_0_1px_0_0_var(--color-accent)]"
+            ? isParagraphLayer
+              ? "shadow-[inset_1px_0_0_0_var(--color-paragraph-layer-accent),inset_0_1px_0_0_var(--color-paragraph-layer-accent)]"
+              : "shadow-[inset_1px_0_0_0_var(--color-accent),inset_0_1px_0_0_var(--color-accent)]"
             : ""
+          const layerOptionClassName = isParagraphLayer
+            ? getParagraphLayerOpenListOptionClassName(isDarkMode, showPreviewHighlight)
+            : getSettingsOpenListOptionClassName(isDarkMode, showPreviewHighlight)
           return (
             <Fragment key={`${pageId}-${thumb.key}`}>
               {thumb.key !== draggingKey && stationaryIndex !== null && stationaryIndex > 0
@@ -457,7 +474,7 @@ export function ProjectPageLayersList({
                   if (!allowLayerInteractions) return
                   onToggleEditor(thumb.key)
                 }}
-                className={`${getSettingsOpenListOptionClassName(isDarkMode, showPreviewHighlight)} relative justify-between gap-3 text-xs ${
+                className={`${layerOptionClassName} relative justify-between gap-3 text-xs ${
                   draggingKey === thumb.key
                     ? "cursor-grabbing opacity-45"
                     : ""
