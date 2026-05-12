@@ -226,6 +226,7 @@ interface GridPreviewProps {
   smartTextEditZoomEnabled?: boolean
   initialLayout?: PreviewLayoutState | null
   initialLayoutToken?: number
+  focusToken?: number
   rotation?: number
   canvasBackground?: string | null
   undoNonce?: number
@@ -291,6 +292,7 @@ export const GridPreview = memo(function GridPreview({
   smartTextEditZoomEnabled = false,
   initialLayout = null,
   initialLayoutToken = 0,
+  focusToken = 0,
   rotation = 0,
   canvasBackground = null,
   undoNonce = 0,
@@ -455,6 +457,14 @@ export const GridPreview = memo(function GridPreview({
   useEffect(() => {
     previewScaleRef.current = scale
   }, [scale])
+
+  useEffect(() => {
+    if (focusToken <= 0) return
+    const frameId = window.requestAnimationFrame(() => {
+      previewContainerRef.current?.focus({ preventScroll: true })
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [focusToken])
 
   const { recordPerfMetric } = usePreviewPerf({
     enabled: PERF_ENABLED,
@@ -2796,7 +2806,8 @@ export const GridPreview = memo(function GridPreview({
     <div
       ref={previewContainerRef}
       data-tooltip-boundary="preview-workspace"
-      className={`relative h-full w-full min-w-0 overflow-hidden bg-background ${
+      tabIndex={-1}
+      className={`relative h-full w-full min-w-0 overflow-hidden bg-background focus:outline-none ${
         presentationMode ? "pointer-events-none rounded-none" : "rounded-lg"
       }`}
       style={{ opacity: previewDisplayReady ? 1 : 0 }}

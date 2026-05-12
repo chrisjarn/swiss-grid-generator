@@ -2,7 +2,7 @@
 
 Swiss Grid Generator is a precision tool for building editorial layouts from a visible system: ratio, baseline, margins, modular field, hierarchy, and export.
 
-This document is the single source of truth for user documentation. The static documentation website is generated from this file.
+This document is the quickstart source for the static documentation website. The generated `/docs` site also includes the canonical tooltip, feature, GUI, and performance documentation.
 
 ## Getting Started
 
@@ -175,7 +175,8 @@ Key principles:
 
 | Need | Canonical file |
 |---|---|
-| User documentation | [DOCUMENTATION.md](DOCUMENTATION.md) |
+| Quickstart documentation | [DOCUMENTATION.md](DOCUMENTATION.md) |
+| Tooltip documentation | [webapp/messages/en/content/tooltips.md](webapp/messages/en/content/tooltips.md) |
 | Project overview | [README.md](README.md) |
 | Feature inventory | [FEATURES.md](FEATURES.md) |
 | Exact settings and defaults | [SETTINGS.md](SETTINGS.md) |
@@ -191,6 +192,6 @@ Key principles:
 ## Markdown Rules
 
 - Keep this file user-facing.
-- Keep implementation detail in the linked engineering documents.
-- Do not duplicate large tables from `SETTINGS.md` or formulas from `CALCULATIONS.md`.
-- Prefer concise sections and links to the canonical file.
+- Keep quickstart material concise.
+- Keep implementation detail in the dedicated engineering documents.
+- Let `scripts/sync-docs-site.mjs` compose the generated `/docs` site from the canonical source files.

@@ -31,7 +31,7 @@ The generated preset manifest lives at `webapp/lib/presets/generated-manifest.ts
 
 ## Documentation site
 
-User documentation is authored only in [DOCUMENTATION.md](DOCUMENTATION.md). The static site source at `docs-site/index.md` is generated from that file and is ignored by git.
+User quickstart documentation is authored in [DOCUMENTATION.md](DOCUMENTATION.md). The static site source at `docs-site/index.md` is generated from `DOCUMENTATION.md`, the canonical tooltip source, [FEATURES.md](FEATURES.md), [GUI.md](GUI.md), and [PERFORMANCE.md](PERFORMANCE.md), and is ignored by git.
 
 ```bash
 npm run docs:dev

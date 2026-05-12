@@ -234,8 +234,7 @@ Current capability inventory for Swiss Grid Generator.
 - Current layouts can be copied to the clipboard and pasted into another browser session through the project-transfer JSON payload.
 - Presentation mode shows only the planned layout, supports native fullscreen when the browser allows it, and keeps page navigation active.
 - Quick-start video overlay uses a full-height video surface with transparent header/controls, page-style shadow, no seek bar, and a native fullscreen control.
-- Bottom-of-preview layout-open tooltip popup sourced from `TOOLTIPS.md`, with fade-in, `Next >` sequencing, `Tooltip x of y` count, and dismiss via `X` or outside click.
-- Layout-open tooltip popup remains inline and contextual without opening a full help surface.
+- Layout-open tooltip copy remains generated from the tooltip source, but the automatic popup is currently disabled.
 - Visibility toggles for baselines, margins, modules, image placeholders, and typography.
 - Undo/redo across settings, layout, and editor operations.
 - External documentation link opens the generated documentation site.

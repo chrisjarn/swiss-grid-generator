@@ -429,7 +429,6 @@ export function ShellModelView() {
     dismissLayoutOpenTooltip,
     handleNextLayoutOpenTooltip,
     layoutOpenTooltipTotalCount,
-    showNextLayoutOpenTooltip,
   } = useLayoutOpenTooltipController()
   const [noticeState, setNoticeState] = useState<NoticeState>(null)
   const [gridReductionWarningToast, setGridReductionWarningToast] = useState<GridReductionWarningToastState>(null)
@@ -438,6 +437,7 @@ export function ShellModelView() {
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
   const [activeOnboardingVideoId, setActiveOnboardingVideoId] = useState<OnboardingVideoId | null>(null)
   const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
+  const [previewFocusToken, setPreviewFocusToken] = useState(0)
   const [projectPanelResetToken, setProjectPanelResetToken] = useState(0)
 
   const ui = useMemo(() => resolveUiSettingsSnapshot(activeDocumentPage?.uiSettings ?? {}, {
@@ -1233,8 +1233,9 @@ export function ShellModelView() {
       setActiveOriginPresetId(null)
       setActiveOnboardingVideoId(null)
     }
-    showNextLayoutOpenTooltip()
-  }, [showNextLayoutOpenTooltip])
+    dismissLayoutOpenTooltip("session")
+    setPreviewFocusToken((current) => current + 1)
+  }, [dismissLayoutOpenTooltip])
 
   const loadProjectFromInput = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -2193,6 +2194,7 @@ export function ShellModelView() {
       showSectionHelpIcons={showSectionHelpIcons}
       showHoverInfo={showHoverInfo}
       hasPreviewLayout={hasPreviewLayout}
+      previewFocusToken={previewFocusToken}
       smartTextZoomEnabled={smartTextZoomEnabled}
       showBaselines={showBaselines}
       showModules={showModules}

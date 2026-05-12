@@ -14,8 +14,9 @@ function existsRepo(relPath) {
   return fs.existsSync(path.join(REPO_ROOT, relPath))
 }
 
-test("root documentation is the user documentation source", () => {
+test("documentation site is composed from canonical documentation sources", () => {
   const documentation = readRepoText("DOCUMENTATION.md")
+  const docsSync = readRepoText("scripts/sync-docs-site.mjs")
   const packageJson = JSON.parse(readRepoText("package.json"))
 
   assert.match(documentation, /^# Swiss Grid Generator Documentation/m)
@@ -24,6 +25,16 @@ test("root documentation is the user documentation source", () => {
   assert.match(documentation, /## Placeholder Reference/)
   assert.match(documentation, /## Keyboard Shortcuts/)
   assert.match(documentation, /## Export Options/)
+  assert.match(docsSync, /title: "Quickstart"/)
+  assert.match(docsSync, /source: "DOCUMENTATION\.md"/)
+  assert.match(docsSync, /title: "Tooltips"/)
+  assert.match(docsSync, /source: "webapp\/messages\/en\/content\/tooltips\.md"/)
+  assert.match(docsSync, /title: "Features"/)
+  assert.match(docsSync, /source: "FEATURES\.md"/)
+  assert.match(docsSync, /title: "GUI"/)
+  assert.match(docsSync, /source: "GUI\.md"/)
+  assert.match(docsSync, /title: "Performance"/)
+  assert.match(docsSync, /source: "PERFORMANCE\.md"/)
   assert.equal(packageJson.scripts["docs:dev"], "vitepress dev docs-site --host 0.0.0.0")
   assert.equal(packageJson.scripts["docs:build"], "vitepress build docs-site")
   assert.equal(packageJson.scripts["predocs:build"], "node scripts/sync-docs-site.mjs")

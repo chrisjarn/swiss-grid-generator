@@ -84,6 +84,7 @@ type Props = {
   showSectionHelpIcons: boolean
   showHoverInfo: boolean
   hasPreviewLayout: boolean
+  previewFocusToken: number
   smartTextZoomEnabled: boolean
   showBaselines: boolean
   showModules: boolean
@@ -228,6 +229,7 @@ export function PreviewWorkspace({
   showSectionHelpIcons,
   showHoverInfo,
   hasPreviewLayout,
+  previewFocusToken,
   smartTextZoomEnabled,
   showBaselines,
   showModules,
@@ -1000,6 +1002,7 @@ export function PreviewWorkspace({
               onPreviewPlansCommit={onPreviewPlansCommit}
               initialLayout={loadedPreviewLayout?.layout ?? null}
               initialLayoutToken={loadedPreviewLayout?.token ?? 0}
+              focusToken={previewFocusToken}
               rotation={rotation}
               externalHistory
               onBeforePreviewMutation={onBeforePreviewMutation}
