@@ -69,6 +69,7 @@
     "test:text-quality": "node --import ./scripts/register-ts-alias-loader.mjs --test tests/contracts/text-quality-contract.test.mjs",
     "export": "node --import ./scripts/register-ts-alias-loader.mjs scripts/export-project.mjs",
     "benchmark:layout": "node --import ./scripts/register-ts-alias-loader.mjs scripts/benchmark-page-export-plan.mjs",
+    "benchmark:lorem": "node --import ./scripts/register-ts-alias-loader.mjs scripts/benchmark-lorem-document-variables.mjs",
     "fixtures:performance": "node scripts/generate-performance-fixture.mjs",
     "fonts:sync": "../.venv-fonttools/bin/python scripts/sync_google_font_assets.py"
   },

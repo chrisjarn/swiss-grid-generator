@@ -576,11 +576,11 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
             if (name !== "lorem") return null
             const rawPrefix = rawText.slice(0, rawStart)
             const rawSuffix = rawText.slice(rawEnd)
-            const candidateLineCountCache = new Map<string, number>()
+            const candidateLineCountCache = new Map<number, number>()
             return fitLoremTextToLineCapacity({
               maxLines: maxLoremLines,
-              countLinesForCandidate: (candidate) => {
-                const cachedLineCount = candidateLineCountCache.get(candidate)
+              countLinesForCandidate: (candidate, wordCount) => {
+                const cachedLineCount = candidateLineCountCache.get(wordCount)
                 if (cachedLineCount !== undefined) return cachedLineCount
                 const candidateRawText = `${rawPrefix}${candidate}${rawSuffix}`
                 const candidateResolved = resolveDocumentVariableContent({
@@ -611,7 +611,7 @@ export function buildCanvasTypographyRenderPlans<BlockId extends string, StyleKe
                   undefined,
                   candidateCanvasFont,
                 ).length
-                candidateLineCountCache.set(candidate, lineCount)
+                candidateLineCountCache.set(wordCount, lineCount)
                 return lineCount
               },
             })

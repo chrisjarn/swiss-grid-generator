@@ -1348,8 +1348,8 @@ function buildPageExportPlanInternal({
               && !rawSuffix.includes("<%")
             return fitLoremTextToLineCapacity({
               maxLines: blockPlan.maxLoremLines,
-              countLinesForCandidate: (candidate) => {
-                const lineCountCacheKey = `${loremLineCountCacheBaseKey ?? "uncached"}\u0001${rawStart}\u0001${rawEnd}\u0001${candidate}`
+              countLinesForCandidate: (candidate, wordCount) => {
+                const lineCountCacheKey = `${loremLineCountCacheBaseKey ?? "uncached"}\u0001${rawStart}\u0001${rawEnd}\u0001${wordCount}`
                 const cachedLineCount = readPageExportLruValue(pageExportLoremLineCountCache, lineCountCacheKey)
                 if (cachedLineCount !== null) return cachedLineCount
                 const candidateRawText = `${rawPrefix}${candidate}${rawSuffix}`

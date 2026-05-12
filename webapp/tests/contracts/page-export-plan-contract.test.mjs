@@ -12,6 +12,7 @@ import { createStressPagePlanArgs } from "../helpers/page-export-plan-fixtures.m
 const ROOT = process.cwd()
 const PUBLIC_ROOT = path.join(ROOT, "public")
 const EXPECTED_STRESS_PLAN_HASH = "1797ef367b8c76ec11f4d7d728170cacb392888909c061e95d57dfa62c87f700"
+const EXPECTED_DOCUMENT_VARIABLE_PLAN_HASH = "310209325cf74c1e7dc071597e2fb582afc22ae0165591f41035eb766e788a2e"
 
 function installLocalAssetFetch() {
   const originalFetch = globalThis.fetch?.bind(globalThis)
@@ -160,7 +161,8 @@ test("page export plan instrumentation does not change the canonical plan", () =
 test("page export plan resolves document variables while preserving raw edit mode", () => {
   const { args, key } = createDocumentVariablePlanArgs()
   const rawContent = args.layout.textContent[key]
-  const resolved = findTextPlan(buildPageExportPlan(args), key)
+  const resolvedPlan = buildPageExportPlan(args)
+  const resolved = findTextPlan(resolvedPlan, key)
   const rawEdit = findTextPlan(buildPageExportPlan({
     ...args,
     rawDocumentVariableBlockKey: key,
@@ -172,6 +174,7 @@ test("page export plan resolves document variables while preserving raw edit mod
   assert.match(resolved.sourceText, /Variable audit 1\/12/)
   assert.match(resolved.sourceText, /Lorem ipsum/)
   assert.notEqual(resolved.sourceText, rawContent)
+  assert.equal(hashPlan(resolvedPlan), EXPECTED_DOCUMENT_VARIABLE_PLAN_HASH)
 })
 
 test("lorem document variable output is stable for geometry-neutral changes", () => {
@@ -218,6 +221,22 @@ test("document variable cache key is derived from authored content, style, geome
   assert.match(source, /baseFontSize: blockPlan\.baseFontSize/)
   assert.match(source, /resolveFontSize: buildPageExportResolveFontSizeKey\(blockPlan\)/)
   assert.match(source, /layoutEngine/)
+  assert.match(source, /countLinesForCandidate: \(candidate, wordCount\) =>/)
+  assert.match(source, /lineCountCacheKey = `\$\{loremLineCountCacheBaseKey \?\? "uncached"\}\\u0001\$\{rawStart\}\\u0001\$\{rawEnd\}\\u0001\$\{wordCount\}`/)
+})
+
+test("lorem-heavy performance fixture has a dedicated benchmark", () => {
+  const packageJson = JSON.parse(readText("package.json"))
+  const benchmarkSource = readText("scripts/benchmark-lorem-document-variables.mjs")
+
+  assert.equal(
+    packageJson.scripts["benchmark:lorem"],
+    "node --import ./scripts/register-ts-alias-loader.mjs scripts/benchmark-lorem-document-variables.mjs",
+  )
+  assert.match(benchmarkSource, /performance-1000-pages\.json/)
+  assert.match(benchmarkSource, /runPass\("cold"/)
+  assert.match(benchmarkSource, /runPass\("warm"/)
+  assert.match(benchmarkSource, /Raw document variable leaked/)
 })
 
 test("row-based reflow uses the final module row for 150 Fonts display paragraphs", () => {

@@ -37,6 +37,14 @@ npm run benchmark:layout
 
 The benchmark builds canonical page export plans for 10, 100, 500, and 1000 stress pages with dense typography and image placeholders. It reports total planning time, average planning time per page, plan counts, and Node heap usage.
 
+For lorem-heavy document-variable fitting, run:
+
+```bash
+npm run benchmark:lorem
+```
+
+This benchmark uses `tests/fixtures/performance-1000-pages.json`, verifies that resolved page plans do not leak raw `<%...%>` tokens, and reports cold and warm passes separately. The warm pass must stay fast because the derived `PageExportPlan` document-variable cache should reuse unchanged frame/style/context work.
+
 These numbers are diagnostic, not a hard pass/fail gate. The contract gate is:
 
 ```bash
@@ -53,6 +61,28 @@ That test snapshots a normalized canonical stress plan hash so performance chang
 - Cache only pure deterministic calculations with explicit keys.
 - Do not cache or reuse returned plan objects across calls unless mutation safety is proven.
 - Run `npm run test:page-export-plan`, `npm run lint`, `npx tsc --noEmit`, and `npm run benchmark:layout` after planner changes.
+
+## 2026-05-12 Lorem Fitting Summary
+
+Today's work kept document variables derived inside `PageExportPlan` and did not add persisted `resolvedContent` to layer state.
+
+### Kept Changes
+
+- Added `npm run benchmark:lorem` for `tests/fixtures/performance-1000-pages.json`.
+- The benchmark reports cold and warm planning passes and fails if any raw `<%...%>` token leaks into planned text.
+- Lorem candidate line-count cache keys now use the deterministic candidate word count instead of the full candidate paragraph string.
+- `fitLoremTextToLineCapacity` now chooses a measured upper bound from the 8-word sample before exact binary fitting. The final candidate is still verified through the same wrap/line-count path.
+- Added a document-variable plan hash in `npm run test:page-export-plan` so fitting changes cannot silently move rendered output.
+
+### Measured Results
+
+On the 1000-page lorem fixture:
+
+- Before this pass: cold `buildPageExportPlan` about `13.43s`; document variables about `10.59s`.
+- After this pass: cold `buildPageExportPlan` about `12.04s`; document variables about `9.22s`.
+- Warm pass remains about `1.96-2.01s`; document variables stay about `22-24ms`.
+
+The optimization is intentionally conservative: it reduces exact candidate probes without changing rendered text, line breaks, geometry, or PDF/SVG/IDML export planning.
 
 ## 2026-05-03 Optimization Summary
 

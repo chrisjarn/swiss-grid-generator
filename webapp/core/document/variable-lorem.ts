@@ -28,23 +28,40 @@ export function fitLoremTextToLineCapacity({
   countLinesForCandidate,
 }: {
   maxLines: number
-  countLinesForCandidate: (candidate: string) => number
+  countLinesForCandidate: (candidate: string, wordCount: number) => number
 }): string {
   const normalizedMaxLines = Math.max(1, Math.floor(maxLines))
   let low = 1
   let high = 8
   let best = buildLoremCandidate(1)
 
-  const firstLineCount = countLinesForCandidate(best)
-  if (!(firstLineCount > normalizedMaxLines)) {
-    while (high < MAX_LOREM_WORDS) {
-      const candidate = buildLoremCandidate(high)
-      const lineCount = countLinesForCandidate(candidate)
-      if (lineCount > normalizedMaxLines) break
-      best = candidate
-      low = high
-      high = Math.min(MAX_LOREM_WORDS, high * 2)
-    }
+  const firstLineCount = countLinesForCandidate(best, 1)
+  if (firstLineCount > normalizedMaxLines) {
+    return best
+  }
+
+  const seedWordCount = high
+  const seedCandidate = buildLoremCandidate(seedWordCount)
+  const seedLineCount = countLinesForCandidate(seedCandidate, seedWordCount)
+  if (seedLineCount <= normalizedMaxLines) {
+    best = seedCandidate
+    low = seedWordCount
+    const estimatedHigh = Math.ceil(
+      seedWordCount * normalizedMaxLines / Math.max(1, seedLineCount) * 1.25,
+    )
+    high = Math.min(
+      MAX_LOREM_WORDS,
+      Math.max(seedWordCount * 2, estimatedHigh),
+    )
+  }
+
+  while (high < MAX_LOREM_WORDS) {
+    const candidate = buildLoremCandidate(high)
+    const lineCount = countLinesForCandidate(candidate, high)
+    if (lineCount > normalizedMaxLines) break
+    best = candidate
+    low = high
+    high = Math.min(MAX_LOREM_WORDS, Math.max(high + 1, Math.ceil(high * 1.5)))
   }
 
   let left = low
@@ -52,7 +69,7 @@ export function fitLoremTextToLineCapacity({
   while (left <= right) {
     const middle = Math.floor((left + right) / 2)
     const candidate = buildLoremCandidate(middle)
-    const lineCount = countLinesForCandidate(candidate)
+    const lineCount = countLinesForCandidate(candidate, middle)
     if (lineCount <= normalizedMaxLines) {
       best = candidate
       left = middle + 1
