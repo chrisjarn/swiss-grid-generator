@@ -18,6 +18,10 @@ npm run record:poster
 
 Output: [quick-onboarding-001.mp4](screencasts/quick-onboarding-001.mp4)
 
+[![Quick onboarding screencast](screencasts/quick-onboarding-presets-browser.png)](screencasts/quick-onboarding-001.mp4)
+
+Click the preview to open the MP4.
+
 The recording ends by opening the 1000-page performance fixture, selecting five pages, inspecting the Layers panel, exporting page 5 as PDF, and opening the resulting PDF in Chromium.
 
 The same command also writes reference screenshots:
