@@ -264,8 +264,9 @@ function PresetCard({
       >
         <button
           type="button"
+          data-preset-id={preset.id}
           className={`relative h-full w-full rounded-md border-2 transition-colors cursor-pointer overflow-hidden ${isDarkMode ? "border-gray-700 bg-gray-800 hover:border-blue-400 hover:bg-gray-700" : "border-gray-200 bg-gray-50 hover:border-blue-500 hover:bg-blue-50"}`}
-          onDoubleClick={() => onLoadPreset(preset)}
+          onClick={() => onLoadPreset(preset)}
         >
           {syncIndicatorClassName ? (
             <span

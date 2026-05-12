@@ -42,6 +42,8 @@ import type { LayoutOpenTooltipItem } from "@/gui/preview/lib/generated-tooltip-
 import { RightPanel } from "@/gui/shell/RightPanel"
 import { TopBar } from "@/gui/shell/TopBar"
 import { useTranslation } from "@/lib/i18n/useTranslation"
+import type { OnboardingVideoId } from "@/lib/onboarding/videos"
+import { OnboardingVideoDialog } from "@/gui/dialogs/OnboardingVideoDialog"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -188,6 +190,8 @@ type Props = {
   layoutOpenTooltipTotalCount: number
   onDismissLayoutOpenTooltip: () => void
   onNextLayoutOpenTooltip: () => void
+  activeOnboardingVideoId: OnboardingVideoId | null
+  onCloseOnboardingVideo: () => void
   tourState?: {
     title: string
     description?: string
@@ -315,6 +319,8 @@ export function PreviewWorkspace({
   layoutOpenTooltipTotalCount,
   onDismissLayoutOpenTooltip,
   onNextLayoutOpenTooltip,
+  activeOnboardingVideoId,
+  onCloseOnboardingVideo,
   tourState = null,
 }: Props) {
   const { t } = useTranslation()
@@ -884,6 +890,11 @@ export function PreviewWorkspace({
         onToggleHelpPanel={onToggleHelpPanel}
         onToggleFeedbackPanel={onToggleFeedbackPanel}
         onToggleLegalNoticePanel={onToggleLegalNoticePanel}
+      />
+
+      <OnboardingVideoDialog
+        videoId={activeOnboardingVideoId}
+        onClose={onCloseOnboardingVideo}
       />
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">

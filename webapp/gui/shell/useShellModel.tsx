@@ -71,6 +71,7 @@ import type {
   ProjectPanelViewModel,
 } from "@/gui/panels/sidebar/project-panel-view-model"
 import type { LayoutPreset } from "@/lib/presets"
+import type { OnboardingVideoId } from "@/lib/onboarding/videos"
 import {
   createUserProjectRecordQuery,
   getUserProjectRecord,
@@ -407,6 +408,7 @@ export function ShellModelView() {
   const [activeUserProjectId, setActiveUserProjectId] = useState<string | null>(null)
   const [activeUserProjectRecord, setActiveUserProjectRecord] = useState<UserProjectRecord | null>(null)
   const [activeOriginPresetId, setActiveOriginPresetId] = useState<string | null>(null)
+  const [activeOnboardingVideoId, setActiveOnboardingVideoId] = useState<OnboardingVideoId | null>(null)
   const [projectLoadTiming, setProjectLoadTiming] = useState<ProjectLoadTimingState>({ elapsedMs: null })
   const [projectPanelResetToken, setProjectPanelResetToken] = useState(0)
 
@@ -1202,6 +1204,7 @@ export function ShellModelView() {
     if (source === "file") {
       setActiveUserProjectId(null)
       setActiveOriginPresetId(null)
+      setActiveOnboardingVideoId(null)
     }
     showNextLayoutOpenTooltip()
   }, [showNextLayoutOpenTooltip])
@@ -1241,9 +1244,11 @@ export function ShellModelView() {
     try {
       handleApplyLoadedProject(parseLoadedProject<PreviewLayoutState>(JSON.parse(preset.projectSourceJson)))
       handleProjectLoaded("preset")
+      return true
     } catch (error) {
       console.error(error)
       handleProjectLoadFailed()
+      return false
     }
   }, [handleApplyLoadedProject, handleProjectLoadFailed, handleProjectLoaded])
 
@@ -1271,6 +1276,11 @@ export function ShellModelView() {
   }, [patchProjectMetadata, projectMetadata])
 
   const handleLoadBrowserPreset = useCallback((preset: LayoutPreset) => {
+    if (preset.onboardingVideoId) {
+      setActiveOnboardingVideoId(preset.onboardingVideoId)
+      return
+    }
+
     beginProjectLoadTiming()
     setActiveUserProjectId(preset.source === "user" ? (preset.userProjectId ?? preset.id) : null)
     setActiveOriginPresetId(
@@ -1278,7 +1288,8 @@ export function ShellModelView() {
         ? (preset.originPresetId ?? null)
         : preset.id,
     )
-    handleLoadPresetProject(preset)
+    const didLoad = handleLoadPresetProject(preset)
+    setActiveOnboardingVideoId(didLoad ? (preset.onboardingVideoId ?? null) : null)
   }, [beginProjectLoadTiming, handleLoadPresetProject])
 
   const handleDeleteBrowserPreset = useCallback(async (preset: LayoutPreset) => {
@@ -2160,6 +2171,8 @@ export function ShellModelView() {
       layoutOpenTooltipTotalCount={layoutOpenTooltipTotalCount}
       onDismissLayoutOpenTooltip={dismissLayoutOpenTooltip}
       onNextLayoutOpenTooltip={handleNextLayoutOpenTooltip}
+      activeOnboardingVideoId={activeOnboardingVideoId}
+      onCloseOnboardingVideo={() => setActiveOnboardingVideoId(null)}
       tourState={projectTour ? {
         title: projectTour.title,
         description: projectTour.description,

@@ -133,6 +133,7 @@ type Props<StyleKey extends string> = {
   onParagraphRolloverControlStart: (key: string) => void
   onParagraphRolloverControlChange: (key: string, patch: ParagraphRolloverControlPatch) => void
   onParagraphRolloverControlEnd: () => void
+  onParagraphRolloverControlPreview: (key: string, patch: ParagraphRolloverControlPatch | null) => void
   onImageRolloverControlStart: (key: string) => void
   onImageRolloverControlChange: (key: string, patch: ImageRolloverControlPatch) => void
   onImageRolloverControlEnd: () => void
@@ -193,6 +194,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
   onParagraphRolloverControlStart,
   onParagraphRolloverControlChange,
   onParagraphRolloverControlEnd,
+  onParagraphRolloverControlPreview,
   onImageRolloverControlStart,
   onImageRolloverControlChange,
   onImageRolloverControlEnd,
@@ -374,6 +376,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
   const endActiveRolloverControl = () => {
     if (hoveredEditTarget?.kind === "text") {
       onParagraphRolloverControlEnd()
+      onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
       return
     }
     if (hoveredEditTarget?.kind === "image") {
@@ -476,8 +479,7 @@ export function GridPreviewOverlays<StyleKey extends string>({
     patch: Pick<ParagraphRolloverControlPatch, "align" | "verticalAlign">,
   ) => {
     if (hoveredEditTarget?.kind !== "text") return
-    onParagraphRolloverControlStart(hoveredEditTarget.key)
-    onParagraphRolloverControlChange(hoveredEditTarget.key, patch)
+    onParagraphRolloverControlPreview(hoveredEditTarget.key, patch)
   }
 
   const handleImageToggleChange = (patch: ImageRolloverControlPatch) => {
@@ -608,10 +610,22 @@ export function GridPreviewOverlays<StyleKey extends string>({
         style={paragraphMenuIconButtonStyle}
         aria-pressed={active}
         onMouseEnter={() => previewParagraphAlignmentChange(patch)}
+        onMouseLeave={() => {
+          if (hoveredEditTarget?.kind === "text") {
+            onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
+          }
+        }}
         onFocus={() => previewParagraphAlignmentChange(patch)}
+        onBlur={() => {
+          if (hoveredEditTarget?.kind === "text") {
+            onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
+          }
+        }}
         onClick={(event) => {
           stopPreviewButtonEvent(event)
+          if (hoveredEditTarget?.kind !== "text") return
           handleParagraphAlignmentChange(patch)
+          onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
         }}
         aria-label={t(`ui.editor.paragraph.${value}`)}
         title={t(`ui.editor.paragraph.${value}`)}
@@ -653,6 +667,9 @@ export function GridPreviewOverlays<StyleKey extends string>({
       onMouseLeave={() => {
         setOpenRolloverMenuKey(null)
         endActiveRolloverControl()
+        if (hoveredEditTarget.kind === "text") {
+          onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
+        }
       }}
       onPointerDown={handleRolloverMenuPointerDown}
       onPointerUp={handleRolloverMenuPointerEnd}

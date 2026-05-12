@@ -232,7 +232,7 @@
   },
   "presets": {
     "title": "Presets",
-    "description": "Double-click to load. Esc closes.",
+    "description": "Click to load. Esc closes.",
     "groups": {
       "presets": "Presets",
       "examples": "Examples",

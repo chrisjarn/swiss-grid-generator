@@ -41,6 +41,31 @@ test("preview interaction routing stays delegated through preview hooks", () => 
   assert.match(textLayerSource, /handleTextCanvasDoubleClick\(event\)/)
 })
 
+test("rollover info tooltip delay is centralized", () => {
+  const timingSource = readSource("shared/ui/hover-tooltip-timing.ts")
+  const tooltipSource = readSource("shared/ui/hover-tooltip.tsx")
+
+  assert.match(timingSource, /HOVER_TOOLTIP_OPEN_DELAY_MS\s*=\s*500/)
+  assert.match(tooltipSource, /HOVER_TOOLTIP_OPEN_DELAY_MS/)
+  assert.match(tooltipSource, /window\.setTimeout\([\s\S]*HOVER_TOOLTIP_OPEN_DELAY_MS/)
+})
+
+test("paragraph alignment rollover previews stay separate from committed changes", () => {
+  const overlaySource = readSource("gui/preview/GridPreviewOverlays.tsx")
+  const gridPreviewSource = readSource("gui/preview/GridPreview.tsx")
+  const previewHandlerStart = overlaySource.indexOf("const previewParagraphAlignmentChange = (")
+  const previewHandlerEnd = overlaySource.indexOf("const handleImageToggleChange", previewHandlerStart)
+  const previewHandlerSource = overlaySource.slice(previewHandlerStart, previewHandlerEnd)
+
+  assert.ok(previewHandlerStart >= 0, "Expected a dedicated alignment preview handler")
+  assert.match(previewHandlerSource, /onParagraphRolloverControlPreview\(hoveredEditTarget\.key, patch\)/)
+  assert.doesNotMatch(previewHandlerSource, /onParagraphRolloverControlStart/)
+  assert.doesNotMatch(previewHandlerSource, /onParagraphRolloverControlChange/)
+  assert.match(gridPreviewSource, /const \[paragraphRolloverPreview, setParagraphRolloverPreview\]/)
+  assert.match(gridPreviewSource, /buildPreviewRenderSnapshot/)
+  assert.match(gridPreviewSource, /buildLayoutSnapshot: buildPreviewRenderSnapshot/)
+})
+
 test("preview smoke uses the authored inline editor aria-label casing", () => {
   const smokeSource = readSource("scripts/run-preview-interaction-smoke.mjs")
 

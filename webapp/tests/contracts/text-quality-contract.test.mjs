@@ -15,8 +15,9 @@ const PRODUCT_TEXT_FILES = [
 ]
 
 const PRESET_METADATA_FILES = [
-  "lib/presets/data/000 Poster Template portrait 4x5 12pt.json",
-  "lib/presets/data/010 Book Template - Van de Graaf 4x5 12pt.json",
+  "lib/presets/data/000-quick-start-video-001.json",
+  "lib/presets/data/010 Poster Template portrait 4x5 12pt.json",
+  "lib/presets/data/020 Book Template - Van de Graaf 4x5 12pt.json",
   "lib/presets/data/100 Swiss Grid Generator Manual.json",
   "lib/presets/data/110 Square Poster Example.json",
   "lib/presets/data/120 Swiss Style Poster Example 001.json",

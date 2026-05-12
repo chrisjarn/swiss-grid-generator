@@ -5,6 +5,7 @@ import type {
   LayoutPresetProjectSource,
 } from "@/lib/presets/types"
 import { translateMessage } from "@/lib/i18n"
+import { resolveOnboardingVideoIdForPresetPath } from "@/lib/onboarding/videos"
 import { buildPresetBrowserPage } from "@/lib/presets/browser-page"
 import { GENERATED_PRESET_MANIFEST } from "./generated-manifest"
 
@@ -136,6 +137,7 @@ function parseLayoutPreset(
     description,
     author,
     createdAt: project.metadata.createdAt,
+    onboardingVideoId: resolveOnboardingVideoIdForPresetPath(sourcePath),
     projectSourceJson: sourceJson,
     browserPage: buildPresetBrowserPage(browserPage, sourcePath, project.layoutEngine),
   }

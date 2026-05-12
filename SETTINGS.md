@@ -217,6 +217,7 @@ The header renders a vertical-more menu directly after the account icon; the men
 
 - `Layers` (layers icon): opens the right sidebar Project panel
 - `Information` (`i` icon): toggles rollover info/tooltips globally
+- Rollover info tooltips appear after a 500ms hover/focus delay.
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar, `Cmd/Ctrl+Shift+I` toggles Information
 - `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot stays orange
 - `More` (vertical ellipsis icon): opens a submenu with `Dark Mode`/`Light Mode`, `Help`, `Feedback`, and `Legal Notice`

@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "record:poster": "playwright test tests/record-poster-1x1.spec.ts --project=chromium",
+    "record:000-quick-start-video-001": "playwright test tests/000-quick-start-video-001.spec.ts --project=chromium",
     "playwright:install": "playwright install chromium"
   },
   "devDependencies": {

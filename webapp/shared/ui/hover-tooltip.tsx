@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils"
-import { useCallback, useLayoutEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 import type { FocusEvent, ReactNode } from "react"
+import { HOVER_TOOLTIP_FADE_DURATION_MS, HOVER_TOOLTIP_OPEN_DELAY_MS } from "@/shared/ui/hover-tooltip-timing"
 
 type HoverTooltipProps = {
   label: ReactNode
@@ -38,8 +39,15 @@ export function HoverTooltip({
 }: HoverTooltipProps) {
   const wrapperRef = useRef<HTMLElement | null>(null)
   const tooltipRef = useRef<HTMLDivElement | null>(null)
+  const openTimerRef = useRef<number | null>(null)
   const [isActive, setIsActive] = useState(false)
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPoint | null>(null)
+
+  const clearOpenTimer = useCallback(() => {
+    if (openTimerRef.current === null || typeof window === "undefined") return
+    window.clearTimeout(openTimerRef.current)
+    openTimerRef.current = null
+  }, [])
 
   const updateTooltipPosition = useCallback(() => {
     if (disabled || !isActive || typeof window === "undefined") return
@@ -124,20 +132,33 @@ export function HoverTooltip({
   }, [disabled, isActive, updateTooltipPosition])
 
   const activateFromElement = useCallback(() => {
-    setIsActive(true)
-  }, [])
+    if (isActive || typeof window === "undefined") return
+    clearOpenTimer()
+    openTimerRef.current = window.setTimeout(() => {
+      setIsActive(true)
+      openTimerRef.current = null
+    }, HOVER_TOOLTIP_OPEN_DELAY_MS)
+  }, [clearOpenTimer, isActive])
+
+  const deactivateFromElement = useCallback(() => {
+    clearOpenTimer()
+    setIsActive(false)
+  }, [clearOpenTimer])
+
+  useEffect(() => {
+    if (disabled) deactivateFromElement()
+    return () => clearOpenTimer()
+  }, [clearOpenTimer, deactivateFromElement, disabled])
 
   const wrapperProps = {
     className: cn(!disabled && "relative", className),
     onMouseEnter: disabled ? undefined : activateFromElement,
-    onMouseLeave: disabled ? undefined : () => {
-      setIsActive(false)
-    },
+    onMouseLeave: disabled ? undefined : deactivateFromElement,
     onFocusCapture: disabled ? undefined : activateFromElement,
     onBlurCapture: disabled ? undefined : (event: FocusEvent<HTMLElement>) => {
       const nextTarget = event.relatedTarget
       if (!(nextTarget instanceof Node) || !wrapperRef.current?.contains(nextTarget)) {
-        setIsActive(false)
+        deactivateFromElement()
       }
     },
   }
@@ -149,7 +170,7 @@ export function HoverTooltip({
           ref={tooltipRef}
           role="tooltip"
           className={cn(
-            "pointer-events-none fixed z-40 rounded border px-2 py-1 text-[11px] shadow-sm transition-opacity duration-75",
+            "pointer-events-none fixed z-40 rounded border px-2 py-1 text-[11px] shadow-sm transition-opacity",
             isActive ? "opacity-100" : "opacity-0",
             tooltipPosition ? null : "invisible",
             tooltipClassName,
@@ -158,6 +179,7 @@ export function HoverTooltip({
             ? {
               left: tooltipPosition.x,
               top: tooltipPosition.y,
+              transitionDuration: `${HOVER_TOOLTIP_FADE_DURATION_MS}ms`,
             }
             : undefined}
         >

@@ -10,43 +10,43 @@ const ffmpegPath = require("ffmpeg-static") as string | null
 
 const rootDir = fileURLToPath(new URL("../", import.meta.url))
 const viewport = {
-  width: Number(process.env.POSTER_RECORD_WIDTH ?? 1440),
-  height: Number(process.env.POSTER_RECORD_HEIGHT ?? 900),
+  width: Number(process.env.QUICK_START_VIDEO_RECORD_WIDTH ?? 1440),
+  height: Number(process.env.QUICK_START_VIDEO_RECORD_HEIGHT ?? 900),
 }
 
-const fixturePath = process.env.POSTER_FIXTURE
-  ? path.resolve(process.env.POSTER_FIXTURE)
+const fixturePath = process.env.QUICK_START_VIDEO_FIXTURE
+  ? path.resolve(process.env.QUICK_START_VIDEO_FIXTURE)
   : path.join(rootDir, "webapp", "tests", "fixtures", "120 Swiss Style Poster Example 001.json")
 
-const performanceFixturePath = process.env.POSTER_PERFORMANCE_FIXTURE
-  ? path.resolve(process.env.POSTER_PERFORMANCE_FIXTURE)
+const performanceFixturePath = process.env.QUICK_START_VIDEO_PERFORMANCE_FIXTURE
+  ? path.resolve(process.env.QUICK_START_VIDEO_PERFORMANCE_FIXTURE)
   : path.join(rootDir, "webapp", "tests", "fixtures", "performance-1000-pages.json")
 
-const screencastPath = process.env.POSTER_SCREENCAST
-  ? path.resolve(process.env.POSTER_SCREENCAST)
-  : path.join(rootDir, "screencasts", "quick-onboarding-001.mp4")
+const screencastPath = process.env.QUICK_START_VIDEO_SCREENCAST
+  ? path.resolve(process.env.QUICK_START_VIDEO_SCREENCAST)
+  : path.join(rootDir, "screencasts", "quick-start-video-001.mp4")
 
 const screencastsDir = path.join(rootDir, "screencasts")
-const exportedPdfPath = path.join(screencastsDir, "quick-onboarding-performance-page-0005.pdf")
+const exportedPdfPath = path.join(screencastsDir, "quick-start-video-001-performance-page-0005.pdf")
 const screenshotPaths = {
-  presetsBrowser: path.join(screencastsDir, "quick-onboarding-presets-browser.png"),
-  layoutProjectPanelOff: path.join(screencastsDir, "quick-onboarding-layout-project-panel-off.png"),
-  ratioSquareHover: path.join(screencastsDir, "quick-onboarding-ratio-square-hover.png"),
-  paragraphSubmenu: path.join(screencastsDir, "quick-onboarding-paragraph-submenu.png"),
-  performancePagesPanel: path.join(screencastsDir, "quick-onboarding-performance-pages-panel.png"),
-  exportPdfPopup: path.join(screencastsDir, "quick-onboarding-export-pdf-popup.png"),
+  presetsBrowser: path.join(screencastsDir, "quick-start-video-001-presets-browser.png"),
+  layoutProjectPanelOff: path.join(screencastsDir, "quick-start-video-001-layout-project-panel-off.png"),
+  ratioSquareHover: path.join(screencastsDir, "quick-start-video-001-ratio-square-hover.png"),
+  paragraphSubmenu: path.join(screencastsDir, "quick-start-video-001-paragraph-submenu.png"),
+  performancePagesPanel: path.join(screencastsDir, "quick-start-video-001-performance-pages-panel.png"),
+  exportPdfPopup: path.join(screencastsDir, "quick-start-video-001-export-pdf-popup.png"),
 }
 
-const rawVideoDir = path.join(rootDir, "test-results", "poster-1x1-raw-video")
+const rawVideoDir = path.join(rootDir, "test-results", "000-quick-start-video-001-raw-video")
 // The live preview exposes the planned page through this document root; the visible canvases are layered inside it.
 const previewDocumentSelector = '[data-preview-document-root="true"]'
 const pacing = {
-  afterLoad: Number(process.env.POSTER_RECORD_AFTER_LOAD_MS ?? 600),
-  afterSectionClose: Number(process.env.POSTER_RECORD_AFTER_SECTION_CLOSE_MS ?? 450),
-  afterHover: Number(process.env.POSTER_RECORD_AFTER_HOVER_MS ?? 700),
-  betweenRatioPreviews: Number(process.env.POSTER_RECORD_BETWEEN_RATIO_PREVIEWS_MS ?? 450),
-  afterCommit: Number(process.env.POSTER_RECORD_AFTER_COMMIT_MS ?? 900),
-  mouseSteps: Number(process.env.POSTER_RECORD_MOUSE_STEPS ?? 14),
+  afterLoad: Number(process.env.QUICK_START_VIDEO_RECORD_AFTER_LOAD_MS ?? 600),
+  afterSectionClose: Number(process.env.QUICK_START_VIDEO_RECORD_AFTER_SECTION_CLOSE_MS ?? 450),
+  afterHover: Number(process.env.QUICK_START_VIDEO_RECORD_AFTER_HOVER_MS ?? 700),
+  betweenRatioPreviews: Number(process.env.QUICK_START_VIDEO_RECORD_BETWEEN_RATIO_PREVIEWS_MS ?? 450),
+  afterCommit: Number(process.env.QUICK_START_VIDEO_RECORD_AFTER_COMMIT_MS ?? 900),
+  mouseSteps: Number(process.env.QUICK_START_VIDEO_RECORD_MOUSE_STEPS ?? 14),
 }
 
 async function getPreviewDocumentAspect(previewDocument: Locator): Promise<number> {
@@ -502,7 +502,7 @@ async function exportActivePerformancePageAsPdf(page: Page): Promise<void> {
   await pageRangeInput.press("Enter")
 
   const filenameInput = page.locator('input[type="text"]').nth(1)
-  await filenameInput.fill("quick-onboarding-performance-page-0005.pdf")
+  await filenameInput.fill("quick-start-video-001-performance-page-0005.pdf")
   await captureScreenshot(page, screenshotPaths.exportPdfPopup)
 
   const downloadPromise = page.waitForEvent("download", { timeout: 120_000 })
@@ -558,7 +558,7 @@ async function convertWebmToMp4(inputPath: string, outputPath: string): Promise<
   })
 }
 
-test("record poster template ratio change to square", async ({ browser, baseURL }) => {
+test("record quick start video 001", async ({ browser, baseURL }) => {
   await rm(rawVideoDir, { recursive: true, force: true })
   await mkdir(rawVideoDir, { recursive: true })
 
@@ -584,7 +584,7 @@ test("record poster template ratio change to square", async ({ browser, baseURL 
     await captureScreenshot(page, screenshotPaths.presetsBrowser)
   })
 
-  await test.step("import the poster fixture", async () => {
+  await test.step("import the layout fixture", async () => {
     await importProjectFixture(page, fixturePath)
 
     await waitForPreviewDocumentReady(page)

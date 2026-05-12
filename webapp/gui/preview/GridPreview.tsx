@@ -148,6 +148,8 @@ type ParagraphRolloverControlPatch = Partial<{
   snapY: boolean
 }>
 
+type ParagraphRolloverPreviewPatch = Pick<ParagraphRolloverControlPatch, "align" | "verticalAlign">
+
 type ImageRolloverControlPatch = Partial<{
   rotation: number
   snapX: boolean
@@ -381,6 +383,10 @@ export const GridPreview = memo(function GridPreview({
   const [pendingLayerEditorMode, setPendingLayerEditorMode] = useState<"text" | "image" | null>(null)
   const [activeTextZoomTarget, setActiveTextZoomTarget] = useState<BlockId | null>(null)
   const [smartTextZoomTargetVersion, setSmartTextZoomTargetVersion] = useState(0)
+  const [paragraphRolloverPreview, setParagraphRolloverPreview] = useState<{
+    key: BlockId
+    patch: ParagraphRolloverPreviewPatch
+  } | null>(null)
   const HISTORY_LIMIT = 50
   const PERF_SAMPLE_LIMIT = 160
   const PERF_LOG_INTERVAL_MS = 10000
@@ -578,6 +584,28 @@ export const GridPreview = memo(function GridPreview({
     getGridMetrics,
     onImageColorSchemeChange,
   })
+
+  const buildPreviewRenderSnapshot = useCallback((): PreviewLayoutState => {
+    const snapshot = buildSnapshot()
+    if (!paragraphRolloverPreview || !blockOrder.includes(paragraphRolloverPreview.key)) return snapshot
+
+    const { key, patch } = paragraphRolloverPreview
+    return {
+      ...snapshot,
+      blockTextAlignments: patch.align === undefined
+        ? snapshot.blockTextAlignments
+        : {
+            ...snapshot.blockTextAlignments,
+            [key]: patch.align,
+          },
+      blockVerticalAlignments: patch.verticalAlign === undefined
+        ? snapshot.blockVerticalAlignments
+        : {
+            ...snapshot.blockVerticalAlignments,
+            [key]: patch.verticalAlign,
+          },
+    }
+  }, [blockOrder, buildSnapshot, paragraphRolloverPreview])
 
   const {
     snapToModule,
@@ -2187,7 +2215,7 @@ export const GridPreview = memo(function GridPreview({
     documentVariableContext,
     rawDocumentVariableBlockKey: editorState?.target ?? null,
     dragState,
-    buildLayoutSnapshot: buildSnapshot,
+    buildLayoutSnapshot: buildPreviewRenderSnapshot,
     onOverflowLinesChange: handleOverflowLinesChange,
     onCanvasReady,
     onPlansCommit: handleTypographyPlanCommit,
@@ -2231,9 +2259,10 @@ export const GridPreview = memo(function GridPreview({
   const hoveredTextControls = useMemo(() => {
     const key = hoverState?.key
     if (!key) return null
+    const previewPatch = paragraphRolloverPreview?.key === key ? paragraphRolloverPreview.patch : null
     return {
-      align: blockTextAlignments[key] ?? "left",
-      verticalAlign: blockVerticalAlignments[key] ?? "top",
+      align: previewPatch?.align ?? blockTextAlignments[key] ?? "left",
+      verticalAlign: previewPatch?.verticalAlign ?? blockVerticalAlignments[key] ?? "top",
       rotation: getBlockRotation(key),
       reflow: isTextReflowEnabled(key),
       reflowDisabled: getBlockSpan(key) <= 1,
@@ -2251,7 +2280,13 @@ export const GridPreview = memo(function GridPreview({
     isSnapToColumnsEnabled,
     isSyllableDivisionEnabled,
     isTextReflowEnabled,
+    paragraphRolloverPreview,
   ])
+  useEffect(() => {
+    setParagraphRolloverPreview((current) => (
+      current && current.key !== hoverState?.key ? null : current
+    ))
+  }, [hoverState?.key])
   const hoveredImageRect = activeImageResizePreview?.rect
     ?? (hoverImageKey
       ? imageRectsRef.current[hoverImageKey] ?? null
@@ -2412,6 +2447,24 @@ export const GridPreview = memo(function GridPreview({
     rolloverControlHistoryKeyRef.current = null
   }, [])
 
+  const handleParagraphRolloverControlPreview = useCallback((
+    key: BlockId,
+    patch: ParagraphRolloverControlPatch | null,
+  ) => {
+    if (patch === null || (patch.align === undefined && patch.verticalAlign === undefined)) {
+      setParagraphRolloverPreview((current) => (current?.key === key ? null : current))
+      return
+    }
+    if (isLayerLocked(key) || isImagePlaceholderKey(key)) return
+    setParagraphRolloverPreview({
+      key,
+      patch: {
+        align: patch.align,
+        verticalAlign: patch.verticalAlign,
+      },
+    })
+  }, [isImagePlaceholderKey, isLayerLocked])
+
   const handleParagraphRolloverControlChange = useCallback((
     key: BlockId,
     patch: ParagraphRolloverControlPatch,
@@ -2433,6 +2486,7 @@ export const GridPreview = memo(function GridPreview({
       || (patch.snapY !== undefined && patch.snapY !== isSnapToBaselineEnabled(key))
     )
     if (!hasChange) return
+    setParagraphRolloverPreview((current) => (current?.key === key ? null : current))
 
     if (rolloverControlHistoryKeyRef.current !== key) {
       recordHistoryBeforeChange()
@@ -2824,6 +2878,7 @@ export const GridPreview = memo(function GridPreview({
         onParagraphRolloverControlStart={handleParagraphRolloverControlStart}
         onParagraphRolloverControlChange={handleParagraphRolloverControlChange}
         onParagraphRolloverControlEnd={handleParagraphRolloverControlEnd}
+        onParagraphRolloverControlPreview={handleParagraphRolloverControlPreview}
         onImageRolloverControlStart={handleImageRolloverControlStart}
         onImageRolloverControlChange={handleImageRolloverControlChange}
         onImageRolloverControlEnd={handleImageRolloverControlEnd}

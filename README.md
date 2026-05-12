@@ -8,17 +8,17 @@ Implementation-accurate reference docs live in [SETTINGS.md](SETTINGS.md), [CALC
 
 [Try it live →](https://preview.swiss-grid-generator.com)
 
-## Quick Onboarding
+## Quick Start Video 001
 
-Record the current onboarding flow from the project root:
+Record the current quick-start flow from the project root:
 
 ```bash
-npm run record:poster
+npm run record:000-quick-start-video-001
 ```
 
-Output: [quick-onboarding-001.mp4](screencasts/quick-onboarding-001.mp4)
+Output: [quick-start-video-001.mp4](screencasts/quick-start-video-001.mp4)
 
-[![Quick onboarding screencast](screencasts/quick-onboarding-ratio-square-hover.png)](screencasts/quick-onboarding-001.mp4)
+[![Quick onboarding screencast](screencasts/quick-start-video-001-ratio-square-hover.png)](screencasts/quick-start-video-001.mp4)
 
 Click the preview to open the MP4.
 
@@ -26,14 +26,14 @@ The recording ends by opening the 1000-page performance fixture, selecting five 
 
 The same command also writes reference screenshots:
 
-- [Presets browser](screencasts/quick-onboarding-presets-browser.png)
-- [Open layout, project panel off](screencasts/quick-onboarding-layout-project-panel-off.png)
-- [Ratio rollover, 1:1 square](screencasts/quick-onboarding-ratio-square-hover.png)
-- [Paragraph text edit submenu](screencasts/quick-onboarding-paragraph-submenu.png)
-- [Performance 1000 pages, pages panel open](screencasts/quick-onboarding-performance-pages-panel.png)
-- [Export popup, PDF active](screencasts/quick-onboarding-export-pdf-popup.png)
+- [Presets browser](screencasts/quick-start-video-001-presets-browser.png)
+- [Open layout, project panel off](screencasts/quick-start-video-001-layout-project-panel-off.png)
+- [Ratio rollover, 1:1 square](screencasts/quick-start-video-001-ratio-square-hover.png)
+- [Paragraph text edit submenu](screencasts/quick-start-video-001-paragraph-submenu.png)
+- [Performance 1000 pages, pages panel open](screencasts/quick-start-video-001-performance-pages-panel.png)
+- [Export popup, PDF active](screencasts/quick-start-video-001-export-pdf-popup.png)
 
-The PDF export created during the run is [quick-onboarding-performance-page-0005.pdf](screencasts/quick-onboarding-performance-page-0005.pdf).
+The PDF export created during the run is [quick-start-video-001-performance-page-0005.pdf](screencasts/quick-start-video-001-performance-page-0005.pdf).
 
 ---
 
@@ -48,17 +48,17 @@ Whether you're creating posters, editorial spreads, books, or experimental layou
 
 ## Screenshots
 
-![Presets browser](screencasts/quick-onboarding-presets-browser.png)
+![Presets browser](screencasts/quick-start-video-001-presets-browser.png)
 
-![Open layout, project panel off](screencasts/quick-onboarding-layout-project-panel-off.png)
+![Open layout, project panel off](screencasts/quick-start-video-001-layout-project-panel-off.png)
 
-![Ratio rollover, 1:1 square](screencasts/quick-onboarding-ratio-square-hover.png)
+![Ratio rollover, 1:1 square](screencasts/quick-start-video-001-ratio-square-hover.png)
 
-![Paragraph text edit submenu](screencasts/quick-onboarding-paragraph-submenu.png)
+![Paragraph text edit submenu](screencasts/quick-start-video-001-paragraph-submenu.png)
 
-![Performance 1000 pages, pages panel open](screencasts/quick-onboarding-performance-pages-panel.png)
+![Performance 1000 pages, pages panel open](screencasts/quick-start-video-001-performance-pages-panel.png)
 
-![Export popup, PDF active](screencasts/quick-onboarding-export-pdf-popup.png)
+![Export popup, PDF active](screencasts/quick-start-video-001-export-pdf-popup.png)
 
 ![PDF export screenshot 002](screencasts/archive/swiss-grid-generator-pdfexport-screenshot_002.png)
 

@@ -17,6 +17,16 @@
     "next": "Next",
     "done": "Done"
   },
+  "onboarding": {
+    "quickStartTitle": "Quick start video",
+    "close": "Close video",
+    "play": "Play video",
+    "pause": "Pause video",
+    "mute": "Mute video",
+    "unmute": "Unmute video",
+    "seek": "Seek video",
+    "fallback": "This browser cannot play the onboarding video."
+  },
   "tooltips": {
     "counter": "Tip {index} of {total}",
     "next": "Next",

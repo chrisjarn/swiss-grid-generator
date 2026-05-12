@@ -3,6 +3,7 @@ import type { FontFamily } from "@/core/config/fonts"
 import type { ProjectPageLayoutMode } from "@/core/document/session"
 import type { GridResult, CanvasRatioKey } from "@/core/layout/grid-calculator"
 import type { LayoutEngineContract } from "@/core/layout/layout-engine-contract"
+import type { OnboardingVideoId } from "@/lib/onboarding/videos"
 
 export type LayoutPresetUiSettings = Record<string, unknown> & {
   canvasRatio: CanvasRatioKey
@@ -64,6 +65,7 @@ export type LayoutPreset = {
   author?: string
   createdAt?: string
   updatedAt?: string
+  onboardingVideoId?: OnboardingVideoId
   projectSourceJson: string
   browserPage: LayoutPresetBrowserPage
 }

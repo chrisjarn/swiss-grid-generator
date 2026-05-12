@@ -400,17 +400,12 @@ async function main() {
     await waitForExpression(cdp, sessionId, "document.querySelectorAll('canvas').length >= 3")
 
     const manualThumb = await waitForExpression(cdp, sessionId, `(() => {
-      const canvases = Array.from(document.querySelectorAll("canvas")).map((node) => {
-        const rect = node.getBoundingClientRect()
-        return { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
-      })
-      const candidates = canvases
-        .filter((canvas) => canvas.x > 280 && canvas.y > 300 && canvas.width < 200 && canvas.height < 220)
-        .sort((a, b) => a.x - b.x)
-      const canvas = candidates[0]
-      return canvas ? { x: canvas.x + canvas.width / 2, y: canvas.y + canvas.height / 2 } : null
+      const node = document.querySelector('[data-preset-id="100-swiss-grid-generator-manual"]')
+      if (!(node instanceof HTMLElement)) return null
+      const rect = node.getBoundingClientRect()
+      return { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
     })()`)
-    await doubleClick(cdp, sessionId, manualThumb.x, manualThumb.y)
+    await click(cdp, sessionId, manualThumb.x, manualThumb.y)
 
     await evaluate(cdp, sessionId, `(() => {
       const closeButton = document.querySelector('button[aria-label="close"]')
