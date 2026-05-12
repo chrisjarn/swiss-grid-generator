@@ -352,7 +352,7 @@ export function insertTextLayerIntoCollections<
     textAlign = "left",
     verticalAlign = "top",
     reflow = false,
-    syllableDivision = true,
+    syllableDivision = false,
     snapToColumns = true,
     snapToBaseline = true,
   }: InsertTextLayerArgs<Key, StyleKey>,

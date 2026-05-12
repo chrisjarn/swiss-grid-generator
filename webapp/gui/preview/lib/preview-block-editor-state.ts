@@ -252,7 +252,7 @@ export function buildNewBlockEditorState<StyleKey extends string>({
   align = "left",
   verticalAlign = "top",
   reflow = false,
-  syllableDivision = true,
+  syllableDivision = false,
   snapToColumns = true,
   snapToBaseline = true,
   fontWeight = 400,

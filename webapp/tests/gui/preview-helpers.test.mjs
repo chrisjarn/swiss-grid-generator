@@ -2,7 +2,9 @@ import test from "node:test"
 import assert from "node:assert/strict"
 
 import { resolveCurrentPreviewLayout } from "../../gui/preview/lib/current-preview-layout.ts"
+import { buildNewBlockEditorState } from "../../gui/preview/lib/preview-block-editor-state.ts"
 import { PREVIEW_STYLE_OPTIONS, resolveCustomStyleSeedMetrics } from "../../gui/preview/lib/preview-text-config.ts"
+import { insertTextLayerIntoCollections } from "../../gui/preview/lib/preview-text-layer-state.ts"
 import { resolveNearestPreviewColumn } from "../../core/layout/preview-column-snap.ts"
 import { resolveTextCopyAffordanceAction } from "../../gui/preview/lib/preview-copy-affordance.ts"
 import { resolvePreviewHoverTarget } from "../../gui/preview/lib/preview-hover-target.ts"
@@ -96,6 +98,55 @@ test("re-entering Custom preserves the current custom overrides", () => {
   })
 
   assert.deepEqual(metrics, { size: 43.5, leading: 51 })
+})
+
+test("new text paragraphs default to hyphenation off", () => {
+  const inserted = insertTextLayerIntoCollections({
+    blockOrder: [],
+    textContent: {},
+    blockTextEdited: {},
+    styleAssignments: {},
+    blockColumnSpans: {},
+    blockRowSpans: {},
+    blockHeightBaselines: {},
+    blockTextAlignments: {},
+    blockVerticalAlignments: {},
+    blockTextReflow: {},
+    blockSyllableDivision: {},
+    blockSnapToColumns: {},
+    blockSnapToBaseline: {},
+    blockTrackingRuns: {},
+    blockTextFormatRuns: {},
+    blockModulePositions: {},
+  }, {
+    newKey: "paragraph-new",
+    text: "Body",
+    styleKey: "body",
+    gridCols: 4,
+    gridRows: 4,
+    columns: 1,
+    rows: 1,
+    heightBaselines: 0,
+    position: { column: 0, row: 0, baselineOffset: 0 },
+    rowStartBaselines: [0, 8, 16, 24],
+  })
+
+  assert.equal(inserted.blockSyllableDivision["paragraph-new"], false)
+
+  const editorState = buildNewBlockEditorState({
+    key: "paragraph-new",
+    style: "body",
+    text: "Body",
+    columns: 1,
+    rows: 1,
+    baseFont: "Inter",
+    defaultTextColor: "#111111",
+    getStyleLeading: () => 12,
+    getStyleSize: () => 10,
+    fxStyle: "fx",
+  })
+
+  assert.equal(editorState.draftSyllableDivision, false)
 })
 
 test("resolveNearestPreviewColumn snaps left of the page into negative overhang columns", () => {
