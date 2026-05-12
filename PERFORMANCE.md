@@ -62,6 +62,19 @@ That test snapshots a normalized canonical stress plan hash so performance chang
 - Do not cache or reuse returned plan objects across calls unless mutation safety is proven.
 - Run `npm run test:page-export-plan`, `npm run lint`, `npx tsc --noEmit`, and `npm run benchmark:layout` after planner changes.
 
+## Preview Hit Testing
+
+Preview hover and selection hit testing must consume the planned text guide/background rectangles and image rectangles derived from `PageExportPlan` render plans. It must not depend on rendered glyph pixels, browser text metrics, child DOM nodes, opacity, or decorative overlay order.
+
+The hit-test order is deterministic:
+
+- selected unlocked layer
+- current hovered paragraph while its planned background is still under the pointer
+- unlocked/hoverable text backgrounds in visual stack order
+- images only when no text background is hit
+
+Selected locked layers are excluded from hover. Development logging is gated behind `NEXT_PUBLIC_PREVIEW_HITTEST_DEBUG=1`.
+
 ## 2026-05-12 Lorem Fitting Summary
 
 Today's work kept document variables derived inside `PageExportPlan` and did not add persisted `resolvedContent` to layer state.

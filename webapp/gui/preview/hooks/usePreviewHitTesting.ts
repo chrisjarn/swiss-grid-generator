@@ -1,13 +1,17 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useRef } from "react"
 import type { RefObject } from "react"
 
 import type { BlockRect, BlockRenderPlan, PagePoint } from "@/gui/preview/lib/preview-types"
 import type { ModulePosition } from "@/core/types/preview-layout"
+import {
+  resolvePreviewHitTestTarget,
+  type PreviewHitTestLayer,
+  type PreviewHitTestTarget,
+} from "@/core/preview/hitTest"
 
 import type { PreviewGridMetrics } from "@/gui/preview/hooks/usePreviewGeometry"
 import type { LayerDragYMode, LayerPlacementOptions } from "@/gui/preview/hooks/preview-canvas-interaction-types"
 import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
-import { isPointWithinRect, resolvePreviewHoverBandRect } from "@/gui/preview/lib/preview-hover-affordance"
 
 type Args<Key extends string> = {
   blockRectsRef: RefObject<Record<Key, BlockRect> | null>
@@ -15,9 +19,8 @@ type Args<Key extends string> = {
   previousPlansRef: RefObject<Map<Key, BlockRenderPlan<Key>> | null>
   resolvedLayerOrder: readonly Key[]
   imageOrder: readonly Key[]
+  selectedLayerKey?: Key | null
   showImagePlaceholders: boolean
-  pageWidth: number
-  pageHeight: number
   getGridMetrics: () => PreviewGridMetrics
   getPlacementSpan: (key: Key) => number
   isSnapToColumnsEnabled: (key: Key) => boolean
@@ -28,31 +31,14 @@ type Args<Key extends string> = {
   toPagePointFromClient: (clientX: number, clientY: number) => PagePoint | null
 }
 
-const TEXT_LINE_HIT_PADDING_X = 6
-const TEXT_LINE_HIT_PADDING_Y = 4
-
-function isPointWithinRenderedLine(
-  pageX: number,
-  pageY: number,
-  line: { left: number; top: number; width: number; height: number },
-): boolean {
-  return (
-    pageX >= line.left - TEXT_LINE_HIT_PADDING_X
-    && pageX <= line.left + line.width + TEXT_LINE_HIT_PADDING_X
-    && pageY >= line.top - TEXT_LINE_HIT_PADDING_Y
-    && pageY <= line.top + line.height + TEXT_LINE_HIT_PADDING_Y
-  )
-}
-
 export function usePreviewHitTesting<Key extends string>({
   blockRectsRef,
   imageRectsRef,
   previousPlansRef,
   resolvedLayerOrder,
   imageOrder,
+  selectedLayerKey = null,
   showImagePlaceholders,
-  pageWidth,
-  pageHeight,
   getGridMetrics,
   getPlacementSpan,
   isSnapToColumnsEnabled,
@@ -63,6 +49,7 @@ export function usePreviewHitTesting<Key extends string>({
   toPagePointFromClient,
 }: Args<Key>) {
   const imageKeySet = useMemo(() => new Set(imageOrder), [imageOrder])
+  const lastLoggedHoverTargetRef = useRef<string | null>(null)
 
   const clampModulePosition = useCallback((position: ModulePosition, key: Key): ModulePosition => {
     const metrics = getGridMetrics()
@@ -132,77 +119,83 @@ export function usePreviewHitTesting<Key extends string>({
     isSnapToColumnsEnabled,
   ])
 
-  const isPointWithinLayerHoverBand = useCallback((key: Key, pageX: number, pageY: number): boolean => {
-    const isImage = imageKeySet.has(key)
-    if (isImage && !showImagePlaceholders) return false
-    const blockRects = blockRectsRef.current
-    const imageRects = imageRectsRef.current
-    const previousPlans = previousPlansRef.current
-    const rect = isImage
-      ? imageRects?.[key] ?? null
-      : (previousPlans?.get(key)?.guideRects[0] ?? blockRects?.[key] ?? null)
-    if (!rect) return false
-    return isPointWithinRect(pageX, pageY, resolvePreviewHoverBandRect({
-      targetRect: rect,
-      pageWidth,
-      pageHeight,
-    }))
-  }, [
-    blockRectsRef,
-    imageKeySet,
-    imageRectsRef,
-    pageHeight,
-    pageWidth,
-    previousPlansRef,
-    showImagePlaceholders,
-  ])
+  const getTextHitRects = useCallback((key: Key): readonly BlockRect[] => {
+    const plan = previousPlansRef.current?.get(key)
+    if (plan?.guideRects.length) return plan.guideRects
+    const rect = blockRectsRef.current?.[key]
+    return rect ? [rect] : []
+  }, [blockRectsRef, previousPlansRef])
+
+  const getImageHitRects = useCallback((key: Key): readonly BlockRect[] => {
+    if (!showImagePlaceholders) return []
+    const rect = imageRectsRef.current?.[key]
+    return rect ? [rect] : []
+  }, [imageRectsRef, showImagePlaceholders])
+
+  const buildHitTestLayers = useCallback((): PreviewHitTestLayer<Key>[] => {
+    const layers: PreviewHitTestLayer<Key>[] = []
+    for (const key of resolvedLayerOrder) {
+      const isImage = imageKeySet.has(key)
+      layers.push({
+        key,
+        kind: isImage ? "image" : "text",
+        locked: isLayerLocked(key),
+        rects: isImage ? getImageHitRects(key) : getTextHitRects(key),
+      })
+    }
+    return layers
+  }, [getImageHitRects, getTextHitRects, imageKeySet, isLayerLocked, resolvedLayerOrder])
+
+  const logHoverHitTestResult = useCallback((
+    pageX: number,
+    pageY: number,
+    target: PreviewHitTestTarget<Key> | null,
+  ) => {
+    if (process.env.NODE_ENV === "production" || process.env.NEXT_PUBLIC_PREVIEW_HITTEST_DEBUG !== "1") return
+    const signature = target ? `${target.kind}:${target.key}` : "none"
+    if (lastLoggedHoverTargetRef.current === signature) return
+    lastLoggedHoverTargetRef.current = signature
+    console.debug("[preview hitTest]", {
+      target: signature,
+      pageX: Number(pageX.toFixed(2)),
+      pageY: Number(pageY.toFixed(2)),
+    })
+  }, [])
 
   const findTopmostLayerAtPoint = useCallback((
     pageX: number,
     pageY: number,
     { includeLocked = false }: { includeLocked?: boolean } = {},
   ): Key | null => {
-    for (let index = resolvedLayerOrder.length - 1; index >= 0; index -= 1) {
-      const key = resolvedLayerOrder[index]
-      if (!includeLocked && isLayerLocked(key)) continue
-      if (isPointWithinLayerHoverBand(key, pageX, pageY)) return key
-    }
+    return resolvePreviewHitTestTarget({
+      pageX,
+      pageY,
+      layers: buildHitTestLayers(),
+      selectedKey: selectedLayerKey,
+      includeLocked,
+      imagePriority: "visual",
+    })?.key ?? null
+  }, [buildHitTestLayers, selectedLayerKey])
 
-    for (let index = resolvedLayerOrder.length - 1; index >= 0; index -= 1) {
-      const key = resolvedLayerOrder[index]
-      if (!includeLocked && isLayerLocked(key)) continue
-      const isImage = imageKeySet.has(key)
-      if (isImage && !showImagePlaceholders) continue
-
-      if (isImage) {
-        const rect = imageRectsRef.current?.[key]
-        if (!rect) continue
-        if (isPointWithinRect(pageX, pageY, rect)) return key
-        continue
-      }
-
-      const plan = previousPlansRef.current?.get(key)
-      const lineHit = plan?.renderedLines.some((line) => isPointWithinRenderedLine(pageX, pageY, line)) ?? false
-      if (lineHit) {
-        return key
-      }
-
-      const guideHit = plan?.guideRects.some((guideRect) => isPointWithinRect(pageX, pageY, guideRect)) ?? false
-      if (guideHit) {
-        return key
-      }
-
-      const hasPlan = Boolean(plan)
-      if (!hasPlan) {
-        const rect = blockRectsRef.current?.[key]
-        if (!rect) continue
-        if (isPointWithinRect(pageX, pageY, rect)) {
-          return key
-        }
-      }
-    }
-    return null
-  }, [blockRectsRef, imageKeySet, imageRectsRef, isLayerLocked, isPointWithinLayerHoverBand, previousPlansRef, resolvedLayerOrder, showImagePlaceholders])
+  const findTopmostHoverTargetAtPoint = useCallback((
+    pageX: number,
+    pageY: number,
+    currentTextKey: Key | null = null,
+    currentImageKey: Key | null = null,
+  ): PreviewHitTestTarget<Key> | null => {
+    const target = resolvePreviewHitTestTarget({
+      pageX,
+      pageY,
+      layers: buildHitTestLayers(),
+      selectedKey: selectedLayerKey,
+      currentTextKey,
+      currentImageKey,
+      includeLocked: true,
+      imagePriority: "afterText",
+    })
+    logHoverHitTestResult(pageX, pageY, target)
+    return target
+  }, [buildHitTestLayers, logHoverHitTestResult, selectedLayerKey])
 
   const findTopmostBlockAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
     const key = findTopmostLayerAtPoint(pageX, pageY)
@@ -212,18 +205,6 @@ export function usePreviewHitTesting<Key extends string>({
 
   const findTopmostImageAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
     const key = findTopmostLayerAtPoint(pageX, pageY)
-    if (!key || !imageKeySet.has(key)) return null
-    return key
-  }, [findTopmostLayerAtPoint, imageKeySet])
-
-  const findTopmostHoverBlockAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
-    const key = findTopmostLayerAtPoint(pageX, pageY, { includeLocked: true })
-    if (!key || imageKeySet.has(key)) return null
-    return key
-  }, [findTopmostLayerAtPoint, imageKeySet])
-
-  const findTopmostHoverImageAtPoint = useCallback((pageX: number, pageY: number): Key | null => {
-    const key = findTopmostLayerAtPoint(pageX, pageY, { includeLocked: true })
     if (!key || !imageKeySet.has(key)) return null
     return key
   }, [findTopmostLayerAtPoint, imageKeySet])
@@ -247,8 +228,7 @@ export function usePreviewHitTesting<Key extends string>({
     findTopmostLayerAtPoint,
     findTopmostBlockAtPoint,
     findTopmostImageAtPoint,
-    findTopmostHoverBlockAtPoint,
-    findTopmostHoverImageAtPoint,
+    findTopmostHoverTargetAtPoint,
     findTopmostDraggableAtPoint,
     resolveSelectedLayerAtClientPoint,
   }

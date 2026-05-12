@@ -7,6 +7,12 @@ type Args<Key extends string> = {
   pageY: number
   currentTextKey: Key | null
   currentImageKey: Key | null
+  findTopmostHoverTargetAtPoint?: (
+    pageX: number,
+    pageY: number,
+    currentTextKey: Key | null,
+    currentImageKey: Key | null,
+  ) => PreviewHoverTarget<Key> | null
   findTopmostBlockAtPoint: (pageX: number, pageY: number) => Key | null
   findTopmostImageAtPoint: (pageX: number, pageY: number) => Key | null
   isPointWithinHoverTarget: (key: Key, pageX: number, pageY: number) => boolean
@@ -18,6 +24,7 @@ export function resolvePreviewHoverTarget<Key extends string>({
   pageY,
   currentTextKey,
   currentImageKey,
+  findTopmostHoverTargetAtPoint,
   findTopmostBlockAtPoint,
   findTopmostImageAtPoint,
   isPointWithinHoverTarget,
@@ -36,6 +43,14 @@ export function resolvePreviewHoverTarget<Key extends string>({
   ) {
     return { kind: "image", key: currentImageKey }
   }
+
+  const topmostHoverTarget = findTopmostHoverTargetAtPoint?.(
+    pageX,
+    pageY,
+    currentTextKey,
+    currentImageKey,
+  )
+  if (topmostHoverTarget) return topmostHoverTarget
 
   const topmostTextKey = findTopmostBlockAtPoint(pageX, pageY)
   if (topmostTextKey) return { kind: "text", key: topmostTextKey }

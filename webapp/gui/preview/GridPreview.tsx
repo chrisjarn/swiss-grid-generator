@@ -625,8 +625,7 @@ export const GridPreview = memo(function GridPreview({
     resolveLayerPlacement,
     findTopmostBlockAtPoint,
     findTopmostImageAtPoint,
-    findTopmostHoverBlockAtPoint,
-    findTopmostHoverImageAtPoint,
+    findTopmostHoverTargetAtPoint,
     findTopmostDraggableAtPoint,
     resolveSelectedLayerAtClientPoint,
   } = usePreviewHitTesting({
@@ -635,9 +634,8 @@ export const GridPreview = memo(function GridPreview({
     previousPlansRef,
     resolvedLayerOrder,
     imageOrder,
+    selectedLayerKey,
     showImagePlaceholders,
-    pageWidth: pageWidthCss,
-    pageHeight: pageHeightCss,
     getGridMetrics,
     getPlacementSpan,
     isSnapToColumnsEnabled,
@@ -1945,8 +1943,9 @@ export const GridPreview = memo(function GridPreview({
     setHoverState,
     setHoverImageKey,
     setHoverCopyIntent,
-    findTopmostBlockAtPoint: findTopmostHoverBlockAtPoint,
-    findTopmostImageAtPoint: findTopmostHoverImageAtPoint,
+    findTopmostHoverTargetAtPoint,
+    findTopmostBlockAtPoint,
+    findTopmostImageAtPoint,
     isPointWithinHoverTarget: (key, pageX, pageY) => {
       if (isImagePlaceholderKey(key)) {
         return isPointWithinRect(pageX, pageY, imageRectsRef.current[key] ?? null)

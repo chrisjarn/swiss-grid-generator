@@ -26,6 +26,12 @@ type Args<Key extends string> = {
   setHoverState: Dispatch<SetStateAction<PreviewHoverState<Key> | null>>
   setHoverImageKey: Dispatch<SetStateAction<Key | null>>
   setHoverCopyIntent: Dispatch<SetStateAction<boolean>>
+  findTopmostHoverTargetAtPoint?: (
+    pageX: number,
+    pageY: number,
+    currentTextKey: Key | null,
+    currentImageKey: Key | null,
+  ) => { kind: "text" | "image"; key: Key } | null
   findTopmostBlockAtPoint: (pageX: number, pageY: number) => Key | null
   findTopmostImageAtPoint: (pageX: number, pageY: number) => Key | null
   isPointWithinHoverTarget: (key: Key, pageX: number, pageY: number) => boolean
@@ -45,6 +51,7 @@ export function usePreviewHoverState<Key extends string>({
   setHoverState,
   setHoverImageKey,
   setHoverCopyIntent,
+  findTopmostHoverTargetAtPoint,
   findTopmostBlockAtPoint,
   findTopmostImageAtPoint,
   isPointWithinHoverTarget,
@@ -80,6 +87,7 @@ export function usePreviewHoverState<Key extends string>({
       pageY: pagePoint.y,
       currentTextKey: hoverState?.key ?? null,
       currentImageKey: hoverImageKey,
+      findTopmostHoverTargetAtPoint,
       findTopmostBlockAtPoint,
       findTopmostImageAtPoint,
       isPointWithinHoverTarget,
@@ -110,6 +118,7 @@ export function usePreviewHoverState<Key extends string>({
   }, [
     clearHover,
     dragState,
+    findTopmostHoverTargetAtPoint,
     findTopmostBlockAtPoint,
     findTopmostImageAtPoint,
     hoverImageKey,
