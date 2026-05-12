@@ -18,7 +18,7 @@ npm run record:poster
 
 Output: [quick-onboarding-001.mp4](screencasts/quick-onboarding-001.mp4)
 
-[![Quick onboarding screencast](screencasts/quick-onboarding-presets-browser.png)](screencasts/quick-onboarding-001.mp4)
+[![Quick onboarding screencast](screencasts/quick-onboarding-ratio-square-hover.png)](screencasts/quick-onboarding-001.mp4)
 
 Click the preview to open the MP4.
 
