@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "exportedAt": "2026-05-12T17:28:42.492Z",
+  "exportedAt": "2026-05-12T19:37:02.430Z",
   "title": "quick start video 001",
   "description": "onboarding video preset for the first layout pass.",
   "author": "Swiss Grid Generator",
@@ -26,16 +26,16 @@
       "id": "page-blank-start",
       "name": "blank start page",
       "uiSettings": {
-        "canvasRatio": "screen_16_9",
+        "canvasRatio": "din_ab",
         "customRatioWidth": 4,
         "customRatioHeight": 5,
-        "orientation": "landscape",
+        "orientation": "portrait",
         "rotation": 0,
         "marginMethod": 3,
-        "gridCols": 3,
+        "gridCols": 5,
         "gridRows": 2,
         "gutterMultiple": 1,
-        "rhythm": "repetitive",
+        "rhythm": "fibonacci",
         "rhythmRowsEnabled": true,
         "rhythmRowsDirection": "ltr",
         "rhythmColsEnabled": true,
@@ -53,7 +53,7 @@
           "right": 2,
           "bottom": 4
         },
-        "format": "SCREEN_16_9"
+        "format": "A4"
       },
       "previewLayout": {
         "blockOrder": [
@@ -61,7 +61,7 @@
           "paragraph-ae812358-d563-4f20-b7f3-b3b10a5b484c"
         ],
         "textContent": {
-          "paragraph-520516e3-2d27-4062-9280-0c280064d633": "Quick start video>",
+          "paragraph-520516e3-2d27-4062-9280-0c280064d633": "Quick Start Video>",
           "paragraph-ae812358-d563-4f20-b7f3-b3b10a5b484c": "Onboarding video opens after this preset loads."
         },
         "blockTextEdited": {

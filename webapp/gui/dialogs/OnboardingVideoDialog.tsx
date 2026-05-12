@@ -95,7 +95,7 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#11110F]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f3f4f6]"
       onMouseDown={(event) => {
         if (event.target !== event.currentTarget) return
         closeDialog()
@@ -105,12 +105,12 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-video-title"
-        className="relative flex h-[100dvh] w-[100vw] flex-col overflow-hidden bg-[#11110F] text-[#F0EDE5]"
+        className="relative flex h-[100dvh] w-[100vw] flex-col overflow-hidden bg-[#f3f4f6] text-gray-900"
       >
-        <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-[#F0EDE5]/20 px-4">
+        <div className="flex h-12 shrink-0 items-center justify-between gap-4 border-b border-gray-300 px-4">
           <h2
             id="onboarding-video-title"
-            className="min-w-0 truncate text-[11px] font-semibold uppercase leading-none tracking-[0.08em] text-[#F0EDE5]"
+            className="min-w-0 truncate text-[11px] font-semibold uppercase leading-none tracking-[0.08em] text-gray-900"
           >
             {title}
           </h2>
@@ -118,12 +118,12 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             type="button"
             aria-label={closeLabel}
             onClick={closeDialog}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-[#F0EDE5]/35 bg-[#1A1A18] text-[#F0EDE5] transition-colors hover:bg-[#2E2E2C] hover:text-white"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] border border-gray-300 bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
           >
             <X className="h-3 w-3" aria-hidden="true" />
           </button>
         </div>
-        <div className="relative min-h-0 flex-1 overflow-hidden bg-[#11110F]">
+        <div className="relative min-h-0 flex-1 overflow-hidden bg-[#f3f4f6]">
           <video
             ref={videoRef}
             autoPlay
@@ -131,7 +131,7 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             playsInline
             preload="metadata"
             poster={videoConfig.poster}
-            className="h-full w-full bg-[#11110F] object-cover"
+            className="h-full max-h-full w-full max-w-full bg-[#f3f4f6] object-contain"
             onLoadedMetadata={(event) => {
               const videoElement = event.currentTarget
               setDuration(videoElement.duration)
@@ -150,12 +150,12 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             {t(videoConfig.fallbackKey)}
           </video>
         </div>
-        <div className="grid h-12 shrink-0 grid-cols-[32px_1fr_84px_32px] items-center gap-3 border-t border-[#F0EDE5]/20 px-4">
+        <div className="grid h-12 shrink-0 grid-cols-[32px_1fr_84px_32px] items-center gap-3 border-t border-gray-300 px-4">
           <button
             type="button"
             aria-label={playbackLabel}
             onClick={togglePlayback}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[#F0EDE5]/35 bg-[#1A1A18] text-[#F0EDE5] transition-colors hover:bg-[#2E2E2C] hover:text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-gray-300 bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
           >
             {isPaused ? <Play className="h-3.5 w-3.5" aria-hidden="true" /> : <Pause className="h-3.5 w-3.5" aria-hidden="true" />}
           </button>
@@ -169,14 +169,14 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             onChange={(event) => handleSeek(event.currentTarget.value)}
             className="h-1 w-full cursor-pointer accent-[#E87820]"
           />
-          <div className="font-mono text-[11px] tabular-nums leading-none text-[#F0EDE5]/80">
+          <div className="font-mono text-[11px] tabular-nums leading-none text-gray-600">
             {formatVideoTime(currentTime)} / {formatVideoTime(duration)}
           </div>
           <button
             type="button"
             aria-label={mutedLabel}
             onClick={toggleMuted}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-[#F0EDE5]/35 bg-[#1A1A18] text-[#F0EDE5] transition-colors hover:bg-[#2E2E2C] hover:text-white"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-[4px] border border-gray-300 bg-gray-100 text-gray-700 transition-colors hover:bg-gray-200 hover:text-gray-900"
           >
             {isMuted ? <VolumeX className="h-3.5 w-3.5" aria-hidden="true" /> : <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />}
           </button>
