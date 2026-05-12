@@ -708,41 +708,41 @@ export function TextEditorPanel<StyleKey extends string>({
 
   const tone = isDarkMode
     ? {
-      muted: "text-gray-400",
+      muted: "text-muted-foreground",
       panel: "bg-transparent",
       surface: "bg-transparent",
-      infoFrame: "border-gray-700 bg-gray-900/60",
-      infoRow: "border-gray-800",
-      infoLabel: "text-gray-400",
-      infoValue: "text-gray-100",
-      button: "border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-gray-100",
-      buttonActive: "border-gray-600 bg-gray-800 text-gray-100",
-      ringOffset: "ring-offset-gray-900",
+      infoFrame: "border-border bg-surface",
+      infoRow: "border-divider",
+      infoLabel: "text-muted-foreground",
+      infoValue: "text-foreground",
+      button: "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground",
+      buttonActive: "border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-foreground",
+      ringOffset: "ring-offset-background",
       selectContent: "dark",
     }
     : {
-      muted: "text-gray-600",
+      muted: "text-muted-foreground",
       panel: "bg-transparent",
       surface: "bg-transparent",
-      infoFrame: "border-gray-200 bg-gray-50/80",
-      infoRow: "border-gray-200",
-      infoLabel: "text-gray-500",
-      infoValue: "text-gray-900",
-      button: "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-      buttonActive: "border-gray-400 bg-gray-100 text-gray-900",
-      ringOffset: "ring-offset-white",
+      infoFrame: "border-divider bg-panel",
+      infoRow: "border-divider",
+      infoLabel: "text-muted-foreground",
+      infoValue: "text-foreground",
+      button: "border-divider bg-page text-muted-foreground hover:bg-panel hover:text-foreground",
+      buttonActive: "border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent-foreground",
+      ringOffset: "ring-offset-page",
       selectContent: "",
     }
 
   const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
   const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
-  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`
+  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-surface text-foreground" : "bg-panel text-foreground"}`
   const segmentButtonClassName = (active: boolean) => (
     `h-8 rounded-sm border px-3 text-xs ${active ? tone.buttonActive : tone.button}`
   )
-  const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-  const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
+  const inlineSwitchClassName = "h-3 w-6 rounded-none border border-border bg-border data-[state=checked]:bg-success data-[state=unchecked]:bg-border"
+  const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-border bg-page shadow-none data-[state=checked]:translate-x-3"
   const placeholderButtonClassName = `w-full rounded-sm border px-3 py-2 text-left transition-colors ${tone.button}`
   const symbolButtonClassName = `flex h-9 w-full items-center justify-center rounded-sm border text-[17px] leading-none transition-colors ${tone.button}`
   const infoRows = [
@@ -1008,7 +1008,7 @@ export function TextEditorPanel<StyleKey extends string>({
           title={hasMixedTypeSettings ? (
             <>
               II. {t("ui.editor.typography.title")}{" "}
-              <span className={isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}>
+              <span className={isDarkMode ? "text-foreground" : "text-foreground"}>
                 {t("ui.editor.mixed")}
               </span>
             </>
@@ -1323,7 +1323,7 @@ export function TextEditorPanel<StyleKey extends string>({
                   controls.insertEditorText(token)
                 }}
               >
-                <span className={`block font-mono text-[11px] leading-tight ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
+                <span className={`block font-mono text-[11px] leading-tight ${isDarkMode ? "text-foreground" : "text-foreground"}`}>
                   {token}
                 </span>
                 <span className={`mt-1 block text-[11px] leading-snug ${tone.muted}`}>

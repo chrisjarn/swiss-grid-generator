@@ -17,7 +17,7 @@ export type RightPanelProps = {
   children: ReactNode
 }
 
-const RIGHT_CONTENT_PANEL_BACKGROUND_CLASSNAME = "bg-gray-200 dark:bg-[#232A35]"
+const RIGHT_CONTENT_PANEL_BACKGROUND_CLASSNAME = "bg-surface"
 
 export function RightPanel({ activeSidebarPanel, uiTheme, children }: RightPanelProps) {
   return (

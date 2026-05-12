@@ -34,7 +34,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     if (typeof document === "undefined") return
 
     document.documentElement.classList.toggle("dark", isDarkUi)
-    const content = getUiThemeColor(isDarkUi)
+    document.documentElement.classList.toggle("light", !isDarkUi)
+    const content = getUiThemeColor()
     let meta = document.getElementById("app-theme-color")
     if (!(meta instanceof HTMLMetaElement)) {
       meta = document.createElement("meta")
@@ -43,7 +44,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       meta.setAttribute("name", "theme-color")
       document.head.appendChild(meta)
     }
-    meta.setAttribute("content", content)
+    if (content) meta.setAttribute("content", content)
   }, [isDarkUi])
 
   return children

@@ -1,6 +1,7 @@
 import type { GridResult } from "@/core/layout/grid-calculator"
 import { buildAxisStarts, resolveAxisSizes } from "@/core/layout/grid-rhythm"
 import { resolveGridColumnStarts } from "@/core/layout/grid-column-layout"
+import { readUiColor } from "@/styles/resolve-color"
 
 type StaticGuidesRenderOptions = {
   ctx: CanvasRenderingContext2D
@@ -47,7 +48,8 @@ export function renderStaticGuides({
     Math.round((pageHeight - (margins.top + margins.bottom) * scale) / baselineSpacing),
   )
   const contentBottom = contentTop + baselineRows * baselineSpacing
-  const stageBackgroundColor = backgroundColor ?? "#ffffff"
+  const pageDefaultColor = readUiColor("--color-page-default")
+  const stageBackgroundColor = backgroundColor ?? pageDefaultColor
 
   ctx.clearRect(0, 0, canvasWidth, canvasHeight)
   ctx.fillStyle = stageBackgroundColor

@@ -1,3 +1,5 @@
+@import "../styles/colors.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -30,57 +32,6 @@
 }
 
 @layer base {
-  :root {
-    --swiss-orange: #fd8b7b;
-    --swiss-orange-soft: #fd8b7b;
-    --background: 220 14% 96%;
-    --foreground: 222 47% 11%;
-    --card: 220 14% 96%;
-    --card-foreground: 222 47% 11%;
-    --popover: 220 14% 96%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 240 5.9% 10%;
-    --muted: 220 14% 96%;
-    --muted-foreground: 240 3.8% 46.1%;
-    --accent: 220 14% 92%;
-    --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 240 5.9% 10%;
-    --radius: 0.5rem;
-  }
-
-  .dark {
-    --swiss-orange: #fd8b7b;
-    --swiss-orange-soft: #fd8b7b;
-    --background: 218 22% 15%;
-    --foreground: 210 20% 96%;
-    --card: 218 22% 15%;
-    --card-foreground: 210 20% 96%;
-    --popover: 218 22% 15%;
-    --popover-foreground: 210 20% 96%;
-    --primary: 210 20% 96%;
-    --primary-foreground: 240 5.9% 10%;
-    --secondary: 217 20% 17%;
-    --secondary-foreground: 210 20% 96%;
-    --muted: 217 20% 17%;
-    --muted-foreground: 218 14% 61%;
-    --accent: 217 20% 17%;
-    --accent-foreground: 210 20% 96%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 219 18% 24%;
-    --input: 219 18% 24%;
-    --ring: 240 4.9% 83.9%;
-  }
-}
-
-@layer base {
   * {
     @apply border-border;
     border-radius: 0 !important;
@@ -88,17 +39,10 @@
   html,
   body {
     @apply bg-background text-foreground;
-    background-color: #f3f4f6;
+    background-color: var(--color-app-background);
     height: 100%;
     overflow: hidden;
     overscroll-behavior: none;
-  }
-
-  @media (prefers-color-scheme: dark) {
-    html,
-    body {
-      background-color: #161A22;
-    }
   }
 
   button:has(svg),
@@ -115,27 +59,27 @@
 
   button[data-preview-edit-affordance="true"][data-preview-icon-surface="true"]:has(svg),
   button[data-preview-edit-affordance="true"][data-preview-icon-surface="true"]:has(svg):hover {
-    background-color: #e5e7eb !important;
+    background-color: var(--color-divider) !important;
     border-color: transparent !important;
     box-shadow: none !important;
   }
 
   button[data-preview-edit-affordance="true"][data-preview-menu-control="true"]:has(svg),
   button[data-preview-edit-affordance="true"][data-preview-menu-control="true"]:has(svg):hover {
-    background-color: #f3f4f6 !important;
-    border-color: #d1d5db !important;
+    background-color: var(--color-panel-bg) !important;
+    border-color: var(--color-border) !important;
     box-shadow: none !important;
   }
 
   button[data-preview-edit-affordance="true"][data-preview-menu-control="true"][aria-pressed="true"]:has(svg),
   button[data-preview-edit-affordance="true"][data-preview-menu-control="true"][aria-pressed="true"]:has(svg):hover {
-    background-color: rgba(253, 139, 123, 0.15) !important;
-    border-color: rgba(253, 139, 123, 0.7) !important;
-    color: #9d4039 !important;
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent) !important;
+    border-color: color-mix(in srgb, var(--color-accent) 70%, transparent) !important;
+    color: var(--color-accent-active) !important;
   }
 
   button[aria-pressed="true"]:has(svg),
   button[class*="text-white"]:has(svg) {
-    color: var(--swiss-orange) !important;
+    color: var(--color-accent) !important;
   }
 }

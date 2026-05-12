@@ -18,8 +18,8 @@ export function getCompactActionButtonClassName({
     return cn(
       baseButtonClassName,
       isDarkMode
-        ? "border-[#6f3d45] bg-[#2B2028] text-swiss-orange-soft hover:bg-[#36262F] hover:text-[#ffd2ce]"
-        : "border-swiss-orange-soft bg-[#fff6f5] text-[#c55a52] hover:bg-[#ffecea] hover:text-[#9d4039]",
+        ? "border-error bg-[color-mix(in_srgb,var(--color-error)_16%,var(--color-panel-bg))] text-error hover:bg-[color-mix(in_srgb,var(--color-error)_22%,var(--color-panel-bg))] hover:text-accent-foreground"
+        : "border-error bg-[color-mix(in_srgb,var(--color-error)_8%,var(--color-panel-bg))] text-error hover:bg-[color-mix(in_srgb,var(--color-error)_14%,var(--color-panel-bg))] hover:text-accent-foreground",
     )
   }
 
@@ -27,16 +27,16 @@ export function getCompactActionButtonClassName({
     return cn(
       baseButtonClassName,
       isDarkMode
-        ? "border-swiss-orange-soft/60 bg-swiss-orange-soft/20 text-[#F4F6F8] hover:bg-swiss-orange-soft/28"
-        : "border-swiss-orange-soft/70 bg-swiss-orange-soft/15 text-[#9d4039] hover:bg-swiss-orange-soft/22",
+        ? "border-[color-mix(in_srgb,var(--color-accent)_60%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-foreground hover:bg-[color-mix(in_srgb,var(--color-accent)_28%,transparent)]"
+        : "border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent-foreground hover:bg-[color-mix(in_srgb,var(--color-accent)_22%,transparent)]",
     )
   }
 
   return cn(
     baseButtonClassName,
     isDarkMode
-      ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]"
-      : "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
+      ? "border-border bg-surface text-foreground hover:bg-panel hover:text-foreground"
+      : "border-border bg-panel text-foreground hover:bg-surface hover:text-foreground",
   )
 }
 
@@ -45,8 +45,8 @@ export function getPopupSurfaceClassName(isDarkMode: boolean, className?: string
     isDarkMode && "dark",
     "rounded-sm border p-4 shadow-lg backdrop-blur-sm",
     isDarkMode
-      ? "border-[#313A47] bg-[#1D232D]/95 text-[#F4F6F8]"
-      : "border-gray-200 bg-gray-100/95 text-gray-900",
+      ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-foreground"
+      : "border-divider bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-foreground",
     className,
   )
 }
@@ -55,8 +55,8 @@ export function getNeutralFormControlClassName(isDarkMode: boolean, className?: 
   return cn(
     "rounded-[5px] border outline-none transition-colors",
     isDarkMode
-      ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8] placeholder:text-[#8D98AA] focus:border-[#A8B1BF]"
-      : "border-gray-300 bg-gray-100 text-gray-900 placeholder:text-gray-400 focus:border-gray-500",
+      ? "border-border bg-surface text-foreground placeholder:text-muted-foreground focus:border-muted-foreground"
+      : "border-border bg-panel text-foreground placeholder:text-muted-foreground focus:border-muted-foreground",
     className,
   )
 }
@@ -66,5 +66,5 @@ export function getPopupInputClassName(isDarkMode: boolean, className?: string):
 }
 
 export function getPopupMutedTextClassName(isDarkMode: boolean): string {
-  return isDarkMode ? "text-[#A8B1BF]" : "text-gray-600"
+  return isDarkMode ? "text-muted-foreground" : "text-muted-foreground"
 }

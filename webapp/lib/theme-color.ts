@@ -1,6 +1,6 @@
-export const LIGHT_UI_THEME_COLOR = "#f3f4f6"
-export const DARK_UI_THEME_COLOR = "#161A22"
+export const UI_THEME_COLOR_PROPERTY = "--color-app-background"
 
-export function getUiThemeColor(isDarkMode: boolean) {
-  return isDarkMode ? DARK_UI_THEME_COLOR : LIGHT_UI_THEME_COLOR
+export function getUiThemeColor() {
+  if (typeof document === "undefined") return ""
+  return window.getComputedStyle(document.documentElement).getPropertyValue(UI_THEME_COLOR_PROPERTY).trim()
 }

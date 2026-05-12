@@ -118,7 +118,7 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#f3f4f6]"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-background"
       onMouseDown={(event) => {
         if (event.target !== event.currentTarget) return
         closeDialog()
@@ -129,7 +129,7 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="onboarding-video-title"
-        className="relative flex h-[100dvh] w-[100vw] flex-col overflow-hidden bg-[#f3f4f6] text-gray-900"
+        className="relative flex h-[100dvh] w-[100vw] flex-col overflow-hidden bg-background text-foreground"
       >
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex h-12 items-center justify-end px-4">
           <h2
@@ -142,14 +142,14 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             type="button"
             aria-label={closeLabel}
             onClick={closeDialog}
-            className="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] bg-transparent text-gray-700 transition-colors hover:bg-gray-200/70 hover:text-gray-900"
+            className="pointer-events-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[4px] bg-transparent text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
           >
             <X className="h-3 w-3" aria-hidden="true" />
           </button>
         </div>
-        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-[#f3f4f6] py-6">
-          <div aria-hidden="true" className="absolute inset-0 bg-[#f3f4f6]" />
-          <div className="relative flex h-full max-h-full w-auto max-w-full items-center justify-center overflow-hidden bg-[#f3f4f6] shadow-lg">
+        <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-background py-6">
+          <div aria-hidden="true" className="absolute inset-0 bg-background" />
+          <div className="relative flex h-full max-h-full w-auto max-w-full items-center justify-center overflow-hidden bg-background shadow-lg">
             <video
               ref={videoRef}
               autoPlay
@@ -182,18 +182,18 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             type="button"
             aria-label={playbackLabel}
             onClick={togglePlayback}
-            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-gray-700 transition-colors hover:bg-gray-200/70 hover:text-gray-900"
+            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
           >
             {isPaused ? <Play className="h-3.5 w-3.5" aria-hidden="true" /> : <Pause className="h-3.5 w-3.5" aria-hidden="true" />}
           </button>
-          <div className="font-mono text-[11px] tabular-nums leading-none text-gray-600">
+          <div className="font-mono text-[11px] tabular-nums leading-none text-muted-foreground">
             {formatVideoTime(currentTime)} / {formatVideoTime(duration)}
           </div>
           <button
             type="button"
             aria-label={mutedLabel}
             onClick={toggleMuted}
-            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-gray-700 transition-colors hover:bg-gray-200/70 hover:text-gray-900"
+            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
           >
             {isMuted ? <VolumeX className="h-3.5 w-3.5" aria-hidden="true" /> : <Volume2 className="h-3.5 w-3.5" aria-hidden="true" />}
           </button>
@@ -201,7 +201,7 @@ export function OnboardingVideoDialog({ videoId, onClose }: Props) {
             type="button"
             aria-label={fullscreenLabel}
             onClick={toggleFullscreen}
-            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-gray-700 transition-colors hover:bg-gray-200/70 hover:text-gray-900"
+            className="pointer-events-auto inline-flex h-8 w-8 items-center justify-center rounded-[4px] bg-transparent text-muted-foreground transition-colors hover:bg-surface hover:text-foreground"
           >
             {isFullscreen ? <Minimize2 className="h-3.5 w-3.5" aria-hidden="true" /> : <Maximize2 className="h-3.5 w-3.5" aria-hidden="true" />}
           </button>

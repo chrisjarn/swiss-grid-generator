@@ -177,16 +177,16 @@ export default function PdfExportBenchmarkPage() {
   }, [autostart, runBenchmark])
 
   return (
-    <main className="min-h-screen bg-[#e8e4dc] p-8 font-mono text-[12px] leading-5 text-[#151515]">
+    <main className="min-h-screen bg-background p-8 font-mono text-[12px] leading-5 text-foreground">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-6 border-b border-[#151515] pb-4">
+        <header className="mb-6 border-b border-border pb-4">
           <h1 className="text-[16px] font-semibold uppercase tracking-0">pdf export benchmark</h1>
           <p className="mt-2 max-w-3xl">
             same browser worker path as the export dialog. result is written to the console and
             window.__SGG_PDF_EXPORT_BENCHMARK__.
           </p>
         </header>
-        <dl className="grid grid-cols-[160px_1fr] gap-x-4 gap-y-1 border-b border-[#151515] pb-4">
+        <dl className="grid grid-cols-[160px_1fr] gap-x-4 gap-y-1 border-b border-border pb-4">
           <dt>fixture</dt>
           <dd>{fixture}</dd>
           <dt>range</dt>
@@ -205,7 +205,7 @@ export default function PdfExportBenchmarkPage() {
             type="button"
             onClick={() => void runBenchmark()}
             disabled={status === "loading" || status === "running"}
-            className="border border-[#151515] px-4 py-2 disabled:opacity-50"
+            className="border border-border px-4 py-2 disabled:opacity-50"
           >
             run benchmark
           </button>
@@ -213,7 +213,7 @@ export default function PdfExportBenchmarkPage() {
             type="button"
             onClick={() => void copyOutput()}
             disabled={!output}
-            className="border border-[#151515] px-4 py-2 disabled:opacity-50"
+            className="border border-border px-4 py-2 disabled:opacity-50"
           >
             copy to clipboard
           </button>
@@ -221,7 +221,7 @@ export default function PdfExportBenchmarkPage() {
             <span>{copyStatus}</span>
           ) : null}
         </div>
-        <pre className="mt-6 max-h-[60vh] overflow-auto whitespace-pre-wrap border border-[#151515] bg-[#f5f2ec] p-4">
+        <pre className="mt-6 max-h-[60vh] overflow-auto whitespace-pre-wrap border border-border bg-surface p-4">
           {output || "waiting"}
         </pre>
       </div>

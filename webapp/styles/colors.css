@@ -1,0 +1,82 @@
+/*
+ * Braun color reduction.
+ *
+ * The interface uses one reduced semantic palette for all application chrome.
+ * These roles are the source of truth for panels, surfaces, text, strokes,
+ * status, overlays, and canvas presentation. Document/page palettes remain
+ * separate authored content and must not be folded into the UI theme.
+ */
+
+:root {
+  --color-app-background: #f3f4f6;
+  --color-page-default: #ffffff;
+  --color-panel-bg: #f3f4f6;
+  --color-surface-bg: #e8eaee;
+  --color-border: #d1d5db;
+  --color-divider: #e5e7eb;
+  --color-text-primary: #0f1729;
+  --color-text-muted: #6b7280;
+  --color-accent: #fd8b7b;
+  --color-accent-active: #9d4039;
+  --color-success: #4a9c4f;
+  --color-warning: #f5b14d;
+  --color-error: #e05c4f;
+  --color-canvas-shadow: rgba(15, 23, 42, 0.16);
+  --color-overlay-bg: rgba(30, 36, 47, 0.92);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-app-background: #1e242f;
+    --color-page-default: #ffffff;
+    --color-panel-bg: #1e242f;
+    --color-surface-bg: #232a35;
+    --color-border: #374151;
+    --color-divider: #2c343f;
+    --color-text-primary: #f3f5f7;
+    --color-text-muted: #a8b1bf;
+    --color-accent: #fd8b7b;
+    --color-accent-active: #f9a89d;
+    --color-success: #4a9c4f;
+    --color-warning: #f5b14d;
+    --color-error: #e05c4f;
+    --color-canvas-shadow: rgba(0,0,0,0.5);
+    --color-overlay-bg: rgba(15, 20, 28, 0.96);
+  }
+}
+
+.light {
+  --color-app-background: #f3f4f6;
+  --color-page-default: #ffffff;
+  --color-panel-bg: #f3f4f6;
+  --color-surface-bg: #e8eaee;
+  --color-border: #d1d5db;
+  --color-divider: #e5e7eb;
+  --color-text-primary: #0f1729;
+  --color-text-muted: #6b7280;
+  --color-accent: #fd8b7b;
+  --color-accent-active: #9d4039;
+  --color-success: #4a9c4f;
+  --color-warning: #f5b14d;
+  --color-error: #e05c4f;
+  --color-canvas-shadow: rgba(15, 23, 42, 0.16);
+  --color-overlay-bg: rgba(30, 36, 47, 0.92);
+}
+
+.dark {
+  --color-app-background: #1e242f;
+  --color-page-default: #ffffff;
+  --color-panel-bg: #1e242f;
+  --color-surface-bg: #232a35;
+  --color-border: #374151;
+  --color-divider: #2c343f;
+  --color-text-primary: #f3f5f7;
+  --color-text-muted: #a8b1bf;
+  --color-accent: #fd8b7b;
+  --color-accent-active: #f9a89d;
+  --color-success: #4a9c4f;
+  --color-warning: #f5b14d;
+  --color-error: #e05c4f;
+  --color-canvas-shadow: rgba(0,0,0,0.5);
+  --color-overlay-bg: rgba(15, 20, 28, 0.96);
+}

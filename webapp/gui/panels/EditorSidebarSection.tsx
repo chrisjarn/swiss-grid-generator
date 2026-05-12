@@ -38,15 +38,15 @@ export function EditorSidebarSection({
     <section
       className={`mb-3 pb-3 pt-4 last:mb-0 last:pb-0 ${
         isDarkMode
-          ? "text-[#F4F6F8]"
-          : "text-gray-900"
+          ? "text-foreground"
+          : "text-foreground"
       }`}
     >
       <HoverTooltip
         label={tooltip}
         disabled={!showRolloverInfo}
         className="block"
-        tooltipClassName="border-gray-200 bg-white/95 text-gray-700 shadow-lg dark:border-[#313A47] dark:bg-[#1D232D]/95 dark:text-[#F4F6F8]"
+        tooltipClassName="border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground shadow-lg dark:border-border dark:bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] dark:text-foreground"
       >
         <header
           className="cursor-pointer select-none"
@@ -67,11 +67,11 @@ export function EditorSidebarSection({
                   />
                 )}
                 actionClassName={isDarkMode
-                  ? "border-[#313A47] bg-[#232A35] text-[#A8B1BF]"
-                  : "border-gray-300 bg-gray-100 text-gray-700"}
+                  ? "border-border bg-surface text-muted-foreground"
+                  : "border-border bg-panel text-muted-foreground"}
               />
               {collapsed && collapsedSummary ? (
-                <div className={`mt-1 text-[10px] font-normal leading-snug ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <div className={`mt-1 text-[10px] font-normal leading-snug ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                   {collapsedSummary}
                 </div>
               ) : null}

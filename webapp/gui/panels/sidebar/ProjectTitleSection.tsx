@@ -40,12 +40,12 @@ export function ProjectTitleSection({
   const visibleProjectTitle = projectTitle.trim() || t("ui.panels.project.metadata.untitled")
   const tone = isDarkMode
     ? {
-        body: "text-[#A8B1BF]",
-        titleMuted: "text-[#8D98AA]",
+        body: "text-muted-foreground",
+        titleMuted: "text-muted-foreground",
       }
     : {
-        body: "text-gray-600",
-        titleMuted: "text-gray-500",
+        body: "text-muted-foreground",
+        titleMuted: "text-muted-foreground",
       }
 
   return (

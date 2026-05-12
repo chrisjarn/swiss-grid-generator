@@ -63,7 +63,7 @@ function Section({
 
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
-  return <p className="text-[11px] leading-relaxed text-red-600 dark:text-red-400">{message}</p>
+  return <p className="text-[11px] leading-relaxed text-error">{message}</p>
 }
 
 function formatBytes(value: number) {
@@ -224,18 +224,18 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
 
   const tone = isDarkMode
     ? {
-        heading: "text-gray-100",
-        caption: "text-[#8D98AA]",
-        action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#9AC99A]",
-        error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-swiss-orange-soft",
+        heading: "text-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground",
+        success: "border-success bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-success",
+        error: "border-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] text-error",
       }
     : {
-        heading: "text-gray-900",
-        caption: "text-gray-400",
-        action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
-        success: "border-[#9AC99A] bg-[#9AC99A]/10 text-[#2f7d32]",
-        error: "border-swiss-orange-soft bg-swiss-orange-soft/10 text-[#c55a52]",
+        heading: "text-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-panel text-muted-foreground hover:bg-surface hover:text-foreground",
+        success: "border-success bg-[color-mix(in_srgb,var(--color-success)_10%,transparent)] text-success",
+        error: "border-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] text-error",
       }
   const fieldClassName = getPopupInputClassName(isDarkMode, "rounded-sm px-2 py-1 text-[12px]")
   const feedbackButtonClassName = getCompactActionButtonClassName({ isDarkMode })
@@ -498,8 +498,8 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                     key={`${file.name}-${file.size}-${index}`}
                     className={`flex min-h-9 items-center gap-2 rounded-sm border px-2 py-1 text-[12px] ${
                       isDarkMode
-                        ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8]"
-                        : "border-gray-300 bg-white text-gray-900"
+                        ? "border-border bg-surface text-foreground"
+                        : "border-border bg-page text-foreground"
                     }`}
                   >
                     <div className="min-w-0 flex-1">
@@ -510,7 +510,7 @@ export function FeedbackPanel({ isDarkMode = false, appVersion, userId, userEmai
                       type="button"
                       aria-label={t("ui.panels.sidebar.feedback.removeScreenshot", { name: file.name })}
                       onClick={() => handleRemoveScreenshot(index)}
-                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isDarkMode ? "text-gray-400 hover:text-gray-100" : "text-gray-500 hover:text-gray-900"}`}
+                      className={`inline-flex h-7 w-7 shrink-0 items-center justify-center transition-colors ${isDarkMode ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-foreground"}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </button>

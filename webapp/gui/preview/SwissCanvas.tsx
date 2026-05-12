@@ -9,6 +9,7 @@ import {
 } from "@/gui/preview/lib/canvas-page-renderer"
 import { formatSvgColor } from "@/core/export/colors"
 import { cn } from "@/lib/utils"
+import { readUiColor } from "@/styles/resolve-color"
 
 type SwissCanvasProps = {
   plan: PageExportPlan | null
@@ -51,7 +52,7 @@ function drawPlan(ctx: CanvasRenderingContext2D, plan: PageExportPlan, showGuide
   ctx.rotate((plan.rotation * Math.PI) / 180)
   ctx.translate(-plan.pageWidth / 2, -plan.pageHeight / 2)
 
-  ctx.fillStyle = plan.backgroundColor ? formatSvgColor(plan.backgroundColor) : "#ffffff"
+  ctx.fillStyle = plan.backgroundColor ? formatSvgColor(plan.backgroundColor) : readUiColor("--color-page-default")
   ctx.fillRect(0, 0, plan.pageWidth, plan.pageHeight)
 
   if (showGuides) {
@@ -114,7 +115,7 @@ export function SwissCanvas({
         width: plan ? plan.pageWidth * resolvedScale : 1,
         height: plan ? plan.pageHeight * resolvedScale : 1,
       }}
-      className={cn("block bg-white shadow-[0_12px_36px_rgba(15,23,42,0.18)]", className)}
+      className={cn("block bg-page shadow-[0_12px_36px_var(--color-canvas-shadow)]", className)}
       data-swiss-canvas="page-export-plan"
     />
   )

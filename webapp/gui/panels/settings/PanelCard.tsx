@@ -34,23 +34,23 @@ export function PanelCard({
   const openSectionBackgroundClassName = collapsed
     ? ""
     : isDarkMode
-      ? "bg-[#232A35]"
-      : "bg-gray-200"
+      ? "bg-surface"
+      : "bg-surface"
   const sectionDividerSpacingClassName = collapsed ? "mt-3" : ""
 
   return (
     <section
       className={`-mx-4 px-4 pb-0 pt-4 md:-mx-6 md:px-6 ${openSectionBackgroundClassName} ${
         isDarkMode
-          ? "text-gray-100"
-          : "text-gray-900"
+          ? "text-foreground"
+          : "text-foreground"
       }`}
     >
       <HoverTooltip
         label={tooltip}
         disabled={!showRolloverInfo}
         className="block"
-        tooltipClassName="border-gray-200 bg-white/95 text-gray-700 shadow-lg dark:border-gray-700 dark:bg-gray-900/95 dark:text-gray-200"
+        tooltipClassName="border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground shadow-lg dark:border-border dark:bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] dark:text-foreground"
       >
         <header
           className={`select-none ${interactionsDisabled ? "cursor-default" : "cursor-pointer"}`}
@@ -75,11 +75,11 @@ export function PanelCard({
                   />
                 )}
                 actionClassName={isDarkMode
-                  ? "border-gray-600 bg-gray-800 text-gray-300"
-                  : "border-gray-300 bg-gray-100 text-gray-700"}
+                  ? "border-border bg-surface text-muted-foreground"
+                  : "border-border bg-panel text-muted-foreground"}
               />
               {collapsed && collapsedSummary ? (
-                <div className={`mt-1 text-[10px] font-normal leading-snug ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                <div className={`mt-1 text-[10px] font-normal leading-snug ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                   {collapsedSummary}
                 </div>
               ) : null}
@@ -92,7 +92,7 @@ export function PanelCard({
           {children}
         </div>
       )}
-      <hr className={`-mx-4 h-px border-0 bg-[#f3f4f6] md:-mx-6 dark:bg-[#1D232D] ${sectionDividerSpacingClassName}`} />
+      <hr className={`-mx-4 h-px border-0 bg-divider md:-mx-6 ${sectionDividerSpacingClassName}`} />
     </section>
   )
 }

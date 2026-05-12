@@ -47,8 +47,8 @@ export function ProjectTourOverlay({
           onClick={onStart}
           className={`pointer-events-auto rounded-sm border px-3 py-2 text-left text-[11px] uppercase tracking-[0.08em] transition-colors ${
             isDarkMode
-              ? "border-[#313A47] bg-[#1D232D]/95 text-[#F4F6F8] hover:border-[#A8B1BF]"
-              : "border-gray-300 bg-white/95 text-gray-800 hover:border-gray-500"
+              ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-foreground hover:border-muted-foreground"
+              : "border-border bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-foreground hover:border-muted-foreground"
           }`}
         >
           {t("ui.preview.tour.open")}
@@ -62,17 +62,17 @@ export function ProjectTourOverlay({
       <div
         className={`pointer-events-auto rounded-sm border px-4 py-3 shadow-lg backdrop-blur-sm ${
           isDarkMode
-            ? "border-[#313A47] bg-[#1D232D]/95 text-[#F4F6F8]"
-            : "border-gray-200 bg-white/95 text-gray-900"
+            ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-foreground"
+            : "border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-foreground"
         }`}
       >
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
+            <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
               {title}
             </div>
             {description ? (
-              <div className={`mt-1 text-[11px] leading-snug ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-600"}`}>
+              <div className={`mt-1 text-[11px] leading-snug ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                 {description}
               </div>
             ) : null}
@@ -81,15 +81,15 @@ export function ProjectTourOverlay({
             type="button"
             onClick={onClose}
             className={`shrink-0 text-[11px] uppercase tracking-[0.08em] transition-colors ${
-              isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
+              isDarkMode ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t("ui.preview.tour.close")}
           </button>
         </div>
 
-        <div className={`mt-3 border-t pt-3 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
-          <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
+        <div className={`mt-3 border-t pt-3 ${isDarkMode ? "border-divider" : "border-divider"}`}>
+          <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
             {t("ui.preview.tour.step")} {Math.min(stepIndex + 1, stepCount)} / {Math.max(1, stepCount)}
           </div>
           {stepTitle ? (
@@ -98,18 +98,18 @@ export function ProjectTourOverlay({
             </div>
           ) : null}
           {stepCaption ? (
-            <div className={`mt-2 text-sm leading-relaxed ${isDarkMode ? "text-[#D6DAE1]" : "text-gray-700"}`}>
+            <div className={`mt-2 text-sm leading-relaxed ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
               {stepCaption}
             </div>
           ) : null}
           {waitingForLayerClick ? (
-            <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
+            <div className={`mt-2 text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-error" : "text-error"}`}>
               {t("ui.preview.tour.waitingForLayer")}
             </div>
           ) : null}
         </div>
 
-        <div className={`mt-3 flex items-center justify-between gap-3 border-t pt-3 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
+        <div className={`mt-3 flex items-center justify-between gap-3 border-t pt-3 ${isDarkMode ? "border-divider" : "border-divider"}`}>
           <button
             type="button"
             onClick={onBack}
@@ -117,11 +117,11 @@ export function ProjectTourOverlay({
             className={`rounded-sm border px-3 py-1.5 text-[11px] uppercase tracking-[0.08em] transition-colors ${
               !canGoBack
                 ? isDarkMode
-                  ? "cursor-not-allowed border-[#313A47] text-[#596273]"
-                  : "cursor-not-allowed border-gray-200 text-gray-300"
+                  ? "cursor-not-allowed border-border text-muted-foreground opacity-50"
+                  : "cursor-not-allowed border-divider text-muted-foreground opacity-50"
                 : isDarkMode
-                  ? "border-[#313A47] text-[#F4F6F8] hover:border-[#A8B1BF]"
-                  : "border-gray-300 text-gray-800 hover:border-gray-500"
+                  ? "border-border text-foreground hover:border-muted-foreground"
+                  : "border-border text-foreground hover:border-muted-foreground"
             }`}
           >
             {t("ui.preview.tour.back")}
@@ -133,9 +133,9 @@ export function ProjectTourOverlay({
             className={`rounded-sm px-3 py-1.5 text-[11px] uppercase tracking-[0.08em] transition-colors ${
               waitingForLayerClick || !canGoNext
                 ? isDarkMode
-                  ? "cursor-not-allowed bg-[#313A47] text-[#596273]"
-                  : "cursor-not-allowed bg-gray-200 text-gray-400"
-                : "bg-swiss-orange text-black hover:brightness-95"
+                  ? "cursor-not-allowed bg-surface text-muted-foreground opacity-50"
+                  : "cursor-not-allowed bg-surface text-muted-foreground opacity-50"
+                : "bg-accent text-accent-foreground hover:brightness-95"
             }`}
           >
             {canGoNext ? t("ui.preview.tour.next") : t("ui.preview.tour.done")}

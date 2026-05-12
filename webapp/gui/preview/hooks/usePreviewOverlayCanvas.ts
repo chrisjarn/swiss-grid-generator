@@ -15,14 +15,12 @@ import { resolveGridFirstColumnStep, sumGridColumnSpan } from "@/core/layout/gri
 import { resolvePreviewColumnX } from "@/core/layout/preview-column-snap"
 import type { BlockRect } from "@/core/layout/typography-layout-plan"
 import type { ModulePosition } from "@/core/types/preview-layout"
+import { readUiColor, withColorAlpha } from "@/styles/resolve-color"
 
 import type { PreviewGridMetrics } from "@/gui/preview/hooks/usePreviewGeometry"
 
 const OVERFLOW_BADGE_RADIUS = 11
 const OVERFLOW_BADGE_PADDING = 6
-const OVERFLOW_BADGE_FILL = "rgba(255, 80, 80, 0.85)"
-const GUIDE_STROKE_COLOR = "#fd8b7b"
-const PREVIEW_GUIDE_FILL = "rgba(253, 139, 123, 0.18)"
 const GUIDE_STROKE_WIDTH = 1
 const ACTIVE_GUIDE_STROKE_WIDTH = 2
 
@@ -108,6 +106,10 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
     const frame = window.requestAnimationFrame(() => {
       const ctx = canvas.getContext("2d")
       if (!ctx) return
+      const guideStrokeColor = readUiColor("--color-accent")
+      const previewGuideFill = withColorAlpha(guideStrokeColor, 0.18)
+      const overflowBadgeFill = withColorAlpha(readUiColor("--color-error"), 0.85)
+      const overflowBadgeText = readUiColor("--color-page-default")
       const cssWidth = canvas.width / pixelRatio
       const cssHeight = canvas.height / pixelRatio
       ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0)
@@ -156,7 +158,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         heightPx: number,
         lineWidth: number = GUIDE_STROKE_WIDTH,
       ) => {
-        ctx.strokeStyle = GUIDE_STROKE_COLOR
+        ctx.strokeStyle = guideStrokeColor
         ctx.lineWidth = lineWidth
         ctx.beginPath()
         ctx.moveTo(horizontalX, lineY)
@@ -174,7 +176,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         widthPx: number,
         heightPx: number,
       ) => {
-        ctx.fillStyle = PREVIEW_GUIDE_FILL
+        ctx.fillStyle = previewGuideFill
         ctx.fillRect(x, y, widthPx, heightPx)
       }
 
@@ -184,7 +186,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
         widthPx: number,
         heightPx: number,
       ) => {
-        ctx.strokeStyle = GUIDE_STROKE_COLOR
+        ctx.strokeStyle = guideStrokeColor
         ctx.lineWidth = GUIDE_STROKE_WIDTH
         ctx.beginPath()
         ctx.moveTo(x, y)
@@ -350,10 +352,10 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           const cy = rect.y + rect.height - OVERFLOW_BADGE_RADIUS - OVERFLOW_BADGE_PADDING
           ctx.save()
           ctx.beginPath()
-          ctx.fillStyle = OVERFLOW_BADGE_FILL
+          ctx.fillStyle = overflowBadgeFill
           ctx.arc(cx, cy, OVERFLOW_BADGE_RADIUS, 0, Math.PI * 2)
           ctx.fill()
-          ctx.fillStyle = "#ffffff"
+          ctx.fillStyle = overflowBadgeText
           ctx.fillText("…", cx, cy + 0.5)
           ctx.restore()
         }

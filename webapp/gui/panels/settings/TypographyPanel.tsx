@@ -82,16 +82,16 @@ export const TypographyPanel = memo(function TypographyPanel({
   })
   const tableTone = isDarkMode
     ? {
-        frame: "border-gray-700 bg-gray-900/60",
-        row: "border-gray-800",
-        label: "text-gray-100",
-        value: "text-gray-300",
+        frame: "border-border bg-surface",
+        row: "border-divider",
+        label: "text-foreground",
+        value: "text-muted-foreground",
       }
     : {
-        frame: "border-gray-200 bg-gray-50/80",
-        row: "border-gray-200",
-        label: "text-gray-900",
-        value: "text-gray-700",
+        frame: "border-divider bg-panel",
+        row: "border-divider",
+        label: "text-foreground",
+        value: "text-muted-foreground",
       }
   const fontFamilyListClassName = getSettingsOpenListClassName(isDarkMode)
   const typographyRhythmListClassName = getSettingsOpenListClassName(isDarkMode)
@@ -156,11 +156,11 @@ export const TypographyPanel = memo(function TypographyPanel({
               className={`inline-flex h-5 w-5 items-center justify-center rounded-sm transition-colors ${
                 showHierarchyTable
                   ? isDarkMode
-                    ? "bg-swiss-orange-soft/20 text-[#F4F6F8]"
-                    : "bg-swiss-orange-soft/15 text-[#9d4039]"
+                    ? "bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-foreground"
+                    : "bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent-foreground"
                   : isDarkMode
-                    ? "text-gray-400 hover:bg-[#1D232D] hover:text-[#F4F6F8]"
-                    : "text-gray-500 hover:bg-gray-200 hover:text-gray-900"
+                    ? "text-muted-foreground hover:bg-panel hover:text-foreground"
+                    : "text-muted-foreground hover:bg-surface hover:text-foreground"
               }`}
               onClick={() => setShowHierarchyTable((current) => !current)}
             >
@@ -271,7 +271,7 @@ export const TypographyPanel = memo(function TypographyPanel({
                   key={group.key}
                   className="grid grid-cols-[5.25rem_minmax(0,1fr)]"
                 >
-                  <div className={`px-2 py-2 text-left text-[10px] font-semibold uppercase leading-none tracking-[0.16em] ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
+                  <div className={`px-2 py-2 text-left text-[10px] font-semibold uppercase leading-none tracking-[0.16em] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                     {t(group.labelKey)}
                   </div>
                   <div>

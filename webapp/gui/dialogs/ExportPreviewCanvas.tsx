@@ -165,14 +165,14 @@ export function ExportPreviewCanvas({
       ref={hostRef}
       className={cn(
         "relative h-36 overflow-hidden border",
-        isDarkUi ? "border-[#313A47] bg-[#232A35]" : "border-gray-200 bg-white",
+        isDarkUi ? "border-border bg-surface" : "border-divider bg-page",
       )}
     >
       <canvas ref={canvasRef} className="block h-full w-full" aria-label={t("ui.export.dialog.previewCanvas")} />
       {error ? (
         <div className={cn(
           "absolute inset-0 flex items-center justify-center px-3 text-center text-[11px] leading-tight",
-          isDarkUi ? "bg-[#232A35] text-[#D7DEE8]" : "bg-white text-gray-600",
+          isDarkUi ? "bg-surface text-muted-foreground" : "bg-page text-muted-foreground",
         )}>
           {error}
         </div>

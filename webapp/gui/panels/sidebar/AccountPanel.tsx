@@ -64,10 +64,10 @@ function formatActivityTimestamp(
 }
 
 function getActivityLevelClassName(level: CloudActivityLogEntry["level"], isDarkMode: boolean): string {
-  if (level === "success") return isDarkMode ? "text-[#9AC99A]" : "text-[#2f7d32]"
-  if (level === "warning") return isDarkMode ? "text-[#f2c182]" : "text-[#9a621f]"
-  if (level === "error") return isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"
-  return isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"
+  if (level === "success") return isDarkMode ? "text-success" : "text-success"
+  if (level === "warning") return isDarkMode ? "text-warning" : "text-warning"
+  if (level === "error") return isDarkMode ? "text-error" : "text-error"
+  return isDarkMode ? "text-foreground" : "text-foreground"
 }
 
 export function AccountPanel({
@@ -99,16 +99,16 @@ export function AccountPanel({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const tone = isDarkMode
     ? {
-        body: "text-[#A8B1BF]",
-        caption: "text-[#8D98AA]",
-        action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        button: "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
+        body: "text-muted-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground",
+        button: "border-border bg-surface text-foreground hover:bg-panel hover:text-foreground",
       }
     : {
-        body: "text-gray-600",
-        caption: "text-gray-400",
-        action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
-        button: "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200 hover:text-gray-900",
+        body: "text-muted-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-panel text-muted-foreground hover:bg-surface hover:text-foreground",
+        button: "border-border bg-panel text-foreground hover:bg-surface hover:text-foreground",
       }
   const fieldClassName = getNeutralFormControlClassName(isDarkMode, "rounded-md px-3 py-2 text-xs")
   const authButtonClassName = getCompactActionButtonClassName({ isDarkMode })
@@ -133,7 +133,7 @@ export function AccountPanel({
   const feedbackSection = authError ? (
     <section className="space-y-2">
       <SectionHeaderRow label={t("ui.common.message")} />
-      <div className="rounded-md border border-swiss-orange-soft bg-swiss-orange-soft/10 px-3 py-2 text-xs text-[#c55a52] dark:text-swiss-orange-soft">
+      <div className="rounded-md border border-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] px-3 py-2 text-xs text-error">
         {authError}
       </div>
     </section>
@@ -333,7 +333,7 @@ export function AccountPanel({
             </div>
           ) : null}
           {userEmail && (pendingQueueCount > 0 || conflictQueueCount > 0) ? (
-            <div className={`rounded-md border px-3 py-2 ${isDarkMode ? "border-[#313A47]" : "border-gray-200"}`}>
+            <div className={`rounded-md border px-3 py-2 ${isDarkMode ? "border-border" : "border-divider"}`}>
               <div className="grid grid-cols-2 gap-2 text-[11px] leading-tight">
                 <div>
                   <div className={tone.caption}>{t("ui.panels.sidebar.account.queued")}</div>
@@ -347,12 +347,12 @@ export function AccountPanel({
             </div>
           ) : null}
           {userEmail && hasActiveConflict && onKeepLocalConflict && onUseCloudConflict ? (
-            <div className={`space-y-2 rounded-md border px-3 py-2 ${isDarkMode ? "border-[#5a3840] bg-swiss-orange-soft/10" : "border-swiss-orange-soft bg-swiss-orange-soft/10"}`}>
-              <div className={`text-[11px] leading-snug ${isDarkMode ? "text-swiss-orange-soft" : "text-[#c55a52]"}`}>
+            <div className="space-y-2 rounded-md border border-error bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)] px-3 py-2">
+              <div className="text-[11px] leading-snug text-error">
                 {t("ui.panels.sidebar.account.conflictMessage")}
               </div>
               {activeConflictDetails ? (
-                <div className={`grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border px-2 py-2 text-[11px] leading-tight ${isDarkMode ? "border-[#5a3840]" : "border-swiss-orange-soft/40"}`}>
+                <div className="grid grid-cols-[80px_1fr] gap-x-3 gap-y-1 rounded-md border border-[color-mix(in_srgb,var(--color-error)_40%,transparent)] px-2 py-2 text-[11px] leading-tight">
                   <div className={tone.caption}>{t("ui.common.project")}</div>
                   <div className={`min-w-0 truncate ${tone.body}`}>{activeConflictDetails.title || t("ui.panels.sidebar.account.untitledProject")}</div>
                   <div className={tone.caption}>{t("ui.panels.sidebar.account.localEdit")}</div>

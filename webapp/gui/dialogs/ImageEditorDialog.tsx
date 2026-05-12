@@ -219,36 +219,36 @@ export function ImageEditorDialog({
 
   const tone = isDarkMode
     ? {
-      muted: "text-gray-400",
+      muted: "text-muted-foreground",
       panel: "bg-transparent",
       surface: "bg-transparent",
-      infoFrame: "border-gray-700 bg-gray-900/60",
-      infoRow: "border-gray-800",
-      infoLabel: "text-gray-400",
-      infoValue: "text-gray-100",
-      button: "border-gray-700 bg-gray-900 text-gray-300 hover:bg-gray-800 hover:text-gray-100",
-      ringOffset: "ring-offset-gray-900",
+      infoFrame: "border-border bg-surface",
+      infoRow: "border-divider",
+      infoLabel: "text-muted-foreground",
+      infoValue: "text-foreground",
+      button: "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground",
+      ringOffset: "ring-offset-background",
       selectContent: "dark",
     }
     : {
-      muted: "text-gray-600",
+      muted: "text-muted-foreground",
       panel: "bg-transparent",
       surface: "bg-transparent",
-      infoFrame: "border-gray-200 bg-gray-50/80",
-      infoRow: "border-gray-200",
-      infoLabel: "text-gray-500",
-      infoValue: "text-gray-900",
-      button: "border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900",
-      ringOffset: "ring-offset-white",
+      infoFrame: "border-divider bg-panel",
+      infoRow: "border-divider",
+      infoLabel: "text-muted-foreground",
+      infoValue: "text-foreground",
+      button: "border-divider bg-page text-muted-foreground hover:bg-panel hover:text-foreground",
+      ringOffset: "ring-offset-page",
       selectContent: "",
     }
 
   const triggerClassName = getNeutralFormControlClassName(isDarkMode, "h-9")
   const textInputClassName = getNeutralFormControlClassName(isDarkMode, "h-9 w-full rounded-md px-3 text-sm")
   const sectionLabelClassName = `text-sm ${tone.muted}`
-  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"}`
-  const inlineSwitchClassName = "h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-  const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
+  const sliderValueClassName = `rounded px-1.5 py-0.5 text-xs font-mono ${isDarkMode ? "bg-surface text-foreground" : "bg-panel text-foreground"}`
+  const inlineSwitchClassName = "h-3 w-6 rounded-none border border-border bg-border data-[state=checked]:bg-success data-[state=unchecked]:bg-border"
+  const inlineSwitchThumbClassName = "h-3 w-3 rounded-none border border-border bg-page shadow-none data-[state=checked]:translate-x-3"
   const infoRows = [
     [t("ui.editor.paragraph.rows"), String(editorState.draftRows)],
     [t("ui.editor.paragraph.baselines"), String(editorState.draftHeightBaselines)],
@@ -291,10 +291,10 @@ export function ImageEditorDialog({
             title={(
               <span className="inline-flex items-center gap-2">
                 <span>I. {t("ui.editor.paragraph.title")}</span>
-                <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-[#F4F6F8]" : "text-gray-900"}`}>
+                <span className={`inline-flex items-center gap-2 ${isDarkMode ? "text-foreground" : "text-foreground"}`}>
                   <span>{t("ui.editor.image.title")}</span>
                   <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-sm border border-black/10"
+                    className="h-2.5 w-2.5 shrink-0 rounded-sm border border-[color-mix(in_srgb,var(--color-text-primary)_10%,transparent)]"
                     style={{ backgroundColor: editorState.draftColor }}
                     aria-hidden="true"
                   />

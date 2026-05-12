@@ -95,8 +95,8 @@ function PresetGroupHeaderLabel({
         viewportPaddingPx={24}
         tooltipClassName={`w-72 max-w-[80vw] whitespace-normal border px-2 py-2 text-left text-[11px] font-normal normal-case leading-snug tracking-normal ${
           isDarkMode
-            ? "border-gray-600 bg-gray-900/95 text-gray-200"
-            : "border-gray-300 bg-white/95 text-gray-700"
+            ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-muted-foreground"
+            : "border-border bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground"
         }`}
         label={(
           <div className="space-y-1">
@@ -114,7 +114,7 @@ function PresetGroupHeaderLabel({
       >
         <span
           aria-label={translateMessage("ui.panels.presets.storageInfo")}
-          className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-swiss-orange-soft/70 text-[9px] font-semibold normal-case leading-none tracking-normal text-swiss-orange-soft"
+          className="inline-flex h-3 w-3 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] text-[9px] font-semibold normal-case leading-none tracking-normal text-accent"
           onClick={(event) => event.stopPropagation()}
           onDoubleClick={(event) => event.stopPropagation()}
         >
@@ -216,8 +216,8 @@ function PresetCard({
       viewportPaddingPx={36}
       tooltipClassName={`w-80 max-w-[80vw] whitespace-normal border px-2 py-2 text-[11px] leading-snug ${
         isDarkMode
-          ? "border-gray-600 bg-gray-900/95 text-gray-200"
-          : "border-gray-300 bg-white/95 text-gray-700"
+          ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-muted-foreground"
+          : "border-border bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground"
       }`}
       label={(
         <div className="space-y-1">
@@ -231,14 +231,14 @@ function PresetCard({
           <PresetTooltipRow label={t("ui.panels.presets.marginsLabel")} value={result.settings.marginMethod} />
           <PresetTooltipRow label={t("ui.panels.presets.rhythmLabel")} value={result.settings.rhythm} />
           {isUserPreset ? (
-            <div className={`mt-1 border-t pt-1 ${isDarkMode ? "border-gray-700" : "border-gray-200"}`}>
+            <div className={`mt-1 border-t pt-1 ${isDarkMode ? "border-divider" : "border-divider"}`}>
               <div className="grid grid-cols-[82px_1fr] gap-2">
                 <span className="font-semibold">{t("ui.panels.presets.cloudLabel")}</span>
                 <span className="inline-flex min-w-0 items-center gap-1.5">
                   {syncIndicatorClassName ? (
                     <span
                       aria-hidden="true"
-                      className={`h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-white dark:ring-[#1D232D] ${syncIndicatorClassName}`}
+                      className={`h-1.5 w-1.5 shrink-0 rounded-full ring-1 ring-page dark:ring-background ${syncIndicatorClassName}`}
                     />
                   ) : null}
                   <span className="min-w-0">{cloudStatusLabel}</span>
@@ -259,27 +259,27 @@ function PresetCard({
         <button
           type="button"
           data-preset-id={preset.id}
-          className={`relative h-full w-full rounded-md border-2 transition-colors cursor-pointer overflow-hidden ${isDarkMode ? "border-gray-700 bg-gray-800 hover:border-blue-400 hover:bg-gray-700" : "border-gray-200 bg-gray-50 hover:border-blue-500 hover:bg-blue-50"}`}
+          className={`relative h-full w-full cursor-pointer overflow-hidden rounded-md border-2 transition-colors ${isDarkMode ? "border-border bg-surface hover:border-accent hover:bg-panel" : "border-divider bg-panel hover:border-accent hover:bg-surface"}`}
           onClick={() => onLoadPreset(preset)}
         >
           {syncIndicatorClassName ? (
             <span
               aria-hidden="true"
-              className={`absolute right-1 top-1 z-10 h-1.5 w-1.5 rounded-full ring-1 ring-white dark:ring-[#1D232D] ${syncIndicatorClassName}`}
+              className={`absolute right-1 top-1 z-10 h-1.5 w-1.5 rounded-full ring-1 ring-page dark:ring-background ${syncIndicatorClassName}`}
             />
           ) : null}
-          <div className={`absolute inset-2 border ${isDarkMode ? "border-gray-600 bg-gray-900" : "border-gray-300 bg-white"}`}>
+          <div className={`absolute inset-2 border ${isDarkMode ? "border-border bg-panel" : "border-border bg-page"}`}>
             <PresetPageThumbnail page={preset.browserPage} />
           </div>
         </button>
-        <div className={`absolute bottom-0 left-0 right-0 flex items-center gap-1 px-2 py-1 text-[10px] ${isDarkMode ? "bg-gray-900/90 text-gray-300" : "bg-white/90 text-gray-600"}`}>
+        <div className={`absolute bottom-0 left-0 right-0 flex items-center gap-1 px-2 py-1 text-[10px] ${isDarkMode ? "bg-[color-mix(in_srgb,var(--color-panel-bg)_90%,transparent)] text-muted-foreground" : "bg-[color-mix(in_srgb,var(--color-page-default)_90%,transparent)] text-muted-foreground"}`}>
           <span className="min-w-0 flex-1 truncate text-center">{preset.label}</span>
           {isUserPreset ? (
             <div ref={menuRef} className="relative shrink-0">
               <button
                 type="button"
                 aria-label={t("ui.panels.presets.actions.more", { title: preset.label })}
-                className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white" : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100 hover:text-gray-900"}`}
+                className={`inline-flex h-4 w-4 items-center justify-center rounded-sm border transition-colors ${isDarkMode ? "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground" : "border-border bg-page text-muted-foreground hover:bg-panel hover:text-foreground"}`}
                 onClick={(event) => {
                   event.preventDefault()
                   event.stopPropagation()
@@ -290,11 +290,11 @@ function PresetCard({
               </button>
               {menuOpen ? (
                 <div
-                  className={`absolute bottom-full right-0 z-20 mb-1 min-w-[112px] rounded-md border py-1 shadow-lg ${isDarkMode ? "border-gray-600 bg-gray-900 text-gray-200" : "border-gray-300 bg-white text-gray-700"}`}
+                  className={`absolute bottom-full right-0 z-20 mb-1 min-w-[112px] rounded-md border py-1 shadow-lg ${isDarkMode ? "border-border bg-panel text-muted-foreground" : "border-border bg-page text-muted-foreground"}`}
                 >
                   <button
                     type="button"
-                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-surface" : "hover:bg-panel"}`}
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
@@ -307,7 +307,7 @@ function PresetCard({
                   {onExportPreset ? (
                     <button
                       type="button"
-                      className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+                      className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-surface" : "hover:bg-panel"}`}
                       onClick={(event) => {
                         event.preventDefault()
                         event.stopPropagation()
@@ -320,7 +320,7 @@ function PresetCard({
                   ) : null}
                   <button
                     type="button"
-                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"}`}
+                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "hover:bg-surface" : "hover:bg-panel"}`}
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
@@ -332,7 +332,7 @@ function PresetCard({
                   </button>
                   <button
                     type="button"
-                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "text-red-300 hover:bg-red-950/50" : "text-red-600 hover:bg-red-50"}`}
+                    className={`block w-full px-3 py-1 text-left text-[11px] ${isDarkMode ? "text-error hover:bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]" : "text-error hover:bg-[color-mix(in_srgb,var(--color-error)_10%,transparent)]"}`}
                     onClick={(event) => {
                       event.preventDefault()
                       event.stopPropagation()
@@ -489,8 +489,8 @@ export function PresetLayoutsPanel({
 
   const cardGapClass = compact ? "gap-2" : "gap-3"
   const groupToggleClassName = isDarkMode
-    ? "border-gray-600 bg-gray-800 text-gray-300 hover:bg-gray-700 hover:text-white"
-    : "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900"
+    ? "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground"
+    : "border-border bg-panel text-muted-foreground hover:bg-surface hover:text-foreground"
   return (
     <div
       data-tooltip-boundary="preset-browser"
@@ -498,10 +498,10 @@ export function PresetLayoutsPanel({
     >
       {!compact ? (
         <>
-          <h3 className={`text-sm font-semibold mb-2 flex items-center gap-1.5 ${isDarkMode ? "text-gray-100" : "text-gray-900"}`}>
+          <h3 className={`mb-2 flex items-center gap-1.5 text-sm font-semibold ${isDarkMode ? "text-foreground" : "text-foreground"}`}>
             <span>{t("ui.panels.presets.title")}</span>
           </h3>
-          <p className={`text-xs mb-4 ${isDarkMode ? "text-gray-300" : "text-gray-600"}`}>
+          <p className={`mb-4 text-xs ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
             {t("ui.panels.presets.description")}
           </p>
         </>

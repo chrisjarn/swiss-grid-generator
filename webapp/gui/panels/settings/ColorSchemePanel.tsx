@@ -51,7 +51,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
     ? NO_BACKGROUND_VALUE
     : getClosestImageSchemeColorToken(canvasBackground, colorScheme)
   const colorSchemeListClassName = getSettingsOpenListClassName(isDarkMode)
-  const backgroundRingOffsetClassName = isDarkMode ? "ring-offset-[#151A21]" : "ring-offset-white"
+  const backgroundRingOffsetClassName = isDarkMode ? "ring-offset-background" : "ring-offset-page"
   const colorSlotLabels = [
     t("ui.panels.color.slots.paper"),
     t("ui.panels.color.slots.light"),
@@ -77,7 +77,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
           {selected.colors.map((color, index) => (
             <span
               key={`collapsed-${selected.id}-${index}-${color}`}
-              className={`inline-block h-2.5 w-5 rounded-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
+              className={`inline-block h-2.5 w-5 rounded-sm border ${isDarkMode ? "border-border" : "border-border"}`}
               style={{ backgroundColor: color }}
               title={color}
             />
@@ -117,7 +117,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
                 {scheme.colors.map((color, index) => (
                   <span
                     key={`${scheme.id}-${index}-${color}`}
-                    className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
+                    className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-border" : "border-border"}`}
                     style={{ backgroundColor: color }}
                     title={color}
                   />
@@ -147,8 +147,8 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
                   aria-pressed={selectedBackground}
                   title={color}
                   className={`h-5 w-full rounded-sm border transition-colors active:translate-y-px ${
-                    isDarkMode ? "border-gray-700" : "border-gray-200"
-                  } ${selectedBackground ? `ring-2 ring-gray-500 ring-offset-1 ${backgroundRingOffsetClassName}` : ""}`}
+                    isDarkMode ? "border-border" : "border-divider"
+                  } ${selectedBackground ? `ring-2 ring-muted-foreground ring-offset-1 ${backgroundRingOffsetClassName}` : ""}`}
                   style={{ backgroundColor: color }}
                   onFocus={() => onCanvasBackgroundPreviewChange?.(token)}
                   onBlur={() => onCanvasBackgroundPreviewChange?.(null)}
@@ -158,7 +158,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
                     onCanvasBackgroundPreviewChange?.(null)
                   }}
                 />
-                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                   {color.toLowerCase()}
                 </span>
               </div>

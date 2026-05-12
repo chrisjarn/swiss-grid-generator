@@ -20,6 +20,7 @@ import {
   type FontFileMetricFaceBlock,
 } from "@/core/layout/font-file-text-metrics-engine"
 import { buildPageExportPlan } from "@/core/layout/page-export-plan"
+import { readUiColor } from "@/styles/resolve-color"
 
 type BlockId = string
 type TypographyStyleKey = string
@@ -296,7 +297,7 @@ export function drawPresetThumbnailToCanvas(
   ctx.translate(offsetX + pageWidth / 2, offsetY + pageHeight / 2)
   ctx.rotate((pageRotation * Math.PI) / 180)
   ctx.translate(-pageWidth / 2, -pageHeight / 2)
-  ctx.fillStyle = page.resolvedCanvasBackground ?? "#ffffff"
+  ctx.fillStyle = page.resolvedCanvasBackground ?? readUiColor("--color-page-default")
   ctx.fillRect(0, 0, pageWidth, pageHeight)
   ctx.beginPath()
   ctx.rect(0, 0, pageWidth, pageHeight)

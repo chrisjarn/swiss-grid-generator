@@ -66,13 +66,13 @@ export function EditorColorSchemeControls({
                   type="button"
                   onClick={() => onColorSelect(color)}
                   className={`h-5 w-full rounded-sm border ${
-                    isDarkMode ? "border-gray-700" : "border-gray-200"
-                  } ${selected ? `ring-2 ring-gray-500 ring-offset-1 ${ringOffsetClassName}` : ""}`}
+                    isDarkMode ? "border-border" : "border-divider"
+                  } ${selected ? `ring-2 ring-muted-foreground ring-offset-1 ${ringOffsetClassName}` : ""}`}
                   style={{ backgroundColor: color }}
                   aria-label={t("ui.editor.color.selectColor", { color })}
                   title={color}
                 />
-                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                <span className={`w-full text-left text-[9px] font-mono leading-none ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                   {color.toLowerCase()}
                 </span>
               </div>
@@ -119,7 +119,7 @@ export function EditorColorSchemeControls({
                   {scheme.colors.map((color, index) => (
                     <span
                       key={`${scheme.id}-${index}-${color}`}
-                      className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-gray-600" : "border-gray-300"}`}
+                      className={`h-3 w-5 rounded-sm border ${isDarkMode ? "border-border" : "border-border"}`}
                       style={{ backgroundColor: color }}
                       title={color}
                     />

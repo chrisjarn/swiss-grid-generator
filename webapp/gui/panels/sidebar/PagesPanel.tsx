@@ -170,15 +170,15 @@ export function PagesPanel({
 
   const tone = isDarkMode
     ? {
-        expandedControls: "bg-[#111827]",
-        rowMuted: "text-[#8D98AA]",
-        close: "text-[#A8B1BF] hover:bg-[#232A35] hover:text-[#F4F6F8]",
+        expandedControls: "bg-surface",
+        rowMuted: "text-muted-foreground",
+        close: "text-muted-foreground hover:bg-surface hover:text-foreground",
         accent: "text-swiss-orange-soft",
       }
     : {
-        expandedControls: "bg-gray-300",
-        rowMuted: "text-gray-500",
-        close: "text-gray-500 hover:bg-gray-100 hover:text-gray-900",
+        expandedControls: "bg-surface",
+        rowMuted: "text-muted-foreground",
+        close: "text-muted-foreground hover:bg-panel hover:text-foreground",
         accent: "text-swiss-orange",
       }
   const renameInputClassName = getNeutralFormControlClassName(isDarkMode, "h-6 w-full rounded-sm px-2 text-[12px] leading-none")
@@ -360,7 +360,7 @@ export function PagesPanel({
     return (
       <div className="relative h-4 shrink-0">
         <div
-          className={`absolute inset-x-2 top-1/2 h-0.5 -translate-y-1/2 rounded-full ${isDarkMode ? "bg-blue-400" : "bg-blue-500"}`}
+          className={`absolute inset-x-2 top-1/2 h-0.5 -translate-y-1/2 rounded-full ${isDarkMode ? "bg-accent" : "bg-accent"}`}
         />
       </div>
     )
@@ -531,8 +531,8 @@ export function PagesPanel({
                 disabled={deleteDisabled}
                 className={`inline-flex h-6 w-6 items-center justify-center rounded-sm transition-colors ${
                   deleteDisabled
-                    ? "cursor-not-allowed text-gray-400/60"
-                    : `${tone.close} hover:text-red-500`
+                    ? "cursor-not-allowed text-muted-foreground/60"
+                    : `${tone.close} hover:text-error`
                 }`}
                 onClick={(event) => {
                   event.stopPropagation()

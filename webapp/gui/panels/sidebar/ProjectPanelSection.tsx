@@ -30,14 +30,14 @@ export function ProjectPanelSection({
 }: Props) {
   const tone = isDarkMode
     ? {
-        action: "bg-[#232A35] text-[#A8B1BF] hover:text-[#F4F6F8]",
-        section: "bg-[#232A35] text-[#F4F6F8]",
-        summary: "text-[#8D98AA]",
+        action: "bg-surface text-muted-foreground hover:text-foreground",
+        section: "bg-surface text-foreground",
+        summary: "text-muted-foreground",
       }
     : {
-        action: "bg-gray-100 text-gray-700 hover:text-gray-900",
-        section: "bg-gray-200 text-gray-900",
-        summary: "text-gray-500",
+        action: "bg-panel text-muted-foreground hover:text-foreground",
+        section: "bg-surface text-foreground",
+        summary: "text-muted-foreground",
       }
 
   return (
@@ -76,7 +76,7 @@ export function ProjectPanelSection({
           {children}
         </div>
       ) : null}
-      <hr className="-mx-4 h-px border-0 bg-[#f3f4f6] md:-mx-6 dark:bg-[#1D232D]" />
+      <hr className="-mx-4 h-px border-0 bg-divider md:-mx-6" />
     </section>
   )
 }

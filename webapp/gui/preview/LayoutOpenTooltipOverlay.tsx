@@ -85,8 +85,8 @@ export function LayoutOpenTooltipOverlay({
             isVisible ? "opacity-100" : "opacity-0"
           } ${
             isDarkMode
-              ? "border-[#313A47] bg-[#1D232D] text-[#F4F6F8]"
-              : "border-gray-200 bg-gray-100 text-gray-900"
+              ? "border-border bg-panel text-foreground"
+              : "border-divider bg-panel text-foreground"
           }`}
           onMouseEnter={showHelpIndicator ? onHelpHover : undefined}
         >
@@ -94,7 +94,7 @@ export function LayoutOpenTooltipOverlay({
           <div className="px-4 py-3">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-[#A8B1BF]" : "text-gray-500"}`}>
+                <div className={`text-[11px] uppercase tracking-[0.08em] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}>
                   {t("ui.preview.tooltips.counter", { index: index + 1, total: totalCount })}
                 </div>
                 <div className="mt-1 text-[12px] font-semibold leading-[1.55]">
@@ -106,7 +106,7 @@ export function LayoutOpenTooltipOverlay({
                   type="button"
                   onClick={onNext}
                   className={`text-[11px] uppercase tracking-[0.08em] transition-colors ${
-                    isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
+                    isDarkMode ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t("ui.preview.tooltips.next")}
@@ -116,7 +116,7 @@ export function LayoutOpenTooltipOverlay({
                   aria-label={t("ui.preview.tooltips.close")}
                   onClick={closeForSessionWithFade}
                   className={`shrink-0 transition-colors ${
-                    isDarkMode ? "text-[#A8B1BF] hover:text-[#F4F6F8]" : "text-gray-500 hover:text-gray-900"
+                    isDarkMode ? "text-muted-foreground hover:text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   <X className="h-3.5 w-3.5" />
@@ -129,14 +129,14 @@ export function LayoutOpenTooltipOverlay({
                 block.type === "paragraph" ? (
                   <p
                     key={`${tooltip.id}-paragraph-${blockIndex}`}
-                    className={`text-[12px] leading-[1.55] ${isDarkMode ? "text-[#D6DAE1]" : "text-gray-700"}`}
+                    className={`text-[12px] leading-[1.55] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
                     {block.text}
                   </p>
                 ) : (
                   <ul
                     key={`${tooltip.id}-list-${blockIndex}`}
-                    className={`space-y-1 text-[12px] leading-[1.5] ${isDarkMode ? "text-[#D6DAE1]" : "text-gray-700"}`}
+                    className={`space-y-1 text-[12px] leading-[1.5] ${isDarkMode ? "text-muted-foreground" : "text-muted-foreground"}`}
                   >
                     {block.items.map((item, itemIndex) => (
                       <li key={`${tooltip.id}-list-item-${blockIndex}-${itemIndex}`} className="pl-3">

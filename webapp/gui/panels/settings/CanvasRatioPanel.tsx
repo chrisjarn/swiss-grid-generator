@@ -167,7 +167,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
                 aria-label={t("ui.panels.canvas.customRatioWidth")}
               />
             </div>
-            <span className="pb-2 text-sm text-gray-500">:</span>
+            <span className="pb-2 text-sm text-muted-foreground">:</span>
             <div className="space-y-1">
               <Label className={SETTINGS_ROW_LABEL_CLASSNAME}>{t("ui.panels.canvas.height")}</Label>
               <input

@@ -2420,12 +2420,12 @@ export function ShellModelView() {
 
   if (isSmartphone) {
     const narrowViewportRootClassName = isDarkUi
-      ? "bg-[#151A21] text-[#F4F6F8]"
-      : "bg-gray-100 text-gray-900"
+      ? "bg-background text-foreground"
+      : "bg-background text-foreground"
     const narrowViewportPanelClassName = isDarkUi
-      ? "border-[#313A47] bg-[#232A35]"
-      : "border-gray-200 bg-white"
-    const narrowViewportMessageClassName = isDarkUi ? "text-[#A8B1BF]" : "text-gray-600"
+      ? "border-border bg-surface"
+      : "border-border bg-page"
+    const narrowViewportMessageClassName = isDarkUi ? "text-muted-foreground" : "text-muted-foreground"
 
     return (
       <div data-sgg-gui-text="lowercase" className={`fixed inset-0 z-[100] flex items-center justify-center p-6 ${narrowViewportRootClassName}`}>

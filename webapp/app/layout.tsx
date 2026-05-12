@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { FONT_CSS_VARS, FONT_FACE_CSS } from "@/core/config/fonts"
-import { LIGHT_UI_THEME_COLOR } from "@/lib/theme-color"
 import { translateMessage } from "@/core/i18n/messages"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -65,7 +64,6 @@ export default function RootLayout({
           id="app-theme-color"
           data-app-theme-color="true"
           name="theme-color"
-          content={LIGHT_UI_THEME_COLOR}
         />
         <meta name="color-scheme" content="light dark" />
         <style dangerouslySetInnerHTML={{ __html: FONT_FACE_CSS }} />

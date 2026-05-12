@@ -286,12 +286,12 @@ export function ProjectPageLayersList({
 
   const tone = isDarkMode
     ? {
-        rowMuted: "text-[#8D98AA]",
-        empty: "text-[#8D98AA]",
+        rowMuted: "text-muted-foreground",
+        empty: "text-muted-foreground",
       }
     : {
-        rowMuted: "text-gray-500",
-        empty: "text-gray-500",
+        rowMuted: "text-muted-foreground",
+        empty: "text-muted-foreground",
       }
   const layerListClassName = getSettingsOpenListClassName(isDarkMode)
 
@@ -361,7 +361,7 @@ export function ProjectPageLayersList({
     return (
       <div className="relative h-4 shrink-0">
         <div
-          className={`absolute inset-x-2 top-1/2 h-0.5 -translate-y-1/2 rounded-full ${isDarkMode ? "bg-blue-400" : "bg-blue-500"}`}
+          className={`absolute inset-x-2 top-1/2 h-0.5 -translate-y-1/2 rounded-full ${isDarkMode ? "bg-accent" : "bg-accent"}`}
         />
       </div>
     )
@@ -483,7 +483,7 @@ export function ProjectPageLayersList({
                       </div>
                     ) : (
                       <div
-                        className={`h-2.5 w-full rounded-[2px] ${isEditing ? "ring-1 ring-swiss-orange/70" : ""}`}
+                        className={`h-2.5 w-full rounded-[2px] ${isEditing ? "ring-1 ring-[color-mix(in_srgb,var(--color-accent)_70%,transparent)]" : ""}`}
                         style={{
                           backgroundColor: thumb.color,
                           opacity: thumb.opacity,
@@ -504,7 +504,7 @@ export function ProjectPageLayersList({
                       aria-pressed={isLocked}
                       className={`rounded-sm p-1 transition-colors ${
                         isLocked
-                          ? (isDarkMode ? "bg-[#313A47] text-swiss-orange-soft" : "bg-gray-200 text-swiss-orange")
+                          ? (isDarkMode ? "bg-surface text-accent" : "bg-surface text-accent")
                           : tone.rowMuted
                       } ${isLocked ? "" : "hover:text-swiss-orange-soft"}`}
                       onClick={(event) => {
@@ -539,7 +539,7 @@ export function ProjectPageLayersList({
                       aria-label={t("ui.panels.project.layersList.delete", {
                         kind: thumb.kind === "image" ? t("ui.panels.project.layersList.imagePlaceholder") : t("ui.panels.project.layersList.paragraph"),
                       })}
-                      className={`rounded-sm p-1 ${tone.rowMuted} hover:text-red-500`}
+                      className={`rounded-sm p-1 ${tone.rowMuted} hover:text-error`}
                       onClick={(event) => {
                         event.stopPropagation()
                         onDeleteLayer(thumb.key, thumb.kind)

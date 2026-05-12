@@ -47,18 +47,18 @@ export function LegalNoticePanel({ isDarkMode = false, onClose }: Props) {
   const { t } = useTranslation()
   const tone: Tone = isDarkMode
     ? {
-        body: "text-[#A8B1BF]",
-        emphasis: "text-[#F4F6F8]",
-        caption: "text-[#8D98AA]",
-        action: "border-[#313A47] bg-[#232A35] text-[#A8B1BF] hover:bg-[#1D232D] hover:text-[#F4F6F8]",
-        link: "text-blue-400 hover:underline",
+        body: "text-muted-foreground",
+        emphasis: "text-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-surface text-muted-foreground hover:bg-panel hover:text-foreground",
+        link: "text-accent-foreground hover:underline",
       }
     : {
-        body: "text-gray-600",
-        emphasis: "text-gray-900",
-        caption: "text-gray-400",
-        action: "border-gray-300 bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900",
-        link: "text-blue-600 hover:underline",
+        body: "text-muted-foreground",
+        emphasis: "text-foreground",
+        caption: "text-muted-foreground",
+        action: "border-border bg-panel text-muted-foreground hover:bg-surface hover:text-foreground",
+        link: "text-accent-foreground hover:underline",
       }
 
   const noteSection = LEGAL_CONTENT_SECTIONS.find((section) => section.title.toLowerCase() === "note")

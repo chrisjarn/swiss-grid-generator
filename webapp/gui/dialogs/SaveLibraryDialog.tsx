@@ -45,14 +45,14 @@ export function SaveLibraryDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/35 p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--color-overlay-bg)] p-4"
       onMouseDown={(event) => {
         if (event.target !== event.currentTarget) return
         onClose()
       }}
     >
       <div className={getPopupSurfaceClassName(isDarkUi, "flex max-h-[90vh] w-full max-w-md flex-col overflow-hidden")}>
-        <div className={`shrink-0 space-y-1 border-b pb-4 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
+        <div className="shrink-0 space-y-1 border-b border-divider pb-4">
           <SectionHeaderRow label={t("ui.shell.dialogs.saveLibrary.title")} />
           <p className={`text-xs leading-relaxed ${mutedTextClassName}`}>
             {t("ui.shell.dialogs.saveLibrary.description")}

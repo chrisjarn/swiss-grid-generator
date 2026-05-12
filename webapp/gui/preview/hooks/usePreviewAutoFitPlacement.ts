@@ -10,6 +10,7 @@ import { applyCanvasTextConfig, buildCanvasFont } from "@/core/layout/text-rende
 import type { TextTrackingRun } from "@/core/layout/text-tracking-runs"
 import type { ModulePosition } from "@/core/types/preview-layout"
 import type { WrappedTextLine } from "@/core/layout/text-layout"
+import { readUiColor } from "@/styles/resolve-color"
 
 type Args<Key extends string, StyleKey extends string> = {
   canvasRef: RefObject<HTMLCanvasElement | null>
@@ -175,7 +176,7 @@ export function usePreviewAutoFitPlacement<Key extends string, StyleKey extends 
         fontWeight: resolvedFontWeight,
         italic: resolvedItalic,
         styleKey,
-        color: "#000000",
+        color: readUiColor("--color-text-primary"),
       },
       undefined,
       (segmentStyleKey) => segmentStyleKey === styleKey ? fontSize : getBlockFontSize(key, segmentStyleKey) * scale,

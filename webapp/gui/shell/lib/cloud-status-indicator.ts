@@ -4,9 +4,9 @@ export type CloudSyncIndicatorStatus = "signed_out" | "idle" | "syncing" | "sync
 export type PresetSyncIndicatorStatus = "local" | "idle" | "syncing" | "synced" | "offline" | "conflict" | "error" | "deleted"
 export type SaveStatusIndicatorStatus = "unsaved" | "local" | "synced"
 
-export const CLOUD_STATUS_GREEN_CLASSNAME = "bg-[#4CAF50]"
-export const CLOUD_STATUS_ORANGE_CLASSNAME = "bg-[#fbae17]"
-export const CLOUD_STATUS_RED_CLASSNAME = "bg-swiss-orange-soft"
+export const CLOUD_STATUS_GREEN_CLASSNAME = "bg-success"
+export const CLOUD_STATUS_ORANGE_CLASSNAME = "bg-warning"
+export const CLOUD_STATUS_RED_CLASSNAME = "bg-error"
 
 export function getCloudSyncStatusIndicatorClassName({
   status,

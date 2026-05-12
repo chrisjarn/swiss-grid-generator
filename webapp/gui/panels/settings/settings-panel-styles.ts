@@ -16,7 +16,7 @@ export function getSettingsControlClassName(isDarkMode: boolean, className = "")
 
 export function getSettingsValueBadgeClassName(isDarkMode: boolean) {
   return `inline-flex min-w-max items-center justify-end whitespace-nowrap rounded-sm px-1.5 py-0.5 text-xs font-mono ${
-    isDarkMode ? "bg-gray-800 text-gray-100" : "bg-gray-100 text-gray-900"
+    isDarkMode ? "bg-surface text-foreground" : "bg-panel text-foreground"
   }`
 }
 
@@ -25,22 +25,22 @@ export function getSettingsIconButtonClassName(isDarkMode: boolean, active: bool
   if (active) {
     return `${baseClassName} ${
       isDarkMode
-        ? "border-swiss-orange-soft/70 bg-swiss-orange-soft/20 text-[#F4F6F8]"
-        : "border-swiss-orange-soft/70 bg-swiss-orange-soft/15 text-[#9d4039]"
+        ? "border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-foreground"
+        : "border-[color-mix(in_srgb,var(--color-accent)_70%,transparent)] bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent-foreground"
     }`
   }
   return `${baseClassName} ${
     isDarkMode
-      ? "border-[#313A47] bg-[#232A35] text-[#F4F6F8] hover:bg-[#1D232D]"
-      : "border-gray-300 bg-gray-100 text-gray-900 hover:bg-gray-200"
+      ? "border-border bg-surface text-foreground hover:bg-panel"
+      : "border-border bg-panel text-foreground hover:bg-surface"
   }`
 }
 
 export function getSettingsOpenListClassName(isDarkMode: boolean) {
   return `overflow-hidden rounded-sm text-[12px] ${
     isDarkMode
-      ? "bg-[#232A35] text-[#F4F6F8]"
-      : "bg-gray-100 text-gray-900"
+      ? "bg-surface text-foreground"
+      : "bg-panel text-foreground"
   }`
 }
 
@@ -48,10 +48,10 @@ export function getSettingsOpenListOptionClassName(isDarkMode: boolean, active: 
   return `flex h-7 w-full items-center px-2 text-left font-normal leading-none transition-colors ${
     active
       ? isDarkMode
-        ? "bg-swiss-orange-soft/20 text-[#F4F6F8]"
-        : "bg-swiss-orange-soft/15 text-[#9d4039]"
+        ? "bg-[color-mix(in_srgb,var(--color-accent)_20%,transparent)] text-foreground"
+        : "bg-[color-mix(in_srgb,var(--color-accent)_15%,transparent)] text-accent-foreground"
       : isDarkMode
-        ? "text-[#F4F6F8] hover:bg-[#1D232D]"
-        : "text-gray-900 hover:bg-gray-200"
+        ? "text-foreground hover:bg-panel"
+        : "text-foreground hover:bg-surface"
   }`
 }

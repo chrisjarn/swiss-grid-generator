@@ -51,6 +51,7 @@ import {
   useState,
 } from "react"
 import type { Dispatch, RefObject, SetStateAction } from "react"
+import { readUiColor, withColorAlpha } from "@/styles/resolve-color"
 
 type InlineEditorOverlayRect = {
   left: number
@@ -121,15 +122,12 @@ type RgbColor = {
   b: number
 }
 
-const FALLBACK_DARK_COLOR = "#111111"
-const FALLBACK_LIGHT_COLOR = "#ffffff"
-
 function parseCanvasColor(value: string): RgbColor | null {
   if (typeof document === "undefined") return null
   const canvas = document.createElement("canvas")
   const ctx = canvas.getContext("2d")
   if (!ctx) return null
-  ctx.fillStyle = "#000000"
+  ctx.fillStyle = readUiColor("--color-text-primary")
   ctx.fillStyle = value
   const normalized = ctx.fillStyle.trim().toLowerCase()
 
@@ -198,15 +196,17 @@ function resolveInlineCaretColors(
   core: string
   halo: string
 } {
-  const resolvedTextColor = parseCanvasColor(textColor) ?? parseCanvasColor(FALLBACK_DARK_COLOR)
-  const resolvedBackgroundColor = parseCanvasColor(backgroundColor) ?? parseCanvasColor(FALLBACK_LIGHT_COLOR)
-  const fallbackDark = parseCanvasColor(FALLBACK_DARK_COLOR)
-  const fallbackLight = parseCanvasColor(FALLBACK_LIGHT_COLOR)
+  const fallbackDarkColor = readUiColor("--color-text-primary")
+  const fallbackLightColor = readUiColor("--color-page-default")
+  const resolvedTextColor = parseCanvasColor(textColor) ?? parseCanvasColor(fallbackDarkColor)
+  const resolvedBackgroundColor = parseCanvasColor(backgroundColor) ?? parseCanvasColor(fallbackLightColor)
+  const fallbackDark = parseCanvasColor(fallbackDarkColor)
+  const fallbackLight = parseCanvasColor(fallbackLightColor)
 
   if (!resolvedTextColor || !resolvedBackgroundColor || !fallbackDark || !fallbackLight) {
     return {
       core: textColor,
-      halo: "rgba(255, 255, 255, 0.82)",
+      halo: withColorAlpha(fallbackLightColor, 0.82),
     }
   }
 
@@ -241,13 +241,15 @@ function resolveInlineCaretColors(
 }
 
 function resolveInlineSpecialCharacterColor(textColor: string, backgroundColor: string): string {
-  const resolvedTextColor = parseCanvasColor(textColor) ?? parseCanvasColor(FALLBACK_DARK_COLOR)
-  const resolvedBackgroundColor = parseCanvasColor(backgroundColor) ?? parseCanvasColor(FALLBACK_LIGHT_COLOR)
-  const fallbackDark = parseCanvasColor(FALLBACK_DARK_COLOR)
-  const fallbackLight = parseCanvasColor(FALLBACK_LIGHT_COLOR)
+  const fallbackDarkColor = readUiColor("--color-text-primary")
+  const fallbackLightColor = readUiColor("--color-page-default")
+  const resolvedTextColor = parseCanvasColor(textColor) ?? parseCanvasColor(fallbackDarkColor)
+  const resolvedBackgroundColor = parseCanvasColor(backgroundColor) ?? parseCanvasColor(fallbackLightColor)
+  const fallbackDark = parseCanvasColor(fallbackDarkColor)
+  const fallbackLight = parseCanvasColor(fallbackLightColor)
 
   if (!resolvedTextColor || !resolvedBackgroundColor || !fallbackDark || !fallbackLight) {
-    return "rgba(17, 17, 17, 0.55)"
+    return withColorAlpha(fallbackDarkColor, 0.55)
   }
 
   const textContrast = getContrastRatio(resolvedTextColor, resolvedBackgroundColor)
@@ -331,7 +333,7 @@ function InlineEditorOverlayCanvas({
       const top = Math.round(rect.top * pixelRatio)
       const rectWidth = Math.max(1, Math.round(rect.width * pixelRatio))
       const rectHeight = Math.max(1, Math.round(rect.height * pixelRatio))
-      ctx.fillStyle = "rgba(14, 165, 233, 0.18)"
+      ctx.fillStyle = withColorAlpha(readUiColor("--color-accent"), 0.18)
       ctx.fillRect(left, top, rectWidth, rectHeight)
     }
 
@@ -740,7 +742,7 @@ export function InlineBlockTextarea<StyleKey extends string>({
     displayFormatRuns,
   )
   const caretTextColor = resolveTextSchemeColor(caretFormat.color, imageColorScheme)
-  const effectiveBackgroundColor = pageBackgroundColor ?? FALLBACK_LIGHT_COLOR
+  const effectiveBackgroundColor = pageBackgroundColor ?? readUiColor("--color-page-default")
   const caretColors = resolveInlineCaretColors(caretTextColor, effectiveBackgroundColor)
   const specialCharacterColor = resolveInlineSpecialCharacterColor(caretTextColor, effectiveBackgroundColor)
   const specialCharacterFontFamily = `${getFontFamilyCss(editorState.draftFont)}, system-ui, sans-serif`

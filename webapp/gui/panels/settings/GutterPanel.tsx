@@ -150,8 +150,8 @@ export const GutterPanel = memo(function GutterPanel({
               <Switch
                 checked={rhythmRowsEnabled}
                 onCheckedChange={onRhythmRowsEnabledChange}
-                className="h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-                thumbClassName="h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
+                className="h-3 w-6 rounded-none border border-border bg-border data-[state=checked]:bg-success data-[state=unchecked]:bg-border"
+                thumbClassName="h-3 w-3 rounded-none border border-border bg-page shadow-none data-[state=checked]:translate-x-3"
               />
             </div>
             <Select
@@ -176,8 +176,8 @@ export const GutterPanel = memo(function GutterPanel({
               <Switch
                 checked={rhythmColsEnabled}
                 onCheckedChange={onRhythmColsEnabledChange}
-                className="h-3 w-6 rounded-none border border-black bg-gray-300 data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-gray-300"
-                thumbClassName="h-3 w-3 rounded-none border border-black bg-white shadow-none data-[state=checked]:translate-x-3"
+                className="h-3 w-6 rounded-none border border-border bg-border data-[state=checked]:bg-success data-[state=unchecked]:bg-border"
+                thumbClassName="h-3 w-3 rounded-none border border-border bg-page shadow-none data-[state=checked]:translate-x-3"
               />
             </div>
             <Select

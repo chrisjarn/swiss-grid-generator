@@ -60,7 +60,7 @@ test("quick-start onboarding video config uses public WebM, MP4, and poster asse
 test("onboarding video frame contains the full video inside the viewport", () => {
   const dialogSource = readText("gui/dialogs/OnboardingVideoDialog.tsx")
 
-  assert.match(dialogSource, /bg-\[#f3f4f6\]/)
+  assert.match(dialogSource, /bg-background/)
   assert.match(dialogSource, /object-contain/)
   assert.match(dialogSource, /max-h-full/)
   assert.match(dialogSource, /max-w-full/)

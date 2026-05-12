@@ -103,10 +103,10 @@ export function TopBar({
   const [supportMenuOpen, setSupportMenuOpen] = useState(false)
 
   const supportMenuClassName = `absolute -right-4 top-8 z-40 py-1 md:-right-6 ${SIDEBAR_PANEL_POPOVER_WIDTH_CLASSNAME} ${
-    isDarkUi ? "bg-[#232A35]" : "bg-gray-200"
+    isDarkUi ? "bg-surface" : "bg-surface"
   }`
   const supportMenuListClassName = `${getSettingsOpenListClassName(isDarkUi)} ${
-    isDarkUi ? "bg-[#232A35]" : "bg-gray-200"
+    isDarkUi ? "bg-surface" : "bg-surface"
   }`
   const supportMenuOptionClassName = (active: boolean, disabled = false) => (
     `${getSettingsOpenListOptionClassName(isDarkUi, active)} justify-end text-right ${

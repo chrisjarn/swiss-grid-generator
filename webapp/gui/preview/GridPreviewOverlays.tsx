@@ -267,8 +267,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
   const paragraphMenuOpen = rolloverMenuOpen && hoveredEditTarget?.kind === "text"
   const imageMenuOpen = rolloverMenuOpen && hoveredEditTarget?.kind === "image"
   const paragraphMenuClassName = isDarkMode
-    ? "bg-[#232A35] text-[#F4F6F8] shadow-none"
-    : "bg-gray-200 text-gray-900 shadow-none"
+    ? "bg-surface text-foreground shadow-none"
+    : "bg-surface text-foreground shadow-none"
   const paragraphMenuLabelClassName = SETTINGS_OPEN_LIST_LABEL_CLASSNAME
   const paragraphMenuRowLabelClassName = SETTINGS_ROW_LABEL_CLASSNAME
   const paragraphMenuValueBadgeClassName = getSettingsValueBadgeClassName(isDarkMode)
@@ -281,8 +281,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
   )
   const previewRolloverIconButtonClassName = `inline-flex items-center justify-center border-0 shadow-none ${
     isDarkMode
-      ? "bg-gray-800 text-gray-200 hover:bg-gray-800 hover:text-gray-50"
-      : "bg-gray-200 text-gray-900 hover:bg-gray-200 hover:text-gray-900"
+      ? "bg-surface text-foreground hover:bg-surface hover:text-foreground"
+      : "bg-surface text-foreground hover:bg-surface hover:text-foreground"
   }`
   const previewRolloverIconClassName = SETTINGS_FINE_CHEVRON_ICON_CLASSNAME
   const paragraphMenuRowStyle = { gridTemplateColumns: `${paragraphMenuGutterWidth}px minmax(0, 1fr)` }
@@ -837,8 +837,8 @@ export function GridPreviewOverlays<StyleKey extends string>({
               data-preview-icon-surface="true"
               className={`pointer-events-auto absolute flex items-center justify-center rounded-sm border shadow-md transition-colors ${
                 isDarkMode
-                  ? "border-gray-700 bg-gray-900/95 text-gray-200 hover:border-swiss-orange-soft hover:bg-gray-800 hover:text-swiss-orange-soft"
-                  : "border-gray-200 bg-white/95 text-gray-700 hover:border-swiss-orange-soft hover:bg-white hover:text-swiss-orange"
+                  ? "border-border bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] text-muted-foreground hover:border-accent hover:bg-surface hover:text-accent"
+                  : "border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground hover:border-accent hover:bg-page hover:text-accent"
               }`}
               style={{
                 left: leftActionGroupLeft,

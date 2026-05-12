@@ -149,14 +149,14 @@ export function ExportDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/35 p-4 md:items-center"
+      className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-[var(--color-overlay-bg)] p-4 md:items-center"
       onMouseDown={(event) => {
         if (event.target !== event.currentTarget) return
         onClose()
       }}
     >
       <div className={getPopupSurfaceClassName(isDarkUi, "relative max-h-[90vh] w-full max-w-[29.4rem] overflow-y-auto [scrollbar-gutter:stable]")}>
-        <div className={cn("absolute left-0 right-0 top-0 h-[3px]", isDarkUi ? "bg-[#313A47]" : "bg-gray-300")}>
+        <div className={cn("absolute left-0 right-0 top-0 h-[3px]", isDarkUi ? "bg-divider" : "bg-border")}>
           <div
             className="h-full bg-swiss-orange transition-[width] duration-200"
             style={{ width: isExporting ? `${totalProgressPercent}%` : "0%" }}
@@ -317,7 +317,7 @@ export function ExportDialog({
                 className={cn(
                   compactInputClassName,
                   "col-span-3",
-                  isRangeInvalid ? "border-[#fd8b7b] ring-1 ring-[#fd8b7b]" : "",
+                  isRangeInvalid ? "border-accent ring-1 ring-accent" : "",
                 )}
                 placeholder={t("ui.export.dialog.pageRangePlaceholder")}
                 aria-invalid={isRangeInvalid}
