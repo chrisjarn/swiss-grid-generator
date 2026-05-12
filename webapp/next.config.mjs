@@ -8,6 +8,7 @@ const configDir = path.dirname(fileURLToPath(import.meta.url))
 
 const nextConfig = {
   allowedDevOrigins: ["localhost", "127.0.0.1"],
+  devIndicators: false,
   output: "export",
   outputFileTracingRoot: path.join(configDir, ".."),
   trailingSlash: true,

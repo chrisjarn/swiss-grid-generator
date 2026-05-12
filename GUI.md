@@ -105,9 +105,9 @@ flowchart LR
 
 | Region | Purpose | Visible components | Expected states | Interaction notes | Code ownership |
 |---|---|---|---|---|---|
-| top bar | global workspace commands and display toggles | file actions, undo/redo, display toggles, sidebar toggles, account, more menu | default, active, disabled, synced, unsynced, hover, focus | icons carry the command; tooltips provide names and shortcuts when information is active | `webapp/gui/shell` |
+| top bar | global workspace commands and display toggles | file actions, undo/redo, display toggles, sidebar toggles, account, support submenu | default, active, disabled, synced, unsynced, hover, focus | icons carry the command; the support submenu uses the shared open-list panel rhythm | `webapp/gui/shell` |
 | left settings panel | page-level parameters for the active page | ratio, orientation, baseline, margins, grid, typography, color | collapsed, expanded, hover-preview, committed, disabled while unavailable | dropdown/list hover may preview values and must restore committed state on close | `webapp/gui/panels/settings` |
-| preview canvas | planned page rendering and direct manipulation | page, baselines, margins, modules, typography guides, image placeholders, hover affordances | loading, ready, editing, dragging, zoomed, locked layer hover, hidden during page settle | renders planned geometry; does not own layout calculation | `webapp/gui/preview` |
+| preview canvas | planned page rendering and direct manipulation | page, baselines, margins, modules, typography guides, image placeholders, hover affordances | loading, ready, editing, dragging, zoomed, presentation, locked layer hover, hidden during page settle | renders planned geometry; does not own layout calculation | `webapp/gui/preview` |
 | right project panel | project structure, pages, layers, metadata, support panels | title, metadata, page list, layer list, help, feedback, account, legal notice | closed, open, active page, opened page row, selected layer, locked layer, sync states | only one right panel is active at a time; layer rows mirror preview selection | `webapp/gui/panels/sidebar` |
 | editors | focused layer editing | text editor panel, image editor panel, inline textarea, section controls | open, closed, retargeted, dirty draft, committed, locked-disabled | editor state must preserve the active layer contract and avoid outside-pointer loss | `webapp/gui/editors` |
 | dialogs | blocking or export/save workflows | save library, export, notice, export preview | idle, confirming, exporting, cancellable, error, success | modal surfaces are functional tools, not decorative cards | `webapp/gui/dialogs` |
@@ -181,6 +181,7 @@ flowchart LR
 | export | format, metadata, range, bleed, progress, cancellation | `webapp/gui/dialogs/ExportDialog.tsx` |
 | export preview | compact export preview canvas | `webapp/gui/dialogs/ExportPreviewCanvas.tsx` |
 | notice | confirmation and risk messaging | `webapp/gui/dialogs/NoticeDialog.tsx` |
+| onboarding video | quick-start video overlay with transparent controls and system fullscreen | `webapp/gui/dialogs/OnboardingVideoDialog.tsx` |
 
 ### Shared Primitives
 

@@ -61,7 +61,7 @@ test("app exposes a discreet external documentation entry point", () => {
   assert.match(shortcuts, /Shift\+\?/)
 })
 
-test("hover info remains a shell-owned toggle in the more menu", () => {
+test("hover info remains a shell-owned toggle in the support menu", () => {
   const topBar = readRepoText("webapp/gui/shell/TopBar.tsx")
   const shellModel = readRepoText("webapp/gui/shell/useShellModel.tsx")
   const shellMessages = readRepoText("webapp/messages/en/ui/shell.json")

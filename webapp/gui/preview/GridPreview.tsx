@@ -275,6 +275,7 @@ interface GridPreviewProps {
   onPreviewParagraphCreate?: (key?: BlockId, point?: PagePoint) => void
   onPreviewLayerCountsChange?: (counts: { text: number; images: number }) => void
   isDarkMode?: boolean
+  presentationMode?: boolean
 }
 
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily, BlockId>
@@ -339,6 +340,7 @@ export const GridPreview = memo(function GridPreview({
   onPreviewParagraphCreate,
   onPreviewLayerCountsChange,
   isDarkMode = false,
+  presentationMode = false,
 }: GridPreviewProps) {
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const previewScaleRef = useRef(1)
@@ -2778,6 +2780,15 @@ export const GridPreview = memo(function GridPreview({
     }
   ), [onEditorModeChange])
 
+  useEffect(() => {
+    if (!presentationMode) return
+    closeEditor()
+    closeImageEditor()
+    clearHover()
+    onSelectLayer?.(null)
+    onEditorModeChange?.(null)
+  }, [clearHover, closeEditor, closeImageEditor, onEditorModeChange, onSelectLayer, presentationMode])
+
   const heldFrameVisible = heldPreviewFrame?.visible === true
   const previewDisplayReady = layoutDisplayReady || heldFrameVisible
 
@@ -2785,7 +2796,9 @@ export const GridPreview = memo(function GridPreview({
     <div
       ref={previewContainerRef}
       data-tooltip-boundary="preview-workspace"
-      className="relative h-full w-full min-w-0 overflow-hidden rounded-lg bg-background"
+      className={`relative h-full w-full min-w-0 overflow-hidden bg-background ${
+        presentationMode ? "pointer-events-none rounded-none" : "rounded-lg"
+      }`}
       style={{ opacity: previewDisplayReady ? 1 : 0 }}
       onPointerDown={handlePreviewWorkspacePointerDown}
     >
@@ -2838,17 +2851,20 @@ export const GridPreview = memo(function GridPreview({
           getStyleSizeValue={getStyleSize}
           getStyleLeadingValue={getStyleLeading}
           isFxStyle={(styleKey) => styleKey === "fx"}
-          showDocumentHelpIndicator={showPreviewHelpIndicator}
-          onDocumentHelpHover={showPreviewHelpIndicator ? () => onOpenHelpSection?.("help-preview-workspace") : undefined}
+          showDocumentHelpIndicator={!presentationMode && showPreviewHelpIndicator}
+          onDocumentHelpHover={!presentationMode && showPreviewHelpIndicator ? () => onOpenHelpSection?.("help-preview-workspace") : undefined}
         />
       </div>
 
-      <GridPreviewFeedback
-        warningToast={gridReductionWarningToast}
-        dismissWarningToast={onDismissGridReductionWarningToast ?? (() => {})}
-        isDarkMode={isDarkMode}
-      />
+      {!presentationMode ? (
+        <GridPreviewFeedback
+          warningToast={gridReductionWarningToast}
+          dismissWarningToast={onDismissGridReductionWarningToast ?? (() => {})}
+          isDarkMode={isDarkMode}
+        />
+      ) : null}
 
+      {!presentationMode ? (
       <GridPreviewOverlays
         showEditorHelpIcon={showEditorHelpIcon}
         showRolloverInfo={showRolloverInfo}
@@ -2895,6 +2911,7 @@ export const GridPreview = memo(function GridPreview({
         onOpenHelpSection={onOpenHelpSection}
         isDarkMode={isDarkMode}
       />
+      ) : null}
 
     </div>
   )

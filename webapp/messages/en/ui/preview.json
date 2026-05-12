@@ -24,7 +24,8 @@
     "pause": "Pause video",
     "mute": "Mute video",
     "unmute": "Unmute video",
-    "seek": "Seek video",
+    "enterFullscreen": "Enter fullscreen",
+    "exitFullscreen": "Exit fullscreen",
     "fallback": "This browser cannot play the onboarding video."
   },
   "tooltips": {

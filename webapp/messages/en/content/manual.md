@@ -80,7 +80,7 @@ Before exporting, confirm page range, page order, numbering, document size, and 
 
 ### Use shortcuts to protect concentration.
 
-The essential interactions are few: double-click to create text, `Shift` + double-click to create an image placeholder, hold `1` to `5` while double-clicking to choose hierarchy, drag to move, use `+` for transfer or duplication, use arrow keys to nudge selected layers, and press `Esc` to leave dialogs or cancel export at the next safe point.
+The essential interactions are few: double-click to create text, `Shift` + double-click to create an image placeholder, hold `1` to `5` while double-clicking to choose hierarchy, drag to move, use `+` for transfer or duplication, use arrow keys to nudge selected layers, use `Shift` + `J` to copy a layout, use `Tab` or `Shift` + `P` for presentation mode, and press `Esc` to leave dialogs, exit presentation mode, or cancel export at the next safe point.
 
 Shortcuts protect attention. They are not speed for its own sake.
 

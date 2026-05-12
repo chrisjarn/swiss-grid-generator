@@ -142,7 +142,9 @@ In text edit mode, tokens stay visible. Outside edit mode, they render as resolv
 | Toggle modules | `Cmd/Ctrl+Shift+G` |
 | Toggle typography | `Cmd/Ctrl+Shift+T` |
 | Toggle image placeholders | `Cmd/Ctrl+Shift+J` |
+| Copy layout to clipboard | `Shift+J` |
 | Toggle project panel | `Cmd/Ctrl+Shift+P` |
+| Toggle presentation mode | `Tab` or `Shift+P` |
 | Open documentation | `Shift+?` |
 | Toggle legal notice | `Cmd/Ctrl+Shift+3` |
 | Open presets | `Cmd/Ctrl+Shift+4` |

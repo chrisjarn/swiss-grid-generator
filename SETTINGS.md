@@ -171,9 +171,9 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 
 ## Preview Header
 
-The icon header renders as one full-width row above the left settings panel, preview canvas, and right settings panel. The `Smart Text Zoom` through `Project panel` icon group is centered over the preview column. Header icon buttons use the same active/inactive color logic as compact export popup buttons.
+The icon header renders as one full-width row above the left settings panel, preview canvas, and right settings panel. The undo/redo and display-toggle group is centered over the preview column. Header icon buttons use the same active/inactive color logic as compact export popup buttons.
 Multi-page layouts show a dark gray page-position line at the very top of the browser; single-page layouts and the presets browser do not show that line, and it has no underlying track color.
-The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hide Hover Info`, `Documentation`, `Feedback`, and `Legal Notice`. The former fixed footer in the left settings panel is not rendered.
+The header `>` support submenu uses the same open-list visual system as panel list controls, matches the shared panel width, aligns text to the right, opens on rollover/focus, and closes when the pointer leaves the menu area. The former fixed footer in the left settings panel is not rendered.
 
 ### File Actions (icon buttons)
 
@@ -182,24 +182,23 @@ The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hid
 - The `Users` section header includes an info rollover describing local browser storage, browser-data clearing risk, and signed-in cloud sync
 - User thumbnails in `Users` show a green status dot only while signed in and synced; signed-out, pending, and local-only states stay orange
 - Deleting a user thumbnail asks for confirmation first, then removes it locally and displays whether the cloud delete was performed, queued, or unnecessary
-- `Save` (save icon): opens Save to Library dialog; its status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced
 - `Import` (download icon): import project JSON or compressed `.swissgridgenerator` archive
+- `Save` (save icon): opens Save to Library dialog; its status dot is red when the current project is not saved locally, orange when saved to the local Users library, and green only when the active saved project is signed in and cloud-synced
 - `Export` (upload icon): opens the export dialog
 - `Save` and `Export` stay disabled until a preview layout is available.
-- Divider placement: between `Export` and `Undo`
 - `Esc` closes the presets browser without loading a preset
 
 ### Undo / Redo (icon buttons)
 
-- `Undo` and `Redo` live in header
+- `Undo` and `Redo` live in the centered header group, to the left of the baseline toggle.
+- Divider placement: between `Redo` and `Baselines`
 - keyboard:
   - `Cmd/Ctrl+Z` undo
   - `Cmd/Ctrl+Shift+Z` or `Cmd/Ctrl+Y` redo
 
 ### UI + Preview Controls (icon toggles)
 
-- `Smart Text Zoom` (zoom icon): enabled by default; when active, entering text edit mode zooms to the active paragraph, ordinary text/style edits keep the current zoom, frame-geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit restores full-page fit
-- Order: Smart Text Zoom appears to the left of the display toggles
+- `Smart Text Zoom`: enabled by default and exposed as the first item in the header support submenu; when active, entering text edit mode zooms to the active paragraph, ordinary text/style edits keep the current zoom, frame-geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit restores full-page fit
 
 ### Display Options (icon toggles)
 
@@ -209,11 +208,11 @@ The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hid
 - Typo
 - Image placeholders
 - Project panel toggle (layers icon)
-- Divider placement: Smart Text Zoom and baselines are separated by a divider
 - Divider placement: image placeholders and the Project toggle are separated by a divider
 - Baselines, margins, gutter/modules, typo, and image placeholders stay disabled until a preview layout is available.
+- Display and edit icons are hidden while the presets browser is active.
 
-### Sidebar Panels And More Menu
+### Sidebar Panels And Support Menu
 
 - `Layers` (layers icon): opens the right sidebar Project panel
 - `Show Hover Info`/`Hide Hover Info`: toggles rollover info/tooltips globally
@@ -221,13 +220,17 @@ The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hid
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar
 - `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot stays orange
 - `Documentation`: opens `/docs` in a new tab, relative to the current host
-- `More` (vertical ellipsis icon): opens a submenu with `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hide Hover Info`, `Documentation`, `Feedback`, and `Legal Notice`
-- `Dark Mode`/`Light Mode`: toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor
+- `>` opens a support submenu with `Text Edit Zoom on/off`, `Show Hover Info`/`Hide Hover Info`, `Dark Mode`, layout clipboard transfer, `Documentation`, `Feedback`, and `Legal Notice`
+- `Dark Mode`: toggles dark UI for headers/panels/sidebars, preview shell background, and popup editor; the label stays stable and the row marks active state.
+- `Copy layout to clipboard`: appears only after a layout is loaded and writes the current project-transfer payload to the clipboard.
+- `Paste layout from clipboard`: arms the next native paste event for layout import; regular `Cmd/Ctrl+V` also imports a valid layout payload outside editable fields.
 - `Feedback`: opens the right sidebar feedback panel
 - `Legal Notice`: opens the right sidebar legal notice panel
 - `Presets` (layout-template icon): opens preset thumbnails in the preview area
 - Behavior: only one right sidebar panel can be open at a time; clicking the active panel icon closes that panel.
 - Behavior: while presets are open, the left settings panel and header Project toggle are disabled.
+- Behavior: account, feedback, and legal notice use the right content panel surface and remain available while presets are open.
+- Behavior: hovering `>` while account, feedback, or legal notice is open closes that right content panel; clicking feedback or legal notice also closes the submenu.
 
 ### Project Panel
 
@@ -280,7 +283,7 @@ The vertical-more menu contains `Dark Mode`/`Light Mode`, `Show Hover Info`/`Hid
 
 ### Support And Legal
 
-- `Feedback` and `Legal Notice` live in the header More submenu and remain active even while the presets browser is open.
+- `Feedback` and `Legal Notice` live in the header support submenu and remain active even while the presets browser is open.
 - Full user documentation is external and generated from root `DOCUMENTATION.md`.
 
 When hover info is active, header icons show rollover tooltips with a second line for keyboard shortcuts where available.
@@ -298,7 +301,10 @@ When hover info is active, header icons show rollover tooltips with a second lin
 - `Cmd/Ctrl+Shift+G`: Toggle modules/gutter
 - `Cmd/Ctrl+Shift+T`: Toggle typography
 - `Cmd/Ctrl+Shift+J`: Toggle image placeholders
+- `Shift+J`: Copy layout to clipboard
 - `Cmd/Ctrl+Shift+P`: Toggle project sidebar
+- `Tab`: Toggle presentation mode
+- `Shift+P`: Toggle presentation mode
 - `Shift+?`: Open documentation
 - `Cmd/Ctrl+Shift+3`: Toggle legal notice sidebar
 - `Cmd/Ctrl+Shift+4`: Toggle presets browser
@@ -306,7 +312,7 @@ When hover info is active, header icons show rollover tooltips with a second lin
 - `Page Down`: Select next project page
 - `Home`: Select first project page
 - `End`: Select last project page
-- `Esc`: Close presets browser without loading a preset
+- `Esc`: Close presets browser without loading a preset, or exit presentation mode when presentation mode is active
 
 ## Popups
 

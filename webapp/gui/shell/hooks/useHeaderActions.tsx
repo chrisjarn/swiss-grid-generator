@@ -17,8 +17,9 @@ import {
 } from "lucide-react"
 import { translateMessage } from "@/lib/i18n"
 import type { PreviewHeaderShortcutId } from "@/gui/shell/lib/preview-header-shortcuts"
+import type { WorkspacePanel } from "@/core/types/workspace"
 
-export type SidebarPanel = "legal" | "layers" | "feedback" | "account" | null
+export type SidebarPanel = WorkspacePanel
 
 export type HeaderAction = {
   key: string
@@ -96,6 +97,17 @@ export function useHeaderActions(args: Args) {
     {
       type: "action",
       action: {
+        key: "import",
+        ariaLabel: t("ui.shell.topBar.actions.import.aria"),
+        tooltip: t("ui.shell.topBar.actions.import.tooltip"),
+        shortcutId: "import_project",
+        onClick: args.onImportProject,
+        icon: <Download className="h-4 w-4" />,
+      },
+    },
+    {
+      type: "action",
+      action: {
         key: "save",
         ariaLabel: t("ui.shell.topBar.actions.save.aria"),
         tooltip: `${t("ui.shell.topBar.actions.save.tooltip")}\n${t("ui.shell.topBar.actions.save.status", { status: args.saveStatusLabel })}`,
@@ -110,17 +122,6 @@ export function useHeaderActions(args: Args) {
     {
       type: "action",
       action: {
-        key: "import",
-        ariaLabel: t("ui.shell.topBar.actions.import.aria"),
-        tooltip: t("ui.shell.topBar.actions.import.tooltip"),
-        shortcutId: "import_project",
-        onClick: args.onImportProject,
-        icon: <Download className="h-4 w-4" />,
-      },
-    },
-    {
-      type: "action",
-      action: {
         key: "export",
         ariaLabel: t("ui.shell.topBar.actions.export.aria"),
         tooltip: t("ui.shell.topBar.actions.export.tooltip"),
@@ -130,7 +131,25 @@ export function useHeaderActions(args: Args) {
         icon: <Upload className="h-4 w-4" />,
       },
     },
-    { type: "divider", key: "divider-export-undo" },
+  ]
+
+  const smartTextZoomItem: HeaderItem = {
+    type: "action",
+    action: {
+      key: "smart-text-zoom",
+      ariaLabel: args.smartTextZoomEnabled ? t("ui.shell.topBar.actions.smartTextZoom.disable") : t("ui.shell.topBar.actions.smartTextZoom.enable"),
+      tooltip: t("ui.shell.topBar.actions.smartTextZoom.tooltip"),
+      variant: args.smartTextZoomEnabled ? "default" : "outline",
+      pressed: args.smartTextZoomEnabled,
+      disabled: !args.hasPreviewLayout,
+      onClick: args.onToggleSmartTextZoom,
+      icon: <ZoomIn className="h-4 w-4" />,
+    },
+  }
+
+  const displayGroup: HeaderItem[] = args.showPresetsBrowser ? [smartTextZoomItem] : [
+    smartTextZoomItem,
+    { type: "divider", key: "divider-smart-text-zoom-history" },
     {
       type: "action",
       action: {
@@ -155,23 +174,7 @@ export function useHeaderActions(args: Args) {
         icon: <Redo2 className="h-4 w-4" />,
       },
     },
-  ]
-
-  const displayGroup: HeaderItem[] = [
-    {
-      type: "action",
-      action: {
-        key: "smart-text-zoom",
-        ariaLabel: args.smartTextZoomEnabled ? t("ui.shell.topBar.actions.smartTextZoom.disable") : t("ui.shell.topBar.actions.smartTextZoom.enable"),
-        tooltip: t("ui.shell.topBar.actions.smartTextZoom.tooltip"),
-        variant: args.smartTextZoomEnabled ? "default" : "outline",
-        pressed: args.smartTextZoomEnabled,
-        disabled: !args.hasPreviewLayout,
-        onClick: args.onToggleSmartTextZoom,
-        icon: <ZoomIn className="h-4 w-4" />,
-      },
-    },
-    { type: "divider", key: "divider-smart-text-zoom-baselines" },
+    { type: "divider", key: "divider-history-baselines" },
     {
       type: "action",
       action: {

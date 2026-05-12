@@ -227,9 +227,13 @@ Current capability inventory for Swiss Grid Generator.
 
 ## UI and Workflow
 
-- Dark mode.
-- Smart text-edit zoom toggle in the header, enabled by default.
+- Dark mode through the header support submenu.
+- Smart text-edit zoom toggle as the first item in the header support submenu, enabled by default.
 - While smart text zoom is enabled, entering text edit mode focuses the active paragraph, ordinary text/style edits keep the current zoom, frame-geometry changes (`Rows`, `Baselines`, `Cols`) refit it, and leaving text edit returns to full-page fit.
+- Header support submenu uses the same open-list visual system as panel list sections and includes hover info, dark mode, layout clipboard transfer, documentation, feedback, and legal notice.
+- Current layouts can be copied to the clipboard and pasted into another browser session through the project-transfer JSON payload.
+- Presentation mode shows only the planned layout, supports native fullscreen when the browser allows it, and keeps page navigation active.
+- Quick-start video overlay uses a full-height video surface with transparent header/controls, page-style shadow, no seek bar, and a native fullscreen control.
 - Bottom-of-preview layout-open tooltip popup sourced from `TOOLTIPS.md`, with fade-in, `Next >` sequencing, `Tooltip x of y` count, and dismiss via `X` or outside click.
 - Layout-open tooltip popup remains inline and contextual without opening a full help surface.
 - Visibility toggles for baselines, margins, modules, image placeholders, and typography.
@@ -238,6 +242,7 @@ Current capability inventory for Swiss Grid Generator.
 - Rollover-info toggle for tooltips and affordances.
 - Feedback sidebar with required email/comment fields, optional screenshots, and optional support-log attachment.
 - Legal Notice sidebar with provider, contact, privacy, cloud storage, terms, and dispute-resolution information.
+- Account, feedback, and legal notice panels use the right content panel surface and remain available from preset browser view.
 - Header account panel with email-code sign-in, cloud sync status, and a green/orange header status dot.
 - When signed out, the account panel status row reads `Not connected`.
 - The account panel `Status` row expands to show recent local cloud/account events and a `Download` support action.

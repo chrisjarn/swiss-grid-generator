@@ -32,6 +32,7 @@ import { LayoutOpenTooltipOverlay } from "@/gui/preview/LayoutOpenTooltipOverlay
 import {
   WORKSPACE_HEADER_GRID_WITH_SIDEBAR_CLASSNAME,
   WORKSPACE_HEADER_GRID_WITHOUT_SIDEBAR_CLASSNAME,
+  isRightContentPanel,
 } from "@/gui/shell/sidebar-panel-layout"
 import { buildGridResultFromUiSettings, resolveUiSettingsSnapshot } from "@/core/document/ui-settings-resolver"
 import {
@@ -43,6 +44,7 @@ import { TopBar } from "@/gui/shell/TopBar"
 import { useTranslation } from "@/lib/i18n/useTranslation"
 import type { OnboardingVideoId } from "@/lib/onboarding/videos"
 import { OnboardingVideoDialog } from "@/gui/dialogs/OnboardingVideoDialog"
+import type { WorkspacePanel } from "@/core/types/workspace"
 
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
 type PreviewLayoutState = SharedPreviewLayoutState<TypographyStyleKey, FontFamily>
@@ -75,11 +77,13 @@ type Props = {
   fileGroup: HeaderItem[]
   displayGroup: HeaderItem[]
   sidebarGroup: HeaderAction[]
-  activeSidebarPanel: "settings" | "legal" | "layers" | "feedback" | "account" | null
+  activeSidebarPanel: WorkspacePanel
   showPresetsBrowser: boolean
+  presentationMode: boolean
   isDarkUi: boolean
   showSectionHelpIcons: boolean
   showHoverInfo: boolean
+  hasPreviewLayout: boolean
   smartTextZoomEnabled: boolean
   showBaselines: boolean
   showModules: boolean
@@ -149,6 +153,8 @@ type Props = {
   onProjectDescriptionChange: (nextDescription: string) => void
   onProjectAuthorChange: (nextAuthor: string) => void
   onToggleDarkMode: (event: MouseEvent<HTMLButtonElement>) => void
+  onCopyLayoutToClipboard: () => void | Promise<void>
+  onPasteLayoutFromClipboard: () => void | Promise<void>
   onToggleHoverInfo: () => void
   onOpenDocumentation: () => void
   onToggleFeedbackPanel: () => void
@@ -217,9 +223,11 @@ export function PreviewWorkspace({
   sidebarGroup,
   activeSidebarPanel,
   showPresetsBrowser,
+  presentationMode,
   isDarkUi,
   showSectionHelpIcons,
   showHoverInfo,
+  hasPreviewLayout,
   smartTextZoomEnabled,
   showBaselines,
   showModules,
@@ -283,6 +291,8 @@ export function PreviewWorkspace({
   onProjectDescriptionChange,
   onProjectAuthorChange,
   onToggleDarkMode,
+  onCopyLayoutToClipboard,
+  onPasteLayoutFromClipboard,
   onToggleHoverInfo,
   onOpenDocumentation,
   onToggleFeedbackPanel,
@@ -352,7 +362,8 @@ export function PreviewWorkspace({
       images: counts.images,
     })
   }, [activePageId])
-  const panelPreviewHoveredLayerKey = editorMode ? null : previewHoveredLayerKey
+  const effectiveShowPresetsBrowser = showPresetsBrowser && !presentationMode
+  const panelPreviewHoveredLayerKey = editorMode || presentationMode ? null : previewHoveredLayerKey
   const hoveredLayerKey = panelPreviewHoveredLayerKey ?? layerPanelHoveredLayerKey
   const liveLayerPanelState = {
     imageColorScheme,
@@ -403,25 +414,26 @@ export function PreviewWorkspace({
   const pageAddDisabled = projectPages.length >= MAX_GUI_PROJECT_PAGES
   const isSingleProjectPage = projectPages.length <= 1
   const pageActionButtonClassName = "inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border bg-secondary text-muted-foreground transition-colors hover:text-foreground"
-  const shouldRenderSidebarPanel = activeSidebarPanel !== null && (
-    !showPresetsBrowser
-    || activeSidebarPanel === "feedback"
-    || activeSidebarPanel === "legal"
-    || activeSidebarPanel === "account"
+  const shouldRenderSidebarPanel = !presentationMode && activeSidebarPanel !== null && (
+    !effectiveShowPresetsBrowser || isRightContentPanel(activeSidebarPanel)
   )
   const headerGridClassName = shouldRenderSidebarPanel
     ? WORKSPACE_HEADER_GRID_WITH_SIDEBAR_CLASSNAME
     : WORKSPACE_HEADER_GRID_WITHOUT_SIDEBAR_CLASSNAME
 
   useEffect(() => {
-    if (activeSidebarPanel === "layers" && !showPresetsBrowser) return
+    if (presentationMode) {
+      setLayerPanelHoveredLayerKey(null)
+      return
+    }
+    if (activeSidebarPanel === "layers" && !effectiveShowPresetsBrowser) return
     setLayerPanelHoveredLayerKey(null)
-  }, [activeSidebarPanel, showPresetsBrowser])
+  }, [activeSidebarPanel, effectiveShowPresetsBrowser, presentationMode])
 
   useEffect(() => {
-    if (!showPresetsBrowser) return
+    if (!effectiveShowPresetsBrowser && !presentationMode) return
     setPreviewHoveredLayerKey(null)
-  }, [showPresetsBrowser])
+  }, [effectiveShowPresetsBrowser, presentationMode])
 
   useEffect(() => {
     if (!pageAddHovered) return
@@ -861,7 +873,7 @@ export function PreviewWorkspace({
 
   return (
     <div className={`min-h-0 min-w-0 flex flex-1 flex-col ${uiTheme.previewShell}`}>
-      {!showPresetsBrowser && documentVariablePageCount > 1 ? (
+      {!presentationMode && !effectiveShowPresetsBrowser && documentVariablePageCount > 1 ? (
         <div
           className="pointer-events-none fixed left-0 right-0 top-0 z-50 h-px overflow-hidden"
           aria-label={t("ui.panels.project.pagePosition", { page: documentPagePosition, total: documentVariablePageCount })}
@@ -876,40 +888,49 @@ export function PreviewWorkspace({
           />
         </div>
       ) : null}
-      <TopBar
-        fileGroup={fileGroup}
-        displayGroup={displayGroup}
-        sidebarGroup={sidebarGroup}
-        headerGridClassName={headerGridClassName}
-        previewHeaderClassName={uiTheme.previewHeader}
-        dividerClassName={uiTheme.divider}
-        showSectionHelpIcons={showSectionHelpIcons}
-        showHoverInfo={showHoverInfo}
-        isDarkUi={isDarkUi}
-        onHeaderHelpNavigate={onHeaderHelpNavigate}
-        onToggleDarkMode={onToggleDarkMode}
-        onToggleHoverInfo={onToggleHoverInfo}
-        onOpenDocumentation={onOpenDocumentation}
-        onToggleFeedbackPanel={onToggleFeedbackPanel}
-        onToggleLegalNoticePanel={onToggleLegalNoticePanel}
-      />
+      {!presentationMode ? (
+        <TopBar
+          fileGroup={fileGroup}
+          displayGroup={displayGroup}
+          sidebarGroup={sidebarGroup}
+          activeSidebarPanel={activeSidebarPanel}
+          headerGridClassName={headerGridClassName}
+          previewHeaderClassName={uiTheme.previewHeader}
+          dividerClassName={uiTheme.divider}
+          showSectionHelpIcons={showSectionHelpIcons}
+          showHoverInfo={showHoverInfo}
+          isDarkUi={isDarkUi}
+          canCopyLayout={hasPreviewLayout}
+          onHeaderHelpNavigate={onHeaderHelpNavigate}
+          onToggleDarkMode={onToggleDarkMode}
+          onCopyLayoutToClipboard={onCopyLayoutToClipboard}
+          onPasteLayoutFromClipboard={onPasteLayoutFromClipboard}
+          onToggleHoverInfo={onToggleHoverInfo}
+          onOpenDocumentation={onOpenDocumentation}
+          onToggleFeedbackPanel={onToggleFeedbackPanel}
+          onToggleLegalNoticePanel={onToggleLegalNoticePanel}
+          onCloseSidebarPanel={closeSidebarPanel}
+        />
+      ) : null}
 
-      <OnboardingVideoDialog
-        videoId={activeOnboardingVideoId}
-        onClose={onCloseOnboardingVideo}
-      />
+      {!presentationMode ? (
+        <OnboardingVideoDialog
+          videoId={activeOnboardingVideoId}
+          onClose={onCloseOnboardingVideo}
+        />
+      ) : null}
 
       <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden md:flex-row">
-        {!showPresetsBrowser ? renderLeftPanel?.() : null}
+        {!presentationMode && !effectiveShowPresetsBrowser ? renderLeftPanel?.() : null}
         <div className="flex min-h-0 min-w-0 flex-1 flex-row overflow-hidden">
           <div
             className={`relative flex min-h-0 min-w-0 flex-1 flex-col overflow-auto transition-colors ${
-              showPresetsBrowser ? "p-4 md:p-6" : ""
+              effectiveShowPresetsBrowser ? "p-4 md:p-6" : ""
             } ${
-              editorMode ? uiTheme.previewContentEdit : uiTheme.previewContent
+              editorMode && !presentationMode ? uiTheme.previewContentEdit : uiTheme.previewContent
             }`}
           >
-          {!showPresetsBrowser && tourState ? (
+          {!presentationMode && !effectiveShowPresetsBrowser && tourState ? (
             <ProjectTourOverlay
               title={tourState.title}
               description={tourState.description}
@@ -928,7 +949,7 @@ export function PreviewWorkspace({
               onNext={tourState.onNext}
             />
           ) : null}
-          {!showPresetsBrowser && layoutOpenTooltip ? (
+          {!presentationMode && !effectiveShowPresetsBrowser && layoutOpenTooltip ? (
             <LayoutOpenTooltipOverlay
               tooltip={layoutOpenTooltip.item}
               displayToken={layoutOpenTooltip.displayToken}
@@ -942,7 +963,7 @@ export function PreviewWorkspace({
               onHelpHover={() => onOpenHelpSection("tooltip-documentation-link")}
             />
           ) : null}
-          {showPresetsBrowser ? (
+          {effectiveShowPresetsBrowser ? (
             <div
               className="relative h-full min-h-[360px] w-full bg-card"
               onMouseEnter={showSectionHelpIcons ? () => onHeaderHelpNavigate("presets") : undefined}
@@ -967,7 +988,7 @@ export function PreviewWorkspace({
               showMargins={showMargins}
               showImagePlaceholders={showImagePlaceholders}
               showTypography={showTypography}
-              showRolloverInfo={showHoverInfo}
+              showRolloverInfo={!presentationMode && showHoverInfo}
               smartTextEditZoomEnabled={smartTextZoomEnabled}
               layoutEngine={layoutEngine}
               baseFont={baseFont}
@@ -985,8 +1006,8 @@ export function PreviewWorkspace({
               onUndoRequest={onUndoRequest}
               onRedoRequest={onRedoRequest}
               onOpenHelpSection={onOpenHelpSection}
-              showEditorHelpIcon={showSectionHelpIcons}
-              showPreviewHelpIndicator={showSectionHelpIcons}
+              showEditorHelpIcon={!presentationMode && showSectionHelpIcons}
+              showPreviewHelpIndicator={!presentationMode && showSectionHelpIcons}
               onRequestGridRestore={onRequestGridRestore}
               gridReductionWarningToast={gridReductionWarningToast}
               onDismissGridReductionWarningToast={onDismissGridReductionWarningToast}
@@ -1001,19 +1022,20 @@ export function PreviewWorkspace({
               requestedLayerLockTargets={requestedLayerLockState?.targets ?? null}
               requestedLayerLockValue={requestedLayerLockState?.locked ?? false}
               requestedLayerLockToken={requestedLayerLockState?.token ?? 0}
-              selectedLayerKey={activeSidebarPanel === "layers" ? selectedLayerKey : null}
+              selectedLayerKey={!presentationMode && activeSidebarPanel === "layers" ? selectedLayerKey : null}
               keyboardSelectedLayerKey={
-                activeSidebarPanel === "layers"
+                !presentationMode && activeSidebarPanel === "layers"
                   ? (layerPanelHoveredLayerKey ?? selectedLayerKey)
-                  : selectedLayerKey
+                  : presentationMode ? null : selectedLayerKey
               }
-              hoveredLayerKey={layerPanelHoveredLayerKey}
-              onHoverLayerChange={setPreviewHoveredLayerKey}
-              onSelectLayer={onLayerSelect}
-              editorSidebarHost={editorSidebarHost}
+              hoveredLayerKey={presentationMode ? null : layerPanelHoveredLayerKey}
+              onHoverLayerChange={presentationMode ? undefined : setPreviewHoveredLayerKey}
+              onSelectLayer={presentationMode ? undefined : onLayerSelect}
+              editorSidebarHost={presentationMode ? null : editorSidebarHost}
               onEditorModeChange={onEditorModeChange}
               onPreviewLayerCountsChange={handlePreviewLayerCountsChange}
               isDarkMode={isDarkUi}
+              presentationMode={presentationMode}
               onLayoutChange={onLayoutChange}
               onSnapshotGetterChange={onSnapshotGetterChange}
             />

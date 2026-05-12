@@ -6,6 +6,7 @@ type Args = {
   canUndo: boolean
   canRedo: boolean
   showPresetsBrowser: boolean
+  presentationMode: boolean
   hasPreviewLayout: boolean
   hasMultipleProjectPages: boolean
   onImportProject: () => void
@@ -14,6 +15,9 @@ type Args = {
   onUndo: () => void
   onRedo: () => void
   onToggleDarkMode: () => void
+  onCopyLayoutToClipboard: () => void | Promise<void>
+  onTogglePresentationMode: () => void
+  onExitPresentationMode: () => void
   onToggleBaselines: () => void
   onToggleMargins: () => void
   onToggleModules: () => void
@@ -36,6 +40,7 @@ export function useShellKeyboardShortcuts({
   canUndo,
   canRedo,
   showPresetsBrowser,
+  presentationMode,
   hasPreviewLayout,
   hasMultipleProjectPages,
   onImportProject,
@@ -44,6 +49,9 @@ export function useShellKeyboardShortcuts({
   onUndo,
   onRedo,
   onToggleDarkMode,
+  onCopyLayoutToClipboard,
+  onTogglePresentationMode,
+  onExitPresentationMode,
   onToggleBaselines,
   onToggleMargins,
   onToggleModules,
@@ -74,9 +82,34 @@ export function useShellKeyboardShortcuts({
     const onKeyDown = (event: KeyboardEvent) => {
       if (isEditableTarget(event.target)) return
 
+      if (!event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Tab") {
+        if (!hasPreviewLayout) return
+        event.preventDefault()
+        onTogglePresentationMode()
+        return
+      }
+
+      if (presentationMode && !event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey && event.key === "Escape") {
+        event.preventDefault()
+        onExitPresentationMode()
+        return
+      }
+
       if (!event.metaKey && !event.ctrlKey && !event.altKey && event.shiftKey && event.key === "?") {
         event.preventDefault()
         onOpenDocumentation()
+        return
+      }
+
+      if (!event.metaKey && !event.ctrlKey && !event.altKey && event.shiftKey && event.key.toLowerCase() === "j") {
+        event.preventDefault()
+        if (hasPreviewLayout) void onCopyLayoutToClipboard()
+        return
+      }
+
+      if (!event.metaKey && !event.ctrlKey && !event.altKey && event.shiftKey && event.key.toLowerCase() === "p") {
+        event.preventDefault()
+        if (hasPreviewLayout) onTogglePresentationMode()
         return
       }
 
@@ -183,6 +216,7 @@ export function useShellKeyboardShortcuts({
     canSaveOrExport,
     canUseLayerControls,
     hasMultipleProjectPages,
+    hasPreviewLayout,
     onOpenExportDialog,
     onImportProject,
     onOpenSaveLibraryDialog,
@@ -196,6 +230,9 @@ export function useShellKeyboardShortcuts({
     onRedo,
     onToggleBaselines,
     onToggleDarkMode,
+    onCopyLayoutToClipboard,
+    onTogglePresentationMode,
+    onExitPresentationMode,
     onOpenDocumentation,
     onToggleLegalNoticePanel,
     onToggleLayersPanel,
@@ -204,6 +241,7 @@ export function useShellKeyboardShortcuts({
     onToggleImagePlaceholders,
     onToggleTypography,
     onUndo,
+    presentationMode,
     showPresetsBrowser,
   ])
 

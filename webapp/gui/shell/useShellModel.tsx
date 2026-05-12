@@ -57,7 +57,7 @@ import {
 } from "@/gui/shell/lib/project-page-navigation"
 import { omitOptionalRecordKey } from "@/lib/record-helpers"
 import { resetEditorPanelPersistence } from "@/gui/editors/lib/editor-panel-persistence"
-import { parseProjectTransferPayloadBytes } from "@/lib/project-transfer"
+import { buildProjectTransferPayload, parseProjectTransferPayloadBytes, parseProjectTransferPayloadText } from "@/lib/project-transfer"
 import { PREVIEW_LAYER_SELECTION_GRACE_MS } from "@/gui/preview/lib/preview-interaction-constants"
 import { CanvasContainer } from "@/gui/shell/CanvasContainer"
 import { LeftToolbar } from "@/gui/shell/LeftToolbar"
@@ -82,6 +82,7 @@ import {
 } from "@/gui/shell/lib/cloud-status-indicator"
 import { translateMessage } from "@/lib/i18n"
 import { openDocumentation } from "@/lib/documentation"
+import { exitFullscreenIfActive, getFullscreenElement, requestElementFullscreen } from "@/shared/dom/fullscreen"
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0"
 type TypographyStyleKey = keyof GridResult["typography"]["styles"]
@@ -108,6 +109,34 @@ const MAX_PROJECT_PAGE_COUNT = 1000
 
 type ProjectLoadTimingState = {
   elapsedMs: number | null
+}
+
+async function writeClipboardText(text: string): Promise<void> {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text)
+    return
+  }
+
+  if (typeof document === "undefined") {
+    throw new Error("Clipboard unavailable.")
+  }
+
+  const textarea = document.createElement("textarea")
+  textarea.value = text
+  textarea.setAttribute("readonly", "")
+  textarea.style.position = "fixed"
+  textarea.style.left = "-9999px"
+  textarea.style.top = "0"
+  document.body.appendChild(textarea)
+  textarea.select()
+
+  try {
+    if (!document.execCommand("copy")) {
+      throw new Error("Clipboard unavailable.")
+    }
+  } finally {
+    document.body.removeChild(textarea)
+  }
 }
 
 function applyLayerLockStateToKeys(
@@ -339,8 +368,10 @@ export function ShellModelView() {
   const previousEditorSidebarModeRef = useRef<"text" | "image" | null>(null)
   const headerClickTimeoutRef = useRef<number | null>(null)
   const pendingProjectLoadTimingRef = useRef<{ startedAt: number } | null>(null)
+  const pasteLayoutArmedRef = useRef(false)
   const [editorSidebarMode, setEditorSidebarMode] = useState<"text" | "image" | null>(null)
   const [editorSidebarHost, setEditorSidebarHost] = useState<HTMLDivElement | null>(null)
+  const [presentationMode, setPresentationMode] = useState(false)
   const smartTextZoomEnabled = useWorkspaceStore((state) => state.smartTextZoom)
   const setSmartTextZoomEnabled = useWorkspaceStore((state) => state.setSmartTextZoom)
   const workspaceCollapsed = useWorkspaceStore((state) => state.collapsed)
@@ -598,8 +629,8 @@ export function ShellModelView() {
 
   const openSidebarPanel = useCallback((panel: typeof activeSidebarPanel) => {
     if (showPresetsBrowser && panel === "layers") return
-    setWorkspaceActivePanel(panel)
     setShowLayers(panel === "layers")
+    setWorkspaceActivePanel(panel)
   }, [setShowLayers, setWorkspaceActivePanel, showPresetsBrowser])
 
   const closeSidebarPanel = useCallback(() => {
@@ -619,8 +650,9 @@ export function ShellModelView() {
   }, [setShowLayers, setWorkspaceActivePanel])
 
   const toggleAccountPanel = useCallback(() => {
-    setWorkspaceActivePanel(useWorkspaceStore.getState().activePanel === "account" ? null : "account")
+    const next = useWorkspaceStore.getState().activePanel === "account" ? null : "account"
     setShowLayers(false)
+    setWorkspaceActivePanel(next)
   }, [setShowLayers, setWorkspaceActivePanel])
 
   useEffect(() => {
@@ -1195,8 +1227,8 @@ export function ShellModelView() {
     })
   }, [handleRequestNotice])
 
-  const handleProjectLoaded = useCallback((source: "file" | "preset") => {
-    if (source === "file") {
+  const handleProjectLoaded = useCallback((source: "file" | "preset" | "clipboard") => {
+    if (source !== "preset") {
       setActiveUserProjectId(null)
       setActiveOriginPresetId(null)
       setActiveOnboardingVideoId(null)
@@ -1690,6 +1722,107 @@ export function ShellModelView() {
   const hasPreviewLayout = previewLayout !== null
   const persistActiveUserProjectPromiseRef = useRef<Promise<void> | null>(null)
 
+  const handleCopyLayoutToClipboard = useCallback(async () => {
+    if (!hasPreviewLayout) return
+
+    try {
+      const payload = buildProjectTransferPayload(getCurrentProjectSnapshot())
+      await writeClipboardText(`${JSON.stringify(payload, null, 2)}\n`)
+      handleRequestNotice({
+        title: translateMessage("ui.status.notices.layoutCopiedTitle"),
+        message: translateMessage("ui.status.notices.layoutCopiedMessage"),
+      })
+    } catch (error) {
+      console.error(error)
+      handleRequestNotice({
+        title: translateMessage("ui.status.notices.layoutCopyFailedTitle"),
+        message: translateMessage("ui.status.notices.layoutCopyFailedMessage"),
+      })
+    }
+  }, [getCurrentProjectSnapshot, handleRequestNotice, hasPreviewLayout])
+
+  const applyClipboardLayoutText = useCallback((source: string) => {
+    const payload = parseProjectTransferPayloadText(source)
+    handleApplyLoadedProject(parseLoadedProject<PreviewLayoutState>(payload))
+    handleProjectLoaded("clipboard")
+  }, [handleApplyLoadedProject, handleProjectLoaded])
+
+  const handlePasteLayoutFromClipboard = useCallback(() => {
+    pasteLayoutArmedRef.current = true
+  }, [])
+
+  useEffect(() => {
+    const isEditableTarget = (target: EventTarget | null): boolean => {
+      if (!(target instanceof HTMLElement)) return false
+      const tag = target.tagName
+      return target.isContentEditable || tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT"
+    }
+
+    const handlePaste = (event: ClipboardEvent) => {
+      const armed = pasteLayoutArmedRef.current
+      if (!armed && isEditableTarget(event.target)) return
+
+      const source = event.clipboardData?.getData("text/plain") ?? ""
+      if (!source.trim()) return
+
+      try {
+        applyClipboardLayoutText(source)
+        event.preventDefault()
+        pasteLayoutArmedRef.current = false
+        handleRequestNotice({
+          title: translateMessage("ui.status.notices.layoutPastedTitle"),
+          message: translateMessage("ui.status.notices.layoutPastedMessage"),
+        })
+      } catch (error) {
+        if (!armed) return
+        console.error(error)
+        event.preventDefault()
+        pasteLayoutArmedRef.current = false
+        handleRequestNotice({
+          title: translateMessage("ui.status.notices.layoutPasteFailedTitle"),
+          message: translateMessage("ui.status.notices.layoutPasteFailedMessage"),
+        })
+      }
+    }
+
+    window.addEventListener("paste", handlePaste)
+    return () => window.removeEventListener("paste", handlePaste)
+  }, [applyClipboardLayoutText, handleRequestNotice])
+
+  const handleTogglePresentationMode = useCallback(() => {
+    if (presentationMode) {
+      setPresentationMode(false)
+      void exitFullscreenIfActive().catch(() => undefined)
+      return
+    }
+    if (!hasPreviewLayout) return
+    setShowPresetsBrowser(false)
+    setPresentationMode(true)
+    const fullscreenTarget = typeof document === "undefined" ? null : document.documentElement
+    void requestElementFullscreen(fullscreenTarget).catch(() => undefined)
+  }, [hasPreviewLayout, presentationMode, setShowPresetsBrowser])
+
+  const handleExitPresentationMode = useCallback(() => {
+    setPresentationMode(false)
+    void exitFullscreenIfActive().catch(() => undefined)
+  }, [])
+
+  useEffect(() => {
+    if (hasPreviewLayout) return
+    setPresentationMode(false)
+    void exitFullscreenIfActive().catch(() => undefined)
+  }, [hasPreviewLayout])
+
+  useEffect(() => {
+    if (!presentationMode || typeof document === "undefined") return
+    const handleFullscreenChange = () => {
+      if (getFullscreenElement()) return
+      setPresentationMode(false)
+    }
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange)
+  }, [presentationMode])
+
   const handleSaveToLibrary = useCallback(async () => {
     const fallbackStem = toProjectFilenameStem(defaultJsonFilename.replace(/\.json$/i, "")) || translateMessage("ui.status.notices.untitledProject")
     const trimmedTitle = effectiveProjectMetadata.title.trim()
@@ -1962,6 +2095,7 @@ export function ShellModelView() {
     canUndo,
     canRedo,
     showPresetsBrowser,
+    presentationMode,
     hasPreviewLayout,
     hasMultipleProjectPages: projectPages.length > 1,
     onImportProject: () => loadFileInputRef.current?.click(),
@@ -1970,6 +2104,9 @@ export function ShellModelView() {
     onUndo: undoAny,
     onRedo: redoAny,
     onToggleDarkMode: toggleDarkUi,
+    onCopyLayoutToClipboard: handleCopyLayoutToClipboard,
+    onTogglePresentationMode: handleTogglePresentationMode,
+    onExitPresentationMode: handleExitPresentationMode,
     onToggleBaselines: toggleShowBaselines,
     onToggleMargins: toggleShowMargins,
     onToggleModules: toggleShowModules,
@@ -2051,9 +2188,11 @@ export function ShellModelView() {
       sidebarGroup={sidebarGroup}
       activeSidebarPanel={activeSidebarPanel}
       showPresetsBrowser={showPresetsBrowser}
+      presentationMode={presentationMode}
       isDarkUi={isDarkUi}
       showSectionHelpIcons={showSectionHelpIcons}
       showHoverInfo={showHoverInfo}
+      hasPreviewLayout={hasPreviewLayout}
       smartTextZoomEnabled={smartTextZoomEnabled}
       showBaselines={showBaselines}
       showModules={showModules}
@@ -2126,6 +2265,8 @@ export function ShellModelView() {
       onProjectDescriptionChange={handleProjectDescriptionChange}
       onProjectAuthorChange={handleProjectAuthorChange}
       onToggleDarkMode={toggleDarkUi}
+      onCopyLayoutToClipboard={handleCopyLayoutToClipboard}
+      onPasteLayoutFromClipboard={handlePasteLayoutFromClipboard}
       onToggleHoverInfo={toggleHoverInfo}
       onOpenDocumentation={openDocumentation}
       onToggleFeedbackPanel={handleToggleFeedbackPanel}
@@ -2309,11 +2450,19 @@ export function ShellModelView() {
   ])
 
   if (isSmartphone) {
+    const narrowViewportRootClassName = isDarkUi
+      ? "bg-[#151A21] text-[#F4F6F8]"
+      : "bg-gray-100 text-gray-900"
+    const narrowViewportPanelClassName = isDarkUi
+      ? "border-[#313A47] bg-[#232A35]"
+      : "border-gray-200 bg-white"
+    const narrowViewportMessageClassName = isDarkUi ? "text-[#A8B1BF]" : "text-gray-600"
+
     return (
-      <div data-sgg-gui-text="lowercase" className="fixed inset-0 z-[100] flex items-center justify-center bg-black p-6 text-white">
-        <div className="w-full max-w-md rounded-lg border border-white/20 bg-white/5 p-6">
+      <div data-sgg-gui-text="lowercase" className={`fixed inset-0 z-[100] flex items-center justify-center p-6 ${narrowViewportRootClassName}`}>
+        <div className={`w-full max-w-md rounded-lg border p-6 ${narrowViewportPanelClassName}`}>
           <h2 className="text-lg font-semibold">{translateMessage("app.screenTooSmall")}</h2>
-          <p className="mt-3 text-sm leading-relaxed text-white/85">
+          <p className={`mt-3 text-sm leading-relaxed ${narrowViewportMessageClassName}`}>
             {translateMessage("app.screenTooSmallMessage")}
           </p>
         </div>

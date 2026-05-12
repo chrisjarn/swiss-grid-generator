@@ -1,6 +1,7 @@
 import { Button } from "@/shared/ui/button"
 import { useTranslation } from "@/lib/i18n"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
+import { useDialogPrimaryAction } from "@/shared/ui/use-dialog-primary-action"
 import {
   getCompactActionButtonClassName,
   getPopupMutedTextClassName,
@@ -29,6 +30,11 @@ export function NoticeDialog({
   onClose,
 }: Props) {
   const { t } = useTranslation()
+  const primaryAction = onConfirm ?? onClose
+  const { primaryActionRef, handleDialogKeyDown } = useDialogPrimaryAction({
+    isOpen,
+    onPrimaryAction: primaryAction,
+  })
   if (!isOpen) return null
 
   return (
@@ -45,6 +51,7 @@ export function NoticeDialog({
         aria-labelledby="notice-dialog-title"
         aria-describedby="notice-dialog-message"
         className={getPopupSurfaceClassName(isDarkUi, "flex max-h-[90vh] w-full max-w-sm flex-col overflow-hidden")}
+        onKeyDown={handleDialogKeyDown}
       >
         <div className={`shrink-0 border-b pb-4 ${isDarkUi ? "border-[#313A47]" : "border-gray-200"}`}>
           <SectionHeaderRow label={<span id="notice-dialog-title">{title}</span>} />
@@ -67,6 +74,7 @@ export function NoticeDialog({
                 {cancelLabel ?? t("ui.common.dialogs.notice.cancel")}
               </Button>
               <Button
+                ref={primaryActionRef}
                 size="sm"
                 className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
                 onClick={onConfirm}
@@ -76,7 +84,12 @@ export function NoticeDialog({
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-2">
-              <Button size="sm" className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`} onClick={onClose}>
+              <Button
+                ref={primaryActionRef}
+                size="sm"
+                className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi })} w-full`}
+                onClick={onClose}
+              >
                 {t("ui.common.dialogs.notice.ok")}
               </Button>
             </div>
