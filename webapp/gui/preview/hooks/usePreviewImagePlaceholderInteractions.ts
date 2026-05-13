@@ -1,6 +1,7 @@
-import { useCallback } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import type { MouseEvent as ReactMouseEvent } from "react"
 
+import { getImageSchemeColorToken } from "@/core/config/color-schemes"
 import type { PreviewCanvasInteractionArgs } from "@/gui/preview/hooks/preview-canvas-interaction-types"
 import type { DragState as PreviewDragState } from "@/gui/preview/hooks/usePreviewDrag"
 import { clampFreePlacementRow, clampLayerColumn } from "@/core/layout/layer-placement"
@@ -37,6 +38,27 @@ type DoubleClickArgs = {
   pagePoint: PagePoint
 }
 
+const IMAGE_COLOR_SHORTCUT_KEYS = ["4", "3", "2", "1"] as const
+const IMAGE_COLOR_SHORTCUT_KEY_SET = new Set<string>(IMAGE_COLOR_SHORTCUT_KEYS)
+
+function resolveImageColorShortcutKey(event: KeyboardEvent): string | null {
+  const key = IMAGE_COLOR_SHORTCUT_KEY_SET.has(event.key)
+    ? event.key
+    : IMAGE_COLOR_SHORTCUT_KEY_SET.has(event.code.replace(/^Digit/, ""))
+      ? event.code.replace(/^Digit/, "")
+      : IMAGE_COLOR_SHORTCUT_KEY_SET.has(event.code.replace(/^Numpad/, ""))
+        ? event.code.replace(/^Numpad/, "")
+        : null
+  return key
+}
+
+function resolveHeldImageColorShortcut(keys: ReadonlySet<string>): string | null {
+  for (const key of IMAGE_COLOR_SHORTCUT_KEYS) {
+    if (keys.has(key)) return getImageSchemeColorToken(Number.parseInt(key, 10) - 1)
+  }
+  return null
+}
+
 export function usePreviewImagePlaceholderInteractions<Key extends string, StyleKey extends string>({
   findTopmostImageAtPoint,
   resolveModulePositionAtPagePoint,
@@ -60,6 +82,35 @@ export function usePreviewImagePlaceholderInteractions<Key extends string, Style
   ensureImagePlaceholdersVisible,
   openImageEditor,
 }: Args<Key, StyleKey>) {
+  const heldImageColorShortcutKeysRef = useRef<Set<string>>(new Set())
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const resolvedKey = resolveImageColorShortcutKey(event)
+      if (!resolvedKey) return
+      heldImageColorShortcutKeysRef.current.add(resolvedKey)
+    }
+
+    const handleKeyUp = (event: KeyboardEvent) => {
+      const resolvedKey = resolveImageColorShortcutKey(event)
+      if (!resolvedKey) return
+      heldImageColorShortcutKeysRef.current.delete(resolvedKey)
+    }
+
+    const clearHeldKeys = () => {
+      heldImageColorShortcutKeysRef.current.clear()
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("keyup", handleKeyUp)
+    window.addEventListener("blur", clearHeldKeys)
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("keyup", handleKeyUp)
+      window.removeEventListener("blur", clearHeldKeys)
+    }
+  }, [])
+
   const handleImageDrop = useCallback((drag: PreviewDragState<Key>, nextPreview: ModulePosition, copyOnDrop: boolean) => {
     const sourceColumns = getImageSpan(drag.key)
     const sourceRows = getImageRows(drag.key)
@@ -137,9 +188,15 @@ export function usePreviewImagePlaceholderInteractions<Key extends string, Style
 
     const newKey = getNextImagePlaceholderId()
     const snapped = clampImageModulePosition(rawPosition, 1, 1)
+    const shortcutColor = event.shiftKey
+      ? resolveHeldImageColorShortcut(heldImageColorShortcutKeysRef.current)
+      : null
     ensureImagePlaceholdersVisible?.()
     recordHistoryBeforeChange()
-    insertImagePlaceholder(newKey, { position: snapped })
+    insertImagePlaceholder(newKey, {
+      position: snapped,
+      color: shortcutColor ?? undefined,
+    })
     promoteLayerToTop(newKey)
     openImageEditor(newKey, { recordHistory: false })
     return true

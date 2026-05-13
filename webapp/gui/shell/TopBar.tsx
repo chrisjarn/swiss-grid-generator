@@ -34,7 +34,7 @@ export type TopBarProps = {
   onCopyLayoutToClipboard: () => void | Promise<void>
   onPasteLayoutFromClipboard: () => void | Promise<void>
   onToggleHoverInfo: () => void
-  onOpenDocumentation: (sectionId?: string) => void
+  onOpenDocumentation: () => void
   onToggleFeedbackPanel: () => void
   onToggleLegalNoticePanel: () => void
   onCloseSidebarPanel: () => void
@@ -211,7 +211,7 @@ export function TopBar({
       ariaLabel: t("ui.shell.topBar.supportMenu.documentation"),
       helpId: supportHelpIds.documentation,
       onClick: () => {
-        onOpenDocumentation("tooltip-guide")
+        onOpenDocumentation()
       },
     },
     {

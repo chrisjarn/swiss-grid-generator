@@ -91,7 +91,7 @@ export const DOCUMENTATION_HOVER_INFO_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `Shift` + double-click on an empty module to create an image placeholder."
+        "text": "Use `Shift` + double-click on an empty module to create an image placeholder. Hold `1..4` with `Shift` to assign the active base-scheme swatch while creating it."
       },
       {
         "type": "paragraph",
@@ -1155,7 +1155,7 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use `Shift` + double-click on an empty module to create an image placeholder."
+        "text": "Use `Shift` + double-click on an empty module to create an image placeholder. Hold `1..4` with `Shift` to assign the active base-scheme swatch while creating it."
       },
       {
         "type": "paragraph",

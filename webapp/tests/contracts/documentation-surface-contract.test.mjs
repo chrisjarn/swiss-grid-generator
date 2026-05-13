@@ -75,7 +75,8 @@ test("app exposes a discreet external documentation entry point", () => {
   const topBar = readRepoText("webapp/gui/shell/TopBar.tsx")
   const shortcuts = readRepoText("webapp/gui/shell/lib/preview-header-shortcuts.ts")
 
-  assert.match(documentationLib, /DOCUMENTATION_URL = "\/docs"/)
+  assert.match(documentationLib, /DOCUMENTATION_URL = "http:\/\/localhost:3000\/docs"/)
+  assert.doesNotMatch(documentationLib, /encodeURIComponent|#\$\{/)
   assert.doesNotMatch(topBar, /CircleHelp/)
   assert.match(topBar, /onOpenDocumentation/)
   assert.match(topBar, /supportMenu\.documentation/)

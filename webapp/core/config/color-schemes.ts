@@ -6,7 +6,8 @@ export type ImageColorScheme = {
 
 const IMAGE_COLOR_SLOT_COUNT = 4
 const IMAGE_COLOR_REFERENCE_PREFIX = "scheme:"
-const DEFAULT_IMAGE_PLACEHOLDER_SLOT_INDEX = IMAGE_COLOR_SLOT_COUNT - 1
+const DEFAULT_IMAGE_PLACEHOLDER_SLOT_INDEX = 2
+const DEFAULT_TEXT_SCHEME_SLOT_INDEX = IMAGE_COLOR_SLOT_COUNT - 1
 
 type ImageColorSlotIndex = 0 | 1 | 2 | 3
 
@@ -47,29 +48,9 @@ function sortSchemeColorsBrightToDark(
 
 export const IMAGE_COLOR_SCHEMES = [
   {
-    id: "swiss-modern",
-    label: "Swiss Modern",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#fd8b7b"]),
-  },
-  {
-    id: "swiss-classic",
-    label: "Swiss Classic",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
-  },
-  {
-    id: "stone-cyan",
-    label: "Stone Cyan",
-    colors: sortSchemeColorsBrightToDark(["#35342f", "#e1e0dd", "#f1f2f0", "#37bbe4"]),
-  },
-  {
-    id: "fresh-contrast",
-    label: "Fresh Contrast",
-    colors: sortSchemeColorsBrightToDark(["#fef9f7", "#1aa9bc", "#457c39", "#ffeb00"]),
-  },
-  {
-    id: "sage-pop",
-    label: "Sage Pop",
-    colors: sortSchemeColorsBrightToDark(["#e0e5db", "#de3d83", "#00b8b8", "#e4bd0b"]),
+    id: "braun-classic",
+    label: "BRAUN Classic",
+    colors: sortSchemeColorsBrightToDark(["#f0ede5", "#c5c3be", "#8a8a87", "#c02820"]),
   },
   {
     id: "coral-bay",
@@ -77,9 +58,19 @@ export const IMAGE_COLOR_SCHEMES = [
     colors: sortSchemeColorsBrightToDark(["#dddddd", "#fe9f97", "#fbae17", "#0095a3"]),
   },
   {
+    id: "fresh-contrast",
+    label: "Fresh Contrast",
+    colors: sortSchemeColorsBrightToDark(["#fef9f7", "#1aa9bc", "#457c39", "#ffeb00"]),
+  },
+  {
     id: "industrial-ember",
     label: "Industrial Ember",
     colors: sortSchemeColorsBrightToDark(["#777870", "#ec6b2d", "#333333", "#0d0f05"]),
+  },
+  {
+    id: "mono",
+    label: "Mono",
+    colors: sortSchemeColorsBrightToDark(["#ffffff", "#c0c0c0", "#808080", "#404040"]),
   },
   {
     id: "patina-clay",
@@ -87,14 +78,29 @@ export const IMAGE_COLOR_SCHEMES = [
     colors: sortSchemeColorsBrightToDark(["#bfbabe", "#a63e14", "#558a86", "#f1f2f0"]),
   },
   {
+    id: "sage-pop",
+    label: "Sage Pop",
+    colors: sortSchemeColorsBrightToDark(["#e0e5db", "#de3d83", "#00b8b8", "#e4bd0b"]),
+  },
+  {
     id: "signal-cyan",
     label: "Signal Cyan",
     colors: sortSchemeColorsBrightToDark(["#f43530", "#46454b", "#00aabb", "#e0e5da"]),
   },
   {
-    id: "mono",
-    label: "Mono",
-    colors: sortSchemeColorsBrightToDark(["#ffffff", "#c0c0c0", "#808080", "#404040"]),
+    id: "stone-cyan",
+    label: "Stone Cyan",
+    colors: sortSchemeColorsBrightToDark(["#35342f", "#e1e0dd", "#f1f2f0", "#37bbe4"]),
+  },
+  {
+    id: "swiss-classic",
+    label: "Swiss Classic",
+    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
+  },
+  {
+    id: "swiss-modern",
+    label: "Swiss Modern",
+    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#fd8b7b"]),
   },
 ] as const satisfies readonly ImageColorScheme[]
 
@@ -129,7 +135,11 @@ export function normalizeImageColorSchemeId(value: unknown): ImageColorSchemeId 
 }
 
 export function getImageColorScheme(id: ImageColorSchemeId): (typeof IMAGE_COLOR_SCHEMES)[number] {
-  return IMAGE_COLOR_SCHEMES.find((scheme) => scheme.id === id) ?? IMAGE_COLOR_SCHEMES[0]
+  return (
+    IMAGE_COLOR_SCHEMES.find((scheme) => scheme.id === id)
+    ?? IMAGE_COLOR_SCHEMES.find((scheme) => scheme.id === DEFAULT_IMAGE_COLOR_SCHEME_ID)
+    ?? IMAGE_COLOR_SCHEMES[0]
+  )
 }
 
 export function getDefaultImagePlaceholderColor(id: ImageColorSchemeId): string {
@@ -137,7 +147,7 @@ export function getDefaultImagePlaceholderColor(id: ImageColorSchemeId): string 
 }
 
 export function getDefaultTextSchemeColor(id: ImageColorSchemeId): string {
-  return getImageColorScheme(id).colors[DEFAULT_IMAGE_PLACEHOLDER_SLOT_INDEX]
+  return getImageColorScheme(id).colors[DEFAULT_TEXT_SCHEME_SLOT_INDEX]
 }
 
 export function getImageSchemeColorByIndex(id: ImageColorSchemeId, index: number): string {

@@ -84,7 +84,7 @@ Supported controls preview on hover and commit on click.
 
 The preview shows the planned page. It consumes the same canonical page plan as PDF, SVG, IDML, thumbnails, and exports.
 
-Double-click an empty module to create a text paragraph. Hold `Shift` while double-clicking to create an image placeholder.
+Double-click an empty module to create a text paragraph. Hold `Shift` while double-clicking to create an image placeholder. Hold `1..4` with `Shift` to choose a swatch from the active base scheme.
 
 ### Text Editing
 
@@ -212,7 +212,7 @@ Hold `1..5` while double-clicking to assign hierarchy immediately.
 `1` caption, `2` body, `3` subhead, `4` headline, `5` display. The initial measure follows the role and the remaining column field.
 
 #### Place image placeholders deliberately {#tooltip-create-image}
-Use `Shift` + double-click on an empty module to create an image placeholder.
+Use `Shift` + double-click on an empty module to create an image placeholder. Hold `1..4` with `Shift` to assign the active base-scheme swatch while creating it.
 
 Placeholders share the same snap, span, baseline height, and rotation discipline as text.
 
@@ -649,7 +649,7 @@ Current capability inventory for Swiss Grid Generator.
 
 - Double-click empty module to create a text paragraph with hyphenation off by default.
 - Hold `1..5` while double-clicking empty module to create a paragraph as `Caption`, `Body`, `Subhead`, `Headline`, or `Display`; new hierarchy blocks use disciplined starting frames: Caption `1x1`, Body/Subhead `1x2`, Headline/Display `1x3`, clamped to the remaining columns from the clicked module.
-- `Shift` + double-click empty module to create an image placeholder (`Ctrl` fallback).
+- `Shift` + double-click empty module to create an image placeholder (`Ctrl` fallback); hold `1..4` with `Shift` to use that active base-scheme swatch.
 - Paragraph creation uses the actual clicked module rather than the nearest module center.
 - Drag paragraphs and placeholders to move them.
 - Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts.

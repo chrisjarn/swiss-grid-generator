@@ -1,6 +1,5 @@
-export const DOCUMENTATION_URL = "/docs"
+export const DOCUMENTATION_URL = "http://localhost:3000/docs"
 
-export function openDocumentation(sectionId?: string) {
-  const hash = sectionId ? `#${encodeURIComponent(sectionId)}` : ""
-  window.open(`${DOCUMENTATION_URL}${hash}`, "_blank", "noopener,noreferrer")
+export function openDocumentation() {
+  window.open(DOCUMENTATION_URL, "_blank", "noopener,noreferrer")
 }
