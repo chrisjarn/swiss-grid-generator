@@ -147,11 +147,11 @@ export const DOCUMENTATION_HOVER_INFO_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the visible `+` control for duplication and transfer."
+        "text": "Use the `>` rollover controls for duplication and transfer."
       },
       {
         "type": "paragraph",
-        "text": "For text, `+` duplicates the paragraph. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly."
+        "text": "For text, duplicate starts the same placement path as dragging. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly."
       }
     ]
   },
@@ -897,7 +897,7 @@ export const DOCUMENTATION_HOVER_INFO_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Hover affordances edit, duplicate, resize, lock, and delete the active preview layer. Paragraph backgrounds remain the primary hover target."
+        "text": "The `>` rollover controls edit, duplicate, and delete the active preview layer. Paragraph controls add alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls add rotation, column snap, and baseline snap. The bottom-right handle resizes the active layer."
       }
     ]
   },
@@ -1211,11 +1211,11 @@ export const LAYOUT_OPEN_TOOLTIP_ITEMS = [
     "blocks": [
       {
         "type": "paragraph",
-        "text": "Use the visible `+` control for duplication and transfer."
+        "text": "Use the `>` rollover controls for duplication and transfer."
       },
       {
         "type": "paragraph",
-        "text": "For text, `+` duplicates the paragraph. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly."
+        "text": "For text, duplicate starts the same placement path as dragging. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly."
       }
     ]
   },

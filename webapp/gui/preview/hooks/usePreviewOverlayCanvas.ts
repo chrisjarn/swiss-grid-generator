@@ -62,6 +62,7 @@ type Args<Key extends string, Plan extends OverlayPlan<Key>> = {
   hoveredTextGuideRects: BlockRect[]
   hoveredTextGuidePlan: Plan | null
   hoveredImageRect: BlockRect | null
+  hideHoveredGuideFill?: boolean
   selectedLayerKey: Key | null
   overflowLinesByBlock: Partial<Record<Key, number>>
   dragState: DragState<Key> | null
@@ -89,6 +90,7 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
   hoveredTextGuideRects,
   hoveredTextGuidePlan,
   hoveredImageRect,
+  hideHoveredGuideFill = false,
   selectedLayerKey,
   overflowLinesByBlock,
   dragState,
@@ -296,11 +298,15 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           isDraggingTextLayer ? paragraphGuideStrokeColor : guideStrokeColor,
         )
       } else if (hoveredTextGuideRect && hoveredTextGuidePlan) {
-        drawTextGuideFill(hoveredTextGuidePlan, hoveredTextGuideRects)
+        if (!hideHoveredGuideFill) {
+          drawTextGuideFill(hoveredTextGuidePlan, hoveredTextGuideRects)
+        }
         drawTextGuideEdges(hoveredTextGuidePlan, hoveredTextGuideRect)
       } else if (hoveredTextGuideRect) {
-        for (const rect of hoveredTextGuideRects.length > 0 ? hoveredTextGuideRects : [hoveredTextGuideRect]) {
-          drawPreviewGuideFill(rect.x, rect.y, rect.width, rect.height, paragraphGuideFill)
+        if (!hideHoveredGuideFill) {
+          for (const rect of hoveredTextGuideRects.length > 0 ? hoveredTextGuideRects : [hoveredTextGuideRect]) {
+            drawPreviewGuideFill(rect.x, rect.y, rect.width, rect.height, paragraphGuideFill)
+          }
         }
         drawPreviewGuideEdges(
           hoveredTextGuideRect.x,
@@ -310,12 +316,14 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
           paragraphGuideStrokeColor,
         )
       } else if (hoveredImageRect) {
-        drawPreviewGuideFill(
-          hoveredImageRect.x,
-          hoveredImageRect.y,
-          hoveredImageRect.width,
-          hoveredImageRect.height,
-        )
+        if (!hideHoveredGuideFill) {
+          drawPreviewGuideFill(
+            hoveredImageRect.x,
+            hoveredImageRect.y,
+            hoveredImageRect.width,
+            hoveredImageRect.height,
+          )
+        }
         drawPreviewGuideEdges(
           hoveredImageRect.x,
           hoveredImageRect.y,
@@ -408,5 +416,6 @@ export function usePreviewOverlayCanvas<Key extends string, Plan extends Overlay
     showTypography,
     blockRectsRef,
     editorPlanVersion,
+    hideHoveredGuideFill,
   ])
 }

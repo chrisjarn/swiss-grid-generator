@@ -234,9 +234,9 @@ With snapped axes enabled, arrow keys move the selected unlocked layer by column
 Hold `Shift` to move snapped y by baseline rows. On unsnapped axes, `Shift` increases the fine step.
 
 #### Duplicate without losing rhythm {#tooltip-duplicate-layer}
-Use the visible `+` control for duplication and transfer.
+Use the `>` rollover controls for duplication and transfer.
 
-For text, `+` duplicates the paragraph. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly.
+For text, duplicate starts the same placement path as dragging. `Shift` copies paragraph settings, `Alt/Option` copies typography, and `Alt/Option` + `Shift` copies both. Image placeholders duplicate directly.
 
 #### Free placement is an exception {#tooltip-free-placement}
 Turn off column or baseline snap only for a controlled optical exception.
@@ -499,7 +499,7 @@ Sets image placeholder opacity. Lower opacity can reveal grid structure while re
 Adds a clean page or duplicates content with the modifier shortcut. Page creation updates project order and document variables.
 
 #### Preview layer affordances {#tooltip-preview-layer-affordances}
-Hover affordances edit, duplicate, resize, lock, and delete the active preview layer. Paragraph backgrounds remain the primary hover target.
+The `>` rollover controls edit, duplicate, and delete the active preview layer. Paragraph controls add alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls add rotation, column snap, and baseline snap. The bottom-right handle resizes the active layer.
 
 #### Page list {#tooltip-project-pages}
 Controls page order, names, and facing-page state. Page order drives page numbers, export order, and document variables.
@@ -652,8 +652,9 @@ Current capability inventory for Swiss Grid Generator.
 - `Shift` + double-click empty module to create and select an image placeholder without opening edit mode (`Ctrl` fallback); hold `1..4` with `Shift` to use that active base-scheme swatch.
 - Paragraph creation uses the actual clicked module rather than the nearest module center.
 - Drag paragraphs and placeholders to move them.
-- Hovered text paragraphs expose a `+` affordance: click duplicates the paragraph through the same placement path as dragging, even after switching pages; `Shift` + click copies `Paragraph` settings, `Alt/Option` + click copies `Typo` settings, and `Alt/Option` + `Shift` + click copies both for transfer onto another paragraph, even across pages and loaded layouts.
-- Hovered image placeholders expose a `+` affordance for duplication.
+- Hovered text paragraphs and image placeholders expose a `>` controls affordance and a bottom-right resize handle.
+- The controls submenu contains edit, duplicate, and delete actions. Paragraph controls also expose alignment, rotation, column reflow, hyphenation, column snap, and baseline snap. Image controls expose rotation, column snap, and baseline snap.
+- Paragraph duplicate still follows the same placement path as dragging, even after switching pages. `Shift` + duplicate copies `Paragraph` settings, `Alt/Option` + duplicate copies `Typo` settings, and `Alt/Option` + `Shift` + duplicate copies both for transfer onto another paragraph, even across pages and loaded layouts.
 - Default paragraph drag respects each paragraph's current `Snap to Columns (X)` state and, when `Snap to Baseline (Y)` is on, snaps Y to the nearest module top.
 - Holding `Shift` during paragraph or image-placeholder drag temporarily snaps the Y position to the nearest baseline row (`Ctrl` fallback).
 - Arrow keys nudge the selected unlocked paragraph or image placeholder through the same logical placement model: snapped X moves by columns, snapped Y moves by module rows by default, `Shift` uses baseline rows, and unsnapped axes move in tenth-step logical increments with `Shift` as a 10x multiplier.

@@ -9,10 +9,10 @@
   "metadataExportDescription": "Modular field, baseline rhythm, margin canon, vector export.",
   "metadataImageAlt": "A4 modular field preview",
   "defaultContent": {
-    "display": "Swiss design",
-    "headline": "Modular grid systems",
-    "subhead": "Grid, baseline, measure.",
-    "body": "rest of the document remains the same...",
-    "caption": "Copyright {year} Swiss Grid Generator"
+    "display": "Swiss Design",
+    "headline": "Modular Grid Systems",
+    "subhead": "A grid creates coherent visual structure and establishes a consistent spatial rhythm",
+    "body": "The modular grid allows designers to organize content with clarity and purpose. All typography aligns to the baseline grid, ensuring harmony across the page. Modular proportions guide contrast and emphasis while preserving coherence across complex layouts. Structure becomes a tool for expression rather than a constraint, enabling flexible yet unified systems.",
+    "caption": "Based on Müller-Brockmann's Book Grid Systems in Graphic Design (1981). Copyleft & -right 2026 by lp45.net"
   }
 }

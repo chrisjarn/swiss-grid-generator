@@ -32,9 +32,19 @@ Author interface copy in normal sentence/label case. Lowercase is a visual prese
 - Respectful of the user’s intelligence and time
 - Understated confidence
 
-*(rest of the document remains the same...)*
+## 2. Default Text Content
 
-## 4. Tone Examples by Type (updated)
+New text frames use the following hierarchy-specific defaults:
+
+| Hierarchy | Default text |
+|-----------|--------------|
+| Display | Swiss Design |
+| Headline | Modular Grid Systems |
+| Subhead | A grid creates coherent visual structure and establishes a consistent spatial rhythm |
+| Body | The modular grid allows designers to organize content with clarity and purpose. All typography aligns to the baseline grid, ensuring harmony across the page. Modular proportions guide contrast and emphasis while preserving coherence across complex layouts. Structure becomes a tool for expression rather than a constraint, enabling flexible yet unified systems. |
+| Caption | Based on Müller-Brockmann's Book Grid Systems in Graphic Design (1981). Copyleft & -right 2026 by lp45.net |
+
+## 3. Tone Examples by Type (updated)
 
 | Context                        | Good (Recommended)                     |
 |--------------------------------|----------------------------------------|

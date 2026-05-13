@@ -140,9 +140,13 @@ function collectPresetMetadataStrings(relPath) {
 
 function extractEditorialDefaultBodyText() {
   const source = fs.readFileSync(path.join(ROOT, "..", "EDITORIAL.md"), "utf8")
-  const match = source.match(/\*\((rest of the document remains the same\.\.\.)\)\*/)
-  assert.ok(match, "Expected EDITORIAL.md to keep the default body placeholder sentence.")
-  return match[1]
+  const bodyRow = source
+    .split("\n")
+    .find((line) => line.startsWith("| Body | "))
+  assert.ok(bodyRow, "Expected EDITORIAL.md to document the default body text.")
+  const [, , bodyText] = bodyRow.split("|").map((entry) => entry.trim())
+  assert.ok(bodyText, "Expected EDITORIAL.md default body text to be non-empty.")
+  return bodyText
 }
 
 function isIntentionalSpecimenText(entry) {
@@ -259,7 +263,7 @@ test("generated content does not reintroduce casual tone", () => {
   assert.deepEqual(violations, [])
 })
 
-test("new paragraph body default follows the editorial placeholder sentence", () => {
+test("new paragraph body default follows the editorial default body", () => {
   const editorialDefaultBody = extractEditorialDefaultBodyText()
   const appMessages = JSON.parse(readText("messages/en/app.json"))
   const bundledMessages = JSON.parse(readText("messages/en.json"))

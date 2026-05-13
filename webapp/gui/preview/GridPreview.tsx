@@ -372,6 +372,7 @@ export const GridPreview = memo(function GridPreview({
   const [overflowLinesByBlock, setOverflowLinesByBlock] = useState<OverflowLinesByBlock<BlockId>>({})
   const [hoverState, setHoverState] = useState<PreviewHoverState<BlockId> | null>(null)
   const [hoverImageKey, setHoverImageKey] = useState<BlockId | null>(null)
+  const [hoverGuideFillSuppressedLayerKey, setHoverGuideFillSuppressedLayerKey] = useState<BlockId | null>(null)
   const [hoverCopyIntent, setHoverCopyIntent] = useState(false)
   const [layerResizePreview, setLayerResizePreview] = useState<LayerResizePreviewState | null>(null)
   const [pendingTextStyleTransfer, setPendingTextStyleTransfer] = useState<PendingTextStyleTransfer | null>(null)
@@ -762,17 +763,20 @@ export const GridPreview = memo(function GridPreview({
   const clearHover = useCallback(() => {
     setHoverState(null)
     setHoverImageKey(null)
+    setHoverGuideFillSuppressedLayerKey(null)
     setHoverCopyIntent(false)
   }, [])
 
   const showImmediateTextHover = useCallback((key: BlockId, point: PagePoint) => {
     setHoverImageKey(null)
+    setHoverGuideFillSuppressedLayerKey(key)
     setHoverCopyIntent(false)
     setHoverState({ key, point })
   }, [])
 
   const showImmediateImageHover = useCallback((key: BlockId) => {
     setHoverState(null)
+    setHoverGuideFillSuppressedLayerKey(key)
     setHoverCopyIntent(false)
     setHoverImageKey(key)
   }, [])
@@ -1930,6 +1934,9 @@ export const GridPreview = memo(function GridPreview({
 
   const activeHoveredLayerKey = hoverState?.key ?? hoverImageKey ?? null
   const activeHoveredLayerLocked = activeHoveredLayerKey ? isLayerLocked(activeHoveredLayerKey) : false
+  const hideHoveredGuideFill = Boolean(
+    hoverGuideFillSuppressedLayerKey && hoverGuideFillSuppressedLayerKey === activeHoveredLayerKey,
+  )
 
   const {
     handleCanvasMouseMove,
@@ -1977,6 +1984,11 @@ export const GridPreview = memo(function GridPreview({
   useEffect(() => {
     onHoverLayerChange?.(hoverState?.key ?? hoverImageKey ?? null)
   }, [hoverImageKey, hoverState?.key, onHoverLayerChange])
+
+  useEffect(() => {
+    if (!hoverGuideFillSuppressedLayerKey || hoverGuideFillSuppressedLayerKey === activeHoveredLayerKey) return
+    setHoverGuideFillSuppressedLayerKey(null)
+  }, [activeHoveredLayerKey, hoverGuideFillSuppressedLayerKey])
 
   const captureCommittedPreviewFrame = useCallback((visible: boolean) => {
     const targetCanvas = heldFrameCanvasRef.current
@@ -2335,6 +2347,7 @@ export const GridPreview = memo(function GridPreview({
     hoveredTextGuideRects,
     hoveredTextGuidePlan,
     hoveredImageRect,
+    hideHoveredGuideFill,
     selectedLayerKey,
     overflowLinesByBlock,
     dragState,

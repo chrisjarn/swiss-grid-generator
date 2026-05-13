@@ -35,18 +35,6 @@ function getHexRelativeLuminance(hex: string): number {
   )
 }
 
-function sortSchemeColorsBrightToDark(
-  colors: readonly [string, string, string, string],
-): readonly [string, string, string, string] {
-  return [...colors]
-    .sort((left, right) => getHexRelativeLuminance(right) - getHexRelativeLuminance(left)) as [
-      string,
-      string,
-      string,
-      string,
-    ]
-}
-
 export const IMAGE_COLOR_SCHEMES = [
   {
     id: "braun-classic",
@@ -55,44 +43,54 @@ export const IMAGE_COLOR_SCHEMES = [
     defaultTextSlotIndex: 2,
   },
   {
+    id: "coral-bay",
+    label: "Coral Bay",
+    colors: ["#dddddd", "#fbae17", "#fe9f97", "#0095a3"],
+  },
+  {
     id: "fresh-contrast",
     label: "Fresh Contrast",
-    colors: sortSchemeColorsBrightToDark(["#fef9f7", "#1aa9bc", "#457c39", "#ffeb00"]),
+    colors: ["#fef9f7", "#ffeb00", "#1aa9bc", "#457c39"],
+  },
+  {
+    id: "industrial-ember",
+    label: "Industrial Ember",
+    colors: ["#ec6b2d", "#777870", "#333333", "#0d0f05"],
   },
   {
     id: "mono",
     label: "Mono",
-    colors: sortSchemeColorsBrightToDark(["#ffffff", "#c0c0c0", "#808080", "#404040"]),
+    colors: ["#ffffff", "#c0c0c0", "#808080", "#404040"],
   },
   {
     id: "patina-clay",
     label: "Patina Clay",
-    colors: sortSchemeColorsBrightToDark(["#bfbabe", "#a63e14", "#558a86", "#f1f2f0"]),
+    colors: ["#f1f2f0", "#bfbabe", "#558a86", "#a63e14"],
   },
   {
     id: "sage-pop",
     label: "Sage Pop",
-    colors: sortSchemeColorsBrightToDark(["#e0e5db", "#de3d83", "#00b8b8", "#e4bd0b"]),
+    colors: ["#e0e5db", "#e4bd0b", "#00b8b8", "#de3d83"],
   },
   {
     id: "sgg-core",
     label: "SGG Core",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
+    colors: ["#e5e7de", "#0098d8", "#2979c8", "#0b3536"],
   },
   {
     id: "signal-cyan",
     label: "Signal Cyan",
-    colors: sortSchemeColorsBrightToDark(["#f43530", "#46454b", "#00aabb", "#e0e5da"]),
+    colors: ["#e0e5da", "#00aabb", "#f43530", "#46454b"],
   },
   {
     id: "stone-cyan",
     label: "Stone Cyan",
-    colors: sortSchemeColorsBrightToDark(["#35342f", "#e1e0dd", "#f1f2f0", "#37bbe4"]),
+    colors: ["#f1f2f0", "#e1e0dd", "#37bbe4", "#35342f"],
   },
   {
     id: "swiss-modern",
     label: "Swiss Modern",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#fd8b7b"]),
+    colors: ["#e5e7de", "#fd8b7b", "#0098d8", "#0b3536"],
   },
 ] as const satisfies readonly ImageColorScheme[]
 
@@ -100,8 +98,6 @@ export type ImageColorSchemeId = (typeof IMAGE_COLOR_SCHEMES)[number]["id"]
 export type CanvasBackgroundColor = string | null
 
 const LEGACY_IMAGE_COLOR_SCHEME_ALIASES: Record<string, ImageColorSchemeId> = {
-  "coral-bay": "fresh-contrast",
-  "industrial-ember": "signal-cyan",
   s1: "swiss-modern",
   s2: "stone-cyan",
   s3: "fresh-contrast",

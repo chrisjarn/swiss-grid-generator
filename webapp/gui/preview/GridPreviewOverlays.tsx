@@ -13,6 +13,7 @@ import {
   MoveDiagonal2,
   SquarePen,
   Trash2,
+  type LucideIcon,
 } from "lucide-react"
 import { createPortal } from "react-dom"
 import { useCallback, useEffect, useMemo, useState } from "react"
@@ -20,6 +21,7 @@ import type {
   Dispatch,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
+  ReactNode,
   SetStateAction,
 } from "react"
 
@@ -37,7 +39,6 @@ import {
   getSettingsOpenListOptionClassName,
   getSettingsValueBadgeClassName,
   SETTINGS_FINE_CHEVRON_ICON_CLASSNAME,
-  SETTINGS_FINE_ICON_CLASSNAME,
   SETTINGS_OPEN_LIST_LABEL_CLASSNAME,
   SETTINGS_ROW_LABEL_CLASSNAME,
 } from "@/gui/panels/settings/settings-panel-styles"
@@ -53,9 +54,15 @@ import { Label } from "@/shared/ui/label"
 import { EditableSlider } from "@/shared/ui/slider"
 
 const PREVIEW_ACTION_BUTTON_SIZE = 22
-const PARAGRAPH_ROLLOVER_BUTTON_HEIGHT = 32
-const PREVIEW_RESIZE_HANDLE_SIZE = 32
+const PREVIEW_LAYER_AFFORDANCE_SIZE = 32
+const PREVIEW_ROLLOVER_MENU_BUTTON_WIDTH = 24
+const PREVIEW_ROLLOVER_MENU_BUTTON_HEIGHT = 32
+const PREVIEW_ROLLOVER_ICON_SIZE = 12
+const PREVIEW_ROLLOVER_MENU_SYMBOL_SIZE = 14
+const PREVIEW_RESIZE_HANDLE_SIZE = PREVIEW_LAYER_AFFORDANCE_SIZE
 const PARAGRAPH_MENU_GUIDE_INSET = 1
+const ROLLOVER_MENU_BODY_INSET = (PREVIEW_LAYER_AFFORDANCE_SIZE - PREVIEW_ROLLOVER_ICON_SIZE) / 2
+const ROLLOVER_MENU_BOTTOM_INSET = 8
 const PARAGRAPH_MENU_MAX_HEIGHT = 360
 const PARAGRAPH_MENU_MIN_BUTTON_ROWS = 5
 const HORIZONTAL_ALIGNMENTS = ["left", "center", "right"] as const
@@ -93,6 +100,14 @@ type ImageRolloverControlPatch = Partial<{
   snapX: boolean
   snapY: boolean
 }>
+
+type RolloverToggleRow<Patch> = {
+  key: string
+  label: string
+  checked: boolean
+  disabled?: boolean
+  patch: (checked: boolean) => Patch
+}
 
 type Props<StyleKey extends string> = {
   showEditorHelpIcon: boolean
@@ -261,7 +276,6 @@ export function GridPreviewOverlays<StyleKey extends string>({
     verticalEdges: gridColumnRightEdgesCss,
   })
   const paragraphMenuRenderedWidth = paragraphMenuWidth + 1
-  const paragraphMenuGutterWidth = paragraphMenuRenderedWidth / 7
   const hoveredKindLabel = hoveredEditTarget?.kind === "text"
     ? t("ui.editor.overlayActions.paragraph")
     : t("ui.editor.overlayActions.imagePlaceholder")
@@ -293,14 +307,26 @@ export function GridPreviewOverlays<StyleKey extends string>({
       : "bg-surface text-foreground hover:bg-surface hover:text-foreground"
   }`
   const previewRolloverIconClassName = SETTINGS_FINE_CHEVRON_ICON_CLASSNAME
-  const paragraphMenuRowStyle = { gridTemplateColumns: `${paragraphMenuGutterWidth}px minmax(0, 1fr)` }
-  const paragraphMenuRowClassName = "grid items-center"
-  const paragraphMenuContentClassName = "min-w-0 pr-3"
-  const paragraphMenuTwoColumnContentClassName = `${paragraphMenuContentClassName} grid grid-cols-2 items-center`
+  const rolloverMenuBodyStyle = {
+    paddingLeft: ROLLOVER_MENU_BODY_INSET,
+    paddingRight: ROLLOVER_MENU_BODY_INSET,
+    paddingBottom: ROLLOVER_MENU_BOTTOM_INSET,
+  }
+  const rolloverMenuIconButtonStyle = {
+    width: PREVIEW_ROLLOVER_MENU_BUTTON_WIDTH,
+    minWidth: PREVIEW_ROLLOVER_MENU_BUTTON_WIDTH,
+    height: PREVIEW_ROLLOVER_MENU_BUTTON_HEIGHT,
+    minHeight: PREVIEW_ROLLOVER_MENU_BUTTON_HEIGHT,
+    padding: 0,
+  }
+  const rolloverMenuIconStyle = {
+    width: PREVIEW_ROLLOVER_MENU_SYMBOL_SIZE,
+    height: PREVIEW_ROLLOVER_MENU_SYMBOL_SIZE,
+    flexShrink: 0,
+  }
+  const paragraphMenuIconRowClassName = "grid min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3"
   const paragraphMenuLeftIconGroupClassName = "flex items-center justify-start gap-x-0.5"
   const paragraphMenuRightIconGroupClassName = "flex items-center justify-end gap-x-0.5"
-  const paragraphMenuIconButtonStyle = { width: PREVIEW_ACTION_BUTTON_SIZE }
-  const paragraphMenuToggleButtonStyle = { width: paragraphMenuGutterWidth }
   const resizeHandleSize = Math.min(
     PREVIEW_RESIZE_HANDLE_SIZE,
     Math.max(PREVIEW_ACTION_BUTTON_SIZE, hoveredEditTarget?.rect.width ?? PREVIEW_RESIZE_HANDLE_SIZE),
@@ -313,7 +339,6 @@ export function GridPreviewOverlays<StyleKey extends string>({
     ? hoverVisibleRect.y + hoverVisibleRect.height - resizeHandleSize
     : 0
   const paragraphChevronIconClassName = `${previewRolloverIconClassName} rotate-90`
-  const paragraphControlIconClassName = SETTINGS_FINE_ICON_CLASSNAME
   const horizontalAlignIconByValue = {
     left: AlignLeft,
     center: AlignCenter,
@@ -497,102 +522,61 @@ export function GridPreviewOverlays<StyleKey extends string>({
     onImageRolloverControlEnd()
   }
 
-  const renderRolloverMenuButton = () => (
+  const renderRolloverIconButton = ({
+    Icon,
+    buttonKey,
+    active = false,
+    ariaLabel,
+    title,
+    onMouseEnter,
+    onMouseLeave,
+    onFocus,
+    onBlur,
+    onPointerDown,
+    onClick,
+  }: {
+    Icon: LucideIcon
+    buttonKey?: string
+    active?: boolean
+    ariaLabel: string
+    title: string
+    onMouseEnter?: () => void
+    onMouseLeave?: () => void
+    onFocus?: () => void
+    onBlur?: () => void
+    onPointerDown?: (event: ReactPointerEvent<HTMLButtonElement>) => void
+    onClick: (event: ReactMouseEvent<HTMLButtonElement>) => void
+  }) => (
     <button
+      key={buttonKey}
       type="button"
+      data-preview-edit-affordance="true"
       data-preview-menu-control="true"
-      className={paragraphMenuSegmentButtonClassName(false)}
-      style={paragraphMenuToggleButtonStyle}
-      onClick={(event) => {
-        stopPreviewButtonEvent(event)
-        setOpenRolloverMenuKey(null)
-        endActiveRolloverControl()
-      }}
-      aria-label={rolloverControlsLabel}
-      title={rolloverControlsLabel}
+      className={paragraphMenuSegmentButtonClassName(active)}
+      style={rolloverMenuIconButtonStyle}
+      aria-pressed={active}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onFocus={onFocus}
+      onBlur={onBlur}
+      onMouseDown={stopPreviewButtonEvent}
+      onPointerDown={onPointerDown}
+      onClick={onClick}
+      aria-label={ariaLabel}
+      title={title}
     >
-      <ChevronUp className={paragraphChevronIconClassName} />
+      <Icon aria-hidden="true" strokeWidth={1.5} style={rolloverMenuIconStyle} />
     </button>
   )
 
-  const renderRolloverMenuEditButton = () => (
-    <button
-      type="button"
-      data-preview-menu-control="true"
-      className={paragraphMenuSegmentButtonClassName(false)}
-      style={paragraphMenuIconButtonStyle}
-      onMouseDown={stopPreviewButtonEvent}
-      onClick={(event) => {
-        stopPreviewButtonEvent(event)
-        if (!hoveredEditTarget) return
-        clearHover()
-        onPreviewEditorOpen?.()
-        if (hoveredEditTarget.kind === "text") {
-          openTextEditor(hoveredEditTarget.key)
-          return
-        }
-        openImageEditor(hoveredEditTarget.key)
-      }}
-      aria-label={t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel })}
-      title={t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel })}
-    >
-      <SquarePen className={paragraphControlIconClassName} />
-    </button>
-  )
-
-  const renderDuplicateButton = () => (
-    <button
-      type="button"
-      data-preview-menu-control="true"
-      className={paragraphMenuSegmentButtonClassName(false)}
-      style={paragraphMenuIconButtonStyle}
-      onMouseDown={stopPreviewButtonEvent}
-      onPointerDown={(event) => {
-        event.stopPropagation()
-      }}
-      onClick={(event) => {
-        stopPreviewButtonEvent(event)
-        if (!hoveredEditTarget) return
-        onCopyAffordanceActivate({
-          key: hoveredEditTarget.key,
-          kind: hoveredEditTarget.kind,
-          clientX: event.clientX,
-          clientY: event.clientY,
-          altKey: event.altKey,
-          shiftKey: event.shiftKey,
-        })
-      }}
-      aria-label={hoveredEditTarget?.kind === "text"
-        ? t("ui.editor.overlayActions.duplicateText")
-        : t("ui.editor.overlayActions.duplicateImage")}
-      title={hoveredEditTarget?.kind === "text"
-        ? getTextCopyRolloverTitle(t)
-        : t("ui.editor.overlayActions.duplicateImageTooltip")}
-    >
-      <Copy className={paragraphControlIconClassName} />
-    </button>
-  )
-
-  const renderDeleteButton = () => (
-    <button
-      type="button"
-      data-preview-menu-control="true"
-      className={paragraphMenuSegmentButtonClassName(false)}
-      style={paragraphMenuIconButtonStyle}
-      onMouseDown={stopPreviewButtonEvent}
-      onPointerDown={(event) => {
-        event.stopPropagation()
-      }}
-      onClick={(event) => {
-        stopPreviewButtonEvent(event)
-        if (!hoveredEditTarget) return
-        deletePreviewTarget(hoveredEditTarget.key)
-      }}
-      aria-label={t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel })}
-      title={t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel })}
-    >
-      <Trash2 className={paragraphControlIconClassName} />
-    </button>
+  const renderRolloverIconRow = (
+    left: ReactNode,
+    right: ReactNode,
+  ) => (
+    <div className={paragraphMenuIconRowClassName}>
+      <div className={paragraphMenuLeftIconGroupClassName}>{left}</div>
+      <div className={paragraphMenuRightIconGroupClassName}>{right}</div>
+    </div>
   )
 
   const renderAlignmentButton = (
@@ -609,59 +593,170 @@ export function GridPreviewOverlays<StyleKey extends string>({
     const patch = isHorizontal
       ? { align: value as TextAlignMode }
       : { verticalAlign: value as TextVerticalAlignMode }
-    return (
-      <button
-        key={`rollover-${alignKind}-align-${value}`}
-        type="button"
-        data-preview-menu-control="true"
-        className={paragraphMenuSegmentButtonClassName(active)}
-        style={paragraphMenuIconButtonStyle}
-        aria-pressed={active}
-        onMouseEnter={() => previewParagraphAlignmentChange(patch)}
-        onMouseLeave={() => {
-          if (hoveredEditTarget?.kind === "text") {
-            onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
-          }
-        }}
-        onFocus={() => previewParagraphAlignmentChange(patch)}
-        onBlur={() => {
-          if (hoveredEditTarget?.kind === "text") {
-            onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
-          }
-        }}
-        onClick={(event) => {
-          stopPreviewButtonEvent(event)
-          if (hoveredEditTarget?.kind !== "text") return
-          handleParagraphAlignmentChange(patch)
+    return renderRolloverIconButton({
+      Icon: AlignIcon,
+      buttonKey: `rollover-${alignKind}-align-${value}`,
+      active,
+      ariaLabel: t(`ui.editor.paragraph.${value}`),
+      title: t(`ui.editor.paragraph.${value}`),
+      onMouseEnter: () => previewParagraphAlignmentChange(patch),
+      onMouseLeave: () => {
+        if (hoveredEditTarget?.kind === "text") {
           onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
-        }}
-        aria-label={t(`ui.editor.paragraph.${value}`)}
-        title={t(`ui.editor.paragraph.${value}`)}
-      >
-        <AlignIcon className={paragraphControlIconClassName} />
-      </button>
-    )
+        }
+      },
+      onFocus: () => previewParagraphAlignmentChange(patch),
+      onBlur: () => {
+        if (hoveredEditTarget?.kind === "text") {
+          onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
+        }
+      },
+      onClick: (event) => {
+        stopPreviewButtonEvent(event)
+        if (hoveredEditTarget?.kind !== "text") return
+        handleParagraphAlignmentChange(patch)
+        onParagraphRolloverControlPreview(hoveredEditTarget.key, null)
+      },
+    })
   }
 
-  const renderRolloverMenuActions = () => (
-    <div className={paragraphMenuRowClassName} style={paragraphMenuRowStyle}>
-      {renderRolloverMenuButton()}
-      <div className={paragraphMenuTwoColumnContentClassName}>
-        <div className={paragraphMenuLeftIconGroupClassName}>
-          {renderRolloverMenuEditButton()}
-          {renderDuplicateButton()}
-        </div>
-        <div className={paragraphMenuRightIconGroupClassName}>
-          {renderDeleteButton()}
-        </div>
+  const renderRolloverRotationSlider = ({
+    value,
+    currentRotation,
+    onChange,
+    onCommit,
+  }: {
+    value: number[]
+    currentRotation: number
+    onChange: (rotation: number) => void
+    onCommit: () => void
+  }) => (
+    <EditableSlider
+      label={t("ui.editor.paragraph.rotation")}
+      inputAriaLabel={t("ui.editor.paragraph.rotation")}
+      value={value}
+      defaultValue={[0]}
+      min={-180}
+      max={180}
+      step={1}
+      shiftStep={5}
+      fibonacciStep
+      onValueChange={([nextValue]) => {
+        if (Math.abs(nextValue - currentRotation) < 0.0001) return
+        onChange(nextValue)
+      }}
+      onValueCommit={onCommit}
+      formatValue={(nextValue) => `${Math.round(nextValue)}°`}
+      labelClassName={paragraphMenuRowLabelClassName}
+      valueClassName={paragraphMenuValueBadgeClassName}
+    />
+  )
+
+  const renderRolloverToggleList = <Patch,>(
+    rows: readonly RolloverToggleRow<Patch>[],
+    onToggle: (patch: Patch) => void,
+  ) => (
+    <div className="space-y-1.5">
+      <Label className={paragraphMenuLabelClassName}>{t("ui.editor.paragraph.options")}</Label>
+      <div
+        role="listbox"
+        aria-multiselectable="true"
+        aria-label={t("ui.editor.paragraph.options")}
+        className={paragraphMenuOptionListClassName}
+      >
+        {rows.map((row) => {
+          const disabled = row.disabled ?? false
+          return (
+            <button
+              key={row.key}
+              type="button"
+              role="option"
+              aria-selected={row.checked}
+              disabled={disabled}
+              className={paragraphMenuOptionClassName(row.checked, disabled)}
+              onClick={(event) => {
+                stopPreviewButtonEvent(event)
+                if (disabled) return
+                onToggle(row.patch(!row.checked))
+              }}
+            >
+              <span className="min-w-0 truncate">{row.label}</span>
+              <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
+                {row.checked ? t("ui.common.on") : t("ui.common.off")}
+              </span>
+            </button>
+          )
+        })}
       </div>
     </div>
+  )
+
+  const renderRolloverMenuActions = () => (
+    renderRolloverIconRow(
+      <>
+        {renderRolloverIconButton({
+          Icon: SquarePen,
+          ariaLabel: t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel }),
+          title: t("ui.editor.overlayActions.edit", { kind: hoveredKindLabel }),
+          onClick: (event) => {
+            stopPreviewButtonEvent(event)
+            if (!hoveredEditTarget) return
+            clearHover()
+            onPreviewEditorOpen?.()
+            if (hoveredEditTarget.kind === "text") {
+              openTextEditor(hoveredEditTarget.key)
+              return
+            }
+            openImageEditor(hoveredEditTarget.key)
+          },
+        })}
+        {renderRolloverIconButton({
+          Icon: Copy,
+          ariaLabel: hoveredEditTarget?.kind === "text"
+            ? t("ui.editor.overlayActions.duplicateText")
+            : t("ui.editor.overlayActions.duplicateImage"),
+          title: hoveredEditTarget?.kind === "text"
+            ? getTextCopyRolloverTitle(t)
+            : t("ui.editor.overlayActions.duplicateImageTooltip"),
+          onPointerDown: (event) => {
+            event.stopPropagation()
+          },
+          onClick: (event) => {
+            stopPreviewButtonEvent(event)
+            if (!hoveredEditTarget) return
+            onCopyAffordanceActivate({
+              key: hoveredEditTarget.key,
+              kind: hoveredEditTarget.kind,
+              clientX: event.clientX,
+              clientY: event.clientY,
+              altKey: event.altKey,
+              shiftKey: event.shiftKey,
+            })
+          },
+        })}
+      </>,
+      <>
+        {renderRolloverIconButton({
+          Icon: Trash2,
+          ariaLabel: t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel }),
+          title: t("ui.editor.overlayActions.delete", { kind: hoveredKindLabel }),
+          onPointerDown: (event) => {
+            event.stopPropagation()
+          },
+          onClick: (event) => {
+            stopPreviewButtonEvent(event)
+            if (!hoveredEditTarget) return
+            deletePreviewTarget(hoveredEditTarget.key)
+          },
+        })}
+      </>,
+    )
   )
 
   const rolloverMenu = rolloverMenuOpen && hoveredEditTarget ? (
     <div
       data-preview-edit-affordance="true"
-      className={`pointer-events-auto absolute overflow-y-auto overscroll-contain pb-3 ${paragraphMenuClassName}`}
+      className={`pointer-events-auto absolute overflow-y-auto overscroll-contain ${paragraphMenuClassName}`}
       style={{
         left: paragraphMenuLeft,
         top: paragraphMenuTop,
@@ -683,141 +778,50 @@ export function GridPreviewOverlays<StyleKey extends string>({
       onPointerUp={handleRolloverMenuPointerEnd}
       onPointerCancel={handleRolloverMenuPointerEnd}
     >
-      <div className="space-y-2">
+      <div className="space-y-2" style={rolloverMenuBodyStyle}>
         {renderRolloverMenuActions()}
         {paragraphMenuOpen && hoveredTextControls ? (
           <>
             <div className="group min-h-8">
               <Label
                 className={`${paragraphMenuLabelClassName} group-hover:hidden group-focus-within:hidden`}
-                style={{ paddingLeft: paragraphMenuGutterWidth }}
               >
                 {t("ui.editor.paragraph.alignment")}
               </Label>
               <div
-                className={`hidden group-hover:grid group-focus-within:grid ${paragraphMenuRowClassName}`}
-                style={paragraphMenuRowStyle}
+                className="hidden group-hover:block group-focus-within:block"
               >
-                <div aria-hidden="true" />
-                <div className={paragraphMenuTwoColumnContentClassName}>
-                  <div className={paragraphMenuLeftIconGroupClassName}>
-                    {HORIZONTAL_ALIGNMENTS.map((align) => renderAlignmentButton("horizontal", align))}
-                  </div>
-                  <div className={paragraphMenuRightIconGroupClassName}>
-                    {VERTICAL_ALIGNMENTS.map((verticalAlign) => renderAlignmentButton("vertical", verticalAlign))}
-                  </div>
-                </div>
+                {renderRolloverIconRow(
+                  HORIZONTAL_ALIGNMENTS.map((align) => renderAlignmentButton("horizontal", align)),
+                  VERTICAL_ALIGNMENTS.map((verticalAlign) => renderAlignmentButton("vertical", verticalAlign)),
+                )}
               </div>
             </div>
-            <div
-              className="space-y-2 pr-3"
-              style={{ paddingLeft: paragraphMenuGutterWidth }}
-            >
-              <EditableSlider
-                label={t("ui.editor.paragraph.rotation")}
-                inputAriaLabel={t("ui.editor.paragraph.rotation")}
-                value={rolloverRotationValue}
-                defaultValue={[0]}
-                min={-180}
-                max={180}
-                step={1}
-                shiftStep={5}
-                fibonacciStep
-                onValueChange={([value]) => {
-                  if (Math.abs(value - hoveredTextControls.rotation) < 0.0001) return
-                  onParagraphRolloverControlChange(hoveredEditTarget.key, { rotation: value })
-                }}
-                onValueCommit={() => onParagraphRolloverControlEnd()}
-                formatValue={(value) => `${Math.round(value)}°`}
-                labelClassName={paragraphMenuRowLabelClassName}
-                valueClassName={paragraphMenuValueBadgeClassName}
-              />
-              <div className="space-y-1.5">
-                <Label className={paragraphMenuLabelClassName}>{t("ui.editor.paragraph.options")}</Label>
-                <div
-                  role="listbox"
-                  aria-multiselectable="true"
-                  aria-label={t("ui.editor.paragraph.options")}
-                  className={paragraphMenuOptionListClassName}
-                >
-                  {paragraphToggleRows.map((row) => (
-                    <button
-                      key={row.key}
-                      type="button"
-                      role="option"
-                      aria-selected={row.checked}
-                      disabled={row.disabled}
-                      className={paragraphMenuOptionClassName(row.checked, row.disabled)}
-                      onClick={(event) => {
-                        stopPreviewButtonEvent(event)
-                        if (row.disabled) return
-                        handleParagraphToggleChange(row.patch(!row.checked))
-                      }}
-                    >
-                      <span className="min-w-0 truncate">{row.label}</span>
-                      <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                        {row.checked ? t("ui.common.on") : t("ui.common.off")}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+            <div className="space-y-2">
+              {renderRolloverRotationSlider({
+                value: rolloverRotationValue,
+                currentRotation: hoveredTextControls.rotation,
+                onChange: (rotationValue) => {
+                  onParagraphRolloverControlChange(hoveredEditTarget.key, { rotation: rotationValue })
+                },
+                onCommit: onParagraphRolloverControlEnd,
+              })}
+              {renderRolloverToggleList(paragraphToggleRows, handleParagraphToggleChange)}
             </div>
           </>
         ) : null}
         {imageMenuOpen && hoveredImageControls ? (
-          <div
-            className="space-y-2 pr-3"
-            style={{ paddingLeft: paragraphMenuGutterWidth }}
-          >
-            <EditableSlider
-              label={t("ui.editor.paragraph.rotation")}
-              inputAriaLabel={t("ui.editor.paragraph.rotation")}
-              value={imageRolloverRotationValue}
-              defaultValue={[0]}
-              min={-180}
-              max={180}
-              step={1}
-              shiftStep={5}
-              fibonacciStep
-              onValueChange={([value]) => {
-                if (Math.abs(value - hoveredImageControls.rotation) < 0.0001) return
-                onImageRolloverControlChange(hoveredEditTarget.key, { rotation: value })
-              }}
-              onValueCommit={() => onImageRolloverControlEnd()}
-              formatValue={(value) => `${Math.round(value)}°`}
-              labelClassName={paragraphMenuRowLabelClassName}
-              valueClassName={paragraphMenuValueBadgeClassName}
-            />
-            <div className="space-y-1.5">
-              <Label className={paragraphMenuLabelClassName}>{t("ui.editor.paragraph.options")}</Label>
-              <div
-                role="listbox"
-                aria-multiselectable="true"
-                aria-label={t("ui.editor.paragraph.options")}
-                className={paragraphMenuOptionListClassName}
-              >
-                {imageToggleRows.map((row) => (
-                  <button
-                    key={row.key}
-                    type="button"
-                    role="option"
-                    aria-selected={row.checked}
-                    className={paragraphMenuOptionClassName(row.checked, false)}
-                    onClick={(event) => {
-                      stopPreviewButtonEvent(event)
-                      handleImageToggleChange(row.patch(!row.checked))
-                    }}
-                  >
-                    <span className="min-w-0 truncate">{row.label}</span>
-                    <span className="ml-auto shrink-0 pl-3 text-right tabular-nums">
-                      {row.checked ? t("ui.common.on") : t("ui.common.off")}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
+          <>
+            {renderRolloverRotationSlider({
+              value: imageRolloverRotationValue,
+              currentRotation: hoveredImageControls.rotation,
+              onChange: (rotationValue) => {
+                onImageRolloverControlChange(hoveredEditTarget.key, { rotation: rotationValue })
+              },
+              onCommit: onImageRolloverControlEnd,
+            })}
+            {renderRolloverToggleList(imageToggleRows, handleImageToggleChange)}
+          </>
         ) : null}
       </div>
     </div>
@@ -868,12 +872,12 @@ export function GridPreviewOverlays<StyleKey extends string>({
           ) : (
             <>
               <div
-                className={`pointer-events-none absolute ${paragraphMenuRowClassName}`}
+                className="pointer-events-none absolute"
                 style={{
                   left: paragraphMenuLeft,
                   top: paragraphMenuTop,
-                  width: paragraphMenuRenderedWidth,
-                  ...paragraphMenuRowStyle,
+                  width: PREVIEW_LAYER_AFFORDANCE_SIZE,
+                  height: PREVIEW_LAYER_AFFORDANCE_SIZE,
                   transform: pageRotation !== 0 ? `rotate(${-pageRotation}deg)` : undefined,
                 }}
               >
@@ -881,9 +885,10 @@ export function GridPreviewOverlays<StyleKey extends string>({
                   type="button"
                   data-preview-edit-affordance="true"
                   data-preview-icon-surface="true"
-                  className={`pointer-events-auto w-full ${previewRolloverIconButtonClassName}`}
+                  className={`pointer-events-auto ${previewRolloverIconButtonClassName}`}
                   style={{
-                    height: PARAGRAPH_ROLLOVER_BUTTON_HEIGHT,
+                    width: PREVIEW_LAYER_AFFORDANCE_SIZE,
+                    height: PREVIEW_LAYER_AFFORDANCE_SIZE,
                   }}
                   onMouseDown={stopPreviewButtonEvent}
                   onMouseEnter={() => openRolloverMenu(hoveredEditTarget.key)}
