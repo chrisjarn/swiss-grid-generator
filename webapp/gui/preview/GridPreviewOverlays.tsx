@@ -45,6 +45,7 @@ import {
   resolvePreviewHoverActionTop,
   resolvePreviewHoverBandRect,
   resolvePreviewHoverPrimaryActionLeft,
+  resolvePreviewHoverVisibleRect,
   resolvePreviewParagraphMenuWidth,
 } from "@/gui/preview/lib/preview-hover-affordance"
 import { useTranslation } from "@/lib/i18n/useTranslation"
@@ -229,6 +230,13 @@ export function GridPreviewOverlays<StyleKey extends string>({
         pageHeight: pageHeightCss,
       })
     : null
+  const hoverVisibleRect = hoveredEditTarget
+    ? resolvePreviewHoverVisibleRect({
+        targetRect: hoveredEditTarget.rect,
+        pageWidth: pageWidthCss,
+        pageHeight: pageHeightCss,
+      })
+    : null
   const leftActionGroupLeft = hoverBandRect
     ? resolvePreviewHoverPrimaryActionLeft(hoverBandRect)
     : 0
@@ -298,11 +306,11 @@ export function GridPreviewOverlays<StyleKey extends string>({
     Math.max(PREVIEW_ACTION_BUTTON_SIZE, hoveredEditTarget?.rect.width ?? PREVIEW_RESIZE_HANDLE_SIZE),
     Math.max(PREVIEW_ACTION_BUTTON_SIZE, hoveredEditTarget?.rect.height ?? PREVIEW_RESIZE_HANDLE_SIZE),
   )
-  const resizeHandleLeft = hoveredEditTarget
-    ? hoveredEditTarget.rect.x + hoveredEditTarget.rect.width - resizeHandleSize
+  const resizeHandleLeft = hoverVisibleRect
+    ? hoverVisibleRect.x + hoverVisibleRect.width - resizeHandleSize
     : 0
-  const resizeHandleTop = hoveredEditTarget
-    ? hoveredEditTarget.rect.y + hoveredEditTarget.rect.height - resizeHandleSize
+  const resizeHandleTop = hoverVisibleRect
+    ? hoverVisibleRect.y + hoverVisibleRect.height - resizeHandleSize
     : 0
   const paragraphChevronIconClassName = `${previewRolloverIconClassName} rotate-90`
   const paragraphControlIconClassName = SETTINGS_FINE_ICON_CLASSNAME

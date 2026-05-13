@@ -33,7 +33,7 @@
         "rhythmColsDirection": "ttb",
         "typographyScale": "swiss",
         "baseFont": "Inter",
-        "imageColorScheme": "coral-bay",
+        "imageColorScheme": "fresh-contrast",
         "canvasBackground": "scheme:0",
         "customBaseline": 12,
         "useCustomMargins": true,

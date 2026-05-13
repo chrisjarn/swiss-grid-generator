@@ -27,6 +27,7 @@ type Args<Key extends string, StyleKey extends string> = Pick<
   | "insertImagePlaceholder"
   | "setImageModulePositions"
   | "onSelectLayer"
+  | "onImagePlaceholderCreated"
   | "promoteLayerToTop"
   | "getNextImagePlaceholderId"
   | "ensureImagePlaceholdersVisible"
@@ -77,6 +78,7 @@ export function usePreviewImagePlaceholderInteractions<Key extends string, Style
   insertImagePlaceholder,
   setImageModulePositions,
   onSelectLayer,
+  onImagePlaceholderCreated,
   promoteLayerToTop,
   getNextImagePlaceholderId,
   ensureImagePlaceholdersVisible,
@@ -198,7 +200,7 @@ export function usePreviewImagePlaceholderInteractions<Key extends string, Style
       color: shortcutColor ?? undefined,
     })
     promoteLayerToTop(newKey)
-    openImageEditor(newKey, { recordHistory: false })
+    onImagePlaceholderCreated?.(newKey, pagePoint)
     return true
   }, [
     clampImageModulePosition,
@@ -206,6 +208,7 @@ export function usePreviewImagePlaceholderInteractions<Key extends string, Style
     getNextImagePlaceholderId,
     insertImagePlaceholder,
     ensureImagePlaceholdersVisible,
+    onImagePlaceholderCreated,
     openImageEditor,
     promoteLayerToTop,
     recordHistoryBeforeChange,

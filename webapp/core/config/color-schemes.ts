@@ -1,15 +1,16 @@
+type ImageColorSlotIndex = 0 | 1 | 2 | 3
+
 export type ImageColorScheme = {
   id: string
   label: string
   colors: readonly [string, string, string, string]
+  defaultTextSlotIndex?: ImageColorSlotIndex
 }
 
 const IMAGE_COLOR_SLOT_COUNT = 4
 const IMAGE_COLOR_REFERENCE_PREFIX = "scheme:"
 const DEFAULT_IMAGE_PLACEHOLDER_SLOT_INDEX = 2
 const DEFAULT_TEXT_SCHEME_SLOT_INDEX = IMAGE_COLOR_SLOT_COUNT - 1
-
-type ImageColorSlotIndex = 0 | 1 | 2 | 3
 
 function clampImageColorSlotIndex(index: number): ImageColorSlotIndex {
   return Math.max(0, Math.min(IMAGE_COLOR_SLOT_COUNT - 1, Math.round(index))) as ImageColorSlotIndex
@@ -50,22 +51,13 @@ export const IMAGE_COLOR_SCHEMES = [
   {
     id: "braun-classic",
     label: "BRAUN Classic",
-    colors: sortSchemeColorsBrightToDark(["#f0ede5", "#c5c3be", "#8a8a87", "#c02820"]),
-  },
-  {
-    id: "coral-bay",
-    label: "Coral Bay",
-    colors: sortSchemeColorsBrightToDark(["#dddddd", "#fe9f97", "#fbae17", "#0095a3"]),
+    colors: ["#f0ede5", "#8a8a87", "#1a1a18", "#c02820"],
+    defaultTextSlotIndex: 2,
   },
   {
     id: "fresh-contrast",
     label: "Fresh Contrast",
     colors: sortSchemeColorsBrightToDark(["#fef9f7", "#1aa9bc", "#457c39", "#ffeb00"]),
-  },
-  {
-    id: "industrial-ember",
-    label: "Industrial Ember",
-    colors: sortSchemeColorsBrightToDark(["#777870", "#ec6b2d", "#333333", "#0d0f05"]),
   },
   {
     id: "mono",
@@ -83,6 +75,11 @@ export const IMAGE_COLOR_SCHEMES = [
     colors: sortSchemeColorsBrightToDark(["#e0e5db", "#de3d83", "#00b8b8", "#e4bd0b"]),
   },
   {
+    id: "sgg-core",
+    label: "SGG Core",
+    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
+  },
+  {
     id: "signal-cyan",
     label: "Signal Cyan",
     colors: sortSchemeColorsBrightToDark(["#f43530", "#46454b", "#00aabb", "#e0e5da"]),
@@ -91,11 +88,6 @@ export const IMAGE_COLOR_SCHEMES = [
     id: "stone-cyan",
     label: "Stone Cyan",
     colors: sortSchemeColorsBrightToDark(["#35342f", "#e1e0dd", "#f1f2f0", "#37bbe4"]),
-  },
-  {
-    id: "swiss-classic",
-    label: "Swiss Classic",
-    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
   },
   {
     id: "swiss-modern",
@@ -108,10 +100,13 @@ export type ImageColorSchemeId = (typeof IMAGE_COLOR_SCHEMES)[number]["id"]
 export type CanvasBackgroundColor = string | null
 
 const LEGACY_IMAGE_COLOR_SCHEME_ALIASES: Record<string, ImageColorSchemeId> = {
+  "coral-bay": "fresh-contrast",
+  "industrial-ember": "signal-cyan",
   s1: "swiss-modern",
   s2: "stone-cyan",
   s3: "fresh-contrast",
   s4: "swiss-modern",
+  "swiss-classic": "sgg-core",
 }
 
 const IMAGE_COLOR_SCHEME_IDS = new Set<ImageColorSchemeId>(
@@ -147,7 +142,8 @@ export function getDefaultImagePlaceholderColor(id: ImageColorSchemeId): string 
 }
 
 export function getDefaultTextSchemeColor(id: ImageColorSchemeId): string {
-  return getImageColorScheme(id).colors[DEFAULT_TEXT_SCHEME_SLOT_INDEX]
+  const scheme = getImageColorScheme(id)
+  return scheme.colors[(scheme as ImageColorScheme).defaultTextSlotIndex ?? DEFAULT_TEXT_SCHEME_SLOT_INDEX]
 }
 
 export function getImageSchemeColorByIndex(id: ImageColorSchemeId, index: number): string {

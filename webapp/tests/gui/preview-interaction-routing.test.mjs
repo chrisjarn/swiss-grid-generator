@@ -66,6 +66,20 @@ test("paragraph alignment rollover previews stay separate from committed changes
   assert.match(gridPreviewSource, /buildLayoutSnapshot: buildPreviewRenderSnapshot/)
 })
 
+test("image shortcut creation inserts and hovers without entering edit mode", () => {
+  const imageInteractionSource = readSource("gui/preview/hooks/usePreviewImagePlaceholderInteractions.ts")
+  const handlerStart = imageInteractionSource.indexOf("const handleImageDoubleClick = useCallback")
+  const creationStart = imageInteractionSource.indexOf("const newKey = getNextImagePlaceholderId()", handlerStart)
+  const creationEnd = imageInteractionSource.indexOf("return true", creationStart)
+  const creationSource = imageInteractionSource.slice(creationStart, creationEnd)
+
+  assert.ok(handlerStart >= 0, "Expected image double-click handler")
+  assert.ok(creationStart >= 0, "Expected a new image-placeholder creation branch")
+  assert.match(creationSource, /color: shortcutColor \?\? undefined/)
+  assert.match(creationSource, /onImagePlaceholderCreated\?\.\(newKey, pagePoint\)/)
+  assert.doesNotMatch(creationSource, /openImageEditor/)
+})
+
 test("preview smoke uses the authored inline editor aria-label casing", () => {
   const smokeSource = readSource("scripts/run-preview-interaction-smoke.mjs")
 

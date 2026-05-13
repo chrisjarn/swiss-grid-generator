@@ -771,6 +771,12 @@ export const GridPreview = memo(function GridPreview({
     setHoverState({ key, point })
   }, [])
 
+  const showImmediateImageHover = useCallback((key: BlockId) => {
+    setHoverState(null)
+    setHoverCopyIntent(false)
+    setHoverImageKey(key)
+  }, [])
+
   const buildTextStyleTransfer = (
     sourceKey: BlockId,
     mode: TextStyleTransferMode,
@@ -1471,6 +1477,9 @@ export const GridPreview = memo(function GridPreview({
     setBlockTextColors,
     setBlockModulePositions,
     onSelectLayer,
+    onImagePlaceholderCreated: (key) => {
+      showImmediateImageHover(key)
+    },
     promoteLayerToTop,
     onRequestNotice,
     getNextCustomBlockId,

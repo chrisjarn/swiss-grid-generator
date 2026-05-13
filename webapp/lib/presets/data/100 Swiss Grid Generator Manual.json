@@ -462,7 +462,7 @@
           "cover-title": "2.\nQuick start",
           "cover-step-1": "swiss grid generator - manual - page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Build the page in the simplest reliable order.",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose ratio, orientation, and, if needed, rotation. Set the baseline. Choose the margins method, or use custom margins when the field needs a precise exception. Then set cols, rows, gutter, and rhythm. Finally define type rhythm and base family.\n\nCreate content only after the page structure is established. Double-click a module to create a text paragraph. Use Shift + double-click to create an image placeholder; hold 1 to 4 with Shift to choose its base-scheme swatch. If the page feels wrong, return to baseline and margins before changing content blocks."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Choose ratio, orientation, and, if needed, rotation. Set the baseline. Choose the margins method, or use custom margins when the field needs a precise exception. Then set cols, rows, gutter, and rhythm. Finally define type rhythm and base family.\n\nCreate content only after the page structure is established. Double-click a module to create a text paragraph. Use Shift + double-click to create and select an image placeholder; hold 1 to 4 with Shift to choose its base-scheme swatch. If the page feels wrong, return to baseline and margins before changing content blocks."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -1477,7 +1477,7 @@
           "cover-title": "7.\nPlacing text and image areas",
           "cover-step-1": "swiss grid generator - manual - page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Define the frame before refining content.",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use the modular field deliberately. Double-click a module to create text with hyphenation off. Hold 1 to 5 while double-clicking to create text directly in a hierarchy; the initial frame follows that role and clamps to the remaining columns. Use Shift + double-click to create an image placeholder; hold 1 to 4 with Shift to choose its base-scheme swatch.\n\nBefore refining wording, define the frame with rows, baselines, and cols. Then adjust alignment, snapping, and content. Snapped placement produces stronger editorial discipline. Free placement should be deliberate."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Use the modular field deliberately. Double-click a module to create text with hyphenation off. Hold 1 to 5 while double-clicking to create text directly in a hierarchy; the initial frame follows that role and clamps to the remaining columns. Use Shift + double-click to create and select an image placeholder; hold 1 to 4 with Shift to choose its base-scheme swatch.\n\nBefore refining wording, define the frame with rows, baselines, and cols. Then adjust alignment, snapping, and content. Snapped placement produces stronger editorial discipline. Free placement should be deliberate."
         },
         "blockTextEdited": {
           "cover-title": true,
@@ -1883,7 +1883,7 @@
           "cover-title": "9.\nKeyboard and fast interaction",
           "cover-step-1": "swiss grid generator - manual - page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Use shortcuts to protect concentration.",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "The essential interactions are few: double-click to create text, Shift + double-click to create an image placeholder, hold 1 to 4 with Shift to choose an image swatch, hold 1 to 5 while double-clicking to choose hierarchy, drag to move, use + for transfer or duplication, use arrow keys to nudge selected layers, use Shift + J to copy a layout, use Tab or Shift + P for presentation mode, and press Esc to leave dialogs, exit presentation mode, or cancel export at the next safe point.\n\nShortcuts protect attention. They are not speed for its own sake."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "The essential interactions are few: double-click to create text, Shift + double-click to create and select an image placeholder, hold 1 to 4 with Shift to choose an image swatch, hold 1 to 5 while double-clicking to choose hierarchy, drag to move, use + for transfer or duplication, use arrow keys to nudge selected layers, use Shift + J to copy a layout, use Tab or Shift + P for presentation mode, and press Esc to leave dialogs, exit presentation mode, or cancel export at the next safe point.\n\nShortcuts protect attention. They are not speed for its own sake."
         },
         "blockTextEdited": {
           "cover-title": true,

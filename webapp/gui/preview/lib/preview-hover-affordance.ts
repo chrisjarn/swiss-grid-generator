@@ -75,6 +75,38 @@ export function resolvePreviewHoverBandRect({
   }
 }
 
+export function resolvePreviewHoverVisibleRect({
+  targetRect,
+  pageWidth,
+  pageHeight,
+}: {
+  targetRect: BlockRect
+  pageWidth: number
+  pageHeight: number
+}): BlockRect {
+  const pageRectLeft = 0
+  const pageRectTop = 0
+  const pageRectRight = Math.max(0, pageWidth)
+  const pageRectBottom = Math.max(0, pageHeight)
+  const visibleLeft = Math.max(targetRect.x, pageRectLeft)
+  const visibleTop = Math.max(targetRect.y, pageRectTop)
+  const visibleRight = Math.min(targetRect.x + targetRect.width, pageRectRight)
+  const visibleBottom = Math.min(targetRect.y + targetRect.height, pageRectBottom)
+  const fallbackWidth = Math.max(1, Math.min(targetRect.width, pageWidth))
+  const fallbackHeight = Math.max(1, Math.min(targetRect.height, pageHeight))
+  const width = Math.max(1, visibleRight - visibleLeft || fallbackWidth)
+  const height = Math.max(1, visibleBottom - visibleTop || fallbackHeight)
+  const maxX = Math.max(0, pageWidth - width)
+  const maxY = Math.max(0, pageHeight - height)
+
+  return {
+    x: Math.max(0, Math.min(maxX, visibleLeft)),
+    y: Math.max(0, Math.min(maxY, visibleTop)),
+    width,
+    height,
+  }
+}
+
 export function resolvePreviewHoverPrimaryActionLeft(bandRect: BlockRect): number {
   return bandRect.x + ACTION_EDGE_INSET
 }

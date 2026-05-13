@@ -10,6 +10,7 @@ import { resolveTextCopyAffordanceAction } from "../../gui/preview/lib/preview-c
 import { resolvePreviewHoverTarget } from "../../gui/preview/lib/preview-hover-target.ts"
 import {
   resolvePreviewHoverDeleteActionLeft,
+  resolvePreviewHoverVisibleRect,
   resolvePreviewParagraphMenuWidth,
   resolvePreviewResizeHandleHitRect,
   shouldUseCompactParagraphActions,
@@ -240,6 +241,26 @@ test("resize handle hit rect expands around the bottom-right frame corner", () =
       targetRect: { x: 10, y: 20, width: 190, height: 130 },
     }),
     { x: 189, y: 139, width: 22, height: 22 },
+  )
+})
+
+test("hover visible rect keeps control icons inside the page", () => {
+  assert.deepEqual(
+    resolvePreviewHoverVisibleRect({
+      targetRect: { x: 40, y: 120, width: 220, height: 140 },
+      pageWidth: 180,
+      pageHeight: 260,
+    }),
+    { x: 40, y: 120, width: 140, height: 140 },
+  )
+
+  assert.deepEqual(
+    resolvePreviewHoverVisibleRect({
+      targetRect: { x: -60, y: -20, width: 120, height: 80 },
+      pageWidth: 180,
+      pageHeight: 260,
+    }),
+    { x: 0, y: 0, width: 60, height: 60 },
   )
 })
 
