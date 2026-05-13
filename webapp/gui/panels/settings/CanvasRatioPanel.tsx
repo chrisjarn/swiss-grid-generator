@@ -101,6 +101,7 @@ export const CanvasRatioPanel = memo(function CanvasRatioPanel({
     <PanelCard
       title={t("ui.panels.canvas.title")}
       tooltip={t("ui.panels.canvas.tooltip")}
+      helpId="tooltip-settings-canvas"
       collapsed={collapsed}
       collapsedSummary={`${ratioLabel}, ${orientation}, ${rotation}°`}
       onHeaderClick={onHeaderClick}

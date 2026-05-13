@@ -1,6 +1,6 @@
 import { Button } from "@/shared/ui/button"
 import type { ButtonProps } from "@/shared/ui/button"
-import { HoverTooltip } from "@/shared/ui/hover-tooltip"
+import { DocumentationHoverInfo, type DocumentationHoverInfoId } from "@/shared/ui/documentation-hover-info"
 import { getCompactActionButtonClassName } from "@/shared/ui/popup-styles"
 import { cn } from "@/lib/utils"
 import type { ReactNode } from "react"
@@ -8,6 +8,7 @@ import type { ReactNode } from "react"
 type HeaderIconButtonProps = {
   ariaLabel: string
   tooltip: string
+  helpId?: DocumentationHoverInfoId
   children: ReactNode
   buttonClassName?: string
   showTooltip?: boolean
@@ -21,6 +22,7 @@ type HeaderIconButtonProps = {
 export function HeaderIconButton({
   ariaLabel,
   tooltip,
+  helpId,
   children,
   variant = "outline",
   disabled,
@@ -35,10 +37,13 @@ export function HeaderIconButton({
   const isActive = ariaPressed === true || variant === "default"
 
   return (
-    <HoverTooltip
+    <DocumentationHoverInfo
       label={tooltip}
-      disabled={!showTooltip}
-      tooltipClassName="w-max whitespace-pre-line border-border bg-popover/95 text-center text-popover-foreground shadow-lg"
+      helpId={helpId}
+      showRolloverInfo={showTooltip}
+      tooltipClassName={helpId
+        ? "border-border bg-popover/95 text-left text-popover-foreground shadow-lg"
+        : "w-max whitespace-pre-line border-border bg-popover/95 text-center text-popover-foreground shadow-lg"}
     >
       <Button
         size="icon"
@@ -64,6 +69,6 @@ export function HeaderIconButton({
         ) : null}
         {children}
       </Button>
-    </HoverTooltip>
+    </DocumentationHoverInfo>
   )
 }

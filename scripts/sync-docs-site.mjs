@@ -12,14 +12,6 @@ const sections = [
     source: "DOCUMENTATION.md",
   },
   {
-    title: "Tooltips",
-    source: "webapp/messages/en/content/tooltips.md",
-  },
-  {
-    title: "Features",
-    source: "FEATURES.md",
-  },
-  {
     title: "GUI",
     source: "GUI.md",
   },

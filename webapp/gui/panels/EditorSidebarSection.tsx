@@ -3,13 +3,14 @@
 import type { ReactNode } from "react"
 import { ChevronUp } from "lucide-react"
 
-import { HoverTooltip } from "@/shared/ui/hover-tooltip"
+import { DocumentationHoverInfo, type DocumentationHoverInfoId } from "@/shared/ui/documentation-hover-info"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
 
 type Props = {
   title: ReactNode
   tooltip: string
+  helpId?: DocumentationHoverInfoId
   collapsed: boolean
   collapsedSummary?: ReactNode
   onHeaderClick: (event: React.MouseEvent) => void
@@ -24,6 +25,7 @@ type Props = {
 export function EditorSidebarSection({
   title,
   tooltip,
+  helpId,
   collapsed,
   collapsedSummary,
   onHeaderClick,
@@ -42,9 +44,10 @@ export function EditorSidebarSection({
           : "text-foreground"
       }`}
     >
-      <HoverTooltip
+      <DocumentationHoverInfo
         label={tooltip}
-        disabled={!showRolloverInfo}
+        helpId={helpId}
+        showRolloverInfo={showRolloverInfo}
         className="block"
         tooltipClassName="border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground shadow-lg dark:border-border dark:bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] dark:text-foreground"
       >
@@ -78,7 +81,7 @@ export function EditorSidebarSection({
             </h3>
           </div>
         </header>
-      </HoverTooltip>
+      </DocumentationHoverInfo>
       {!collapsed ? <div className="space-y-4 pb-4 pt-1">{children}</div> : null}
     </section>
   )

@@ -53,6 +53,7 @@ export const BaselineGridPanel = memo(function BaselineGridPanel({
     <PanelCard
       title={t("ui.panels.baseline.title")}
       tooltip={t("ui.panels.baseline.tooltip")}
+      helpId="tooltip-settings-baseline"
       collapsed={collapsed}
       collapsedSummary={`${customBaseline} pt`}
       onHeaderClick={onHeaderClick}

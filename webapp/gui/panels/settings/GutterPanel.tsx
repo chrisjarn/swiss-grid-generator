@@ -107,6 +107,7 @@ export const GutterPanel = memo(function GutterPanel({
     <PanelCard
       title={t("ui.panels.grid.title")}
       tooltip={t("ui.panels.grid.tooltip")}
+      helpId="tooltip-settings-grid"
       collapsed={collapsed}
       collapsedSummary={`${gridCols} cols, ${gridRows} rows, ${gutterMultiple.toFixed(1)}x`}
       onHeaderClick={onHeaderClick}

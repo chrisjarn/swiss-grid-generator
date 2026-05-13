@@ -8,7 +8,7 @@ import {
   type LayoutPreset,
   type LayoutPresetGroup,
 } from "@/lib/presets"
-import { HoverTooltip } from "@/shared/ui/hover-tooltip"
+import { DocumentationHoverInfo } from "@/shared/ui/documentation-hover-info"
 import { PresetPageThumbnail } from "@/gui/panels/sidebar/PresetPageThumbnail"
 import { SectionHeaderRow } from "@/shared/ui/section-header-row"
 import { getPresetSyncStatusIndicatorClassName } from "@/gui/shell/lib/cloud-status-indicator"
@@ -77,9 +77,11 @@ function getPresetCloudStatusLabel(
 function PresetGroupHeaderLabel({
   group,
   isDarkMode,
+  showRolloverInfo,
 }: {
   group: LayoutPresetGroup
   isDarkMode: boolean
+  showRolloverInfo: boolean
 }) {
   const label = formatPresetGroupHeaderLabel(group.label)
   if (group.category !== "users") return label
@@ -87,8 +89,10 @@ function PresetGroupHeaderLabel({
   return (
     <span className="inline-flex min-w-0 items-center gap-1.5">
       <span>{label}</span>
-      <HoverTooltip
+      <DocumentationHoverInfo
         inline
+        helpId="tooltip-user-library"
+        showRolloverInfo={showRolloverInfo}
         constrainToClosestSelector='[data-tooltip-boundary="preset-browser"]'
         constrainAxes="horizontal"
         horizontalAlign="start"
@@ -120,7 +124,7 @@ function PresetGroupHeaderLabel({
         >
           i
         </span>
-      </HoverTooltip>
+      </DocumentationHoverInfo>
     </span>
   )
 }
@@ -208,8 +212,9 @@ function PresetCard({
   }, [menuOpen, onMenuOpenChange])
 
   return (
-    <HoverTooltip
+    <DocumentationHoverInfo
       className="block"
+      helpId="tooltip-preset-browser"
       disabled={!showRolloverInfo || menuOpen}
       constrainToClosestSelector='[data-tooltip-boundary="preset-browser"]'
       constrainAxes="horizontal"
@@ -348,7 +353,7 @@ function PresetCard({
           ) : null}
         </div>
       </div>
-    </HoverTooltip>
+    </DocumentationHoverInfo>
   )
 }
 
@@ -514,7 +519,7 @@ export function PresetLayoutsPanel({
             <section key={group.category} className="space-y-3">
               <div className="rounded-md py-2">
                 <SectionHeaderRow
-                  label={<PresetGroupHeaderLabel group={group} isDarkMode={isDarkMode} />}
+                  label={<PresetGroupHeaderLabel group={group} isDarkMode={isDarkMode} showRolloverInfo={showRolloverInfo} />}
                   aria-expanded={!isCollapsed}
                   actionIcon={(
                     <ChevronUp

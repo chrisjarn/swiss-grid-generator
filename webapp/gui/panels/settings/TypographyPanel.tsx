@@ -138,6 +138,7 @@ export const TypographyPanel = memo(function TypographyPanel({
     <PanelCard
       title={t("ui.panels.typography.title")}
       tooltip={t("ui.panels.typography.tooltip")}
+      helpId="tooltip-settings-typography"
       collapsed={collapsed}
       collapsedSummary={`${activeTypographyScaleLabel}, ${baseFont}`}
       onHeaderClick={onHeaderClick}

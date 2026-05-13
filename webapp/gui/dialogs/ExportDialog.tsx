@@ -2,6 +2,7 @@ import { ChevronDown, ChevronUp, Image as ImageIcon, LayoutGrid, Loader2, Rows3,
 import { useRef, useState } from "react"
 
 import { Button } from "@/shared/ui/button"
+import { DocumentationHoverInfo } from "@/shared/ui/documentation-hover-info"
 import { ExportPreviewCanvas } from "@/gui/dialogs/ExportPreviewCanvas"
 import { Label } from "@/shared/ui/label"
 import { useTranslation } from "@/lib/i18n"
@@ -26,6 +27,7 @@ type Props = {
   isOpen: boolean
   onClose: () => void
   isDarkUi: boolean
+  showHoverInfo: boolean
   showBaselines: boolean
   onToggleBaselines: () => void
   showMargins: boolean
@@ -65,6 +67,7 @@ export function ExportDialog({
   isOpen,
   onClose,
   isDarkUi,
+  showHoverInfo,
   showBaselines,
   onToggleBaselines,
   showMargins,
@@ -108,6 +111,7 @@ export function ExportDialog({
   const compactInputClassName = getPopupInputClassName(isDarkUi, "rounded-sm px-2 py-1 text-[12px]")
   const helpTextClassName = `text-xs leading-relaxed ${getPopupMutedTextClassName(isDarkUi)}`
   const actionButtonClassName = getCompactActionButtonClassName({ isDarkMode: isDarkUi })
+  const helpTooltipClassName = "border-border bg-popover/95 text-left text-popover-foreground shadow-lg"
   const sectionGridClassName = "grid grid-cols-4 items-start gap-3"
   const centeredRowLabelClassName = `${SECTION_HEADLINE_CLASSNAME} flex h-8 items-center text-left leading-none`
   const isPdfExport = exportFormatDraft === "pdf"
@@ -164,7 +168,15 @@ export function ExportDialog({
         </div>
         <div className="space-y-4">
           <div className="space-y-1">
-            <SectionHeaderRow label={t("ui.export.dialog.title")} />
+            <DocumentationHoverInfo
+              label={t("ui.export.dialog.title")}
+              helpId="tooltip-export-dialog"
+              showRolloverInfo={showHoverInfo}
+              className="block"
+              tooltipClassName={helpTooltipClassName}
+            >
+              <SectionHeaderRow label={t("ui.export.dialog.title")} />
+            </DocumentationHoverInfo>
             <p className={helpTextClassName}>
               {t("ui.export.dialog.description")}
             </p>
@@ -172,7 +184,15 @@ export function ExportDialog({
 
           <div className="grid grid-cols-1 items-start gap-3 md:grid-cols-4">
             <div className="space-y-2">
-              <SectionHeaderRow label={t("ui.export.dialog.input")} className="items-start" />
+              <DocumentationHoverInfo
+                label={t("ui.export.dialog.input")}
+                helpId="tooltip-export-visibility"
+                showRolloverInfo={showHoverInfo}
+                className="block"
+                tooltipClassName={helpTooltipClassName}
+              >
+                <SectionHeaderRow label={t("ui.export.dialog.input")} className="items-start" />
+              </DocumentationHoverInfo>
               <div className="grid grid-cols-1 gap-1.5">
                 <Button
                   type="button"
@@ -249,33 +269,59 @@ export function ExportDialog({
             </div>
 
             <div className="space-y-2">
-              <SectionHeaderRow label={t("ui.export.dialog.output")} className="items-start" />
+              <DocumentationHoverInfo
+                label={t("ui.export.dialog.output")}
+                helpId="tooltip-export-format"
+                showRolloverInfo={showHoverInfo}
+                className="block"
+                tooltipClassName={helpTooltipClassName}
+              >
+                <SectionHeaderRow label={t("ui.export.dialog.output")} className="items-start" />
+              </DocumentationHoverInfo>
               <div className="grid grid-cols-1 gap-1.5">
                 {EXPORT_FORMATS.map((format) => (
-                  <Button
+                  <DocumentationHoverInfo
                     key={format}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === format })} w-full`}
                     disabled={isExporting}
-                    onClick={() => onExportFormatChange(format)}
+                    label={EXPORT_FORMAT_OPTIONS[format].label}
+                    helpId="tooltip-export-format"
+                    showRolloverInfo={showHoverInfo}
+                    className="block"
+                    tooltipClassName={helpTooltipClassName}
                   >
-                    {EXPORT_FORMAT_OPTIONS[format].label}
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: exportFormatDraft === format })} w-full`}
+                      disabled={isExporting}
+                      onClick={() => onExportFormatChange(format)}
+                    >
+                      {EXPORT_FORMAT_OPTIONS[format].label}
+                    </Button>
+                  </DocumentationHoverInfo>
                 ))}
                 {isVectorExport ? (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: bleedEnabledDraft })} w-full`}
+                  <DocumentationHoverInfo
+                    label={t("ui.export.dialog.bleed")}
+                    helpId="tooltip-export-bleed"
+                    showRolloverInfo={showHoverInfo}
                     disabled={isExporting}
-                    onClick={() => onBleedEnabledChange(!bleedEnabledDraft)}
-                    aria-pressed={bleedEnabledDraft}
+                    className="block"
+                    tooltipClassName={helpTooltipClassName}
                   >
-                    {t("ui.export.dialog.bleed")}
-                  </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={`${getCompactActionButtonClassName({ isDarkMode: isDarkUi, active: bleedEnabledDraft })} w-full`}
+                      disabled={isExporting}
+                      onClick={() => onBleedEnabledChange(!bleedEnabledDraft)}
+                      aria-pressed={bleedEnabledDraft}
+                    >
+                      {t("ui.export.dialog.bleed")}
+                    </Button>
+                  </DocumentationHoverInfo>
                 ) : null}
               </div>
             </div>
@@ -298,7 +344,15 @@ export function ExportDialog({
 
           {showPageRangeControls ? (
             <div className={sectionGridClassName}>
-              <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.pages")}</Label>
+              <DocumentationHoverInfo
+                label={t("ui.export.dialog.pages")}
+                helpId="tooltip-export-page-range"
+                showRolloverInfo={showHoverInfo}
+                className="block"
+                tooltipClassName={helpTooltipClassName}
+              >
+                <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.pages")}</Label>
+              </DocumentationHoverInfo>
               <input
                 ref={rangeInputRef}
                 type="text"
@@ -338,7 +392,15 @@ export function ExportDialog({
           </div>
 
           <div className={sectionGridClassName}>
-            <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.titleField")}</Label>
+            <DocumentationHoverInfo
+              label={t("ui.export.dialog.titleField")}
+              helpId="tooltip-export-metadata"
+              showRolloverInfo={showHoverInfo}
+              className="block"
+              tooltipClassName={helpTooltipClassName}
+            >
+              <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.titleField")}</Label>
+            </DocumentationHoverInfo>
             <input
               type="text"
               value={jsonTitleDraft}
@@ -347,7 +409,15 @@ export function ExportDialog({
               className={`${compactInputClassName} col-span-3`}
               placeholder={t("ui.common.projectTitle")}
             />
-            <Label className={`${SECTION_HEADLINE_CLASSNAME} flex min-h-20 items-start pt-2 text-left leading-none`}>{t("ui.export.dialog.subject")}</Label>
+            <DocumentationHoverInfo
+              label={t("ui.export.dialog.subject")}
+              helpId="tooltip-export-metadata"
+              showRolloverInfo={showHoverInfo}
+              className="block"
+              tooltipClassName={helpTooltipClassName}
+            >
+              <Label className={`${SECTION_HEADLINE_CLASSNAME} flex min-h-20 items-start pt-2 text-left leading-none`}>{t("ui.export.dialog.subject")}</Label>
+            </DocumentationHoverInfo>
             <textarea
               value={jsonDescriptionDraft}
               onChange={(event) => onJsonDescriptionChange(event.target.value)}
@@ -355,7 +425,15 @@ export function ExportDialog({
               className={`${compactInputClassName} col-span-3 min-h-20 leading-[1.45]`}
               placeholder={t("ui.common.shortSubject")}
             />
-            <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.author")}</Label>
+            <DocumentationHoverInfo
+              label={t("ui.export.dialog.author")}
+              helpId="tooltip-export-metadata"
+              showRolloverInfo={showHoverInfo}
+              className="block"
+              tooltipClassName={helpTooltipClassName}
+            >
+              <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.author")}</Label>
+            </DocumentationHoverInfo>
             <input
               type="text"
               value={jsonAuthorDraft}
@@ -369,7 +447,15 @@ export function ExportDialog({
           {exportProgressLog.length > 0 ? (
             <div className="space-y-2">
               <div className={sectionGridClassName}>
-                <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.progressLog")}</Label>
+                <DocumentationHoverInfo
+                  label={t("ui.export.dialog.progressLog")}
+                  helpId="tooltip-export-progress-log"
+                  showRolloverInfo={showHoverInfo}
+                  className="block"
+                  tooltipClassName={helpTooltipClassName}
+                >
+                  <Label className={centeredRowLabelClassName}>{t("ui.export.dialog.progressLog")}</Label>
+                </DocumentationHoverInfo>
                 <Button
                   type="button"
                   variant="outline"

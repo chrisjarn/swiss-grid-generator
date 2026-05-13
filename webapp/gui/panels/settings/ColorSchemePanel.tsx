@@ -71,6 +71,7 @@ export const ColorSchemePanel = memo(function ColorSchemePanel({
     <PanelCard
       title={t("ui.panels.color.title")}
       tooltip={t("ui.panels.color.tooltip")}
+      helpId="tooltip-settings-color"
       collapsed={collapsed}
       collapsedSummary={(
         <div className="flex items-center gap-1.5">

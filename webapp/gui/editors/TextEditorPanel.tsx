@@ -796,6 +796,7 @@ export function TextEditorPanel<StyleKey extends string>({
           <EditorSidebarSection
             title={`I. ${t("ui.editor.paragraph.title")}`}
             tooltip={t("ui.editor.paragraph.tooltip")}
+            helpId="tooltip-editor-paragraph"
             collapsed={collapsed.layout}
             collapsedSummary={`${controls.editorState.draftRows} ${t("ui.editor.paragraph.rows")}, ${controls.editorState.draftColumns} ${t("ui.editor.paragraph.cols")}`}
             onHeaderClick={handleSectionHeaderClick("layout")}
@@ -1014,6 +1015,7 @@ export function TextEditorPanel<StyleKey extends string>({
             </>
           ) : `II. ${t("ui.editor.typography.title")}`}
           tooltip={t("ui.editor.typography.tooltip")}
+          helpId="tooltip-editor-typography"
           collapsed={collapsed.type}
           collapsedSummary={`${selectionFontFamily ?? t("ui.editor.mixed")}, ${selectedStyleLabelForSelection}`}
           onHeaderClick={handleSectionHeaderClick("type")}
@@ -1236,6 +1238,7 @@ export function TextEditorPanel<StyleKey extends string>({
         <EditorSidebarSection
           title={`III. ${t("ui.editor.symbols.title")}`}
           tooltip={t("ui.editor.symbols.tooltip")}
+          helpId="tooltip-editor-symbols"
           collapsed={collapsed.symbols}
           collapsedSummary={t("ui.editor.symbols.summary")}
           onHeaderClick={handleSectionHeaderClick("symbols")}
@@ -1301,6 +1304,7 @@ export function TextEditorPanel<StyleKey extends string>({
         <EditorSidebarSection
           title={`IV. ${t("ui.editor.placeholders.title")}`}
           tooltip={t("ui.editor.placeholders.tooltip")}
+          helpId="tooltip-editor-placeholders"
           collapsed={collapsed.placeholders}
           collapsedSummary={t("ui.editor.placeholders.summary")}
           onHeaderClick={handleSectionHeaderClick("placeholders")}
@@ -1339,6 +1343,7 @@ export function TextEditorPanel<StyleKey extends string>({
           <EditorSidebarSection
           title={`V. ${t("ui.editor.info.title")}`}
           tooltip={t("ui.editor.info.paragraphTooltip")}
+          helpId="tooltip-editor-info"
           collapsed={collapsed.info}
           collapsedSummary={t("ui.editor.info.charsWords", { chars: characterCount, words: wordCount })}
           onHeaderClick={handleSectionHeaderClick("info")}

@@ -1,4 +1,3 @@
-import { HoverTooltip } from "@/shared/ui/hover-tooltip"
 import type { ReactNode } from "react"
 import type { SectionKey } from "@/core/types/workspace-ui-schema"
 import { useSettingsHelpNavigation } from "@/gui/panels/settings/help-navigation-context"
@@ -6,10 +5,12 @@ import { ChevronUp } from "lucide-react"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { SETTINGS_FINE_CHEVRON_ICON_CLASSNAME } from "@/gui/panels/settings/settings-panel-styles"
 import { SectionHeaderRow, SECTION_HEADER_NEUTRAL_LABEL_CLASSNAME } from "@/shared/ui/section-header-row"
+import { DocumentationHoverInfo, type DocumentationHoverInfoId } from "@/shared/ui/documentation-hover-info"
 
 type Props = {
   title: string
   tooltip: string
+  helpId?: DocumentationHoverInfoId
   collapsed: boolean
   collapsedSummary?: ReactNode
   onHeaderClick: (event: React.MouseEvent) => void
@@ -22,6 +23,7 @@ type Props = {
 export function PanelCard({
   title,
   tooltip,
+  helpId,
   collapsed,
   collapsedSummary,
   onHeaderClick,
@@ -46,9 +48,10 @@ export function PanelCard({
           : "text-foreground"
       }`}
     >
-      <HoverTooltip
+      <DocumentationHoverInfo
         label={tooltip}
-        disabled={!showRolloverInfo}
+        helpId={helpId}
+        showRolloverInfo={showRolloverInfo}
         className="block"
         tooltipClassName="border-divider bg-[color-mix(in_srgb,var(--color-page-default)_95%,transparent)] text-muted-foreground shadow-lg dark:border-border dark:bg-[color-mix(in_srgb,var(--color-panel-bg)_95%,transparent)] dark:text-foreground"
       >
@@ -86,7 +89,7 @@ export function PanelCard({
             </h3>
           </div>
         </header>
-      </HoverTooltip>
+      </DocumentationHoverInfo>
       {!collapsed && (
         <div className={`space-y-4 pb-4 pt-1 ${interactionsDisabled ? "pointer-events-none opacity-50" : ""}`}>
           {children}

@@ -2453,6 +2453,7 @@ export function ShellModelView() {
 
         <WorkspaceDialogs
           isDarkUi={isDarkUi}
+          showHoverInfo={showHoverInfo}
           exportDialog={{
             isOpen: exportActions.isExportDialogOpen,
             onClose: exportActions.requestCloseExportDialog,

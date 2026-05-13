@@ -14,7 +14,7 @@ import type { ProjectPanelViewModel } from "@/gui/panels/sidebar/project-panel-v
 import { PresetLayoutsPanel } from "@/gui/panels/sidebar/PresetLayoutsPanel"
 import { ProjectTitleSection } from "@/gui/panels/sidebar/ProjectTitleSection"
 import { SidebarSectionScrollFrame } from "@/gui/panels/SidebarSectionScrollFrame"
-import { HoverTooltip } from "@/shared/ui/hover-tooltip"
+import { DocumentationHoverInfo } from "@/shared/ui/documentation-hover-info"
 import { getStyleDefaultFontWeight, resolveFontVariant, type FontFamily } from "@/core/config/fonts"
 import {
   type ImageColorSchemeId,
@@ -540,10 +540,12 @@ export function PreviewWorkspace({
     </span>
   ) : (
     <span className={`inline-flex min-w-0 items-center gap-1 font-normal normal-case tracking-normal ${pageCounterTextClassName}`}>
-      <HoverTooltip
+      <DocumentationHoverInfo
         inline
         label={t("ui.panels.project.pageCounterTooltip", { page: documentPagePosition, total: documentVariablePageCount })}
-        tooltipClassName="w-56 whitespace-pre-line border-border bg-popover/95 text-left text-[11px] leading-snug text-popover-foreground shadow-lg"
+        helpId="tooltip-project-pages"
+        showRolloverInfo={showHoverInfo}
+        tooltipClassName="border-border bg-popover/95 text-left text-[11px] leading-snug text-popover-foreground shadow-lg"
         horizontalAlign="end"
       >
         <button
@@ -554,7 +556,7 @@ export function PreviewWorkspace({
         >
           {documentPagePosition}
         </button>
-      </HoverTooltip>
+      </DocumentationHoverInfo>
       <span className="px-1">{t("ui.common.of")}</span>
       <span>{documentVariablePageCount}</span>
     </span>
@@ -840,10 +842,12 @@ export function PreviewWorkspace({
 
     return (
       <div className="flex shrink-0 items-center gap-1.5">
-        <HoverTooltip
+        <DocumentationHoverInfo
           inline
           label={tooltip}
-        tooltipClassName="w-max whitespace-pre-line border-border bg-popover/95 text-center text-popover-foreground shadow-lg"
+          helpId="tooltip-preview-create"
+          showRolloverInfo={showHoverInfo}
+          tooltipClassName="border-border bg-popover/95 text-left text-popover-foreground shadow-lg"
         >
           <button
             type="button"
@@ -865,7 +869,7 @@ export function PreviewWorkspace({
           >
             <Plus className="h-2 w-2" />
           </button>
-        </HoverTooltip>
+        </DocumentationHoverInfo>
       </div>
     )
   }

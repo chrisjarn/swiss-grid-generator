@@ -8,6 +8,7 @@ import type { ExportFormat } from "@/lib/export-format-options"
 
 type Props = {
   isDarkUi: boolean
+  showHoverInfo: boolean
   exportDialog: {
     isOpen: boolean
     onClose: () => void
@@ -60,6 +61,7 @@ type Props = {
 
 export function WorkspaceDialogs({
   isDarkUi,
+  showHoverInfo,
   exportDialog,
   saveLibraryDialog,
 }: Props) {
@@ -69,6 +71,7 @@ export function WorkspaceDialogs({
         isOpen={exportDialog.isOpen}
         onClose={exportDialog.onClose}
         isDarkUi={isDarkUi}
+        showHoverInfo={showHoverInfo}
         showBaselines={exportDialog.showBaselines}
         onToggleBaselines={exportDialog.onToggleBaselines}
         showMargins={exportDialog.showMargins}

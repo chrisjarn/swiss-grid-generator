@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react
 import type { FocusEvent, ReactNode } from "react"
 import { HOVER_TOOLTIP_FADE_DURATION_MS, HOVER_TOOLTIP_OPEN_DELAY_MS } from "@/shared/ui/hover-tooltip-timing"
 
-type HoverTooltipProps = {
+export type HoverTooltipProps = {
   label: ReactNode
   children: ReactNode
   className?: string

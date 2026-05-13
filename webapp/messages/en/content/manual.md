@@ -8,7 +8,7 @@ Swiss Grid Generator is a layout instrument for disciplined editorial pages buil
 
 This manual is selective by design. It focuses on decisions that shape the page. It does not document every control.
 
-For implementation-accurate reference, see [SETTINGS.md](./SETTINGS.md), [CALCULATIONS.md](./CALCULATIONS.md), and [FEATURES.md](./FEATURES.md).
+For implementation-accurate reference, see [SETTINGS.md](./SETTINGS.md), [CALCULATIONS.md](./CALCULATIONS.md), and [DOCUMENTATION.md](./DOCUMENTATION.md).
 
 ## 1. Introduction
 

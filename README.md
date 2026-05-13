@@ -53,7 +53,7 @@ For the full guide, read [DOCUMENTATION.md](DOCUMENTATION.md) or the generated d
 | Layers | Place, lock, duplicate, nudge, and refine text and image areas. |
 | Export | Save editable project JSON, or export vector PDF, SVG, and IDML. |
 
-For the complete capability inventory, see [FEATURES.md](FEATURES.md).
+For the complete capability inventory, see [DOCUMENTATION.md#feature-inventory](DOCUMENTATION.md#feature-inventory).
 
 ## A Typical Workflow
 
@@ -74,7 +74,7 @@ Hover previews help you judge a change before applying it. Click commits the dec
 | Need | Read |
 |---|---|
 | Learn the design workflow | [DOCUMENTATION.md](DOCUMENTATION.md) |
-| See all current capabilities | [FEATURES.md](FEATURES.md) |
+| See all current capabilities | [DOCUMENTATION.md#feature-inventory](DOCUMENTATION.md#feature-inventory) |
 | Check exact settings and defaults | [SETTINGS.md](SETTINGS.md) |
 | Understand the design principles | [DESIGN.md](DESIGN.md) |
 | Preview or build the docs site | [DEVELOPERS.md](DEVELOPERS.md) |

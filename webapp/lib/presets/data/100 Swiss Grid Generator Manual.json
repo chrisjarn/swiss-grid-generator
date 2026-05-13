@@ -56,7 +56,7 @@
           "cover-title": "Swiss \nGrid\nGenerator",
           "cover-step-1": "swiss grid generator - manual - page <%page%> of <%pages%>",
           "paragraph-94aa932b-41cb-4033-b800-0353c27e83fd": "Manual",
-          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Swiss Grid Generator is a layout instrument for disciplined editorial pages built from ratio, baseline, margins, modules, and typographic hierarchy.\n\nThis manual is selective by design. It focuses on decisions that shape the page. It does not document every control.\n\nFor implementation-accurate reference, see SETTINGS.md, CALCULATIONS.md, and FEATURES.md."
+          "paragraph-590e9b2e-f0a9-427a-95a8-145fd270e1b1": "Swiss Grid Generator is a layout instrument for disciplined editorial pages built from ratio, baseline, margins, modules, and typographic hierarchy.\n\nThis manual is selective by design. It focuses on decisions that shape the page. It does not document every control.\n\nFor implementation-accurate reference, see SETTINGS.md, CALCULATIONS.md, and DOCUMENTATION.md."
         },
         "blockTextEdited": {
           "cover-title": true,

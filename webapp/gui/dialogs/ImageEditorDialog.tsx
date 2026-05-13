@@ -302,6 +302,7 @@ export function ImageEditorDialog({
               </span>
             )}
             tooltip={t("ui.editor.image.geometryTooltip")}
+            helpId="tooltip-editor-image-geometry"
             collapsed={collapsed.geometry}
             collapsedSummary={`${editorState.draftRows} rows, ${editorState.draftColumns} cols, ${Math.round(editorState.draftRotation)}deg`}
             onHeaderClick={handleSectionHeaderClick("geometry")}
@@ -438,6 +439,7 @@ export function ImageEditorDialog({
           <EditorSidebarSection
             title={`II. ${t("ui.editor.image.colorTitle")}`}
             tooltip={t("ui.editor.image.colorTooltip")}
+            helpId="tooltip-editor-image-color"
             collapsed={collapsed.color}
             collapsedSummary={`${colorSchemes.find((scheme) => scheme.id === editorColorScheme)?.label ?? editorColorScheme}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("color")}
@@ -494,6 +496,7 @@ export function ImageEditorDialog({
           <EditorSidebarSection
             title={`III. ${t("ui.editor.info.title")}`}
             tooltip={t("ui.editor.info.imageTooltip")}
+            helpId="tooltip-editor-image-info"
             collapsed={collapsed.info}
             collapsedSummary={`${editorState.draftColor}, ${transparencyPercent}%`}
             onHeaderClick={handleSectionHeaderClick("info")}

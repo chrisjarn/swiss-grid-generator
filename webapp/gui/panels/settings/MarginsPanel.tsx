@@ -95,6 +95,7 @@ export const MarginsPanel = memo(function MarginsPanel({
     <PanelCard
       title={t("ui.panels.margins.title")}
       tooltip={t("ui.panels.margins.tooltip")}
+      helpId="tooltip-settings-margins"
       collapsed={collapsed}
       collapsedSummary={collapsedSummary}
       onHeaderClick={onHeaderClick}

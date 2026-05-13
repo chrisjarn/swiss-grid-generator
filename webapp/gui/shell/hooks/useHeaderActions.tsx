@@ -18,6 +18,7 @@ import {
 import { translateMessage } from "@/lib/i18n"
 import type { PreviewHeaderShortcutId } from "@/gui/shell/lib/preview-header-shortcuts"
 import type { WorkspacePanel } from "@/core/types/workspace"
+import type { DocumentationHoverInfoId } from "@/shared/ui/documentation-hover-info"
 
 export type SidebarPanel = WorkspacePanel
 
@@ -25,6 +26,7 @@ export type HeaderAction = {
   key: string
   ariaLabel: string
   tooltip: string
+  helpId?: DocumentationHoverInfoId
   shortcutId?: PreviewHeaderShortcutId
   icon: ReactNode
   showStatusDot?: boolean
@@ -87,6 +89,7 @@ export function useHeaderActions(args: Args) {
         key: "presets",
         ariaLabel: t("ui.shell.topBar.actions.presets.aria"),
         tooltip: t("ui.shell.topBar.actions.presets.tooltip"),
+        helpId: "tooltip-header-presets",
         shortcutId: "toggle_example_panel",
         variant: args.showPresetsBrowser ? "default" : "outline",
         pressed: args.showPresetsBrowser,
@@ -100,6 +103,7 @@ export function useHeaderActions(args: Args) {
         key: "import",
         ariaLabel: t("ui.shell.topBar.actions.import.aria"),
         tooltip: t("ui.shell.topBar.actions.import.tooltip"),
+        helpId: "tooltip-header-import",
         shortcutId: "import_project",
         onClick: args.onImportProject,
         icon: <Download className="h-4 w-4" />,
@@ -111,6 +115,7 @@ export function useHeaderActions(args: Args) {
         key: "save",
         ariaLabel: t("ui.shell.topBar.actions.save.aria"),
         tooltip: `${t("ui.shell.topBar.actions.save.tooltip")}\n${t("ui.shell.topBar.actions.save.status", { status: args.saveStatusLabel })}`,
+        helpId: "tooltip-header-save",
         shortcutId: "save_to_library",
         showStatusDot: args.hasPreviewLayout,
         statusDotClassName: args.saveStatusDotClassName,
@@ -125,6 +130,7 @@ export function useHeaderActions(args: Args) {
         key: "export",
         ariaLabel: t("ui.shell.topBar.actions.export.aria"),
         tooltip: t("ui.shell.topBar.actions.export.tooltip"),
+        helpId: "tooltip-header-export",
         shortcutId: "open_export",
         disabled: !canSaveOrExport,
         onClick: args.onOpenExportDialog,
@@ -139,6 +145,7 @@ export function useHeaderActions(args: Args) {
       key: "smart-text-zoom",
       ariaLabel: args.smartTextZoomEnabled ? t("ui.shell.topBar.actions.smartTextZoom.disable") : t("ui.shell.topBar.actions.smartTextZoom.enable"),
       tooltip: t("ui.shell.topBar.actions.smartTextZoom.tooltip"),
+      helpId: "tooltip-smart-text-zoom",
       variant: args.smartTextZoomEnabled ? "default" : "outline",
       pressed: args.smartTextZoomEnabled,
       disabled: !args.hasPreviewLayout,
@@ -156,6 +163,7 @@ export function useHeaderActions(args: Args) {
         key: "undo",
         ariaLabel: t("ui.shell.topBar.actions.undo.aria"),
         tooltip: t("ui.shell.topBar.actions.undo.tooltip"),
+        helpId: "tooltip-header-history",
         shortcutId: "undo",
         disabled: !args.canUndo,
         onClick: args.onUndo,
@@ -168,6 +176,7 @@ export function useHeaderActions(args: Args) {
         key: "redo",
         ariaLabel: t("ui.shell.topBar.actions.redo.aria"),
         tooltip: t("ui.shell.topBar.actions.redo.tooltip"),
+        helpId: "tooltip-header-history",
         shortcutId: "redo",
         disabled: !args.canRedo,
         onClick: args.onRedo,
@@ -181,6 +190,7 @@ export function useHeaderActions(args: Args) {
         key: "baselines",
         ariaLabel: t("ui.shell.topBar.actions.baselines.aria"),
         tooltip: t("ui.shell.topBar.actions.baselines.tooltip"),
+        helpId: "tooltip-header-guide-visibility",
         shortcutId: "toggle_baselines",
         variant: args.showBaselines ? "default" : "outline",
         pressed: args.showBaselines,
@@ -195,6 +205,7 @@ export function useHeaderActions(args: Args) {
         key: "margins",
         ariaLabel: t("ui.shell.topBar.actions.margins.aria"),
         tooltip: t("ui.shell.topBar.actions.margins.tooltip"),
+        helpId: "tooltip-header-guide-visibility",
         shortcutId: "toggle_margins",
         variant: args.showMargins ? "default" : "outline",
         pressed: args.showMargins,
@@ -209,6 +220,7 @@ export function useHeaderActions(args: Args) {
         key: "modules",
         ariaLabel: t("ui.shell.topBar.actions.modules.aria"),
         tooltip: t("ui.shell.topBar.actions.modules.tooltip"),
+        helpId: "tooltip-header-guide-visibility",
         shortcutId: "toggle_modules",
         variant: args.showModules ? "default" : "outline",
         pressed: args.showModules,
@@ -223,6 +235,7 @@ export function useHeaderActions(args: Args) {
         key: "typography",
         ariaLabel: t("ui.shell.topBar.actions.typography.aria"),
         tooltip: t("ui.shell.topBar.actions.typography.tooltip"),
+        helpId: "tooltip-header-guide-visibility",
         shortcutId: "toggle_typography",
         variant: args.showTypography ? "default" : "outline",
         pressed: args.showTypography,
@@ -237,6 +250,7 @@ export function useHeaderActions(args: Args) {
         key: "image-placeholders",
         ariaLabel: t("ui.shell.topBar.actions.imagePlaceholders.aria"),
         tooltip: t("ui.shell.topBar.actions.imagePlaceholders.tooltip"),
+        helpId: "tooltip-header-guide-visibility",
         shortcutId: "toggle_image_placeholders",
         variant: args.showImagePlaceholders ? "default" : "outline",
         pressed: args.showImagePlaceholders,
@@ -252,6 +266,7 @@ export function useHeaderActions(args: Args) {
         key: "layers",
         ariaLabel: args.showLayers ? t("ui.shell.topBar.actions.layers.hide") : t("ui.shell.topBar.actions.layers.show"),
         tooltip: t("ui.shell.topBar.actions.layers.tooltip"),
+        helpId: "tooltip-header-project-panel",
         shortcutId: "toggle_layers_panel",
         variant: args.showLayers ? "default" : "outline",
         pressed: args.showLayers,
@@ -267,6 +282,7 @@ export function useHeaderActions(args: Args) {
       key: "account",
       ariaLabel: args.activeSidebarPanel === "account" ? t("ui.shell.topBar.actions.account.hide") : t("ui.shell.topBar.actions.account.show"),
       tooltip: accountTooltip,
+      helpId: "tooltip-account-cloud",
       showStatusDot: true,
       statusDotClassName: args.accountStatusDotClassName,
       variant: "outline",

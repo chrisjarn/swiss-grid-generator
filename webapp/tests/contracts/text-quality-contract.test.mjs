@@ -7,7 +7,6 @@ const ROOT = process.cwd()
 
 const PRODUCT_TEXT_FILES = [
   "messages/en.json",
-  "messages/en/content/tooltips.md",
   "messages/en/content/manual.md",
   "gui/preview/lib/generated-tooltip-content.ts",
 ]
@@ -97,6 +96,22 @@ function collectMarkdownLines(relPath) {
   return readText(relPath)
     .split("\n")
     .map((line, index) => ({ source: relPath, pointer: `line ${index + 1}`, value: line.trim() }))
+    .filter((entry) => entry.value.length > 0)
+}
+
+function collectTaggedDocumentationLines(tagName) {
+  const documentation = fs.readFileSync(path.join(ROOT, "..", "DOCUMENTATION.md"), "utf8")
+  const startMarker = `<!-- ${tagName}:start -->`
+  const endMarker = `<!-- ${tagName}:end -->`
+  const startIndex = documentation.indexOf(startMarker)
+  assert.notEqual(startIndex, -1, `Expected DOCUMENTATION.md to include ${startMarker}`)
+  const contentStart = startIndex + startMarker.length
+  const endIndex = documentation.indexOf(endMarker, contentStart)
+  assert.notEqual(endIndex, -1, `Expected DOCUMENTATION.md to include ${endMarker}`)
+  return documentation
+    .slice(contentStart, endIndex)
+    .split("\n")
+    .map((line, index) => ({ source: "DOCUMENTATION.md", pointer: `${tagName} line ${index + 1}`, value: line.trim() }))
     .filter((entry) => entry.value.length > 0)
 }
 
@@ -196,7 +211,7 @@ function collectHardcodedUserFacingLiteralViolations(relPath, source) {
 test("product text stays calm, source-normal, and non-marketing", () => {
   const jsonEntries = collectJsonStrings(JSON.parse(readText("messages/en.json")), "messages/en.json")
   const markdownEntries = [
-    ...collectMarkdownLines("messages/en/content/tooltips.md"),
+    ...collectTaggedDocumentationLines("tooltip-source"),
     ...collectMarkdownLines("messages/en/content/manual.md"),
   ]
   const presetEntries = PRESET_METADATA_FILES.flatMap(collectPresetMetadataStrings)

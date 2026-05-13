@@ -3,6 +3,7 @@
 import { ChevronUp } from "lucide-react"
 import { useState, type MouseEvent, type ReactNode } from "react"
 
+import { DocumentationHoverInfo, type DocumentationHoverInfoId } from "@/shared/ui/documentation-hover-info"
 import { HeaderIconButton } from "@/shared/ui/header-icon-button"
 import { HelpIndicatorLine } from "@/shared/ui/help-indicator-line"
 import { useTranslation } from "@/lib/i18n"
@@ -33,7 +34,7 @@ export type TopBarProps = {
   onCopyLayoutToClipboard: () => void | Promise<void>
   onPasteLayoutFromClipboard: () => void | Promise<void>
   onToggleHoverInfo: () => void
-  onOpenDocumentation: () => void
+  onOpenDocumentation: (sectionId?: string) => void
   onToggleFeedbackPanel: () => void
   onToggleLegalNoticePanel: () => void
   onCloseSidebarPanel: () => void
@@ -68,6 +69,7 @@ function renderHeaderAction(
         showStatusDot={action.showStatusDot}
         statusDotClassName={action.statusDotClassName}
         showTooltip={showHoverInfo}
+        helpId={action.helpId}
         buttonClassName={action.buttonClassName}
         isDarkMode={isDarkMode}
       >
@@ -101,6 +103,16 @@ export function TopBar({
 }: TopBarProps) {
   const { t } = useTranslation()
   const [supportMenuOpen, setSupportMenuOpen] = useState(false)
+  type SupportMenuOption = {
+    key: string
+    label: string
+    active: boolean
+    disabled: boolean
+    ariaLabel: string
+    helpId?: DocumentationHoverInfoId
+    onMouseEnter?: () => void
+    onClick: (event: MouseEvent<HTMLButtonElement>) => void
+  }
 
   const supportMenuClassName = `absolute -right-4 top-8 z-40 py-1 md:-right-6 ${SIDEBAR_PANEL_POPOVER_WIDTH_CLASSNAME} ${
     isDarkUi ? "bg-surface" : "bg-surface"
@@ -121,7 +133,13 @@ export function TopBar({
     if (item.type === "action") return item.action.key !== "smart-text-zoom"
     return item.key !== "divider-smart-text-zoom-history"
   })
-  const supportMenuOptions = [
+  const supportHelpIds = {
+    menu: "tooltip-header-support-menu",
+    documentation: "tooltip-documentation-link",
+    feedback: "tooltip-feedback-panel",
+    legal: "tooltip-legal-panel",
+  } satisfies Record<string, DocumentationHoverInfoId>
+  const supportMenuOptions: SupportMenuOption[] = [
     ...(smartTextZoomAction
       ? [{
           key: smartTextZoomAction.key,
@@ -131,6 +149,7 @@ export function TopBar({
           active: smartTextZoomAction.pressed === true,
           disabled: smartTextZoomAction.disabled === true,
           ariaLabel: smartTextZoomAction.ariaLabel,
+          helpId: smartTextZoomAction.helpId,
           onMouseEnter: showSectionHelpIcons ? () => onHeaderHelpNavigate(smartTextZoomAction.key) : undefined,
           onClick: (event: MouseEvent<HTMLButtonElement>) => {
             if (smartTextZoomAction.disabled) return
@@ -144,6 +163,7 @@ export function TopBar({
       active: showHoverInfo,
       disabled: false,
       ariaLabel: showHoverInfo ? t("ui.shell.topBar.supportMenu.hideHoverInfo") : t("ui.shell.topBar.supportMenu.showHoverInfo"),
+      helpId: supportHelpIds.menu,
       onClick: () => {
         onToggleHoverInfo()
       },
@@ -154,6 +174,7 @@ export function TopBar({
       active: isDarkUi,
       disabled: false,
       ariaLabel: t("ui.shell.topBar.supportMenu.darkMode"),
+      helpId: supportHelpIds.menu,
       onClick: (event: MouseEvent<HTMLButtonElement>) => {
         onToggleDarkMode(event)
       },
@@ -165,6 +186,7 @@ export function TopBar({
           active: false,
           disabled: false,
           ariaLabel: t("ui.shell.topBar.supportMenu.copyLayoutToClipboard"),
+          helpId: supportHelpIds.menu,
           onClick: () => {
             void onCopyLayoutToClipboard()
           },
@@ -176,6 +198,7 @@ export function TopBar({
       active: false,
       disabled: false,
       ariaLabel: t("ui.shell.topBar.supportMenu.pasteLayoutFromClipboard"),
+      helpId: supportHelpIds.menu,
       onClick: () => {
         void onPasteLayoutFromClipboard()
       },
@@ -186,8 +209,9 @@ export function TopBar({
       active: false,
       disabled: false,
       ariaLabel: t("ui.shell.topBar.supportMenu.documentation"),
+      helpId: supportHelpIds.documentation,
       onClick: () => {
-        onOpenDocumentation()
+        onOpenDocumentation("tooltip-guide")
       },
     },
     {
@@ -196,6 +220,7 @@ export function TopBar({
       active: false,
       disabled: false,
       ariaLabel: t("ui.shell.topBar.supportMenu.feedback"),
+      helpId: supportHelpIds.feedback,
       onClick: () => {
         onToggleFeedbackPanel()
         setSupportMenuOpen(false)
@@ -207,6 +232,7 @@ export function TopBar({
       active: false,
       disabled: false,
       ariaLabel: t("ui.shell.topBar.supportMenu.legalNotice"),
+      helpId: supportHelpIds.legal,
       onClick: () => {
         onToggleLegalNoticePanel()
         setSupportMenuOpen(false)
@@ -258,6 +284,7 @@ export function TopBar({
                 setSupportMenuOpen(true)
               }}
               showTooltip={showHoverInfo && !supportMenuOpen}
+              helpId="tooltip-header-support-menu"
               isDarkMode={isDarkUi}
             >
               <ChevronUp className={`${SETTINGS_FINE_CHEVRON_ICON_CLASSNAME} rotate-90`} />
@@ -270,19 +297,29 @@ export function TopBar({
                   className={supportMenuListClassName}
                 >
                   {supportMenuOptions.map((option) => (
-                    <button
+                    <DocumentationHoverInfo
                       key={option.key}
-                      type="button"
-                      role="option"
-                      aria-label={option.ariaLabel}
-                      aria-selected={option.active}
+                      label={option.label}
+                      helpId={option.helpId}
+                      showRolloverInfo={showHoverInfo}
                       disabled={option.disabled}
-                      className={supportMenuOptionClassName(option.active, option.disabled)}
-                      onMouseEnter={option.onMouseEnter}
-                      onClick={option.onClick}
+                      className="block"
+                      tooltipClassName="border-border bg-popover/95 text-left text-popover-foreground shadow-lg"
+                      horizontalAlign="end"
+                    >
+                      <button
+                        type="button"
+                        role="option"
+                        aria-label={option.ariaLabel}
+                        aria-selected={option.active}
+                        disabled={option.disabled}
+                        className={supportMenuOptionClassName(option.active, option.disabled)}
+                        onMouseEnter={option.onMouseEnter}
+                        onClick={option.onClick}
                     >
                       <span className="min-w-0 truncate">{option.label}</span>
-                    </button>
+                      </button>
+                    </DocumentationHoverInfo>
                   ))}
                 </div>
               </div>
