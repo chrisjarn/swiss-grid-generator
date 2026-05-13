@@ -49,6 +49,11 @@ export const IMAGE_COLOR_SCHEMES = [
   {
     id: "swiss-modern",
     label: "Swiss Modern",
+    colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#fd8b7b"]),
+  },
+  {
+    id: "swiss-classic",
+    label: "Swiss Classic",
     colors: sortSchemeColorsBrightToDark(["#0b3536", "#e5e7de", "#0098d8", "#2979c8"]),
   },
   {
@@ -111,7 +116,7 @@ const IMAGE_PLACEHOLDER_COLORS = new Set<string>(
   IMAGE_COLOR_SCHEMES.flatMap((scheme) => [...scheme.colors].map((color) => color.toLowerCase())),
 )
 
-export const DEFAULT_IMAGE_COLOR_SCHEME_ID: ImageColorSchemeId = IMAGE_COLOR_SCHEMES[0].id
+export const DEFAULT_IMAGE_COLOR_SCHEME_ID: ImageColorSchemeId = "swiss-modern"
 
 export function isImageColorSchemeId(value: unknown): value is ImageColorSchemeId {
   return typeof value === "string" && IMAGE_COLOR_SCHEME_IDS.has(value as ImageColorSchemeId)

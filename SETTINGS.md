@@ -162,10 +162,17 @@ The Fibonacci rhythm row exposes `<` and `>` sequence controls. Moving the seque
 - `BASE SCHEME`: uses a full-width always-open list with palette preview swatches on the right; list items preview live on rollover before click commit.
 - `Background`: applies a page background color from the selected scheme using clickable swatches; clicking the active swatch toggles the background off. This setting is stored per page.
 - `Background` swatches preview live on rollover before commit.
-- Available schemes:
-  - `Swiss Modern`: `#0b3536`, `#e5e7de`, `#0098d8`, `#2979c8`
-  - `Stone Cyan`: `#35342f`, `#e1e0dd`, `#f1f2f0`, `#37bbe4`
-  - `Fresh Contrast`: `#fef9f7`, `#1aa9bc`, `#457c39`, `#ffeb00`
+- Available schemes, shown here in effective bright-to-dark swatch order:
+  - `Swiss Modern`: `#e5e7de`, `#fd8b7b`, `#0098d8`, `#0b3536`
+  - `Swiss Classic`: `#e5e7de`, `#0098d8`, `#2979c8`, `#0b3536`
+  - `Stone Cyan`: `#f1f2f0`, `#e1e0dd`, `#37bbe4`, `#35342f`
+  - `Fresh Contrast`: `#fef9f7`, `#ffeb00`, `#1aa9bc`, `#457c39`
+  - `Sage Pop`: `#e0e5db`, `#e4bd0b`, `#00b8b8`, `#de3d83`
+  - `Coral Bay`: `#dddddd`, `#fbae17`, `#fe9f97`, `#0095a3`
+  - `Industrial Ember`: `#ec6b2d`, `#777870`, `#333333`, `#0d0f05`
+  - `Patina Clay`: `#f1f2f0`, `#bfbabe`, `#558a86`, `#a63e14`
+  - `Signal Cyan`: `#e0e5da`, `#00aabb`, `#f43530`, `#46454b`
+  - `Mono`: `#ffffff`, `#c0c0c0`, `#808080`, `#404040`
 - The text editor and image editor Color controls show a `COLOR` headline above the active color swatches, followed by the same open-list `BASE SCHEME` selector, and default to the current global selection.
 - Image placeholders can also override swatch color and transparency directly in that Color section.
 
