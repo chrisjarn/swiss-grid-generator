@@ -382,7 +382,7 @@ test("export dialog stays dark-mode-safe after removing size override controls",
   assert.match(source, /getPopupSurfaceClassName/)
   assert.match(source, /getPopupInputClassName/)
   assert.match(source, /getPopupMutedTextClassName/)
-  assert.match(source, /isDarkUi \? "bg-\[#313A47\]" : "bg-gray-300"/)
+  assert.match(source, /isDarkUi \? "bg-divider" : "bg-border"/)
   assert.doesNotMatch(source, /Units \/ Paper Size/)
   assert.doesNotMatch(source, /Height will follow the selected aspect ratio automatically\./)
 })

@@ -11,8 +11,8 @@ import { createStressPagePlanArgs } from "../helpers/page-export-plan-fixtures.m
 
 const ROOT = process.cwd()
 const PUBLIC_ROOT = path.join(ROOT, "public")
-const EXPECTED_STRESS_PLAN_HASH = "1797ef367b8c76ec11f4d7d728170cacb392888909c061e95d57dfa62c87f700"
-const EXPECTED_DOCUMENT_VARIABLE_PLAN_HASH = "310209325cf74c1e7dc071597e2fb582afc22ae0165591f41035eb766e788a2e"
+const EXPECTED_STRESS_PLAN_HASH = "7002038443f916c2a1c85cce32ba4a5ff6a5e879eef44ee177f2c30ea35c3f26"
+const EXPECTED_DOCUMENT_VARIABLE_PLAN_HASH = "047707f4205328d7d22eec90ae1a1c35ade5a00769d68d998c05a4d718726529"
 
 function installLocalAssetFetch() {
   const originalFetch = globalThis.fetch?.bind(globalThis)

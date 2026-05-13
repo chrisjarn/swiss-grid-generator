@@ -45,7 +45,7 @@ test("rollover info tooltip delay is centralized", () => {
   const timingSource = readSource("shared/ui/hover-tooltip-timing.ts")
   const tooltipSource = readSource("shared/ui/hover-tooltip.tsx")
 
-  assert.match(timingSource, /HOVER_TOOLTIP_OPEN_DELAY_MS\s*=\s*500/)
+  assert.match(timingSource, /HOVER_TOOLTIP_OPEN_DELAY_MS\s*=\s*1000/)
   assert.match(tooltipSource, /HOVER_TOOLTIP_OPEN_DELAY_MS/)
   assert.match(tooltipSource, /window\.setTimeout\([\s\S]*HOVER_TOOLTIP_OPEN_DELAY_MS/)
 })

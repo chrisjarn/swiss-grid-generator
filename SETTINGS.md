@@ -216,7 +216,7 @@ The header `>` support submenu uses the same open-list visual system as panel li
 
 - `Layers` (layers icon): opens the right sidebar Project panel
 - `Show Hover Info`/`Hide Hover Info`: toggles rollover info/tooltips globally
-- Rollover info tooltips appear after a 500ms hover/focus delay.
+- Rollover info tooltips appear after a 1000ms hover/focus delay.
 - Shortcuts: `Cmd/Ctrl+Shift+P` toggles the Project sidebar
 - `Account` (user icon): opens the right sidebar cloud account panel and shows a green status dot only when the user is signed in and cloud sync is fully up to date; otherwise the dot uses the warning color
 - `Documentation`: opens `/docs` in a new tab, relative to the current host
