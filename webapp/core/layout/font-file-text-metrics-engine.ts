@@ -191,6 +191,7 @@ function resolveKnownFamily(fontFamilyStack: string): FontFamily | null {
     "Besley",
     "Inter",
     "Jost",
+    "Lato",
   ]) {
     if (!isFontFamily(definition)) continue
     if (

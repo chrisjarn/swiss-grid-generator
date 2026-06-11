@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react"
 
 import { BaselineGridPanel } from "@/gui/panels/settings/BaselineGridPanel"
+import { BrandPanel } from "@/gui/panels/settings/BrandPanel"
 import { CanvasRatioPanel } from "@/gui/panels/settings/CanvasRatioPanel"
 import { ColorSchemePanel } from "@/gui/panels/settings/ColorSchemePanel"
 import { GutterPanel } from "@/gui/panels/settings/GutterPanel"
@@ -18,6 +19,7 @@ import type {
 } from "@/core/config/defaults"
 import type { FontFamily } from "@/core/config/fonts"
 import type { ImageColorSchemeId } from "@/core/config/color-schemes"
+import type { BrandId } from "@/core/config/brands"
 import type { CanvasRatioKey, GridResult } from "@/core/layout/grid-calculator"
 import type { SectionKey } from "@/core/types/workspace-ui-schema"
 
@@ -97,6 +99,7 @@ type Props = {
   onBaseFontPreviewChange?: (value: FontFamily | null) => void
   colorScheme: ImageColorSchemeId
   onColorSchemeChange: (value: ImageColorSchemeId) => void
+  onBrandChange: (brandId: BrandId) => void
   onColorSchemePreviewChange?: (value: ImageColorSchemeId | null) => void
   canvasBackground: string | null
   onCanvasBackgroundChange: (value: string | null) => void
@@ -166,6 +169,7 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
   onBaseFontPreviewChange,
   colorScheme,
   onColorSchemeChange,
+  onBrandChange,
   onColorSchemePreviewChange,
   canvasBackground,
   onCanvasBackgroundChange,
@@ -316,6 +320,17 @@ export const SettingsSidebarPanels = memo(function SettingsSidebarPanels({
           onNavigate: onHelpNavigate,
         }}
       >
+        <div {...getSectionWrapperProps("brand")}>
+          <BrandPanel
+            collapsed={isSectionCollapsed("brand")}
+            onHeaderClick={onSectionHeaderClick("brand")}
+            onHeaderDoubleClick={onSectionHeaderDoubleClick}
+            colorScheme={colorScheme}
+            onBrandChange={onBrandChange}
+            isDarkMode={isDarkMode}
+          />
+        </div>
+
         <div {...getSectionWrapperProps("format")}>
           <CanvasRatioPanel
             collapsed={isSectionCollapsed("format")}

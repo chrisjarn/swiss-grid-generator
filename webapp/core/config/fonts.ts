@@ -39,6 +39,13 @@ export const FONT_DEFINITIONS = [
     cssVar: "--font-jost",
   },
   {
+    value: "Lato",
+    label: "Lato",
+    category: "Sans-Serif",
+    stack: "Lato, sans-serif",
+    cssVar: "--font-lato",
+  },
+  {
     value: "Work Sans",
     label: "Work Sans",
     category: "Sans-Serif",

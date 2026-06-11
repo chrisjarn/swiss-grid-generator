@@ -47,4 +47,6 @@ export type PreviewLayoutState<
   imageRotations?: Partial<Record<Key, number>>
   imageColors?: Partial<Record<Key, string>>
   imageOpacities?: Partial<Record<Key, number>>
+  /** Optional real image asset per image block (data URL or public path). Absent = colour placeholder. */
+  imageSources?: Partial<Record<Key, string>>
 }

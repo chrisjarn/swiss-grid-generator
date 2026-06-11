@@ -1,0 +1,338 @@
+{
+  "schemaVersion": 2,
+  "exportedAt": "2026-06-11T00:00:00.000Z",
+  "title": "ibis × Chelsea — Room Capacity",
+  "description": "ibis-branded MICE capacity page on a wide 16:9 grid.",
+  "author": "ibis Conference & Events",
+  "createdAt": "2026-06-11T00:00:00.000Z",
+  "visibilitySettings": {
+    "showBaselines": false,
+    "showModules": false,
+    "showMargins": false,
+    "showImagePlaceholders": true,
+    "showTypography": true
+  },
+  "pages": [
+    {
+      "id": "ibis-capacity-1",
+      "name": "Room Capacity",
+      "layoutMode": "single",
+      "uiSettings": {
+        "canvasRatio": "screen_16_9",
+        "customRatioWidth": 16,
+        "customRatioHeight": 9,
+        "orientation": "landscape",
+        "rotation": 0,
+        "marginMethod": 2,
+        "gridCols": 12,
+        "gridRows": 8,
+        "gutterMultiple": 1,
+        "rhythm": "repetitive",
+        "rhythmRowsEnabled": true,
+        "rhythmRowsDirection": "ltr",
+        "rhythmColsEnabled": true,
+        "rhythmColsDirection": "ttb",
+        "typographyScale": "swiss",
+        "baseFont": "Lato",
+        "imageColorScheme": "brand-ibis",
+        "canvasBackground": "scheme:0",
+        "customBaseline": 12,
+        "useCustomMargins": true,
+        "customMarginMultipliers": {
+          "top": 1.5,
+          "left": 1.5,
+          "right": 1.5,
+          "bottom": 1.5
+        }
+      },
+      "previewLayout": {
+        "blockOrder": [
+          "cobrand",
+          "heading",
+          "deck",
+          "label-theatre",
+          "label-classroom",
+          "label-boardroom",
+          "label-ushape",
+          "label-cocktail",
+          "label-cabaret",
+          "label-banquet"
+        ],
+        "textContent": {
+          "cobrand": "Chelsea",
+          "heading": "Room Dimensions & Capacity",
+          "deck": "Five flexible spaces, from the 97 sqm Charles Room to the 280 sqm Edward Room, configured across six set-up styles for up to 200 delegates.",
+          "label-theatre": "Theatre",
+          "label-classroom": "Classroom",
+          "label-boardroom": "Boardroom",
+          "label-ushape": "U-Shape",
+          "label-cocktail": "Cocktail",
+          "label-cabaret": "Cabaret",
+          "label-banquet": "Banquet"
+        },
+        "blockTextEdited": {},
+        "styleAssignments": {
+          "cobrand": "subhead",
+          "heading": "headline",
+          "deck": "body",
+          "label-theatre": "caption",
+          "label-classroom": "caption",
+          "label-boardroom": "caption",
+          "label-ushape": "caption",
+          "label-cocktail": "caption",
+          "label-cabaret": "caption",
+          "label-banquet": "caption"
+        },
+        "blockFontFamilies": {},
+        "blockFontWeights": {},
+        "blockOpticalKerning": {},
+        "blockTrackingScales": {},
+        "blockTrackingRuns": {},
+        "blockTextFormatRuns": {},
+        "blockColumnSpans": {
+          "cobrand": 4,
+          "heading": 8,
+          "deck": 6,
+          "label-theatre": 1,
+          "label-classroom": 1,
+          "label-boardroom": 1,
+          "label-ushape": 1,
+          "label-cocktail": 1,
+          "label-cabaret": 1,
+          "label-banquet": 1
+        },
+        "blockRowSpans": {},
+        "blockHeightBaselines": {},
+        "blockTextAlignments": {
+          "cobrand": "left",
+          "heading": "left",
+          "deck": "left",
+          "label-theatre": "center",
+          "label-classroom": "center",
+          "label-boardroom": "center",
+          "label-ushape": "center",
+          "label-cocktail": "center",
+          "label-cabaret": "center",
+          "label-banquet": "center"
+        },
+        "blockVerticalAlignments": {},
+        "blockTextReflow": {},
+        "blockSyllableDivision": {},
+        "blockSnapToColumns": {},
+        "blockSnapToBaseline": {},
+        "blockItalic": {
+          "label-theatre": false,
+          "label-classroom": false,
+          "label-boardroom": false,
+          "label-ushape": false,
+          "label-cocktail": false,
+          "label-cabaret": false,
+          "label-banquet": false
+        },
+        "blockRotations": {},
+        "blockModulePositions": {
+          "cobrand": {
+            "column": 1,
+            "row": 0,
+            "baselineOffset": 0
+          },
+          "heading": {
+            "column": 0,
+            "row": 1,
+            "baselineOffset": 0
+          },
+          "deck": {
+            "column": 0,
+            "row": 3,
+            "baselineOffset": 0
+          },
+          "label-theatre": {
+            "column": 0,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-classroom": {
+            "column": 1,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-boardroom": {
+            "column": 2,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-ushape": {
+            "column": 3,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-cocktail": {
+            "column": 4,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-cabaret": {
+            "column": 5,
+            "row": 6,
+            "baselineOffset": 0
+          },
+          "label-banquet": {
+            "column": 6,
+            "row": 6,
+            "baselineOffset": 0
+          }
+        },
+        "blockCustomSizes": {},
+        "blockCustomLeadings": {},
+        "blockTextColors": {},
+        "lockedLayers": {},
+        "layerOrder": [],
+        "imageOrder": [
+          "logo",
+          "icon-theatre",
+          "icon-classroom",
+          "icon-boardroom",
+          "icon-ushape",
+          "icon-cocktail",
+          "icon-cabaret",
+          "icon-banquet",
+          "photo"
+        ],
+        "imageModulePositions": {
+          "logo": {
+            "column": 0,
+            "row": 0,
+            "baselineOffset": 0
+          },
+          "icon-theatre": {
+            "column": 0,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-classroom": {
+            "column": 1,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-boardroom": {
+            "column": 2,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-ushape": {
+            "column": 3,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-cocktail": {
+            "column": 4,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-cabaret": {
+            "column": 5,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "icon-banquet": {
+            "column": 6,
+            "row": 5,
+            "baselineOffset": 0
+          },
+          "photo": {
+            "column": 8,
+            "row": 0,
+            "baselineOffset": 0
+          }
+        },
+        "imageColumnSpans": {
+          "logo": 1,
+          "icon-theatre": 1,
+          "icon-classroom": 1,
+          "icon-boardroom": 1,
+          "icon-ushape": 1,
+          "icon-cocktail": 1,
+          "icon-cabaret": 1,
+          "icon-banquet": 1,
+          "photo": 4
+        },
+        "imageRowSpans": {
+          "logo": 1,
+          "icon-theatre": 1,
+          "icon-classroom": 1,
+          "icon-boardroom": 1,
+          "icon-ushape": 1,
+          "icon-cocktail": 1,
+          "icon-cabaret": 1,
+          "icon-banquet": 1,
+          "photo": 8
+        },
+        "imageHeightBaselines": {},
+        "imageSnapToColumns": {
+          "logo": true,
+          "icon-theatre": true,
+          "icon-classroom": true,
+          "icon-boardroom": true,
+          "icon-ushape": true,
+          "icon-cocktail": true,
+          "icon-cabaret": true,
+          "icon-banquet": true,
+          "photo": true
+        },
+        "imageSnapToBaseline": {
+          "logo": true,
+          "icon-theatre": true,
+          "icon-classroom": true,
+          "icon-boardroom": true,
+          "icon-ushape": true,
+          "icon-cocktail": true,
+          "icon-cabaret": true,
+          "icon-banquet": true,
+          "photo": true
+        },
+        "imageRotations": {},
+        "imageColors": {
+          "logo": "scheme:1",
+          "icon-theatre": "scheme:1",
+          "icon-classroom": "scheme:1",
+          "icon-boardroom": "scheme:1",
+          "icon-ushape": "scheme:1",
+          "icon-cocktail": "scheme:1",
+          "icon-cabaret": "scheme:1",
+          "icon-banquet": "scheme:1",
+          "photo": "scheme:1"
+        },
+        "imageOpacities": {
+          "logo": 1,
+          "icon-theatre": 1,
+          "icon-classroom": 1,
+          "icon-boardroom": 1,
+          "icon-ushape": 1,
+          "icon-cocktail": 1,
+          "icon-cabaret": 1,
+          "icon-banquet": 1,
+          "photo": 1
+        },
+        "imageSources": {
+          "logo": "/brands/ibis-logo.svg",
+          "icon-theatre": "/icons/seating/theatre.svg",
+          "icon-classroom": "/icons/seating/classroom.svg",
+          "icon-boardroom": "/icons/seating/boardroom.svg",
+          "icon-ushape": "/icons/seating/ushape.svg",
+          "icon-cocktail": "/icons/seating/cocktail.svg",
+          "icon-cabaret": "/icons/seating/cabaret.svg",
+          "icon-banquet": "/icons/seating/banquet.svg"
+        }
+      }
+    }
+  ],
+  "layoutEngine": {
+    "id": "swiss-grid-layout-v2",
+    "version": 2,
+    "textMetricsEngine": "font-file-deterministic-optical-margin-v1",
+    "opticalMarginModel": "font-file-contour-optical-margin-v1",
+    "verticalTextBoxModel": "cap-top-legacy-descent-0.2em",
+    "wrapModel": "font-file-width-tracking-optical-v1",
+    "layerOrderModel": "explicit-layer-order-v1"
+  }
+}

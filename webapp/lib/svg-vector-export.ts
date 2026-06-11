@@ -195,6 +195,11 @@ async function renderSwissGridVectorSvgInternal({
         imagePlan.rotationOriginX,
         imagePlan.rotationOriginY,
       )
+      if (imagePlan.imageSrc) {
+        const imageOpacityAttr = imagePlan.opacity < 0.999 ? ` opacity="${formatNumber(imagePlan.opacity)}"` : ""
+        layerMarkup += `<image id="image-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" x="${formatNumber(imagePlan.x)}" y="${formatNumber(imagePlan.y)}" width="${formatNumber(imagePlan.width)}" height="${formatNumber(imagePlan.height)}" preserveAspectRatio="xMidYMid meet" href="${quoteAttr(imagePlan.imageSrc)}"${imageOpacityAttr}${rotationTransform} />`
+        continue
+      }
       layerMarkup += `<rect id="image-${quoteAttr(key)}" data-block-key="${quoteAttr(key)}" x="${formatNumber(imagePlan.x)}" y="${formatNumber(imagePlan.y)}" width="${formatNumber(imagePlan.width)}" height="${formatNumber(imagePlan.height)}" fill="${formatSvgColor(imagePlan.fillColor)}"${opacityAttr}${rotationTransform} />`
       continue
     }
