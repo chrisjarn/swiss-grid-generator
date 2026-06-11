@@ -53,6 +53,7 @@ export type CanvasImageRenderPlan = {
   rotation: number
   rotationOriginX: number
   rotationOriginY: number
+  imageSrc?: string | null
 }
 
 export type CanvasLayerRenderPlan<Key extends string> =
@@ -923,6 +924,7 @@ export function buildCanvasImageRenderPlanFromPageExportPlan(
     rotation: imagePlan.rotation,
     rotationOriginX: imagePlan.rotationOriginX,
     rotationOriginY: imagePlan.rotationOriginY,
+    imageSrc: imagePlan.imageSrc ?? null,
   }
 }
 
@@ -993,21 +995,77 @@ export function drawCanvasLayerStack<Key extends string>(
   }
 }
 
+// --- async image cache for real image assets on the canvas ---
+// HTMLImageElement is DOM-only; in non-browser contexts (tests) we skip and fall back to the fill.
+const canvasImageCache = new Map<string, HTMLImageElement>()
+const canvasImageReadyListeners = new Set<() => void>()
+
+/** Subscribe to be notified when any image asset finishes loading, so the canvas can redraw. */
+export function subscribeCanvasImageReady(listener: () => void): () => void {
+  canvasImageReadyListeners.add(listener)
+  return () => {
+    canvasImageReadyListeners.delete(listener)
+  }
+}
+
+function notifyCanvasImageReady(): void {
+  for (const listener of canvasImageReadyListeners) listener()
+}
+
+/** Returns a fully-decoded image for `src`, or null if not ready yet (kicks off the load on first miss). */
+function getReadyCanvasImage(src: string): HTMLImageElement | null {
+  if (typeof Image === "undefined") return null
+  const cached = canvasImageCache.get(src)
+  if (cached) {
+    return cached.complete && cached.naturalWidth > 0 ? cached : null
+  }
+  const img = new Image()
+  img.decoding = "async"
+  canvasImageCache.set(src, img)
+  img.onload = () => notifyCanvasImageReady()
+  img.onerror = () => {
+    canvasImageCache.delete(src)
+  }
+  img.src = src
+  return null
+}
+
+function drawContainedImage(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  rect: BlockRect,
+): void {
+  const scale = Math.min(rect.width / img.naturalWidth, rect.height / img.naturalHeight)
+  const drawWidth = img.naturalWidth * scale
+  const drawHeight = img.naturalHeight * scale
+  const drawX = rect.x + (rect.width - drawWidth) / 2
+  const drawY = rect.y + (rect.height - drawHeight) / 2
+  ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight)
+}
+
 export function drawCanvasImagePlan(
   ctx: CanvasRenderingContext2D,
   imagePlan: CanvasImageRenderPlan,
 ): void {
-  ctx.fillStyle = imagePlan.color
+  const readyImage = imagePlan.imageSrc ? getReadyCanvasImage(imagePlan.imageSrc) : null
+  const rotated = Math.abs(imagePlan.rotation) > 0.0001
   ctx.globalAlpha = imagePlan.opacity
-  if (Math.abs(imagePlan.rotation) > 0.0001) {
+  if (rotated) {
     ctx.save()
     ctx.translate(imagePlan.rotationOriginX, imagePlan.rotationOriginY)
     ctx.rotate((imagePlan.rotation * Math.PI) / 180)
     ctx.translate(-imagePlan.rotationOriginX, -imagePlan.rotationOriginY)
-    ctx.fillRect(imagePlan.rect.x, imagePlan.rect.y, imagePlan.rect.width, imagePlan.rect.height)
-    ctx.restore()
+  }
+  if (readyImage) {
+    // Contain-fit the real image inside the grid cell (loaded; ready to paint).
+    drawContainedImage(ctx, readyImage, imagePlan.rect)
   } else {
+    // Colour placeholder — also shown while a real image is still loading.
+    ctx.fillStyle = imagePlan.color
     ctx.fillRect(imagePlan.rect.x, imagePlan.rect.y, imagePlan.rect.width, imagePlan.rect.height)
+  }
+  if (rotated) {
+    ctx.restore()
   }
   ctx.globalAlpha = 1
 }

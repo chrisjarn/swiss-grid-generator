@@ -8,6 +8,7 @@ import type { GridResult } from "@/core/layout/grid-calculator"
 import { SettingsSidebarPanels } from "@/gui/panels/settings/SettingsSidebarPanels"
 import type { PreviewLayoutState as SharedPreviewLayoutState } from "@/core/types/preview-layout"
 import { SECTION_KEYS, type SectionKey, type UiSettingsSnapshot } from "@/core/types/workspace-ui-schema"
+import { getBrandTheme, type BrandId } from "@/core/config/brands"
 import { useExportActions } from "@/gui/shell/hooks/useExportActions"
 import { useHeaderActions } from "@/gui/shell/hooks/useHeaderActions"
 import type { DocumentationSectionId as HelpSectionId } from "@/core/document/documentation-sections"
@@ -1142,6 +1143,11 @@ export function ShellModelView() {
     }
     setPreviewPatch({ baseFont: value })
   }, [clearPreviewKeys, setPreviewPatch])
+  const handleBrandChange = useCallback((brandId: BrandId) => {
+    const brand = getBrandTheme(brandId)
+    setImageColorScheme(brand.colorSchemeId)
+    setBaseFont(brand.defaultFont)
+  }, [setBaseFont, setImageColorScheme])
   const handleColorSchemePreviewChange = useCallback((value: typeof imageColorScheme | null) => {
     if (value === null) {
       clearPreviewKeys(["imageColorScheme"])
@@ -2362,6 +2368,7 @@ export function ShellModelView() {
       onBaseFontPreviewChange={handleBaseFontPreviewChange}
       colorScheme={sidebarControlUi.imageColorScheme}
       onColorSchemeChange={setImageColorScheme}
+      onBrandChange={handleBrandChange}
       onColorSchemePreviewChange={handleColorSchemePreviewChange}
       canvasBackground={sidebarControlUi.canvasBackground}
       onCanvasBackgroundChange={setCanvasBackground}
@@ -2371,6 +2378,7 @@ export function ShellModelView() {
   ), [
     collapsed,
     handleBaseFontPreviewChange,
+    handleBrandChange,
     handleCanvasBackgroundPreviewChange,
     handleCanvasRatioPreviewChange,
     handleColorSchemePreviewChange,

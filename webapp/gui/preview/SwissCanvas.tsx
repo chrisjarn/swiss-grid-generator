@@ -1,11 +1,12 @@
 "use client"
 
-import { useEffect, useMemo, useRef } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 
 import type { PageExportGuideGroup, PageExportPlan } from "@/core/types/export-plan"
 import {
   buildCanvasRenderPlansFromPageExportPlan,
   drawCanvasLayerPlanStack,
+  subscribeCanvasImageReady,
 } from "@/gui/preview/lib/canvas-page-renderer"
 import { formatSvgColor } from "@/core/export/colors"
 import { cn } from "@/lib/utils"
@@ -82,6 +83,10 @@ export function SwissCanvas({
 }: SwissCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const resolvedScale = resolveScale(scale)
+  // Bumped when an async image asset finishes loading, to repaint with the real image.
+  const [imageReadyTick, setImageReadyTick] = useState(0)
+
+  useEffect(() => subscribeCanvasImageReady(() => setImageReadyTick((tick) => tick + 1)), [])
   const canvasSize = useMemo(() => {
     if (!plan) return { width: 1, height: 1 }
     return {
@@ -104,7 +109,7 @@ export function SwissCanvas({
     }
 
     drawPlan(context, plan, showGuides)
-  }, [canvasSize.height, canvasSize.width, plan, resolvedScale, showGuides])
+  }, [canvasSize.height, canvasSize.width, plan, resolvedScale, showGuides, imageReadyTick])
 
   return (
     <canvas

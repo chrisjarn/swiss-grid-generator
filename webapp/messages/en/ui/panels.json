@@ -76,6 +76,16 @@
     "shiftFibonacciLeft": "Shift Fibonacci sequence left",
     "shiftFibonacciRight": "Shift Fibonacci sequence right"
   },
+  "brand": {
+    "title": "Brand",
+    "tooltip": "Brand theme — palette, default font, and logo.",
+    "theme": "Brand theme",
+    "themeAria": "Brand theme",
+    "custom": "Custom",
+    "fontLabel": "Font: {font}",
+    "logoReady": " · logo ready",
+    "pickPrompt": "Pick a brand to apply its palette and font."
+  },
   "color": {
     "title": "Color",
     "tooltip": "Base scheme and page ground.",

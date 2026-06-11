@@ -76,6 +76,7 @@ export const DEFAULT_UI: UiSettingsSnapshot = {
   showTypography: true,
   showLayers: true,
   collapsed: {
+    brand: false,
     format: true,
     baseline: true,
     margins: true,

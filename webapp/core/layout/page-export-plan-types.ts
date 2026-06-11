@@ -50,6 +50,8 @@ export type PageExportImagePlan = PageExportRect & {
   rotation: number
   rotationOriginX: number
   rotationOriginY: number
+  /** Real image asset (data URL or public path). Null/undefined = colour placeholder. */
+  imageSrc?: string | null
 }
 
 export type PageExportTextPlan = TypographyLayoutPlan<BlockId, TypographyStyleKey> & {

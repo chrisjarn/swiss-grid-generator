@@ -533,6 +533,7 @@ type BuildPageExportImagePlansArgs = {
   imageRotations: PreviewLayoutState["imageRotations"]
   imageColors: PreviewLayoutState["imageColors"]
   imageOpacities: PreviewLayoutState["imageOpacities"]
+  imageSources: PreviewLayoutState["imageSources"]
   geometry: PageExportGridGeometry
   contentLeft: number
   baselineOriginTop: number
@@ -749,6 +750,7 @@ function buildPageExportImagePlans({
   imageRotations = {},
   imageColors = {},
   imageOpacities = {},
+  imageSources = {},
   geometry,
   contentLeft,
   baselineOriginTop,
@@ -809,6 +811,8 @@ function buildPageExportImagePlans({
       rotation: geometryPlan.rotation,
       rotationOriginX: geometryPlan.rotationOriginX,
       rotationOriginY: geometryPlan.rotationOriginY,
+      // Only emit when set, so colour-placeholder plans serialize identically (determinism-safe).
+      ...(imageSources?.[key] ? { imageSrc: imageSources[key] } : {}),
     })
   }
 
@@ -995,6 +999,7 @@ function buildPageExportPlanInternal({
   const imageRotations = layout?.imageRotations ?? {}
   const imageColors = layout?.imageColors ?? {}
   const imageOpacities = layout?.imageOpacities ?? {}
+  const imageSources = layout?.imageSources ?? {}
   const defaultTextColor = getDefaultTextSchemeColor(imageColorScheme)
   const heightMetricsByInput = new Map<string, ReturnType<typeof normalizeHeightMetrics>>()
   const getHeightMetrics = (rows: number | undefined, baselines: number | undefined) => {
@@ -1046,6 +1051,7 @@ function buildPageExportPlanInternal({
           imageRotations,
           imageColors,
           imageOpacities,
+          imageSources,
           geometry,
           contentLeft,
           baselineOriginTop,

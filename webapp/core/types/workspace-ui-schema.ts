@@ -3,7 +3,7 @@ import type { FontFamily } from "@/core/config/fonts"
 import type { ImageColorSchemeId } from "@/core/config/color-schemes"
 import type { CanvasRatioKey } from "@/core/layout/grid-calculator"
 
-export const SECTION_KEYS = ["format", "baseline", "margins", "gutter", "typo", "color", "summary"] as const
+export const SECTION_KEYS = ["brand", "format", "baseline", "margins", "gutter", "typo", "color", "summary"] as const
 export type SectionKey = typeof SECTION_KEYS[number]
 export const SESSION_UI_SETTING_KEYS = [
   "showBaselines",

@@ -92,6 +92,19 @@ export const IMAGE_COLOR_SCHEMES = [
     label: "Swiss Modern",
     colors: ["#e5e7de", "#fd8b7b", "#0098d8", "#0b3536"],
   },
+  // --- MICE brand themes (additive; slots map to primitive colour roles: paper, muted, ink, brand) ---
+  {
+    id: "brand-ibis",
+    label: "ibis",
+    colors: ["#ffffff", "#9b9b9b", "#1a1a1a", "#e10025"],
+    defaultTextSlotIndex: 2,
+  },
+  {
+    id: "brand-holiday-inn",
+    label: "Holiday Inn",
+    colors: ["#ffffff", "#8a8a87", "#1a1a1a", "#1c5c45"],
+    defaultTextSlotIndex: 2,
+  },
 ] as const satisfies readonly ImageColorScheme[]
 
 export type ImageColorSchemeId = (typeof IMAGE_COLOR_SCHEMES)[number]["id"]
